@@ -1,4 +1,4 @@
-# OmniDB-NG 
+# PgManage
 We proudly leverage all of the great work Open Source work done by the original
 (now dormant) project https://github.com/OmniDB/OmniDB 
 
@@ -25,20 +25,20 @@ brew install python3 xxx yyy zzz
 sudo apt install python3-dev python3-venv python3-wheel libpq-dev libldap2-dev libsasl2-dev
 python3 -m venv omenv
 source omenv/bin/activate
-git clone https://github.com/pgsql-io/omnidb-ng
-cd omnidb-ng
+git clone https://github.com/commandprompt/pgmanage
+cd pgmanage
 pip3 install -r requirments.txt
 ```
 
 ## Start it up
 ```
-cd omnidb-ng/OmniDB
+cd pgmanage/OmniDB
 python3 omnidb-server.py
 ```
 
-# OmniDB-NG 3.0.6
+# PgManage 1.0
 
-## Release Date: *May, 10 2022*
+## Release Date: *pending*
 
 ## Release Notes
 
@@ -114,8 +114,8 @@ python3 omnidb-server.py
 
 
 
-**Website**: http://omnidb-ng.org
+**Website**: https://github.com/commandprompt/pgmanage 
 
-**Full Documentation**: https://omnidb-ng.readthedocs.io
+**Full Documentation**: https://pg-manage.readthedocs.io
 
 ![](https://raw.githubusercontent.com/OmniDB/doc/master/img/omnidb_3/dashboard.png)

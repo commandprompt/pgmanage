@@ -1,4 +1,4 @@
-# Contributing to OmniDB-NG
+# Contributing to PgManage
 
 We love your input! We want to make contributing to this project as easy and
 transparent as possible, whether it's:
@@ -11,21 +11,21 @@ transparent as possible, whether it's:
 - Becoming a maintainer
 
 
-## OmniDB-NG Database Support
+## PgManage Database Support
 
 Currently OmniDB supports `PostgreSQL`, `Oracle`, `MySQL` and `MariaDB`. We plan
 to support `MSSQL Server`, `SQLite` and `IBM DB2` in the foreseeable
 future. Suggestions and even pull requests for other databases are welcome.
 
 
-## OmniDB-NG Operating System Support
+## PgManage Operating System Support
 
 We currently build OmniDB for Debian/Ubuntu, CentOS/Rocky, Windows and OSX.
 
 
-## OmniDB-NG Repositories
+## PgManage Repositories
 
-- [https://github.com/pgsql-io/OmniDB-NG](https://github.com/pgsql-io/OmniDB): Main
+- [https://github.com/commandprompt/pgmanage](https://github.com/commandprompt/pgmanage): Main
 application and server, deployment scripts and tests.
 - [https://github.com/OmniDB/doc](https://github.com/OmniDB/doc): OmniDB
 documentation.
@@ -71,7 +71,7 @@ easy!
 **Great Bug Reports** tend to have:
 
 - A quick summary and/or background
-- OmniDB-NG flavor you are using (app or server) and version
+- PgManage flavor you are using (app or server) and version
 - Operating system and version
 - Steps to reproduce
   - Be specific!

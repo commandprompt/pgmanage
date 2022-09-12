@@ -34,7 +34,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
     p_icon: '<i class="fas fa-hand-spock"></i>',
     p_name: 'Welcome',
     p_selectFunction: function() {
-      document.title = 'Welcome to OmniDB-NG'
+      document.title = 'Welcome to PgManage'
       $('[data-toggle="tooltip"]').tooltip({animation:true});// Loads or Updates all tooltips
     },
     p_close: false,// Replacing default close icon with contextMenu.
@@ -64,7 +64,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
         v_option_list,
         null);
     },
-    p_omnidb_tooltip_name: '<h5 class="my-1">Welcome to OmniDB-NG</h5>'
+    p_omnidb_tooltip_name: '<h5 class="my-1">Welcome to PgManage</h5>'
   });
 
   v_connTabControl.selectTab(v_tab);
@@ -142,13 +142,13 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
   '<h1 class="mb-4" style="padding-left: 100px; position: relative;">' +
     // '<span class="omnidb__welcome__loading"></span>' +
     '<span class="omnidb__welcome__loading" style="background: none;">' + v_animated_omnis + '</span>' +
-    '<span class="omnidb__welcome__intro-text">Hi, welcome to <span style="color:#4a6cbb;">OmniDB-NG!</span></span>' +
+    '<span class="omnidb__welcome__intro-text">Hi, welcome to <span style="color:#4a6cbb;">PgManage!</span></span>' +
   '</h1>';
   // Intro html string
   let v_html_intro =
   '<div class="card p-3 omnidb__welcome__intro-card">' +
 
-    '<p class="text-center"><span class="badge badge-danger" style="vertical-align: middle;">disclaimer</span> OmniDB-NG is a powerful tool, and with great power...<br/>Please <strong><span class="text-danger">learn how to use it on a testing environment, NOT on production</span></strong>!</p>' +
+    '<p class="text-center"><span class="badge badge-danger" style="vertical-align: middle;">disclaimer</span> PgManage is a powerful tool, and with great power...<br/>Please <strong><span class="text-danger">learn how to use it on a testing environment, NOT on production</span></strong>!</p>' +
 
 
     '<button type="button" class="btn btn-lg omnidb__theme__btn--primary w-auto mx-auto my-4" onclick="startTutorial(' + "'getting_started'" + ');">' +
@@ -219,8 +219,8 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
   '<div class="alert alert-success p-3 omnidb__welcome__useful-card">' +
     '<h2 class="text-center mb-4">Useful stuff</h2>' +
     '<ul>' +
-      '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="http://omnidb-ng.org"><i class="fas fa-user"></i> <span>OmniDB-NG website</span></a></li>' +
-      '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="https://github.com/pgsql-io/OmniDB-NG"><i class="fab fa-github"></i> <span>Github repo</span></a></li>' +
+      '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="https://github.com/commandprompt/pgmanage"><i class="fas fa-user"></i> <span>PgManage website</span></a></li>' +
+      '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="https://github.com/commandprompt/pgmanage"><i class="fab fa-github"></i> <span>Github repo</span></a></li>' +
       '<li><a class="btn btn-success text-white" target="_blank" href="https://omnidb.readthedocs.io/"><i class="fas fa-list"></i> <span>Read the docs</span></a></li>' +
     '</ul>' +
   '</div>';
