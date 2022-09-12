@@ -219,7 +219,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
   '<div class="alert alert-success p-3 omnidb__welcome__useful-card">' +
     '<h2 class="text-center mb-4">Useful stuff</h2>' +
     '<ul>' +
-      '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="http://pg-manage.org"><i class="fas fa-user"></i> <span>PgManage website</span></a></li>' +
+      '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="https://github.com/commandprompt/pgmanage"><i class="fas fa-user"></i> <span>PgManage website</span></a></li>' +
       '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="https://github.com/commandprompt/pgmanage"><i class="fab fa-github"></i> <span>Github repo</span></a></li>' +
       '<li><a class="btn btn-success text-white" target="_blank" href="https://omnidb.readthedocs.io/"><i class="fas fa-list"></i> <span>Read the docs</span></a></li>' +
     '</ul>' +

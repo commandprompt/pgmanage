@@ -26,13 +26,13 @@ sudo apt install python3-dev python3-venv python3-wheel libpq-dev libldap2-dev l
 python3 -m venv omenv
 source omenv/bin/activate
 git clone https://github.com/commandprompt/pgmanage
-cd omnidb-ng
+cd pgmanage
 pip3 install -r requirments.txt
 ```
 
 ## Start it up
 ```
-cd omnidb-ng/OmniDB
+cd pgmanage/OmniDB
 python3 omnidb-server.py
 ```
 
@@ -114,7 +114,7 @@ python3 omnidb-server.py
 
 
 
-**Website**: http://pg-manage.org
+**Website**: https://github.com/commandprompt/pgmanage 
 
 **Full Documentation**: https://pg-manage.readthedocs.io
 
