@@ -1,14 +1,14 @@
-import os
 import json
 import threading
 import time
 from django.http import JsonResponse
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 
 import OmniDB_app.include.OmniDatabase as OmniDatabase
 
 global_object = {}
 to_be_removed = []
+
 
 def cleanup_thread():
     while True:
@@ -22,39 +22,39 @@ def cleanup_thread():
         for client in list(global_object):
 
             # Client reached timeout
-            client_timeout_reached = datetime.now() > global_object[client]['last_update'] + timedelta(0,3600)
+            client_timeout_reached = datetime.now() > global_object[client]['last_update'] + timedelta(0, 3600)
 
             for tab_id in list(global_object[client]['tab_list']):
                 try:
                     # Tab reached timeout
-                    tab_timeout_reached = datetime.now() > global_object[client]['tab_list'][tab_id]['last_update'] + timedelta(0,3600)
+                    tab_timeout_reached = datetime.now() > global_object[client]['tab_list'][tab_id]['last_update'] + timedelta(0, 3600)
 
-                    if client_timeout_reached or tab_timeout_reached or global_object[client]['tab_list'][tab_id]['to_be_removed'] == True:
-                        close_tab_handler(global_object[client],tab_id)
+                    if client_timeout_reached or tab_timeout_reached or global_object[client]['tab_list'][tab_id]['to_be_removed'] is True:
+                        close_tab_handler(global_object[client], tab_id)
                 except Exception as exc:
                     None
         time.sleep(30)
+
 
 t = threading.Thread(target=cleanup_thread)
 t.setDaemon(True)
 t.start()
 
+
 def user_authenticated(function):
     def wrap(request, *args, **kwargs):
-        #User not authenticated
+        # User not authenticated
         if request.user.is_authenticated:
             return function(request, *args, **kwargs)
         else:
-            v_return = {}
-            v_return['v_data'] = ''
-            v_return['v_error'] = True
-            v_return['v_error_id'] = 1
+            v_return = {'v_data': '', 'v_error': True, 'v_error_id': 1}
             return JsonResponse(v_return)
     wrap.__doc__ = function.__doc__
     wrap.__name__ = function.__name__
     return wrap
 
-def database_required(p_check_timeout = True, p_open_connection = True):
+
+def database_required(p_check_timeout=True, p_open_connection=True):
     def decorator(function):
         def wrap(request, *args, **kwargs):
 
@@ -70,24 +70,24 @@ def database_required(p_check_timeout = True, p_open_connection = True):
             v_database_index = json_object['p_database_index']
             v_tab_id = json_object['p_tab_id']
 
-            if v_database_index != None:
+            if v_database_index is not None:
                 try:
                     if p_check_timeout:
-                        #Check database prompt timeout
+                        # Check database prompt timeout
                         v_timeout = v_session.DatabaseReachPasswordTimeout(int(v_database_index))
                         if v_timeout['timeout']:
-                            v_return['v_data'] = {'password_timeout': True, 'message': v_timeout['message'] }
+                            v_return['v_data'] = {'password_timeout': True, 'message': v_timeout['message']}
                             v_return['v_error'] = True
                             return JsonResponse(v_return)
 
                     v_database = get_database_object(
-                        p_session = request.session,
-                        p_tab_id = v_tab_id,
-                        p_database_index = v_database_index,
-                        p_attempt_to_open_connection = p_open_connection
+                        p_session=request.session,
+                        p_tab_id=v_tab_id,
+                        p_database_index=v_database_index,
+                        p_attempt_to_open_connection=p_open_connection
                     )
                 except Exception as exc:
-                    v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
+                    v_return['v_data'] = {'password_timeout': True, 'message': str(exc)}
                     v_return['v_error'] = True
                     return JsonResponse(v_return)
             else:
@@ -99,11 +99,13 @@ def database_required(p_check_timeout = True, p_open_connection = True):
         return wrap
     return decorator
 
-def close_tab_handler(p_client_object,p_tab_object_id):
+
+def close_tab_handler(p_client_object, p_tab_object_id):
     try:
         tab_object = p_client_object['tab_list'][p_tab_object_id]
         del p_client_object['tab_list'][p_tab_object_id]
-        if tab_object['type'] == 'query' or tab_object['type'] == 'console' or tab_object['type'] == 'connection' or tab_object['type'] == 'edit':
+        if tab_object['type'] == 'query' or tab_object['type'] == 'console' or \
+                tab_object['type'] == 'connection' or tab_object['type'] == 'edit':
             try:
                 tab_object['omnidatabase'].v_connection.Cancel(False)
             except Exception:
@@ -131,7 +133,7 @@ def close_tab_handler(p_client_object,p_tab_object_id):
             except Exception:
                 None
         elif tab_object['type'] == 'terminal':
-            if tab_object['thread']!=None:
+            if tab_object['thread'] is not None:
                 tab_object['thread'].stop()
             if tab_object['terminal_type'] == 'local':
                 tab_object['terminal_object'].terminate()
@@ -142,9 +144,8 @@ def close_tab_handler(p_client_object,p_tab_object_id):
     except Exception as exc:
         None
 
-def clear_client_object(
-    p_client_id = None
-):
+
+def clear_client_object(p_client_id=None):
     try:
         client_object = global_object[p_client_id]
 
@@ -162,6 +163,7 @@ def clear_client_object(
     except Exception as exc:
         None
 
+
 def create_tab_object(
     p_session,
     p_tab_id,
@@ -175,7 +177,7 @@ def create_tab_object(
 
 
 def get_client_object(p_client_id):
-    #get client attribute in global object or create if it doesn't exist
+    # get client attribute in global object or create if it doesn't exist
     try:
         client_object = global_object[p_client_id]
     except Exception as exc:
@@ -191,11 +193,12 @@ def get_client_object(p_client_id):
 
     return client_object
 
+
 def get_database_object(
-    p_session = None,
-    p_tab_id = None,
-    p_database_index = None,
-    p_attempt_to_open_connection = False
+    p_session=None,
+    p_tab_id=None,
+    p_database_index=None,
+    p_attempt_to_open_connection=False
 ):
     v_session = p_session.get('omnidb_session')
     v_client_id = p_session.session_key
@@ -225,14 +228,15 @@ def get_database_object(
         True
     )
 
+
 def get_database_tab_object(
-    p_session = None,
-    p_client_object = None,
-    p_tab_object = None,
-    p_connection_tab_id = None,
-    p_database_index = None,
-    p_attempt_to_open_connection = False,
-    p_use_lock = False
+    p_session=None,
+    p_client_object=None,
+    p_tab_object=None,
+    p_connection_tab_id=None,
+    p_database_index=None,
+    p_attempt_to_open_connection=False,
+    p_use_lock=False
 ):
     v_global_database_object = p_session.v_databases[p_database_index]['database']
     v_current_tab_database = p_session.v_tabs_databases[p_connection_tab_id]
@@ -240,15 +244,14 @@ def get_database_tab_object(
     # Updating time
     p_tab_object['last_update'] = datetime.now()
 
-
-    if (p_tab_object['omnidatabase'] == None or
-        (v_global_database_object.v_db_type!=p_tab_object['omnidatabase'].v_db_type or
-            v_global_database_object.v_connection.v_host!=p_tab_object['omnidatabase'].v_connection.v_host or
-            str(v_global_database_object.v_connection.v_port)!=str(p_tab_object['omnidatabase'].v_connection.v_port) or
-            v_current_tab_database!=p_tab_object['omnidatabase'].v_active_service or
-            v_global_database_object.v_active_user!=p_tab_object['omnidatabase'].v_active_user or
-            v_global_database_object.v_connection.v_password!=p_tab_object['omnidatabase'].v_connection.v_password)
-            ):
+    if (p_tab_object['omnidatabase'] is None or
+        (v_global_database_object.v_db_type != p_tab_object['omnidatabase'].v_db_type or
+            v_global_database_object.v_connection.v_host != p_tab_object['omnidatabase'].v_connection.v_host or
+            str(v_global_database_object.v_connection.v_port) != str(p_tab_object['omnidatabase'].v_connection.v_port) or
+            v_current_tab_database != p_tab_object['omnidatabase'].v_active_service or
+            v_global_database_object.v_active_user != p_tab_object['omnidatabase'].v_active_user or
+            v_global_database_object.v_connection.v_password != p_tab_object['omnidatabase'].v_connection.v_password)
+        ):
 
         v_database_new = OmniDatabase.Generic.InstantiateDatabase(
             v_global_database_object.v_db_type,
@@ -268,9 +271,8 @@ def get_database_tab_object(
         # Instead of waiting for garbage collector to clear existing connection,
         # put it in the list of to be removed connections and let the cleaning
         # thread close it
-        if (p_tab_object['omnidatabase']):
+        if p_tab_object['omnidatabase']:
             to_be_removed.append(p_tab_object['omnidatabase'])
-
 
         p_tab_object['omnidatabase'] = v_database_new
 
@@ -279,3 +281,18 @@ def get_database_tab_object(
         p_tab_object['omnidatabase'].v_connection.Open()
 
     return p_tab_object['omnidatabase']
+
+
+def superuser_required(function):
+    def wrap(request, *args, **kwargs):
+        v_session = request.session.get('omnidb_session')
+
+        if v_session.v_super_user:
+            return function(request, *args, **kwargs)
+        else:
+            v_return = {'v_data': 'You must be superuser to perform this operation', 'v_error': True}
+            return JsonResponse(v_return)
+    wrap.__doc__ = function.__doc__
+    wrap.__name__ = function.__name__
+
+    return wrap
