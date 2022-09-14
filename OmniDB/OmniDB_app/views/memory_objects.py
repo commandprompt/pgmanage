@@ -290,7 +290,7 @@ def superuser_required(function):
         if v_session.v_super_user:
             return function(request, *args, **kwargs)
         else:
-            v_return = {'v_data': 'You must be superuser to manage users.', 'v_error': True}
+            v_return = {'v_data': 'You must be superuser to perform this operation', 'v_error': True}
             return JsonResponse(v_return)
     wrap.__doc__ = function.__doc__
     wrap.__name__ = function.__name__
