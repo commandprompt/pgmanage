@@ -50,17 +50,14 @@ function newUserConfirm() {
 /// Add a virtual new user with pending information.
 /// </summary>
 function newUser() {
-	var v_index = 0;
-	if (window.newUsersObject.newUsers.length > 0) {
-		v_index = window.newUsersObject.newUsers.length
-		window.newUsersObject.newUsers.push(["","",0]);
-	}
-	else {
-		v_index = 0
-		window.newUsersObject.newUsers = [["","",0]];
-	}
+	if (window.newUsersObject.newUsers.length === 0){
 
-	listUsers(true,{adding_user:true});
+		window.newUsersObject.newUsers.push(["", "", 0])
+		listUsers(true,{adding_user:true});
+
+	} else {
+		listUsers(true,{adding_user:true});
+	}
 }
 
 /// <summary>
@@ -193,6 +190,11 @@ $('#modal_users').on('shown.bs.modal', function (e) {
 
 });
 
+$('#modal_users').on('hidden.bs.modal', function (e) {
+		window.newUsersObject.newUsers = [];
+});
+
+
 function changeUser(event, p_row_index, p_col_index) {
 	var v_user_id = v_usersObject.v_user_ids[p_row_index];
 	var v_user_is_superuser = (document.getElementById("user_item_superuser_" + p_row_index).checked) ? 1 : 0;
@@ -234,7 +236,6 @@ function changeNewUser(event, p_row_index, p_col_index) {
 	var v_event = {target:{value:v_render_index}};
 
 	renderSelectedUser(v_event);
-
 	document.getElementById('div_save_users').style.visibility = 'visible';
 
 }
@@ -242,13 +243,17 @@ function changeNewUser(event, p_row_index, p_col_index) {
 function getUsers(p_options = false) {
 
 	if (p_options.adding_user) {
-
 		var v_new_value = v_usersObject.list.length + window.newUsersObject.newUsers.length - 1;
-		$('#omnidb_user_select').append(new Option('(pending info)', v_new_value));
-		$('#omnidb_user_select option:last-child').addClass('bg-success');
-		$('#omnidb_user_select option:last-child').trigger('change');
-		$('#omnidb_user_select').val(v_new_value);
-
+		if ($('#omnidb_user_select option:last-child').text() !== '(pending info)') {
+			$('#omnidb_user_select').append(new Option('(pending info)', v_new_value));
+			$('#omnidb_user_select option:last-child').addClass('bg-success');
+			$('#omnidb_user_select option:last-child').trigger('change');
+			$('#omnidb_user_select').val(v_new_value);
+		}
+		else {
+			$('#omnidb_user_select').val(v_new_value);
+			$('#omnidb_user_select option:last-child').trigger('change');
+		}
 		endLoading();
 
 	}
