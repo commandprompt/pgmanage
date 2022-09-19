@@ -30,23 +30,19 @@ var v_unit_list_grid = null;
 
 function closeMonitorUnit(p_div) {
   var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-  for (var i=0; i<v_tab_tag.units.length; i++) {
+  let v_unit_idx = v_tab_tag.units.findIndex(unit => unit.div === p_div)
+  let v_unit = v_tab_tag.units[v_unit_idx]
 
-    var v_unit = v_tab_tag.units[i];
-    if (v_unit.div == p_div) {
+  //Clear timeout
+  clearTimeout(v_unit.timeout_object)
+  if (v_unit.type === 'graph' && v_unit.object != null) {
+          v_unit.object.destroy();
+        }
+  v_unit.div.parentElement.removeChild(v_unit.div);
+  v_tab_tag.units.splice(v_unit_idx,1);
 
-      //Clear timeout
-      clearTimeout(v_unit.timeout_object);
-
-      if (v_unit.type == 'graph' && v_unit.object != null) {
-        v_unit.object.destroy();
-      }
-
-      v_unit.div.parentElement.removeChild(v_unit.div);
-      v_tab_tag.units.splice(i,1);
-
-      //Removing saved unit
-      execAjax('/remove_saved_monitor_unit/',
+  //Removing saved unit
+  execAjax('/remove_saved_monitor_unit/',
     				JSON.stringify({"p_saved_id": v_unit.saved_id}),
     				function(p_return) {
             },
@@ -54,9 +50,6 @@ function closeMonitorUnit(p_div) {
             'box',
             false);
 
-      break;
-    }
-  }
 }
 
 function updateUnitSavedInterval(p_div) {
@@ -277,26 +270,36 @@ function startMonitorDashboard() {
         'box');
 
 }
-
-function includeMonitorUnit(p_id,p_plugin_name) {
+function toggleMonitorUnit(p_id,p_plugin_name) {
   var v_grid = v_unit_list_grid;
   var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-  var v_row_data = v_grid.getDataAtRow(v_grid.getSelected()[0][0]);
-  var v_plugin_name = '';
-  if (p_plugin_name!=null)
-    v_plugin_name = p_plugin_name;
+  let v_unit_idx = v_tab_tag.units.findIndex(unit => unit.id === p_id)
+  var v_row_data = v_grid.getSourceDataAtRow(v_grid.getSelected()[0][0]);
 
-  var div = buildMonitorUnit({'v_saved_id': -1, 'v_id': p_id, 'v_title': v_row_data[1], 'v_interval': v_row_data[3], 'v_plugin_name': v_plugin_name},true);
-  refreshMonitorDashboard(true,v_tab_tag,div);
+  var v_plugin_name = '';
+  if (v_unit_idx === -1) {
+    if (p_plugin_name!=null)
+      v_plugin_name = p_plugin_name;
+
+    var div = buildMonitorUnit({'v_saved_id': -1, 'v_id': p_id, 'v_title': v_row_data.title, 'v_interval': v_row_data.interval, 'v_plugin_name': v_plugin_name},true);
+    $(div.firstChild).effect('highlight', {}, 1000);
+    refreshMonitorDashboard(true,v_tab_tag,div);
+  } else {
+    let v_unit_div = v_tab_tag.units[v_unit_idx].div
+    closeMonitorUnit(v_unit_div)
+  }
+
 }
 
 function deleteMonitorUnit(p_unit_id) {
 
   showConfirm('Are you sure you want to delete this monitor unit?',
       function() {
-
         var input = JSON.stringify({"p_unit_id": p_unit_id});
-
+        var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+        let v_unit_idx = v_tab_tag.units.findIndex(unit => unit.id === p_unit_id)
+        let v_unit = v_tab_tag.units[v_unit_idx]
+        closeMonitorUnit(v_unit.div)
         execAjax('/delete_monitor_unit/',
               input,
               function(p_return) {
@@ -329,22 +332,19 @@ function editMonitorUnit(p_unit_id) {
   execAjax('/get_monitor_unit_list/',
 				input1,
 				function(p_return) {
-
           var v_select_template = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.select_template;
           v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.template_list = [];
-
           p_return.v_data.data.forEach(function(p_unit, p_index) {
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.template_list.push({'plugin_name':p_unit[0], 'id': p_return.v_data.id_list[p_index]})
+            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.template_list.push({'plugin_name': p_unit.plugin_name, 'id': p_return.v_data.id_list[p_index]})
             var v_option = document.createElement('option');
             v_option.value = p_index;
-            v_option.innerHTML = '(' + p_unit[2] + ') ' + p_unit[1];
+            v_option.innerHTML = `(${p_unit.type}) ${p_unit.title}`;
             v_select_template.appendChild(v_option);
           });
 
         },
         null,
         'box');
-
   if (p_unit_id!=null) {
 
     var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
@@ -627,69 +627,26 @@ function refreshMonitorUnitsList() {
 
           v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.unit_list_id_list = p_return.v_data.id_list;
 
-          var columnProperties = [];
-
-          var col = new Object();
-          col.readOnly = true;
-          col.title =  'Actions';
-
-          columnProperties.push(col);
-
-          var col = new Object();
-          col.readOnly = true;
-          col.title =  'Title';
-          columnProperties.push(col);
-
-          var col = new Object();
-          col.readOnly = true;
-          col.title =  'Type';
-          columnProperties.push(col);
-
-          var col = new Object();
-          col.readOnly = true;
-          col.title =  'Interval(s)';
-          columnProperties.push(col);
-
-
-
           if (v_unit_list_grid)
             v_unit_list_grid.destroy();
-
           v_unit_list_grid = new Handsontable(v_grid_div,
           {
             licenseKey: 'non-commercial-and-evaluation',
             data: p_return.v_data.data,
-            columns : columnProperties,
-            colHeaders : true,
+            colHeaders: ['Actions', 'Title', 'Type', 'Interval(s)'],
+            columns : [
+                  {data: 'actions', renderer: actionsRenderer},
+                  {data: 'title'},
+                  {data: 'type'},
+                  {data: 'interval'}],
+
             stretchH: 'all',
+            readOnly: true,
             tableClassName: 'omnidb__ht__first-col-actions',
-            //copyRowsLimit : 1000000000,
-            //copyColsLimit : 1000000000,
-            copyPaste: {pasteMode: '', rowsLimit: 1000000000, columnsLimit: 1000000000},
             manualColumnResize: true,
-            fillHandle:false,
+            fillHandle:true,
             disableVisualSelection: true,
             fixedColumnsLeft: 1,
-            contextMenu: {
-            callback: function (key, options) {
-              if (key === 'view_data') {
-                  editCellData(this,options[0].start.row,options[0].start.col,this.getDataAtCell(options[0].start.row,options[0].start.col),false);
-              }
-              else if (key === 'copy') {
-                this.selectCell(options[0].start.row,options[0].start.col,options[0].end.row,options[0].end.col);
-                document.execCommand('copy');
-              }
-            },
-            items: {
-              "copy": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-copy cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">Copy</div>'},
-              "view_data": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-edit cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">View Content</div>'}
-            }
-            },
-            cells: function (row, col, prop) {
-              var cellProperties = {};
-              cellProperties.renderer =whiteHtmlRenderer;
-              return cellProperties;
-            }
           });
 
           endLoading();
@@ -697,6 +654,23 @@ function refreshMonitorUnitsList() {
         },
         null,
         'box');
+}
+function actionsRenderer(instance, td, row, col, prop, value, cellProperties) {
+  let actions;
+  let sourceDataRowId = instance.getSourceDataAtRow(row).id
+  let pluginName = JSON.stringify(instance.getSourceDataAtRow(row).plugin_name)
+  let v_tab_tag_units = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.units;
+  let checked = v_tab_tag_units.some(unit => unit.id === sourceDataRowId) ? 'checked' : ''
+  if (!!value) {
+    actions = `<input type='checkbox' onclick='toggleMonitorUnit(${sourceDataRowId})' ${checked}>` +
+                    `<i title='Edit' class='fas fa-edit action-grid action-edit-monitor' onclick='editMonitorUnit(${sourceDataRowId})'></i>` +
+                    `<i title='Delete' class='fas fa-times action-grid action-close text-danger' onclick='deleteMonitorUnit(${sourceDataRowId})'></i>`
+  } else {
+    actions = `<input type='checkbox' onclick='toggleMonitorUnit(${sourceDataRowId}, ${pluginName})' ${checked}>`
+  }
+
+  Handsontable.dom.empty(td);
+  td.innerHTML = actions
 }
 
 function refreshMonitorUnitsObjects() {

@@ -72,7 +72,6 @@ def get_monitor_unit_list(request, v_database):
 
     json_object = json.loads(request.POST.get('data', None))
     v_mode = json_object['p_mode']
-
     v_return['v_data'] = []
     v_data = []
     v_id_list = []
@@ -81,35 +80,44 @@ def get_monitor_unit_list(request, v_database):
         #plugins units
         for key, mon_unit in monitoring_units.items():
             if mon_unit['dbms'] == v_database.v_db_type:
-                v_actions = '''<i title='Edit' class='fas fa-check-circle action-grid action-check' onclick='includeMonitorUnit({0},"{1}")'></i>'''.format(mon_unit['id'],mon_unit['plugin_name'])
-                if v_mode==0:
-                    v_data.append([v_actions,mon_unit['title'],mon_unit['type'],mon_unit['interval']])
+                v_actions = False
+                if v_mode == 0:
+                    v_data.append({'id': mon_unit['id'],
+                                   'actions': v_actions,
+                                   'title': mon_unit['title'],
+                                   'type': mon_unit['type'],
+                                   'interval': mon_unit['interval'],
+                                   'plugin_name': mon_unit['plugin_name']})
                 else:
-                    v_data.append([mon_unit['plugin_name'],mon_unit['title'],mon_unit['type']])
+                    v_data.append({'plugin_name': mon_unit['plugin_name'],
+                                   'title': mon_unit['title'],
+                                   'type': mon_unit['type']})
                 v_id_list.append(mon_unit['id'])
 
         try:
             for key, mon_unit in monitoring_units_database.items():
-                v_actions = '''<i title='Edit' class='fas fa-check-circle action-grid action-check' onclick='includeMonitorUnit({0})'></i>'''.format(mon_unit.id)
-                #custom unit, add edit and delete actions
-                if mon_unit.user!=None:
-                    v_actions += '''
-                    <i title='Edit' class='fas fa-edit action-grid action-edit-monitor' onclick='editMonitorUnit({0})'></i>
-                    <i title='Delete' class='fas fa-times action-grid action-close text-danger' onclick='deleteMonitorUnit({0})'></i>
-                    '''.format(mon_unit.id)
+                actions = False
+                # custom unit, add edit and delete actions
+                if mon_unit.user is not None:
+                    actions = True
 
-                if v_mode==0:
-                    v_data.append([v_actions,mon_unit.title,mon_unit.type,mon_unit.interval])
+                if v_mode == 0:
+                    v_data.append({'id': mon_unit.id,
+                                   'actions': actions,
+                                   'title': mon_unit.title,
+                                   'type': mon_unit.type,
+                                   'interval': mon_unit.interval})
                 else:
-                    v_data.append(['',mon_unit.title,mon_unit.type])
+                    v_data.append({'plugin_name': '',
+                                   'title': mon_unit.title,
+                                   'type': mon_unit.type})
 
                 v_id_list.append(mon_unit.id)
         # No mon units connections
         except Exception as exc:
             print(str(exc))
 
-        v_return['v_data'] = { 'id_list': v_id_list, 'data': v_data }
-
+        v_return['v_data'] = {'id_list': v_id_list, 'data': v_data}
     except Exception as exc:
         v_return['v_data'] = str(exc)
         v_return['v_error'] = True
@@ -392,6 +400,7 @@ def remove_saved_monitor_unit(request):
 
     json_object = json.loads(request.POST.get('data', None))
     v_saved_id = json_object['p_saved_id']
+    print(json_object)
 
     try:
         MonUnitsConnections.objects.get(id=v_saved_id).delete()
