@@ -481,7 +481,7 @@ $('#modal_monitoring_unit_test').on('shown.bs.modal', function (e) {
             if (p_return.v_data.v_error) {
               v_div_result.innerHTML = '<div class=error_text>' + p_return.v_data.v_message + '</div>';
             }
-            else if (v_type=='timeseries' || v_type=='chart' || v_return_unit.v_type=='chart_append') {
+            else if (v_type=='timeseries' || v_type=='chart' || v_type=='chart_append') {
               var canvas = document.createElement('canvas');
               canvas.style.height = '250px';
               canvas.style.width = v_div_result.offsetWidth;
@@ -525,48 +525,31 @@ $('#modal_monitoring_unit_test').on('shown.bs.modal', function (e) {
 
 
             }
-            else if (v_type=='grid') {
-              var columnProperties = [];
+            else if (v_type === 'grid') {
+              let tableData = [];
 
-              for (var j = 0; j < p_return.v_data.v_object.columns.length; j++) {
-                var col = new Object();
-                col.readOnly = true;
-                col.title =  p_return.v_data.v_object.columns[j];
-                columnProperties.push(col);
+              for (var j = 0; j < p_return.v_data.v_object.datasets[0].data.length; j++) {
+                var col = {};
+                col.label =  p_return.v_data.v_object.labels[0];
+                col.value = p_return.v_data.v_object.datasets[0].data[j];
+                tableData.push(col);
               }
               v_div_result.className = 'dashboard_unit_grid';
               v_tab_tag.object = new Handsontable(v_div_result,
-              {
-                licenseKey: 'non-commercial-and-evaluation',
-                data: p_return.v_data.v_object.data,
-                columns : columnProperties,
-                colHeaders : true,
-                rowHeaders : true,
-                //copyRowsLimit : 1000000000,
-                //copyColsLimit : 1000000000,
-                copyPaste: {pasteMode: '', rowsLimit: 1000000000, columnsLimit: 1000000000},
-                manualColumnResize: true,
-                fillHandle:false,
-                contextMenu: {
-                  callback: function (key, options) {
-                    if (key === 'view_data') {
-                        editCellData(this,options[0].start.row,options[0].start.col,this.getDataAtCell(options[0].start.row,options[0].start.col),false);
-                    }
-                    else if (key === 'copy') {
-                      this.selectCell(options[0].start.row,options[0].start.col,options[0].end.row,options[0].end.col);
-                      document.execCommand('copy');
-                    }
-                  },
-                  items: {
-                    "copy": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-copy cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">Copy</div>'},
-                    "view_data": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-edit cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">View Content</div>'}
-                  }
-                  },
-                    cells: function (row, col, prop) {
-                    var cellProperties = {};
-                    return cellProperties;
-                }
-              });
+                {
+                  licenseKey: 'non-commercial-and-evaluation',
+                  data: tableData,
+                  columns: [
+                      {data: 'label'},
+                      {data: 'value'}],
+                  colHeaders : ['Labels', 'Value'],
+                  rowHeaders : true,
+                  stretchH: 'all',
+                  copyPaste: {pasteMode: '', rowsLimit: 1000000000, columnsLimit: 1000000000},
+                  manualColumnResize: true,
+                  fillHandle:false,
+                  readOnly: true,
+                });
 
             }
             else if (v_type=='graph') {
