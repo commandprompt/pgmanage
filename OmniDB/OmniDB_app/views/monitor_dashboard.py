@@ -400,8 +400,6 @@ def remove_saved_monitor_unit(request):
 
     json_object = json.loads(request.POST.get('data', None))
     v_saved_id = json_object['p_saved_id']
-    print(json_object)
-
     try:
         MonUnitsConnections.objects.get(id=v_saved_id).delete()
 
