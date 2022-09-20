@@ -297,9 +297,11 @@ function deleteMonitorUnit(p_unit_id) {
       function() {
         var input = JSON.stringify({"p_unit_id": p_unit_id});
         var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-        let v_unit_idx = v_tab_tag.units.findIndex(unit => unit.id === p_unit_id)
-        let v_unit = v_tab_tag.units[v_unit_idx]
-        closeMonitorUnit(v_unit.div)
+        let v_unit_idx = v_tab_tag.units.findIndex(unit => unit.id === p_unit_id);
+        if (v_unit_idx !== -1) {
+            let v_unit = v_tab_tag.units[v_unit_idx];
+            closeMonitorUnit(v_unit.div);
+        }
         execAjax('/delete_monitor_unit/',
               input,
               function(p_return) {
