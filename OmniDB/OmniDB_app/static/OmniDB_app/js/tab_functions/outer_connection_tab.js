@@ -167,7 +167,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
             '<div class="omnidb__workspace__content-left">' +
               '<div id="' + v_tab.id + '_details" class="omnidb__workspace__connection-details"></div>' +
               '<div id="' + v_tab.id + '_tree" style="overflow: auto; flex-grow: 1; transition: scroll 0.3s;"></div>' +
-              '<div id="' + v_tab.id + '_left_resize_line_horizontal" class="omnidb__resize-line__container" onmousedown="resizeTreeVertical(event)" style="width: 100%; height: 5px; cursor: ns-resize;"><div class="resize_line_horizontal" style="height: 0px; border-bottom: 1px dashed #acc4e8;"></div><div style="height:5px;"></div></div>' +
+              '<div id="' + v_tab.id + '_left_resize_line_horizontal" class="omnidb__resize-line__container d-none" onmousedown="resizeTreeVertical(event)" style="width: 100%; height: 5px; cursor: ns-resize;"><div class="resize_line_horizontal" style="height: 0px; border-bottom: 1px dashed #acc4e8;"></div><div style="height:5px;"></div></div>' +
               '<div id="tree_tabs_parent_' + v_tab.id + '" class="omnidb__tree-tabs omnidb__tree-tabs--not-in-view" style="position: relative;flex-shrink: 0;flex-basis: 280px;">' +
                 '<div id="' + v_tab.id + '_loading" class="div_loading" style="z-index: 1000;">' +
                   '<div class="div_loading_cover"></div>' +
@@ -315,21 +315,6 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
       minSpareRows :0,
       fillHandle:false,
       disableVisualSelection: true,
-      contextMenu: {
-        callback: function (key, options) {
-          if (key === 'view_data') {
-              editCellData(this,options[0].start.row,options[0].start.col,this.getDataAtCell(options[0].start.row,options[0].start.col),false);
-          }
-          else if (key === 'copy') {
-            this.selectCell(options[0].start.row,options[0].start.col,options[0].end.row,options[0].end.col);
-            document.execCommand('copy');
-          }
-        },
-        items: {
-          'copy': {name: '<div style=\"position: absolute;\"><i class=\"fas fa-copy cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">Copy</div>'},
-          'view_data': {name: '<div style=\"position: absolute;\"><i class=\"fas fa-edit cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">View Content</div>'}
-        }
-      },
       cells: function (row, col, prop) {
 
         var cellProperties = {};
