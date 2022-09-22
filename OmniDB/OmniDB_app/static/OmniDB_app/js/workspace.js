@@ -85,18 +85,15 @@ $(function () {
       p_name: 'Connections',
       p_close: false,
       p_selectable: false,
-      p_omnidb_tooltip_name: '<h5 class="my-1">Manage Connections</h5>',
+      p_omnidb_tooltip_name: '<h5 class="my-1">Connections</h5>',
       p_clickFunction: function(e) {
-        return startConnectionManagement();
+        showMenuNewTabOuter(e);
       }
     });
   }
 
   // Instantiating functions responsible for creating all the different types of tabs.
   initCreateTabFunctions();
-
-  // Creating `Add` tab in the outer tab list.
-  v_connTabControl.createAddTab();
 
   // Creating the welcome tab.
   v_connTabControl.tag.createWelcomeTab();
@@ -112,6 +109,9 @@ $(function () {
 
   // Retrieving database list.
   getDatabaseList(true);
+
+  // Retrieving connection list
+  showConnectionList(false, false)
 
   // Creating omnis.
   v_omnis.root = document.getElementById('omnidb__main');
@@ -1301,11 +1301,18 @@ function showMenuNewTabOuter(e) {
   	if (v_option_list.length>0) {
   		v_option_list.unshift({
   			text: 'New Connection',
-  			icon: 'fas cm-all fa-plug',
+  			icon: 'fas fa-plus',
   			action: function() {
-  				setTimeout(function() { startConnectionManagement(); },0);
+          newConnection();
   			}
-  		});
+  		},
+      {
+        text: 'Manage Connections',
+        icon: 'fas cm-all fa-globe-americas',
+        action: function() {
+            setTimeout(function() { startConnectionManagement(); },0);
+          }
+        });
 
   		customMenu(
   			{
