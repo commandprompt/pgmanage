@@ -114,6 +114,11 @@ def new_group(request):
     p_name = json_object['p_name']
 
     try:
+        if not p_name.strip():
+            v_return['v_data'] = "Group name can not be empty"
+            v_return['v_error'] = True
+            return JsonResponse(v_return)
+
         new_group = Group(user=request.user, name=p_name)
         new_group.save()
     except Exception as exc:
@@ -137,6 +142,12 @@ def edit_group(request):
 
         if group.user.id != request.user.id:
             v_return['v_data'] = 'This group does not belong to you.'
+            v_return['v_error'] = True
+
+            return JsonResponse(v_return)
+
+        if not p_name.strip():
+            v_return['v_data'] = "Group name can not be empty."
             v_return['v_error'] = True
 
             return JsonResponse(v_return)
