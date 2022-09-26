@@ -702,15 +702,16 @@ function createLegere(p_context = {parent: window, self: 'omnisLegere'}, p_optio
 
         // Create control panel buttons
         var v_control_panel_div = document.createElement('div');
-        v_control_panel_div.classList = v_legereControl.defaultClass + '__control-panel';
-        v_control_panel_div.setAttribute('style', 'align-items: center; display: flex; position: absolute; right: 15px; top: 15px;');
+        v_control_panel_div.classList.add(`${v_legereControl.defaultClass}__control-panel`,'d-flex','align-items-center','position-absolute', 'mt-2', 'mr-2')
+
+        v_control_panel_div.setAttribute('style', 'right: 15px; top: 15px;');
 
         v_control_panel_div.innerHTML =
-        '<button id="' + v_legereControl.id + '_control_panel_button_toggle_collapse_update" class="btn btn-sm omnidb__theme__btn--secondary"><i class="fas fa-eye"></i></button>' +
-        '<button id="' + v_legereControl.id + '_control_panel_button_zoomin" class="btn btn-sm omnidb__theme__btn--secondary ml-2"><i class="fas fa-search-plus"></i></button>' +
-        '<button id="' + v_legereControl.id + '_control_panel_button_zoomout" class="btn btn-sm omnidb__theme__btn--secondary ml-2"><i class="fas fa-search-minus"></i></button>' +
-        '<button id="' + v_legereControl.id + '_control_panel_button_fit" class="btn btn-sm omnidb__theme__btn--secondary ml-2"><i class="fas fa-vector-square"></i></button>' +
-        '<button id="' + v_legereControl.id + '_control_panel_button_reset" class="btn btn-sm omnidb__theme__btn--secondary ml-2">reset</button>';
+        `<button id="${v_legereControl.id}_control_panel_button_toggle_collapse_update" class="btn btn-sm omnidb__theme__btn--secondary"><i class="fas fa-eye"></i></button>
+        <button id="${v_legereControl.id}_control_panel_button_zoomin" class="btn btn-sm omnidb__theme__btn--secondary ml-2"><i class="fas fa-search-plus"></i></button>
+        <button id="${v_legereControl.id}_control_panel_button_zoomout" class="btn btn-sm omnidb__theme__btn--secondary ml-2"><i class="fas fa-search-minus"></i></button>
+        <button id="${v_legereControl.id}_control_panel_button_fit" class="btn btn-sm omnidb__theme__btn--secondary ml-2"><i class="fas fa-vector-square"></i></button>
+        <button id="${v_legereControl.id}_control_panel_button_reset" class="btn btn-sm omnidb__theme__btn--secondary ml-2">reset</button>`;
 
         v_legereControl.divElementContent.appendChild(v_control_panel_div);
 
@@ -802,9 +803,8 @@ function createLegere(p_context = {parent: window, self: 'omnisLegere'}, p_optio
       }
 
       // Render the svg with path lines based on the content positions
-      setTimeout(function(){
-        v_legereControl.renderSvg(v_legereControl.planList);
-      }, 150);
+      v_legereControl.renderSvg(v_legereControl.planList);
+      
 
       // Adds the click event to the button when there's no targetDiv and the component needs a modal to render to render inside
       if (!v_legereControl.targetDiv) {
