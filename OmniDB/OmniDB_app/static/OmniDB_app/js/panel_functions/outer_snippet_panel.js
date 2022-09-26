@@ -56,7 +56,7 @@ var v_createSnippetPanelFunction = function(p_index) {
     p_clickFunction: function() {
       toggleSnippetPanel();
     },
-    p_omnidb_tooltip_name: '<h5 class="my-1">Snippets Panel</h5>'
+    p_tooltip: 'Snippets Panel'
   });
 
   v_connTabControl.selectTab(v_tab);

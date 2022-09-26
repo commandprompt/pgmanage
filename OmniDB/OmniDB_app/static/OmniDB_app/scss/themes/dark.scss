@@ -499,6 +499,12 @@ SOFTWARE.
   .bs-tooltip-bottom .arrow::before {
     border-bottom-color: #43464E;
   }
+
+  .bs-tooltip-auto[x-placement^=right] .arrow::before,
+  .bs-tooltip-right .arrow::before {
+    border-right-color: #43464E;
+  }
+
   .tooltip-inner {
     color: #FFF;
     background-color: #2F3136;

@@ -385,7 +385,7 @@ function initCreateTabFunctions() {
 	      p_clickFunction: function(e) {
 	        showMenuNewTabOuter(e);
 	      },
-	      p_omnidb_tooltip_name: '<h5 class="my-1">Add/Select Connections</h5>'
+	      p_tooltip: 'Add/Select Connections'
 	    }
 	  );
 	}

@@ -85,7 +85,7 @@ $(function () {
       p_name: 'Connections',
       p_close: false,
       p_selectable: false,
-      p_omnidb_tooltip_name: '<h5 class="my-1">Connections</h5>',
+      p_tooltip: 'Connections',
       p_clickFunction: function(e) {
         showMenuNewTabOuter(e);
       }
@@ -1538,104 +1538,6 @@ function updateExplainComponent() {
   }
 }
 
-/**
- * ## getAttributesTooltip
- * @desc Creates and applies tooltip attributes to the target.
- *
- * @param  {string} title   Title string.
- * @param  {string} message Message string, accepts html.
- * @return {string}         HTML string.
- */
-function getAttributesTooltip(p_target, p_title, p_message, p_position = false) {
-  let v_html = '';
-  if (p_message) {
-    v_html += (p_title != undefined) ? '<div>' + p_title + '</div>' : '';
-    v_html += (p_message != undefined) ? '<div>' + p_message + '</div>' : '';
-  }
-  else {
-    v_html += (p_title != undefined) ? '<h4 class=\"mb-0\">' + p_title + '</h4>' : '';
-  }
-  let v_position = (p_position) ? p_position : 'bottom';
-  p_target.setAttribute('data-html',true);
-  p_target.setAttribute('data-placement',v_position);
-  p_target.setAttribute('data-toggle','tooltip');
-  p_target.setAttribute('title',v_html);
-}
-/**
- * ## getStringTooltip
- * @desc Creates html string that renders as a tooltip.
- *
- * @param  {string} title   Title string.
- * @param  {string} message Message string, accepts html.
- * @return {string}         HTML string.
- */
-function getStringTooltip(p_title, p_message, p_position = false) {
-  let v_html = '';
-  if (p_message) {
-    v_html += (p_title != undefined) ? '<div>' + p_title + '</div>' : '';
-    v_html += (p_message != undefined) ? '<div>' + p_message + '</div>' : '';
-  }
-  else {
-    v_html += (p_title != undefined) ? '<div class=\"mb-0\">' + p_title + '</div>' : '';
-  }
-  let v_tooltipAttr =
-    'data-toggle=tooltip ' +
-    'data-html=true ' +
-    'title="' + v_html + '" ';
-  if (p_position) {
-    v_tooltipAttr += 'data-placement=' + p_position + ' ';
-  } else {
-    v_tooltipAttr += 'data-placement=bottom ';
-  }
-  return v_tooltipAttr;
-}
-
-/**
- * ## getAttributesOmniDBTooltip
- * @desc Creates and applies tooltip attributes to the target.
- *
- * @param  {string} title   Title string.
- * @param  {string} message Message string, accepts html.
- * @return {string}         HTML string.
- */
-function getAttributesOmniDBTooltip(p_target, p_title, p_message, p_position = false) {
-  let v_html = '<div class="omnidb__tooltip__inner tooltip-inner"><div class="arrow"></div>';
-  if (p_message) {
-    v_html += (p_title != undefined) ? '<div>' + p_title + '</div>' : '';
-    v_html += (p_message != undefined) ? '<div>' + p_message + '</div>' : '';
-  }
-  else {
-    v_html += (p_title != undefined) ? '<h4 class=\"mb-0\">' + p_title + '</h4>' : '';
-  }
-  v_html += '</div>';
-  let v_position = (p_position) ? p_position : 'bottom';
-  p_target.setAttribute('data-html',true);
-  p_target.setAttribute('data-placement',v_position);
-  p_target.setAttribute('data-omnidb-toggle','tooltip');
-  p_target.setAttribute('data-title',v_html);
-  let v_tooltip_element;
-  $(p_target).mouseenter(function(e){
-    v_tooltip_element = document.createElement('div');
-    v_tooltip_element.innerHTML = v_html;
-    v_tooltip_element.style.position = 'fixed';
-    v_tooltip_element.classList = 'omnidb__tooltip tooltip bs-tooltip-right fade show';
-    let v_pos_diff = window.innerHeight - e.target.getBoundingClientRect().y;
-    if (v_pos_diff > 150) {
-      v_tooltip_element.style.top = e.target.getBoundingClientRect().y + 'px';
-    }
-    else {
-      v_tooltip_element.style.bottom = v_pos_diff - 27 + 'px';
-      v_tooltip_element.classList.add('omnidb__tooltip--bottom')
-    }
-    v_tooltip_element.style.left = e.target.offsetWidth + 5 + 'px';
-    document.body.appendChild(v_tooltip_element);
-  });
-  $(p_target).mouseleave(function(e){
-    if (v_tooltip_element) {
-      document.body.removeChild(v_tooltip_element);
-    }
-  });
-}
 
 function monitoringAction(p_row_index, p_function) {
 	var v_fn = window[p_function];

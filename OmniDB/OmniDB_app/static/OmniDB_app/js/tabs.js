@@ -370,8 +370,7 @@ function createTabControl({ p_div, p_hierarchy, p_layout}) {
       * @param  {function} p_rightClickFunction Callback for oncontextmenu.
       * @param  {function} p_selectFunction  Callback for after the tab-content is rendered.
       * @param  {boolean} p_selectable  Defines if the the tab-content is controlled by default bootstrap tab system selection. Used together with p_clickFunction to override the selecting tab behaviour, like the snippets panel.
-      * @param  {string} p_tooltip_name  HTML string is accepted as an optional tooltip. This is bootstrap's default tooltip.
-      * @param  {string} p_omnidb_tooltip_name  HTML string is accepted as an optional tooltip. This is OmniDB custom tooltip, used in the outer menu to avoid overflow bugs from bootstrap.
+      * @param  {string} p_tooltip HTML string is accepted as an optional tooltip.
       * @return {oject} Creates the tab object in this tabControl.
 		 */
 		createTab : function({
@@ -386,8 +385,7 @@ function createTabControl({ p_div, p_hierarchy, p_layout}) {
       p_rightClickFunction = false,
       p_selectFunction = null,
       p_selectable = true,
-      p_tooltip_name = false,
-      p_omnidb_tooltip_name = false
+      p_tooltip = false,
     }) {
 			var v_control = this;
 			var v_index = this.tabCounter;
@@ -426,7 +424,6 @@ function createTabControl({ p_div, p_hierarchy, p_layout}) {
       v_a.setAttribute('id','a_' + v_tab.id);
       v_a.setAttribute('data-toggle','tab');
       v_a.setAttribute('role','tab');
-      v_a.setAttribute('aria-selected','false');
       v_a.setAttribute('aria-selected','false');
       v_a.setAttribute('href','#' + 'div_' + v_tab.id);
       v_a.setAttribute('aria-controls','div_' + v_tab.id);
@@ -471,12 +468,11 @@ function createTabControl({ p_div, p_hierarchy, p_layout}) {
       var v_icon = (p_icon !== false) ? '<span class="omnidb__menu__btn omnidb__tab-menu__link-icon">' + p_icon + '</span>' : '';
       var v_name = (p_name !== undefined && p_name !== null && p_name !== '') ? p_name : '';
 
-      if (p_tooltip_name) {
-        getAttributesTooltip(v_a, p_tooltip_name, null, 'right');
+      if (p_tooltip) {
+        v_a.setAttribute('title', p_tooltip);
+        $(v_a).tooltip({ placement: 'right', boundary: 'window', html: true, delay: { "show": 500, "hide": 100 } })
       }
-      else if (p_omnidb_tooltip_name) {
-        getAttributesOmniDBTooltip(v_a, p_omnidb_tooltip_name, null, 'right');
-      }
+
 			v_a.innerHTML = '<span class="omnidb__tab-menu__link-content">' +
                         v_icon +
                         '<span class="omnidb__tab-menu__link-name">' + v_name + '<span>' +
@@ -512,7 +508,7 @@ function createTabControl({ p_div, p_hierarchy, p_layout}) {
           v_tab.clickFunction(e);
         }
         // Hiding the tooltip on click if the has tooltips.
-        if (p_tooltip_name) {
+        if (p_tooltip) {
           $(v_a).tooltip('hide');
         }
 			};

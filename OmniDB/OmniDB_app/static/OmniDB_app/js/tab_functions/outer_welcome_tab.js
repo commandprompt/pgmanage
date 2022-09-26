@@ -64,7 +64,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
         v_option_list,
         null);
     },
-    p_omnidb_tooltip_name: '<h5 class="my-1">Welcome to PgManage</h5>'
+    p_tooltip: 'Welcome to PgManage'
   });
 
   v_connTabControl.selectTab(v_tab);

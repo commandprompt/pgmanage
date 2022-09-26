@@ -499,12 +499,17 @@ SOFTWARE.
   /* TOOLTIPS */
   .bs-tooltip-auto[x-placement^=bottom] .arrow::before,
   .bs-tooltip-bottom .arrow::before {
-    border-bottom-color: #D2D2D2;
+    border-bottom-color: #4A81D4;
   }
+
+  .bs-tooltip-auto[x-placement^=right] .arrow::before,
+  .bs-tooltip-right .arrow::before {
+    border-right-color: #4A81D4;
+  }
+
   .tooltip-inner {
-    color: #555;
-    background-color: #FFF;
-    border: 1px solid #D2D2D2;
+    color: #fff;
+    background-color: #4A81D4;
   }
 
   /* CONNECTIONS */
