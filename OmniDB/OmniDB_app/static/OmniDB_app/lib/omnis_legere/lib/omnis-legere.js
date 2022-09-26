@@ -803,7 +803,9 @@ function createLegere(p_context = {parent: window, self: 'omnisLegere'}, p_optio
       }
 
       // Render the svg with path lines based on the content positions
-      v_legereControl.renderSvg(v_legereControl.planList);
+      setTimeout(function(){
+        v_legereControl.renderSvg(v_legereControl.planList);
+      }, 150);
       
 
       // Adds the click event to the button when there's no targetDiv and the component needs a modal to render to render inside
