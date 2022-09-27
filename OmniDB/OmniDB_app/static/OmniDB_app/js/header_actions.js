@@ -526,3 +526,16 @@ function hideEditContent() {
 	v_editContentObject.editor.setValue('');
 
 }
+
+function toggleUtilitiesMenu() {
+	target_element = $('div.omnidb__utilities-menu.omnidb__theme-bg--menu-utilities.omnidb__rounded--lg')
+	target_element.toggleClass('omnidb__utilities-menu--show')
+	$(document).mouseup(function (e) {
+		let toggle_button = $('#omnidb__utilities-menu__link-toggle')
+		if (!toggle_button.is(e.target) && toggle_button.has(e.target).length === 0) {
+				if ($('div.omnidb__utilities-menu.omnidb__theme-bg--menu-utilities.omnidb__rounded--lg').hasClass('omnidb__utilities-menu--show')) {
+					$ ('div.omnidb__utilities-menu.omnidb__theme-bg--menu-utilities.omnidb__rounded--lg') .removeClass('omnidb__utilities-menu--show');
+				}
+		}
+	});
+}
