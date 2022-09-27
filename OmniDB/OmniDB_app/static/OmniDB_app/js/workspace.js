@@ -689,7 +689,6 @@ function resizeTreeVerticalEnd(event) {
 		'mousemove',
 		getVerticalLinePosition
 	)
-
 	var v_height_diff = event.screenY - v_start_height;
 
 	var v_tag = v_connTabControl.selectedTab.tag;
@@ -698,11 +697,13 @@ function resizeTreeVerticalEnd(event) {
 	var v_result_div = null;
 
   var v_tree_tabs_div = v_tag.divTreeTabs;
-
   var v_tree_tabs_height = v_tag.divLeft.clientHeight - 14 - event.pageY;
-  v_tree_tabs_div.style.flexBasis = v_tree_tabs_height  + 'px';
+  
+  v_tree_tabs_height = (v_tree_tabs_height < 26) ? 26 : v_tree_tabs_height 
 
-  var v_inner_height = v_tree_tabs_height - 49  + 'px';
+  v_tree_tabs_div.style.flexBasis = `${v_tree_tabs_height}px`;
+
+  var v_inner_height = `${v_tree_tabs_height - 49}px`;
 
   if (v_tag.currTreeTab=='properties') {
     v_result_div = v_tag.divProperties;
