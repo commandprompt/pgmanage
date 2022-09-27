@@ -199,13 +199,11 @@ SOFTWARE.
     width: 0px;
     transition: 0.35s;
   }
-  .omnidb__utilities-menu:hover .omnidb__menu__btn.nav-link,
   .omnidb__utilities-menu.omnidb__utilities-menu--show .omnidb__menu__btn.nav-link {
     width: 27px;
     margin-left: 0.25rem;
     margin-right: 0.25rem;
   }
-  .omnidb__utilities-menu:hover .badge-info,
   .omnidb__utilities-menu.omnidb__utilities-menu--show .badge-info {
     padding: .25em .4em;
     margin-left: 0.25rem;
@@ -247,13 +245,11 @@ SOFTWARE.
     width: 0px;
     transition: 0.35s;
   }
-  .omnidb__utilities-menu:hover .omnidb__menu__btn.nav-link,
   .omnidb__utilities-menu.omnidb__utilities-menu--show .omnidb__menu__btn.nav-link {
     width: 27px;
     margin-left: 0.25rem;
     margin-right: 0.25rem;
   }
-  .omnidb__utilities-menu:hover .badge-info,
   .omnidb__utilities-menu.omnidb__utilities-menu--show .badge-info {
     padding: .25em .4em;
     margin-left: 0.25rem;
@@ -295,13 +291,11 @@ SOFTWARE.
     width: 0px;
     transition: 0.35s;
   }
-  .omnidb__utilities-menu:hover .omnidb__menu__btn.nav-link,
   .omnidb__utilities-menu.omnidb__utilities-menu--show .omnidb__menu__btn.nav-link {
     width: 27px;
     margin-left: 0.25rem;
     margin-right: 0.25rem;
   }
-  .omnidb__utilities-menu:hover .badge-info,
   .omnidb__utilities-menu.omnidb__utilities-menu--show .badge-info {
     padding: .25em .4em;
     margin-left: 0.25rem;
@@ -760,7 +754,6 @@ button.close {
   transition: 0.35s;
   width: 0px;
 }
-.omnidb__utilities-menu:hover .omnidb__menu__btn-text span,
 .omnidb__utilities-menu.omnidb__utilities-menu--show .omnidb__menu__btn-text span {
   transform: scaleX(1);
   width: auto;
@@ -788,24 +781,22 @@ button.close {
   text-align: center;
   transition: 0.35s;
 }
-.omnidb__utilities-menu:hover #omnidb__utilities-menu__link-versioning,
 .omnidb__utilities-menu.omnidb__utilities-menu--show #omnidb__utilities-menu__link-versioning {
   width: 5rem;
   padding-left: 0.25rem;
   padding-right: 0.25rem;
 }
-.omnidb__utilities-menu:hover #omnidb__utilities-menu__link-versioning i,
 .omnidb__utilities-menu.omnidb__utilities-menu--show #omnidb__utilities-menu__link-versioning i {
   width: 15px;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
 }
-#omnidb__utilities-menu__link-config {
+#omnidb__utilities-menu__link-toggle {
   margin-left: 0.15rem;
   margin-right: 0.15rem;
   width: 27px;
 }
-#omnidb__utilities-menu__link-config i {
+#omnidb__utilities-menu__link-toggle i {
   height: 27px;
   line-height: 27px;
   overflow: hidden;
