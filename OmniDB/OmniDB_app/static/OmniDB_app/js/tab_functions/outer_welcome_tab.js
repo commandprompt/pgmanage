@@ -37,33 +37,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
       document.title = 'Welcome to PgManage'
       $('[data-toggle="tooltip"]').tooltip({animation:true});// Loads or Updates all tooltips
     },
-    p_close: false,// Replacing default close icon with contextMenu.
-    p_closeFunction: function(e,p_tab) {
-      var v_this_tab = p_tab;
-      beforeCloseTab(e,
-        function() {
-          v_this_tab.removeTab();
-        });
-    },
-    p_rightClickFunction: function(e) {
-      var v_option_list = [
-        {
-          text: '<p class=\"mb-0 text-danger\">Close Welcome Tab</p>',
-          action: function() {
-            if (v_tab.closeFunction!=null) {
-              v_tab.closeFunction(e,v_tab);
-            }
-          }
-        }
-      ];
-      customMenu(
-        {
-          x:e.clientX+5,
-          y:e.clientY+5
-        },
-        v_option_list,
-        null);
-    },
+    p_close: false,
     p_tooltip: 'Welcome to PgManage'
   });
 
@@ -141,7 +115,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
   let v_html_title =
   '<h1 class="mb-4" style="padding-left: 100px; position: relative;">' +
     // '<span class="omnidb__welcome__loading"></span>' +
-    '<span class="omnidb__welcome__loading" style="background: none;">' + v_animated_omnis + '</span>' +
+    '<span class="omnidb__welcome__loading mb-3" style="background: none;">' + v_animated_omnis + '</span>' +
     '<span class="omnidb__welcome__intro-text">Hi, welcome to <span style="color:#4a6cbb;">PgManage!</span></span>' +
   '</h1>';
   // Intro html string
