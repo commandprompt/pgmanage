@@ -27,6 +27,19 @@ SOFTWARE.
 */
 
 function createLegere(p_context = {parent: window, self: 'omnisLegere'}, p_options) {
+  const mutationObserver = new MutationObserver(function(mutationsList){
+    mutationsList.forEach(mutation => {
+      if (mutation.attributeName === 'class') {
+        let bgcolor = $('body').hasClass('omnidb--theme-dark') ? '#2f3136' : '#e2e2e2'
+        $('.omnis-legere__wrapper').css('background-color', bgcolor);
+      }
+  })
+  });
+
+  mutationObserver.observe(
+    document.body,
+    { attributes: true }
+  )
 
   var v_legereControl = {
     // Params
