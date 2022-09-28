@@ -84,7 +84,8 @@ function startTutorial(p_tutorial_name) {
         <li><i class="fas fa-user omnidb__theme__text--primary mr-2"></i>User management.</li>
         <li><i class="fas fa-cog omnidb__theme__text--primary mr-2"></i>UI settings (shortcuts, theme, fonts...).</li>
         <li><i class="fas fa-cube omnidb__theme__text--primary mr-2"></i>Plugins management.</li>
-        <li><i class="fas fa-sign-out-alt omnidb__theme__text--primary mr-2"></i>About.</li>
+        <li><i class="fas fa-info-circle omnidb__theme__text--primary mr-2"></i>About.</li>
+        <li><i class="fas fa-sign-out-alt omnidb__theme__text--primary mr-2"></i>Sign Out.</li>
         </ul>
         `,
         p_target: document.getElementsByClassName('omnidb__utilities-menu')[0],
