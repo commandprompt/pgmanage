@@ -672,8 +672,10 @@ function resizeTreeVertical(event) {
 		'mousemove',
 		getVerticalLinePosition
 	)
+  node = event.target.parentElement.nextElementSibling
+  $(`#${node.id}`).removeClass('omnidb__tree-tabs--not-in-view')
 
-	v_start_height = event.screenY;
+  v_start_height = event.screenY;
 	document.body.addEventListener("mouseup", resizeTreeVerticalEnd);
 
 }
@@ -1430,6 +1432,9 @@ function toggleTreeTabsContainer(p_target_id,p_horizonta_line_id) {
   if (v_target_element.hasClass('omnidb__tree-tabs--not-in-view')) {
     $('#' + p_target_id).removeClass('omnidb__tree-tabs--not-in-view');
     $('#' + p_horizonta_line_id).removeClass('d-none');
+    if ($(`#${p_target_id}`).css('flex-basis') === 'auto') {
+      $(`#${p_target_id}`).css('flex-basis', '280px');
+    }
     v_tab_tag.treeTabsVisible = true;
     setTimeout(function(){refreshTreeHeight();},360);
   }
