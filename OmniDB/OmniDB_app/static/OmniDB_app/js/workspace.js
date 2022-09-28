@@ -673,7 +673,12 @@ function resizeTreeVertical(event) {
 		getVerticalLinePosition
 	)
   node = event.target.parentElement.nextElementSibling
-  $(`#${node.id}`).removeClass('omnidb__tree-tabs--not-in-view')
+  if ($(`#${node.id}`).hasClass('omnidb__tree-tabs--not-in-view')) {
+    if ($(`#${node.id}`).css('flex-basis') !== 'auto') {
+      $(`#${node.id}`).css('flex-basis', 'auto');
+    }
+    $(`#${node.id}`).removeClass('omnidb__tree-tabs--not-in-view');
+  }
 
   v_start_height = event.screenY;
 	document.body.addEventListener("mouseup", resizeTreeVerticalEnd);
@@ -1430,8 +1435,7 @@ function toggleTreeTabsContainer(p_target_id,p_horizonta_line_id) {
   var v_tab_tag = v_connTabControl.selectedTab.tag;
   var v_target_element = $('#' + p_target_id);
   if (v_target_element.hasClass('omnidb__tree-tabs--not-in-view')) {
-    $('#' + p_target_id).removeClass('omnidb__tree-tabs--not-in-view');
-    $('#' + p_horizonta_line_id).removeClass('d-none');
+    $(`#${p_target_id}`).removeClass('omnidb__tree-tabs--not-in-view');
     if ($(`#${p_target_id}`).css('flex-basis') === 'auto') {
       $(`#${p_target_id}`).css('flex-basis', '280px');
     }
@@ -1439,8 +1443,7 @@ function toggleTreeTabsContainer(p_target_id,p_horizonta_line_id) {
     setTimeout(function(){refreshTreeHeight();},360);
   }
   else {
-    $('#' + p_target_id).addClass('omnidb__tree-tabs--not-in-view');
-    $('#' + p_horizonta_line_id).addClass('d-none');
+    $(`#${p_target_id}`).addClass('omnidb__tree-tabs--not-in-view');
     v_tab_tag.treeTabsVisible = false;
   }
   // $('#' + p_target_id).toggleClass('omnidb__tree-tabs--not-in-view');
