@@ -672,8 +672,15 @@ function resizeTreeVertical(event) {
 		'mousemove',
 		getVerticalLinePosition
 	)
+  node = event.target.parentElement.nextElementSibling
+  if ($(`#${node.id}`).hasClass('omnidb__tree-tabs--not-in-view')) {
+    if ($(`#${node.id}`).css('flex-basis') !== 'auto') {
+      $(`#${node.id}`).css('flex-basis', 'auto');
+    }
+    $(`#${node.id}`).removeClass('omnidb__tree-tabs--not-in-view');
+  }
 
-	v_start_height = event.screenY;
+  v_start_height = event.screenY;
 	document.body.addEventListener("mouseup", resizeTreeVerticalEnd);
 
 }
@@ -689,7 +696,6 @@ function resizeTreeVerticalEnd(event) {
 		'mousemove',
 		getVerticalLinePosition
 	)
-
 	var v_height_diff = event.screenY - v_start_height;
 
 	var v_tag = v_connTabControl.selectedTab.tag;
@@ -698,11 +704,13 @@ function resizeTreeVerticalEnd(event) {
 	var v_result_div = null;
 
   var v_tree_tabs_div = v_tag.divTreeTabs;
-
   var v_tree_tabs_height = v_tag.divLeft.clientHeight - 14 - event.pageY;
-  v_tree_tabs_div.style.flexBasis = v_tree_tabs_height  + 'px';
+  
+  v_tree_tabs_height = (v_tree_tabs_height < 26) ? 26 : v_tree_tabs_height 
 
-  var v_inner_height = v_tree_tabs_height - 49  + 'px';
+  v_tree_tabs_div.style.flexBasis = `${v_tree_tabs_height}px`;
+
+  var v_inner_height = `${v_tree_tabs_height - 49}px`;
 
   if (v_tag.currTreeTab=='properties') {
     v_result_div = v_tag.divProperties;
@@ -1427,14 +1435,15 @@ function toggleTreeTabsContainer(p_target_id,p_horizonta_line_id) {
   var v_tab_tag = v_connTabControl.selectedTab.tag;
   var v_target_element = $('#' + p_target_id);
   if (v_target_element.hasClass('omnidb__tree-tabs--not-in-view')) {
-    $('#' + p_target_id).removeClass('omnidb__tree-tabs--not-in-view');
-    $('#' + p_horizonta_line_id).removeClass('d-none');
+    $(`#${p_target_id}`).removeClass('omnidb__tree-tabs--not-in-view');
+    if ($(`#${p_target_id}`).css('flex-basis') === 'auto') {
+      $(`#${p_target_id}`).css('flex-basis', '280px');
+    }
     v_tab_tag.treeTabsVisible = true;
     setTimeout(function(){refreshTreeHeight();},360);
   }
   else {
-    $('#' + p_target_id).addClass('omnidb__tree-tabs--not-in-view');
-    $('#' + p_horizonta_line_id).addClass('d-none');
+    $(`#${p_target_id}`).addClass('omnidb__tree-tabs--not-in-view');
     v_tab_tag.treeTabsVisible = false;
   }
   // $('#' + p_target_id).toggleClass('omnidb__tree-tabs--not-in-view');
