@@ -354,7 +354,7 @@ function createLegere(p_context = {parent: window, self: 'omnisLegere'}, p_optio
 
         var v_data_html =
         '<div class="mb-2">Toggle node data <button id="' + v_plan_item.id + '_button_toggle_collapse_update" class="btn btn-sm omnidb__theme__btn--secondary ml-2 ' + v_legereControl.defaultClass + '__btn-toggle-collapse-update" data-index-map="' + v_plan_item.index_map + '"></button></div>' +
-        '<div class="alert alert-info mt-2">';
+        '<div class="alert alert-info m-3 node-data">';
         Object.keys(v_plan_item.data).forEach(function (p_data_key) {
           v_data_html +=
           '<div>' + p_data_key + ': <span class="text-danger">' + v_plan_item.data[p_data_key] + '</span></div>';
@@ -385,7 +385,7 @@ function createLegere(p_context = {parent: window, self: 'omnisLegere'}, p_optio
       else if (v_node_percentage >= 0.6) {
         v_fill_color = '#ce2b2b;';
       }
-      var v_temp_card_color = (v_fill_color) ? 'box-shadow: 0px 4px 12px ' + v_fill_color : '';
+      var v_temp_card_color = (v_fill_color) ? `border-left: 4px solid ${v_fill_color}` : '';
 
 
 
@@ -806,7 +806,7 @@ function createLegere(p_context = {parent: window, self: 'omnisLegere'}, p_optio
       setTimeout(function(){
         v_legereControl.renderSvg(v_legereControl.planList);
       }, 150);
-      
+
 
       // Adds the click event to the button when there's no targetDiv and the component needs a modal to render to render inside
       if (!v_legereControl.targetDiv) {

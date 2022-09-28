@@ -85,6 +85,24 @@ SOFTWARE.
     background-color: #7DFF81;
   }
 
+  .omnis-legere__control-panel {
+    button {
+      background-color: #606980C4;
+      border: 1px solid #4A5266C4;
+    }
+  }
+
+  .omnis-legere__card {
+    .node-data {
+      background-color: #CCDBFF57;
+      border-color: #CCDBFF57;
+      color: #C9D4F0;
+      .text-danger {
+        color: #fff !important;
+      }
+    }
+  }
+
   /* ICONS */
   .close,
   i.icon-close {
