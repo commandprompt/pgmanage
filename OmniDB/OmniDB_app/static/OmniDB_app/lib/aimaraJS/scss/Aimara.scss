@@ -59,10 +59,10 @@ SOFTWARE.
   transition: transform 0.3s;
 }
 .aimara_tree a.nav-link:hover > span > i.fa-chevron-right {
-  transform: rotate(30deg) scale(1.2);
+  transform: scale(1.2);
 }
 .aimara_tree a.nav-link:hover > span > i.fa-chevron-down {
-  transform: rotate(-30deg) scale(1.2);
+  transform: scale(1.2);
 }
 
 .aimara_tree .nav-link {

@@ -3956,7 +3956,9 @@ function getTreePostgresql(p_div) {
           let v_first_child_toggle = node.elementUl.childNodes[0].childNodes[0].childNodes[0].childNodes[0];
           let pos_x = v_first_child_toggle.offsetLeft - 24;
           let pos_y = v_first_child_toggle.offsetTop - 64;
-          v_connTabControl.selectedTab.tag.divTree.scroll(pos_x, pos_y);
+          v_connTabControl.selectedTab.tag.divTree.scrollTo({left: pos_x,
+                                                             top: pos_y,
+                                                             behavior: 'smooth'});
         }
         catch(e) {
 
