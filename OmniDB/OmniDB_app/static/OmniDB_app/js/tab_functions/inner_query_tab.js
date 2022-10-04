@@ -125,14 +125,6 @@ var v_createQueryTabFunction = function(p_table, p_tab_db_id) {
     '</div>' +
   '</div>' +
   '<div id="query_result_tabs_container' + v_tab.id + '" class="omnidb__query-result-tabs">' +
-    '<div style="position:absolute;top:0.25rem;right:2.5rem;">' +
-      '<div class="omnidb__switch--explain omnidb__switch--explain--sm float-right" data-toggle="tooltip" data-placement="left" data-html="true" title="" data-original-title="<h5>Toggle explain component.</h5><div>Switch between old and new explain visualizer (experimental).</div>">' +
-        '<input id="explainContextToggler' + v_tab.id + '" type="checkbox" class="omnidb__switch--explain--input" onclick="toggleExplainContext()">' +
-        '<label for="explainContextToggler' + v_tab.id + '" class="omnidb__switch--explain--label">' +
-          '<span><i class="fas fa-th"></i></span>' +
-        '</label>' +
-      '</div>' +
-    '</div>' +
     '<button style="position:absolute;top:0.25rem;right:0.25rem;" type="button" class="btn btn-sm omnidb__theme__btn--secondary" onclick=toggleExpandToPanelView("query_result_tabs_container' + v_tab.id + '")><i class="fas fa-expand"></i></button>' +
     '<div id="query_result_tabs_' + v_tab.id + '">' +
     '</div>' +
@@ -205,10 +197,10 @@ var v_createQueryTabFunction = function(p_table, p_tab_db_id) {
     }
   });
   v_explain_tab.elementDiv.innerHTML =
-  "<div class='p-2 omnidb__query-result-tabs__content omnidb__theme-border--primary'>" +
-    "<div id='div_explain_default" + v_tab.id + "' class='omnidb__query-result-tabs__content omnidb__query-result-tabs__content--explain-default' style='width: 100%; overflow: auto;'></div>" +
-    "<div id='div_explain_" + v_tab.id + "' class='omnidb__query-result-tabs__content omnidb__query-result-tabs__content--explain-legere' style='width: 100%; overflow: hidden;'></div>" +
-  "</div>";
+  `<div class='p-2 omnidb__query-result-tabs__content omnidb__theme-border--primary'>
+    <div id='div_explain_${v_tab.id}' class='omnidb__query-result-tabs__content omnidb__query-result-tabs__content--explain-default' style='width: 100%; overflow: auto;'>
+    </div>
+  </div>`;
   v_explain_tab.elementA.classList.add('dbms_object');
   v_explain_tab.elementA.classList.add('postgresql_object');
 
@@ -334,13 +326,7 @@ var v_createQueryTabFunction = function(p_table, p_tab_db_id) {
       v_tab_tag.div_notices.style.height = window.innerHeight - $(v_tab_tag.div_notices).offset().top - (1.25)*v_font_size + 'px';
     }
     else if (v_tab_tag.currQueryTab=='explain') {
-      v_tab_tag.div_explain_default.style.height = window.innerHeight - $(v_tab_tag.div_explain_default).offset().top - (1.25)*v_font_size + 'px';
       v_tab_tag.div_explain.style.height = window.innerHeight - $(v_tab_tag.div_explain).offset().top - (1.25)*v_font_size + 'px';
-      setTimeout(function(){
-        if (v_tab_tag.explainControl) {
-          v_tab_tag.explainControl.resize();
-        }
-      },400);
     }
   }
 
@@ -354,8 +340,7 @@ var v_createQueryTabFunction = function(p_table, p_tab_db_id) {
     query_info: document.getElementById('div_query_info_' + v_tab.id),
     div_result: document.getElementById('div_result_' + v_tab.id),
     div_notices: document.getElementById('div_notices_' + v_tab.id),
-    div_explain: document.getElementById('div_explain_' + v_tab.id),
-    div_explain_default: document.getElementById('div_explain_default' + v_tab.id),
+    div_explain: document.getElementById(`div_explain_${v_tab.id}`),
     div_count_notices: document.getElementById('query_result_tabs_count_notices_' + v_tab.id),
     sel_filtered_data : document.getElementById('sel_filtered_data_' + v_tab.id),
     sel_export_type : document.getElementById('sel_export_type_' + v_tab.id),

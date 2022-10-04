@@ -9080,17 +9080,8 @@ function getExplain(p_mode) {
     if (v_query.trim() == '') {
         showAlert('Please provide a string.');
     }
-    // else {
-    //     if (p_mode == 0)
-    //         v_query = 'explain (format json) ' + v_query;
-    //     else if (p_mode == 1)
-    //         v_query = 'explain (analyze, format json) ' + v_query;
-    //
-    //     querySQL(0, true, v_query, getExplainReturn, true);
-    // }
     else {
       // Component context is unset, defaults to default.
-      if (v_explain_control.context === 'default') {
         if (p_mode == 0) {
           v_query = 'explain ' + v_query;
         }
@@ -9099,17 +9090,6 @@ function getExplain(p_mode) {
         }
 
         querySQL(0, true, v_query, getExplainReturn, true);
-      }
-      else {
-        if (p_mode == 0) {
-          v_query = 'explain (format json) ' + v_query;
-        }
-        else if (p_mode == 1) {
-          v_query = 'explain (analyze, buffers, format json) ' + v_query;
-        }
-
-        querySQL(0, true, v_query, getExplainReturn, true);
-      }
     }
 }
 
@@ -9118,99 +9098,21 @@ function getExplainReturn(p_data) {
     var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
 
     v_tab_tag.selectExplainTabFunc();
-
     if (p_data.v_error) {
-        v_tab_tag.div_explain_default.innerHTML = '<div class="error_text">' + p_data.v_data.message + '</div>';
-        v_tab_tag.div_explain.innerHTML = '<div class="error_text">' + p_data.v_data.message + '</div>';
+        v_tab_tag.div_explain.innerHTML = `<div class="error_text">${p_data.v_data.message}</div>`;
     } else {
 
         // Adjusting data.
-        var v_explain_text = '';
-        for (var i = 0; i < p_data.v_data.v_data.length; i++) {
-          v_explain_text += p_data.v_data.v_data[i] + '\n';
-        }
-
-        // Destroy possible legere component.
-        if (v_tab_tag.explainControl) {
-          v_tab_tag.explainControl.destroy();
-        }
-        v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.div_explain_default.innerHTML = '';
+        var v_explain_text = p_data.v_data.v_data.join('\n');
 
         if (v_explain_control.context === 'default') {
-          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.div_explain_default.style.display = 'block';
-          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.div_explain.style.display = 'none';
-          // Updating explain default component.
-          var resultset = [];
-          v_explain_text.split(/\n/).forEach(function(item) {
-            item = item.replace(/^"(.*)"$/, '$1'); // remove quotes
-            item = item.replace(/^'(.*)'$/, '$1'); // remove single quotes
-            if (item.match(/^-*$/)) {
-                return;
-            } // skip line with dashes (supposedly header separator)
-            if (item.match(/^\s*QUERY PLAN\s*$/)) {
-                return;
-            } // skip header
-            resultset.push([item]);
-          });
-
-          if (resultset.length > 0) {
-              var planNodes = PGPlanNodes(resultset.slice());
-              var mountNode = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.div_explain_default;
-              var pgplan = React.createElement(PGPlan, {
-                  nodes: planNodes
-              }, null);
-              ReactDOM.render(pgplan, mountNode);
-          }
-        }
-        else {
-          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.div_explain_default.style.display = 'none';
           v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.div_explain.style.display = 'block';
-
-          var v_legere_options = {
-            backgroundColor: (v_editor_theme === 'omnidb_dark') ? '#2f3136' : '#e2e2e2',
-            target: v_tab_tag.div_explain
-          }
-
-          var v_context = {
-            parent: v_tab_tag,
-            self: 'explainControl'
-          };
-
-          v_tab_tag.explainControl = createLegere(v_context, v_legere_options);
-
-
-          v_tab_tag.explainControl.updatePlanList(JSON.parse(v_explain_text));
+          if (v_explain_text.length > 0) {
+            let v_query = getQueryEditorValue();
+            v_tab_tag.div_explain.innerHTML= `<pev2 class="h-100" :plan-source="plan" :plan-query="query" />`;
+            vueExplain(v_tab_tag.div_explain.id, v_query, v_explain_text);
+            }
         }
-
-
-
-
-
-
-        /*
-
-        var resultset = [];
-        v_explain_text.split(/\n/).forEach(function(item) {
-            item = item.replace(/^"(.*)"$/, '$1'); // remove quotes
-            item = item.replace(/^'(.*)'$/, '$1'); // remove single quotes
-            if (item.match(/^-*$/)) {
-                return;
-            } // skip line with dashes (supposedly header separator)
-            if (item.match(/^\s*QUERY PLAN\s*$/)) {
-                return;
-            } // skip header
-            resultset.push([item]);
-        });
-
-        if (resultset.length > 0) {
-            var planNodes = PGPlanNodes(resultset.slice());
-            var mountNode = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-                .tag.div_explain;
-            var pgplan = React.createElement(PGPlan, {
-                nodes: planNodes
-            }, null);
-            ReactDOM.render(pgplan, mountNode);
-        }*/
     }
 
     refreshHeights();

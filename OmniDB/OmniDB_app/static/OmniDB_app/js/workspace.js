@@ -1525,19 +1525,6 @@ function toggleExpandToPanelView(p_target_id) {
   }
 }
 
-function toggleExplainContext() {
-
-  if (v_explain_control.context === 'default') {
-    v_explain_control.context = 'legere'
-  }
-  else {
-    v_explain_control.context = 'default'
-  }
-
-  updateExplainComponent();
-
-}
-
 function updateExplainComponent() {
   if (v_explain_control.context === 'default') {
     $('#omnidb__main').addClass('omnidb__explain--default');
