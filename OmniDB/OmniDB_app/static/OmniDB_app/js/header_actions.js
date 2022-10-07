@@ -404,8 +404,8 @@ function saveShortcuts() {
 /// <param name="p_row">Row number.</param>
 /// <param name="p_col">Column number.</param>
 /// <param name="p_content">Cell content.</param>
-/// <param name="p_can_alter">If ready only or not.</param>
-function editCellData(p_ht, p_row, p_col, p_content, p_can_alter) {
+/// <param name="p_can_alter">If read only or not.</param>
+function cellDataModal(p_ht, p_row, p_col, p_content, p_can_alter) {
 	var v_edit_modal = document.getElementById('div_edit_content');
 	if (!v_edit_modal) {
 		v_edit_modal = document.createElement('div');
@@ -419,29 +419,28 @@ function editCellData(p_ht, p_row, p_col, p_content, p_can_alter) {
 	}
 
 	v_canEditContent = p_can_alter;
-	var v_save_btn_attr = '';
-	if (!v_canEditContent) {
-		v_save_btn_attr = ' disabled title="Unable to manually edit data without primary key" ';
-	}
+	v_save_btn = '<button type="button" class="btn omnidb__theme__btn--primary" onclick="saveEditContent()">Save</button>';
 	v_edit_modal.innerHTML =
-	'<div id="modal_message_dialog" class="modal-dialog" role="document" style="width: 1200px;max-width: 90vw;">' +
-		'<div class="modal-content">' +
-			'<div class="modal-header">' +
-				'<h4 class="mb-0">Edit Data</h4>' +
-				'<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="cancelEditContent()">' +
-					'<span aria-hidden="true">&times;</span>' +
-				'</button>' +
-			'</div>' +
-			'<div id="modal_message_content" class="modal-body" style="white-space: pre-line;">' +
-				'<div id="txt_edit_content" style="width: 100%; height: 70vh; font-size: 12px; border: 1px solid rgb(195, 195, 195);">' +
-				'</div>' +
-			'</div>' +
-			'<div class="modal-footer">' +
-				'<button ' + v_save_btn_attr + ' type="button" class="btn omnidb__theme__btn--primary" data-dismiss="modal" onclick="saveEditContent()">Save</button>' +
-				'<button type="button" class="btn omnidb__theme__btn--secondary" data-dismiss="modal" onclick="cancelEditContent()">Cancel</button>' +
-			'</div>' +
-		'</div>' +
-	'</div>';
+	`<div id="modal_message_dialog" class="modal-dialog" role="document" style="width: 1200px;max-width: 90vw;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="mb-0">${v_canEditContent ? 'Edit Data' : 'Show Data'}</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="cancelEditContent()">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div id="modal_message_content" class="modal-body" style="white-space: pre-line;">
+				<div id="txt_edit_content" style="width: 100%; height: 70vh; font-size: 12px; border: 1px solid rgb(195, 195, 195);">
+				</div>
+			</div>
+			<div class="modal-footer">
+				${v_canEditContent ? v_save_btn : ""}
+				<button type="button" class="btn omnidb__theme__btn--secondary" data-dismiss="modal" onclick="cancelEditContent()">
+				${v_canEditContent ? "Cancel" : "Close"}
+				</button>
+			</div>
+		</div>
+	</div>`;
 
 	if (v_editContentObject!=null)
 		if (v_editContentObject.editor!=null) {
@@ -452,7 +451,7 @@ function editCellData(p_ht, p_row, p_col, p_content, p_can_alter) {
 	var langTools = ace.require("ace/ext/language_tools");
 	var v_editor = ace.edit('txt_edit_content');
 	v_editor.setTheme("ace/theme/" + v_editor_theme);
-	v_editor.session.setMode("ace/mode/text");
+	v_editor.session.setMode("ace/mode/sql");
 	v_editor.$blockScrolling = Infinity;
 
 	v_editor.setFontSize(Number(v_font_size));

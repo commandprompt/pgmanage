@@ -1030,7 +1030,7 @@ function refreshMonitorDashboard(p_loading,p_tab_tag,p_div) {
         							contextMenu: {
         								callback: function (key, options) {
         									if (key === 'view_data') {
-        									  	editCellData(this,options[0].start.row,options[0].start.col,this.getDataAtCell(options[0].start.row,options[0].start.col),false);
+                            cellDataModal(this,options[0].start.row,options[0].start.col,this.getDataAtCell(options[0].start.row,options[0].start.col),false);
         									}
                           else if (key === 'copy') {
                             this.selectCell(options[0].start.row,options[0].start.col,options[0].end.row,options[0].end.col);
