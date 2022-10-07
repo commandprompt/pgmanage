@@ -1959,6 +1959,11 @@ a[href="https://github.com/dalibo/pev2"]{
   }
 }
 
+a:not([href]):not([tabindex]){
+  color: inherit;
+  text-decoration: none;
+}
+
 @import 'interface-icon';
 @import 'node-icon';
 @import 'themes/dark';
