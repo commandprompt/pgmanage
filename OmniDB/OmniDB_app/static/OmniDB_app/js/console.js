@@ -122,12 +122,7 @@ function showConsoleHistory() {
 	v_tab_tag.consoleHistory.grid = new Handsontable(v_grid_div,
 	{
 		licenseKey: 'non-commercial-and-evaluation',
-		// data: p_return.v_data.data,
-		data: [
-			["2020-05-01 19:19:21", "\?"],
-			["2020-05-01 19:19:20", "\?"],
-			["2020-05-01 19:19:19", "\?"]
-		],
+		data: [],
 		className: 'simple',
 		columns : columnProperties,
 		colHeaders : true,
@@ -297,11 +292,9 @@ function refreshConsoleHistoryList() {
 			v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.spanNumPages.innerHTML = p_return.v_data.pages;
 			v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.spanCurrPage.innerHTML = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.currentPage;
 
-			// TODO: dates
-			// for (let i = 0; i < v_conn_tag.consoleHistoryList.length; i++) {
-			// 	p_return.v_data.consoleHistoryList[i][0] = new Date(p_return.v_data.consoleHistoryList[i][0]).toLocaleString();
-			// 	p_return.v_data.consoleHistoryList[i][1] = new Date(p_return.v_data.consoleHistoryList[i][1]).toLocaleString();
-			// }
+			for (let i = 0; i < v_conn_tag.consoleHistoryList.length; i++) {
+				v_conn_tag.consoleHistoryList[i][0] = new Date(v_conn_tag.consoleHistoryList[i][0]).toLocaleString();
+			};
 
 			v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.grid.loadData(v_conn_tag.consoleHistoryList);
 
