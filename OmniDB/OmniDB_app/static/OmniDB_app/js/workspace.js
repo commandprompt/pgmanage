@@ -678,6 +678,7 @@ function resizeTreeVertical(event) {
       $(`#${node.id}`).css('flex-basis', 'auto');
     }
     $(`#${node.id}`).removeClass('omnidb__tree-tabs--not-in-view');
+    v_connTabControl.selectedTab.tag.treeTabsVisible = true;
   }
 
   v_start_height = event.screenY;
