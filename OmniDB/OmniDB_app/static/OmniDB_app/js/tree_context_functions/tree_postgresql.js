@@ -1041,7 +1041,7 @@ function getTreePostgresql(p_div) {
                     text: 'Doc: Databases',
                     icon: 'fas cm-all fa-globe-americas',
                     action: function(node) {
-                        v_connTabControl.tag.createWebsiteTab(
+                        v_connTabControl.tag.openWebSite(
                             'Documentation: Databases',
                             'https://www.postgresql.org/docs/' +
                             getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1109,7 +1109,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Tablespaces',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Tablespaces',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1168,7 +1168,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Roles',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Roles',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1279,7 +1279,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Extensions',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Extensions',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1335,7 +1335,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Schemas',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Schemas',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1417,7 +1417,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Basics',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Table Basics',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1427,7 +1427,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Constraints',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Table Constraints',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1437,7 +1437,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Modifying',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Modifying Tables',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1587,7 +1587,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Inheritance',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Table Inheritance',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1611,7 +1611,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Partitioning',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Table Partitioning',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -1847,7 +1847,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Indexes',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Indexes',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2014,7 +2014,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Rules',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Rules',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2082,7 +2082,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Triggers',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Triggers',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2115,7 +2115,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Triggers',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Triggers',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2195,7 +2195,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Event Triggers',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Event Triggers',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2269,7 +2269,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Partitioning',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Partitioning',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2323,7 +2323,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Partitioning',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Partitioning',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2383,7 +2383,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Statistics',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Statistics',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2461,7 +2461,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Functions',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Functions',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2556,7 +2556,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Procedures',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Procedures',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2651,7 +2651,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Trigger Functions',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Trigger Functions',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2781,7 +2781,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Event Trigger Functions',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Event Trigger Functions',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -2916,7 +2916,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Aggregates',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Aggregates',
                         'https://www.postgresql.org/docs/' + getMajorVersionPostgresql(node.tree.tag.version) + '/static/sql-createaggregate.html');
                 }
@@ -2992,7 +2992,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Sequences',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Sequences',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -3051,7 +3051,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Views',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Views',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -3140,7 +3140,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Mat. Views',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Materialized Views',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -3251,7 +3251,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Replication Slots',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Physical Replication Slots',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -3298,7 +3298,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Replication Slots',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Logical Replication Slots',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -3343,7 +3343,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Publications',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Publications',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -3435,7 +3435,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Subscriptions',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Subscriptions',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -3492,7 +3492,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Foreign Data Wrappers',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Foreign Data Wrappers',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -3804,7 +3804,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Types',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Types',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -3862,7 +3862,7 @@ function getTreePostgresql(p_div) {
                 text: 'Doc: Domains',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: Domains',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -4608,7 +4608,7 @@ function getTreeDetailsPostgresql(node) {
                 text: 'Doc: PostgreSQL',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: PostgreSQL',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
@@ -4619,18 +4619,19 @@ function getTreeDetailsPostgresql(node) {
                 text: 'Doc: SQL Language',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: SQL Language',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
                         '/static/sql.html');
+
                 }
             });
             node.tree.contextMenu.cm_server.elements.push({
                 text: 'Doc: SQL Commands',
                 icon: 'fas cm-all fa-globe-americas',
                 action: function(node) {
-                    v_connTabControl.tag.createWebsiteTab(
+                    v_connTabControl.tag.openWebSite(
                         'Documentation: SQL Commands',
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +

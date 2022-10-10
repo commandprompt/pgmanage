@@ -169,3 +169,7 @@ var v_createWebsiteOuterTabFunction = function(p_name, p_site, p_html, p_close_f
   },10);
 
 };
+
+var openWebSiteTabFunction = function (_, p_site) {
+  window.open(p_site, '_blank');
+};

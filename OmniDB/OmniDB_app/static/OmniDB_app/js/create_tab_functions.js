@@ -411,7 +411,7 @@ function initCreateTabFunctions() {
   v_connTabControl.tag.createWebsiteOuterTab = v_createWebsiteOuterTabFunction;
   v_connTabControl.tag.createNewMonitorUnitTab = v_createNewMonitorUnitTabFunction;
   v_connTabControl.tag.createMonitorDashboardTab = v_createMonitorDashboardTabFunction;
-
+  v_connTabControl.tag.openWebSite = openWebSiteTabFunction;
 	v_connTabControl.tag.createEditDataTab = v_createEditDataTabFunction;
   v_connTabControl.tag.createGraphTab = v_createGraphTabFunction;
   v_connTabControl.tag.createMonitoringTab = v_createMonitoringTabFunction;
