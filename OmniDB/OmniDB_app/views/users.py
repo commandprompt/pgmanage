@@ -116,7 +116,7 @@ def save_users(request):
                 password=user_item[1],
                 email='',
                 last_login=timezone.now(),
-                is_superuser=False,
+                is_superuser=True if user_item[2] else False,
                 first_name='',
                 last_name='',
                 is_staff=False,

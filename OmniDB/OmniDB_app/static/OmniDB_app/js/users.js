@@ -38,7 +38,7 @@ function newUserConfirm() {
 				v_usersObject.v_cellChanges = [];
 				window.newUsersObject.newUsers = [];
 				if (v_usersObject.v_cellChanges.length === 0 && window.newUsersObject.newUsers.length === 0)
-					document.getElementById('div_save_users').style.visibility = 'hidden';
+					document.getElementById('div_save_users').disabled = true;
 				listUsers(true);
 			},
 			null,
@@ -50,6 +50,9 @@ function newUserConfirm() {
 /// Add a virtual new user with pending information.
 /// </summary>
 function newUser() {
+	document.getElementById('div_save_users').disabled = true;
+	document.getElementById('div_save_users').classList.remove('d-none');
+
 	if (window.newUsersObject.newUsers.length === 0){
 
 		window.newUsersObject.newUsers.push(["", "", 0])
@@ -72,7 +75,7 @@ function removeUserConfirm(p_id) {
 			input,
 			function(p_return) {
 				if (v_usersObject.v_cellChanges.length === 0 && window.newUsersObject.newUsers.length === 0)
-					document.getElementById('div_save_users').style.visibility = 'hidden';
+					document.getElementById('div_save_users').disabled = true;
 				listUsers(true);
 			},
 			null,
@@ -136,14 +139,12 @@ function saveUsers() {
 	var v_data_changed = [];
 	var v_user_id_list = [];
 
-	$.each(v_usersObject.v_cellChanges, function(i, el){
-	    if ($.inArray(el['rowIndex'], v_unique_rows_changed) === -1) {
-				v_unique_rows_changed.push(el['rowIndex']);
-			}
-	});
-
+	for (let row in v_usersObject.v_cellChanges) {
+		v_unique_rows_changed.push(row);
+	};
+	
 	$.each(v_unique_rows_changed, function(i, el){
-			v_data_changed[i] = v_usersObject.v_cellChanges[i].p_data;
+			v_data_changed[i] = v_usersObject.v_cellChanges[el].p_data;
 	    v_user_id_list[i] = v_usersObject.v_user_ids[el];
 	});
 
@@ -161,7 +162,7 @@ function saveUsers() {
 				v_usersObject.v_cellChanges = [];
 				window.newUsersObject.newUsers = [];
 				if (v_usersObject.v_cellChanges.length === 0 && window.newUsersObject.newUsers.length === 0) {
-					document.getElementById('div_save_users').style.visibility = 'hidden';
+					document.getElementById('div_save_users').disabled = true;
 				}
 				listUsers(true, {users_update: v_data});
 
@@ -210,22 +211,23 @@ function changeUser(event, p_row_index, p_col_index) {
 			'columnIndex': p_col_index,
 			'p_data': p_data_template
 	};
-	v_usersObject.v_cellChanges.push(cellChange);
-	document.getElementById('div_save_users').style.visibility = 'visible';
+	v_usersObject.v_cellChanges[p_row_index] = cellChange;
+
+	document.getElementById('div_save_users').disabled = false;
 
 	$('.omnidb__user-list__item--changed').removeClass('omnidb__user-list__item--changed');
-	for (var i = 0; i < v_usersObject.v_cellChanges.length; i++) {
-		var v_row_value = v_usersObject.v_cellChanges[i].rowIndex;
-		$('#omnidb_user_item_' + v_row_value).addClass('omnidb__user-list__item--changed');
-		$('#omnidb_user_select option[value="' + v_row_value + '"]').addClass('bg-warning');
-	}
+	for (let row in v_usersObject.v_cellChanges) {
+		$('#omnidb_user_item_' + row).addClass('omnidb__user-list__item--changed');
+		$('#omnidb_user_select option[value="' + row + '"]').addClass('bg-warning');}
 }
 
 function changeNewUser(event, p_row_index, p_col_index) {
-	var v_user_is_superuser = (document.getElementById("new_user_item_superuser_" + p_row_index).checked) ? 1 : 0;
+	let username = document.getElementById(`new_user_item_username_${p_row_index}`);
+	let password = document.getElementById(`new_user_item_password_${p_row_index}`);
+	var v_user_is_superuser = (document.getElementById(`new_user_item_superuser_${p_row_index}`).checked) ? 1 : 0;
 	var p_data_template = [
-		document.getElementById("new_user_item_username_" + p_row_index).value,
-		document.getElementById("new_user_item_password_" + p_row_index).value,
+		username.value,
+		password.value,
 		v_user_is_superuser,
 		"<i title=\"Remove User\" class='fas fa-times action-grid action-close text-danger' onclick='removeNewUser(\"" + p_row_index + "\")'></i>"
 	];
@@ -236,7 +238,13 @@ function changeNewUser(event, p_row_index, p_col_index) {
 	var v_event = {target:{value:v_render_index}};
 
 	renderSelectedUser(v_event);
-	document.getElementById('div_save_users').style.visibility = 'visible';
+	if (username.validity.valid && password.validity.valid){
+		document.getElementById('div_save_users').disabled = false;
+	}
+	else {
+		window.newUsersObject.newUsers = []
+		document.getElementById('div_save_users').disabled = true;
+	};
 
 }
 
@@ -352,7 +360,7 @@ function getUsers(p_options = false) {
 							v_users_update_html +
 						"</div>" +
 						"<div class='text-center'>" +
-							"<button type='button' id='div_save_users' class='btn btn-success ml-1' style='visibility: hidden;' onclick='saveUsers()'>Save</button>" +
+							"<button type='button' id='div_save_users' class='btn btn-success ml-1 d-none' onclick='saveUsers()' disabled>Save</button>" +
 						"</div>" +
 						"<button type='submit' disabled style='display: none' aria-hidden='true'></button>" +
 					"</div>";
@@ -374,7 +382,7 @@ function getUsers(p_options = false) {
 						}
 					}
 					if (v_usersObject.v_cellChanges.length > 0 || window.newUsersObject.newUsers.length > 0)
-						document.getElementById('div_save_users').style.visibility = 'visible';
+						document.getElementById('div_save_users').disabled = false;
 					$('[data-toggle="tooltip"]').tooltip({animation:true});// Loads or Updates all tooltips
 	        endLoading();
 				},
@@ -395,7 +403,7 @@ function listUsers(p_refresh,p_options = false) {
   var v_save_button = document.getElementById('div_save_users');
 	if (v_save_button !== null) {
 		if (v_usersObject.v_cellChanges.length === 0 && window.newUsersObject.newUsers.length === 0) {
-			document.getElementById('div_save_users').style.visibility = 'hidden';
+			v_save_button.disabled = true;
 		}
 	}
 
@@ -417,6 +425,10 @@ function listUsers(p_refresh,p_options = false) {
 /// Rendering selected user.
 /// </summary>
 function renderSelectedUser(event) {
+	if (event.target.id === 'omnidb_user_select') {
+		document.getElementById('div_save_users').disabled = true;
+		document.getElementById('div_save_users').classList.remove('d-none');
+	}
 	var v_index = event.target.value;
 	var v_user_div_content = document.getElementById('omnidb_user_content');
 	if (v_index == "") {
@@ -448,7 +460,7 @@ function renderSelectedUser(event) {
 						"</div>" +
 					"</div>" +
 				"</div>" +
-				"<div class='input-group w-100 mb-2'>" +
+				"<div class='d-flex mb-2'>" +
 				"<div class='input-group-prepend'>" +
 				"<label for='user_item_password_" + i  + "' type='button' class='input-group-text'>" +
 				"<i class='fas fa-key'></i>" +
@@ -461,6 +473,9 @@ function renderSelectedUser(event) {
 				"</span>" +
 				"</div>" +
 				"</div>";
+				$(`#user_item_password_${i}`).passtrength({
+					passwordToggle: false
+				});
 			}
 			v_user_count++;
 		}
@@ -480,7 +495,7 @@ function renderSelectedUser(event) {
 								"<i class='fas fa-user'></i>" +
 							"</label>" +
 						"</div>" +
-						"<input autofill='false' autocomplete='off' name='off' id='new_user_item_username_" + i  + "' type='text' class='form-control my-0' placeholder='User name' value='" + v_user_item[0] + "' onchange='changeNewUser(event," + i + ",0)'>" +
+						"<input autofill='false' autocomplete='off' name='off' id='new_user_item_username_" + i  + "' type='text' class='form-control my-0' placeholder='User name' value='" + v_user_item[0] + "' onchange='changeNewUser(event," + i + ",0)' required minlength='1'>" +
 					"</div>" +
 					"<span class='ml-2'>Superuser?</span>" +
 					"<div class='ml-2 mb-2'>" +
@@ -490,19 +505,22 @@ function renderSelectedUser(event) {
 						"</div>" +
 					"</div>" +
 				"</div>" +
-				"<div class='input-group w-100 mb-2'>" +
+				"<div class='d-flex mb-2'>" +
 				"<div class='input-group-prepend'>" +
 				"<label for='new_user_item_password_" + i  + "' type='button' class='input-group-text'>" +
 				"<i class='fas fa-key'></i>" +
 				"</label>" +
 				"</div>" +
-				"<input autofill='false' autocomplete='off' name='off' id='new_user_item_password_" + i  + "' type='password' class='form-control my-0' placeholder='New password' value='" + v_user_item[1] + "' onchange='changeNewUser(event," + i + ",1)'>" +
+				"<input autofill='false' autocomplete='off' name='off' id='new_user_item_password_" + i  + "' type='password' class='form-control my-0' placeholder='New password' value='" + v_user_item[1] + "' onchange='changeNewUser(event," + i + ",1)' required minlength='8'>" +
 				"</div>" +
 				"<span class='mr-2 text-danger omnidb__user-list__close'>" +
 					"<i title=\"Remove User\" class='fas fa-times action-grid action-close text-danger' onclick='removeNewUser(\"" + i + "\")'></i>" +
 				"</span>" +
 				"</div>" +
 				"</div>";
+				$(`#new_user_item_password_${i}`).passtrength({
+					passwordToggle: false
+				});
 			}
 		}
 	}

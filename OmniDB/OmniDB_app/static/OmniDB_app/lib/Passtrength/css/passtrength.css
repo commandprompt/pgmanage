@@ -1,0 +1,217 @@
+.passtrengthMeter{
+    position: relative;
+    width: 100%;
+  }
+  
+  .passtrengthMeter > input{
+    width: 100%;
+    display: inline-block;
+    padding: 5px;
+    box-sizing: border-box;
+    -moz-box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+  }
+  
+  .passtrengthMeter > input:focus {
+      outline-width: 0;
+  }
+  
+  .passtrengthMeter::after{
+    content: '';
+    height: 3px;
+    overflow: hidden;
+    width: 0%;
+    transition: width .5s;
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+  }
+  
+  .passtrengthMeter.weak::after{
+    background-color: #EC644B;
+    width: 25%;
+  }
+  
+  .passtrengthMeter.medium::after{
+    content: '';
+    background-color: #E87E04;
+    width: 50%;
+  }
+  
+  .passtrengthMeter.strong::after{
+    content: '';
+    background-color: #EFBF17;
+    width: 75%;
+  }
+  
+  .passtrengthMeter.very-strong::after{
+    content: '';
+    background-color: #42A72A;
+    width: 100%;
+  }
+  
+  .passtrengthMeter .showPassword{
+    position: absolute;
+    width: 20px;
+    top: calc(50% - 10px);
+    right: 10px;
+  }
+  
+  .passtrengthMeter .showPassword.active{
+    opacity: .5;
+  }
+  
+  .passtrengthMeter .showPassword img{
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  
+  .passtrengthMeter .showPassword:hover{
+    cursor: pointer;
+  }
+  
+  .passtrengthMeter .tooltip {
+    background: #000000;
+    top: 100%;
+    color: #fff;
+    font-family:Arial;
+    font-size: 12px;
+    display: block;
+    left: 50%;
+    margin-bottom: 15px;
+    opacity: 0;
+    padding: 5px 10px;
+    pointer-events: none;
+    position: absolute;
+    min-width: 70px;
+    box-sizing: border-box;
+    text-align: center;
+    z-index: 10;
+    -webkit-transform: translateY(5px);
+       -moz-transform: translateY(5px);
+        -ms-transform: translateY(5px);
+         -o-transform: translateY(5px);
+            transform: translateY(5px);
+    -webkit-transition: all .25s ease-out;
+       -moz-transition: all .25s ease-out;
+        -ms-transition: all .25s ease-out;
+         -o-transition: all .25s ease-out;
+            transition: all .25s ease-out;
+    -webkit-box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
+       -moz-box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
+        -ms-box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
+         -o-box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
+  }
+  
+  .passtrengthMeter.weak .tooltip{
+    background-color: #EC644B;
+  }
+  .passtrengthMeter.weak .tooltip:after{
+    border-left: solid transparent 7px;
+    border-right: solid transparent 7px;
+    border-bottom: solid #EC644B 7px;
+    top: -7px;
+    content: " ";
+    height: 0;
+    left: 50%;
+    margin-left: -7px;
+    position: absolute;
+    width: 0;
+  }
+  
+  .passtrengthMeter.medium .tooltip{
+    background-color: #E87E04;
+  }
+  .passtrengthMeter.medium .tooltip:after{
+    border-left: solid transparent 7px;
+    border-right: solid transparent 7px;
+    border-bottom: solid #E87E04 7px;
+    top: -7px;
+    content: " ";
+    height: 0;
+    left: 50%;
+    margin-left: -7px;
+    position: absolute;
+    width: 0;
+  }
+  
+  .passtrengthMeter.strong .tooltip{
+    background-color: #EFBF17;
+  }
+  .passtrengthMeter.strong .tooltip:after{
+    border-left: solid transparent 7px;
+    border-right: solid transparent 7px;
+    border-bottom: solid #EFBF17 7px;
+    top: -7px;
+    content: " ";
+    height: 0;
+    left: 50%;
+    margin-left: -7px;
+    position: absolute;
+    width: 0;
+  }
+  
+  .passtrengthMeter.very-strong .tooltip{
+    background-color: #42A72A;
+  }
+  .passtrengthMeter.very-strong .tooltip:after{
+    border-left: solid transparent 7px;
+    border-right: solid transparent 7px;
+    border-bottom: solid #42A72A 7px;
+    top: -7px;
+    content: " ";
+    height: 0;
+    left: 50%;
+    margin-left: -7px;
+    position: absolute;
+    width: 0;
+  }
+  
+  .passtrengthMeter.weak .tooltip:before {
+    top: -20px;
+    content: " ";
+    display: block;
+    height: 20px;
+    left: 0;
+    position: absolute;
+    width: 100%;
+  }
+  
+  .passtrengthMeter .tooltip:after {
+    border-left: solid transparent 7px;
+    border-right: solid transparent 7px;
+    border-bottom: solid #000000 7px;
+    top: -7px;
+    content: " ";
+    height: 0;
+    left: 50%;
+    margin-left: -7px;
+    position: absolute;
+    width: 0;
+    -webkit-transition: all .25s ease-out;
+       -moz-transition: all .25s ease-out;
+        -ms-transition: all .25s ease-out;
+         -o-transition: all .25s ease-out;
+            transition: all .25s ease-out;
+  }
+  
+  .passtrengthMeter:hover .tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    -webkit-transform: translateY(10px);
+       -moz-transform: translateY(10px);
+        -ms-transform: translateY(10px);
+         -o-transform: translateY(10px);
+            transform: translateY(10px);
+  }
+  
+  .lte8 .passtrengthMeter .tooltip {
+    display: none;
+  }
+  
+  .lte8 .passtrengthMeter:hover .tooltip {
+    display: block;
+  }
