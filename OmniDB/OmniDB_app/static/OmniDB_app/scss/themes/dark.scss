@@ -125,6 +125,27 @@ SOFTWARE.
     color: #DCDDDE;
   }
 
+  .btn {
+    &-primary {
+      background-color: #394E83;
+      color: #DCDDDE;
+      border-color: #394E83;
+    }
+    &-primary:hover:not([disabled]) {
+      background-color: #0069d9;
+      border-color: #0062cc;
+    }
+    &-secondary {
+      background-color: #4C5365;
+      color: #DCDDDE;
+      border-color: #4C5365;
+    }
+    &-secondary:hover:not([disabled]) {
+      background-color: #747986;
+      border-color: #747986;
+    }
+  }
+
   /* CONSOLE */
   .omnidb__console__text-input .ace_content {
     background-color: #282A2F;

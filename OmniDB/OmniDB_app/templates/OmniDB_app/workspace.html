@@ -117,7 +117,7 @@
           <div class="modal-header">
             <h5 class="modal-title">
               Connections
-              <button id="button_new_connection" type="button" class="btn omnidb__theme__btn--primary" onclick="newConnection();">New connection</button>
+              <button id="button_new_connection" type="button" class="btn btn-primary" onclick="newConnection();">New connection</button>
             </h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
@@ -130,8 +130,8 @@
                 <select id="group_selector" class="form-control mx-1" onchange="groupChange(this.value);" style='display: inline-block; width: 200px;'>
                   <option value=-1 selected>Select Group</option>
                 </select>
-                <button id="button_new_group" type="button" class="btn ml-2 omnidb__theme__btn--primary" onclick="newGroup();">New group</button>
-                <button id="button_group_actions" type="button" class="btn ml-2 omnidb__theme__btn--secondary dropdown-toggle" style='display: none;' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button id="button_new_group" type="button" class="btn ml-2 btn-primary" onclick="newGroup();">New group</button>
+                <button id="button_group_actions" type="button" class="btn ml-2 btn-secondary dropdown-toggle" style='display: none;' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   Group Actions
                 </button>
                 <div class="dropdown-menu dropdown-menu-left">
@@ -151,8 +151,8 @@
                 </div>
               </div>
               <!-- <div class="btn-group ml-auto" role="group" aria-label="Basic example">
-                <button type="button" class="btn omnidb__theme__btn--secondary active" title="Display connections as a grid with cards" onclick="toggleConnectionsLayout('cards')"><i class="fas fa-th-large"></i></button>
-                <button type="button" class="btn omnidb__theme__btn--secondary" title="Display connections as a list with rows" onclick="toggleConnectionsLayout('rows')"><i class="fas fa-list"></i></button>
+                <button type="button" class="btn btn-secondary active" title="Display connections as a grid with cards" onclick="toggleConnectionsLayout('cards')"><i class="fas fa-th-large"></i></button>
+                <button type="button" class="btn btn-secondary" title="Display connections as a list with rows" onclick="toggleConnectionsLayout('rows')"><i class="fas fa-list"></i></button>
               </div> -->
             </div>
             <div id="connection_card_list" class="text-center omnidb__connections__card-list omnidb__connections__card-list--rows"></div>
@@ -293,7 +293,7 @@
               </div>
 
               <div class="mt-4">
-                <button id="conn_form_button_test_connection" class="btn omnidb__theme__btn--primary" onclick="testConnection();" disabled>Test</button>
+                <button id="conn_form_button_test_connection" class="btn btn-primary" onclick="testConnection();" disabled>Test</button>
                 <button id="conn_form_button_save_connection" class="btn btn-success" onclick="saveConnection();" disabled>Save</button>
               </div>
 
@@ -330,11 +330,11 @@
               </div>
 
               <div class="text-center">
-                <button class="btn omnidb__theme__btn--secondary btn-sm mr-1">First</button>
-                <button class="btn omnidb__theme__btn--secondary btn-sm mr-1">Previous</button>
+                <button class="btn btn-secondary btn-sm mr-1">First</button>
+                <button class="btn btn-secondary btn-sm mr-1">Previous</button>
                 <span class="mr-1"> 1 / 217 </span>
-                <button class="btn omnidb__theme__btn--secondary btn-sm mr-1">Next</button>
-                <button class="btn omnidb__theme__btn--secondary btn-sm mr-1">Last</button>
+                <button class="btn btn-secondary btn-sm mr-1">Next</button>
+                <button class="btn btn-secondary btn-sm mr-1">Last</button>
               </div>
 
               <div id="query_history_grid" style="width: 100%; height: 300px; overflow: hidden;"></div>
@@ -381,7 +381,7 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <button class='btn omnidb__theme__btn--primary btn-sm mb-2' onclick='editMonitorUnit()'>New Unit</button>
+            <button class='btn btn-primary btn-sm mb-2' onclick='editMonitorUnit()'>New Unit</button>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -731,10 +731,10 @@
           <div id="modal_message_content" class="modal-body" style='white-space: pre-line;'>
           </div>
           <div class="modal-footer">
-            <button id="modal_message_yes" type="button" class="btn omnidb__theme__btn--primary" data-dismiss="modal">Yes</button>
-            <button id="modal_message_ok" type="button" class="btn omnidb__theme__btn--primary" data-dismiss="modal">Ok</button>
+            <button id="modal_message_yes" type="button" class="btn btn-primary" data-dismiss="modal">Yes</button>
+            <button id="modal_message_ok" type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
             <button id="modal_message_no" type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-            <button id="modal_message_cancel" type="button" class="btn omnidb__theme__btn--secondary" data-dismiss="modal">Cancel</button>
+            <button id="modal_message_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
           </div>
         </div>
       </div>
@@ -755,8 +755,8 @@
             <input id="txt_password_prompt" class="form-control" type="password" placeholder="Password" style="margin-top: 20px; margin-bottom:20px; text-align: center;"/>
           </div>
           <div class="modal-footer">
-            <button id="modal_password_ok" type="button" class="btn omnidb__theme__btn--primary" data-dismiss="modal">Ok</button>
-            <button id="modal_password_cancel" type="button" class="btn omnidb__theme__btn--secondary" data-dismiss="modal">Cancel</button>
+            <button id="modal_password_ok" type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+            <button id="modal_password_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
           </div>
         </div>
       </div>

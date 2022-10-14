@@ -130,6 +130,28 @@ SOFTWARE.
     }
   }
 
+  .btn {
+    &-primary {
+      background-color: #4A81D4;
+      color: #fff;
+      border-color: #4A81D4;
+    }
+    &-primary:hover:not([disabled]) {
+      background-color: #0069d9;
+      border-color: #0069d9;
+    }
+    &-secondary {
+      background-color: #DEDEDE;
+      color: #6C757D;
+      border-color: #DEDEDE;
+    }
+    &-secondary:hover:not([disabled]) {
+      background-color: #5a6268;
+      color: #fff;
+      border-color: #5a6268;
+    }
+  }
+
   /* CONSOLE */
   .ace_content {
     box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2);
