@@ -197,11 +197,13 @@ $('#modal_users').on('hidden.bs.modal', function (e) {
 
 
 function changeUser(event, p_row_index, p_col_index) {
+	let username = document.getElementById(`user_item_username_${p_row_index}`);
+	let password = document.getElementById(`user_item_password_${p_row_index}`);
 	var v_user_id = v_usersObject.v_user_ids[p_row_index];
 	var v_user_is_superuser = (document.getElementById("user_item_superuser_" + p_row_index).checked) ? 1 : 0;
 	var p_data_template = [
-		document.getElementById("user_item_username_" + p_row_index).value,
-		document.getElementById("user_item_password_" + p_row_index).value,
+		username.value,
+		password.value,
 		v_user_is_superuser,
 		"<i title=\"Remove User\" class='fas fa-times action-grid action-close text-danger' onclick='removeUser(\"" + v_user_id + "\")'></i>"
 	];
@@ -213,7 +215,12 @@ function changeUser(event, p_row_index, p_col_index) {
 	};
 	v_usersObject.v_cellChanges[p_row_index] = cellChange;
 
-	document.getElementById('div_save_users').disabled = false;
+	if (username.validity.valid && password.validity.valid){
+		document.getElementById('div_save_users').disabled = false;
+	}
+	else {
+		document.getElementById('div_save_users').disabled = true;
+	};
 
 	$('.omnidb__user-list__item--changed').removeClass('omnidb__user-list__item--changed');
 	for (let row in v_usersObject.v_cellChanges) {
@@ -237,12 +244,10 @@ function changeNewUser(event, p_row_index, p_col_index) {
 	var v_render_index = parseInt(v_usersObject.list.length) + parseInt(p_row_index);
 	var v_event = {target:{value:v_render_index}};
 
-	renderSelectedUser(v_event);
 	if (username.validity.valid && password.validity.valid){
 		document.getElementById('div_save_users').disabled = false;
 	}
 	else {
-		window.newUsersObject.newUsers = []
 		document.getElementById('div_save_users').disabled = true;
 	};
 
@@ -430,6 +435,13 @@ function renderSelectedUser(event) {
 		document.getElementById('div_save_users').classList.remove('d-none');
 	}
 	var v_index = event.target.value;
+	if (+v_index === (event.target.length - 2) && window.newUsersObject.newUsers.length !== 0){
+		if (window.newUsersObject.newUsers[0][0].length > 1 && window.newUsersObject.newUsers[0][1].length >= 8)
+			document.getElementById('div_save_users').disabled = false;
+	}
+	if (v_usersObject.v_cellChanges[v_index] !== undefined)
+	  if ((v_usersObject.v_cellChanges[v_index].p_data[0].length > 1) && (v_usersObject.v_cellChanges[v_index].p_data[1].length === 0 || v_usersObject.v_cellChanges[v_index].p_data[1].length >= 8))
+	  	document.getElementById('div_save_users').disabled = false;
 	var v_user_div_content = document.getElementById('omnidb_user_content');
 	if (v_index == "") {
 		v_user_div_content.innerHTML = "<div class='col-12 text-center'><h5 class='my-4'>No users selected, select an user or click add new user.</h5></div>";
@@ -437,7 +449,11 @@ function renderSelectedUser(event) {
 	else {
 		var v_user_count = 0;
 		for (var i = 0; i < v_usersObject.list.length; i++) {
-			var v_user_item = v_usersObject.list[i];
+			if (v_usersObject.v_cellChanges[i] !== undefined) {
+				var v_user_item = v_usersObject.v_cellChanges[i].p_data;
+			} else {
+				var v_user_item = v_usersObject.list[i];
+			}
 			var v_superuser_checked = (v_user_item[2] === 1) ? 'checked' : '';
 			if (i == v_index) {
 				v_user_div_content.innerHTML =
@@ -450,7 +466,7 @@ function renderSelectedUser(event) {
 								"<i class='fas fa-user'></i>" +
 							"</label>" +
 						"</div>" +
-						"<input autofill='false' autocomplete='disabled' name='notChromeUsername' id='user_item_username_" + i  + "' type='text' class='form-control my-0' placeholder='User name' value='" + v_user_item[0] + "' onchange='changeUser(event," + i + ",0)'>" +
+						"<input autofill='false' autocomplete='disabled' name='notChromeUsername' id='user_item_username_" + i  + "' type='text' class='form-control my-0' placeholder='User name' value='" + v_user_item[0] + "' oninput='changeUser(event," + i + ",0)' minlength='1'>" +
 					"</div>" +
 					"<span class='ml-2'>Superuser?</span>" +
 					"<div class='ml-2 mb-2'>" +
@@ -466,7 +482,7 @@ function renderSelectedUser(event) {
 				"<i class='fas fa-key'></i>" +
 				"</label>" +
 				"</div>" +
-				"<input autofill='false' autocomplete='disabled' name='new-password' id='user_item_password_" + i  + "' type='password' class='form-control my-0' placeholder='New password' value='" + v_user_item[1] + "' onchange='changeUser(event," + i + ",1)'>" +
+				"<input autofill='false' autocomplete='disabled' name='new-password' id='user_item_password_" + i  + "' type='password' class='form-control my-0' placeholder='New password' value='" + v_user_item[1] + "' oninput='changeUser(event," + i + ",1)' minlength='8'>" +
 				"</div>" +
 				"<span class='mr-2 text-danger omnidb__user-list__close'>" +
 				v_user_item[3] +
@@ -495,7 +511,7 @@ function renderSelectedUser(event) {
 								"<i class='fas fa-user'></i>" +
 							"</label>" +
 						"</div>" +
-						"<input autofill='false' autocomplete='off' name='off' id='new_user_item_username_" + i  + "' type='text' class='form-control my-0' placeholder='User name' value='" + v_user_item[0] + "' onchange='changeNewUser(event," + i + ",0)' required minlength='1'>" +
+						"<input autofill='false' autocomplete='off' name='off' id='new_user_item_username_" + i  + "' type='text' class='form-control my-0' placeholder='User name' value='" + v_user_item[0] + "' oninput='changeNewUser(event," + i + ",0)' required minlength='1'>" +
 					"</div>" +
 					"<span class='ml-2'>Superuser?</span>" +
 					"<div class='ml-2 mb-2'>" +
@@ -511,7 +527,7 @@ function renderSelectedUser(event) {
 				"<i class='fas fa-key'></i>" +
 				"</label>" +
 				"</div>" +
-				"<input autofill='false' autocomplete='off' name='off' id='new_user_item_password_" + i  + "' type='password' class='form-control my-0' placeholder='New password' value='" + v_user_item[1] + "' onchange='changeNewUser(event," + i + ",1)' required minlength='8'>" +
+				"<input autofill='false' autocomplete='off' name='off' id='new_user_item_password_" + i  + "' type='password' class='form-control my-0' placeholder='New password' value='" + v_user_item[1] + "' oninput='changeNewUser(event," + i + ",1)' required minlength='8'>" +
 				"</div>" +
 				"<span class='mr-2 text-danger omnidb__user-list__close'>" +
 					"<i title=\"Remove User\" class='fas fa-times action-grid action-close text-danger' onclick='removeNewUser(\"" + i + "\")'></i>" +

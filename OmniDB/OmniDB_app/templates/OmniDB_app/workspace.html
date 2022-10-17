@@ -660,15 +660,18 @@
                   <div class="form-row">
                     <div class="col-md-6 mb-3">
                       <label for="txt_new_pwd">New Password</label>
-                      <input id="txt_new_pwd" type="password" class="form-control">
+                      <input id="txt_new_pwd" type="password" class="form-control" oninput="checkPassword()" minlength="8" required>
                     </div>
                     <div class="col-md-6 mb-3">
                       <label for="txt_confirm_new_pwd">Confirm</label>
-                      <input id="txt_confirm_new_pwd" type="password" class="form-control">
+                      <input id="txt_confirm_new_pwd" type="password" class="form-control" oninput="checkPassword()" minlength="8" required>
+                      <div class="invalid-tooltip">
+                        Password Must be Matching.
+                      </div>
                     </div>
                   </div>
                   <div style="text-align:right;">
-                    <button class='btn btn-success' onclick='saveConfigUser()'>Save</button>
+                    <button class='btn btn-success' onclick='saveConfigUser()' disabled>Save</button>
                   </div>
                 </div>
               </div>

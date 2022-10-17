@@ -293,7 +293,7 @@ function showConfigUser() {
 	document.getElementById('txt_csv_delimiter').value = v_csv_delimiter;
 
 	$('#modal_config').modal({ backdrop: 'static', keyboard: false });
-
+	$('#txt_new_pwd').passtrength({passwordToggle: false});
 }
 
 /// <summary>
@@ -351,6 +351,8 @@ function saveConfigUser() {
 
 	if ((v_confirm_pwd.value!='' || v_pwd.value!='') && (v_pwd.value!=v_confirm_pwd.value))
 		showAlert('New Password and Confirm New Password fields do not match.');
+	else if ((v_pwd.value === v_confirm_pwd.value) && (v_pwd.value.length < 8 && v_pwd.value.length >= 1))
+		showAlert('New Password and Confirm New Password fields must be longer than 8.');
 	else {
 		var input = JSON.stringify(
 			{
@@ -538,3 +540,31 @@ function toggleUtilitiesMenu() {
 		}
 	});
 }
+
+
+function checkPassword() {
+	let password1 = document.getElementById('txt_new_pwd');
+	let password2 = document.getElementById('txt_confirm_new_pwd');
+	let form_button = document.getElementById('config_password').getElementsByTagName('button')[0];
+	if (password1.checkValidity() && password2.value === password1.value){
+		password2.classList.remove("is-invalid");
+		password2.classList.add('is-valid');
+		form_button.disabled = false;
+	}else if (password2.value.length >= password1.value.length && password2.value !== password1.value) {
+		password2.classList.add("is-invalid");
+		password2.classList.remove('is-valid');
+		form_button.disabled = true;}
+	else {
+		password2.classList.remove('is-invalid', 'is-valid');
+		form_button.disabled = true;
+	}
+}
+
+$('#modal_config').on('hidden.bs.modal', function (e) {
+	document.getElementById('txt_confirm_new_pwd').value = '';
+	document.getElementById('txt_new_pwd').value = '';
+	document.getElementById('txt_confirm_new_pwd').classList.remove('is-invalid', 'is-valid');
+	document.getElementById('config_password').getElementsByTagName('button')[0].disabled = true;
+	// workaround for removing validation indicator when the empty form is closed
+	$('#txt_new_pwd').keydown();
+});
