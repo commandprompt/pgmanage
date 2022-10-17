@@ -125,7 +125,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
     '<p class="text-center"><span class="badge badge-danger" style="vertical-align: middle;">disclaimer</span> PgManage is a powerful tool, and with great power...<br/>Please <strong><span class="text-danger">learn how to use it on a testing environment, NOT on production</span></strong>!</p>' +
 
 
-    '<button type="button" class="btn btn-lg omnidb__theme__btn--primary w-auto mx-auto my-4" onclick="startTutorial(' + "'getting_started'" + ');">' +
+    '<button type="button" class="btn btn-lg btn-primary w-auto mx-auto my-4" onclick="startTutorial(' + "'getting_started'" + ');">' +
       '<i class="fas fa-list mr-2"></i>' +
       'Getting started' +
     '</button>' +

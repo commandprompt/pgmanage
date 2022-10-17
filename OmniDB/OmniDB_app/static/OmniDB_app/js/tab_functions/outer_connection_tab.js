@@ -177,7 +177,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
                   '  </div>' +
                   '</div>' +
                 '</div>' +
-                '<button type="button" onclick="toggleTreeTabsContainer(' + "'tree_tabs_parent_" + v_tab.id + "','" + v_tab.id + "_left_resize_line_horizontal'" + ')" class="btn omnidb__theme__btn--secondary omnidb__tree-tabs__toggler"><i class="fas fa-arrows-alt-v"></i></button>' +
+                '<button type="button" onclick="toggleTreeTabsContainer(' + "'tree_tabs_parent_" + v_tab.id + "','" + v_tab.id + "_left_resize_line_horizontal'" + ')" class="btn btn-secondary omnidb__tree-tabs__toggler"><i class="fas fa-arrows-alt-v"></i></button>' +
                 '<div id="tree_tabs_' + v_tab.id + '" class="omnidb__tree-tabs__container" style="position: relative;"></div>' +
               '</div>' +
             '</div>' +
@@ -186,7 +186,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
         '</div>' +//.div_left
         '<div id="' + v_tab.id + '_div_right" class="omnidb__workspace__div-right col" style="position: relative;">' +
           // "<div class='row'>" +
-            '<button type="button" class="py-4 px-0 btn omnidb__theme__btn--secondary omnidb__tree__toggler" onclick="toggleTreeContainer()"><i class="fas fa-arrows-alt-h"></i></button>' +
+            '<button type="button" class="py-4 px-0 btn btn-secondary omnidb__tree__toggler" onclick="toggleTreeContainer()"><i class="fas fa-arrows-alt-h"></i></button>' +
             '<div id="' + v_tab.id + '_tabs" class="w-100"></div>' +
           // "</div>" +
         '</div>' +//.div_right

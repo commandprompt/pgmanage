@@ -87,10 +87,10 @@ var v_createDebuggerTabFunction = function(p_function) {
   '</div>' +
   "<div class='row mb-1'>" +
     "<div class='tab_actions omnidb__tab-actions col-12'>" +
-      '<button id="bt_start_' + v_tab.id + '" class="btn btn-sm omnidb__theme__btn--primary omnidb__tab-actions__btn" title="Start" onclick="startDebug();"><i class="fas fa-bolt fa-light"></i></button>' +
-      '<button id="bt_reload_' + v_tab.id + '" class="btn btn-sm omnidb__theme__btn--secondary omnidb__tab-actions__btn" title="Reload Function Attributes"><i class="fas fa-sync-alt fa-light"></i></button>' +
-      '<button id="bt_step_over_' + v_tab.id + '" class="btn btn-sm omnidb__theme__btn--secondary omnidb__tab-actions__btn" title="Step Over (Next Statement)" style="display: none;" onclick="stepDebug(0);"><i class="fas fa-angle-right fa-light"></i></button>' +
-      '<button id="bt_step_out_' + v_tab.id + '" class="btn btn-sm omnidb__theme__btn--secondary omnidb__tab-actions__btn" title="Resume (Next Breakpoint)" style="display: none;" onclick="stepDebug(1);"><i class="fas fa-angle-double-right fa-light"></i></button>' +
+      '<button id="bt_start_' + v_tab.id + '" class="btn btn-sm btn-primary omnidb__tab-actions__btn" title="Start" onclick="startDebug();"><i class="fas fa-bolt fa-light"></i></button>' +
+      '<button id="bt_reload_' + v_tab.id + '" class="btn btn-sm btn-secondary omnidb__tab-actions__btn" title="Reload Function Attributes"><i class="fas fa-sync-alt fa-light"></i></button>' +
+      '<button id="bt_step_over_' + v_tab.id + '" class="btn btn-sm btn-secondary omnidb__tab-actions__btn" title="Step Over (Next Statement)" style="display: none;" onclick="stepDebug(0);"><i class="fas fa-angle-right fa-light"></i></button>' +
+      '<button id="bt_step_out_' + v_tab.id + '" class="btn btn-sm btn-secondary omnidb__tab-actions__btn" title="Resume (Next Breakpoint)" style="display: none;" onclick="stepDebug(1);"><i class="fas fa-angle-double-right fa-light"></i></button>' +
       '<button id="bt_cancel_' + v_tab.id + '" class="btn btn-sm btn-danger omnidb__tab-actions__btn" title="Cancel" style="display: none; vertical-align: middle;" onclick="cancelDebug();">Cancel</button>' +
       // '<div id="div_debug_info_' + v_tab.id + '" class="query_info" style="display: inline-block; margin-left: 5px; vertical-align: middle;"></div>' +
 
@@ -98,7 +98,7 @@ var v_createDebuggerTabFunction = function(p_function) {
     "</div>" +
   "</div>" +
   "<div id='debug_result_tabs_container" + v_tab.id + "' class='omnidb__query-result-tabs'>" +
-    "<button style='position:absolute;top:0.25rem;right:0.25rem;' type='button' class='btn btn-sm omnidb__theme__btn--secondary' onclick=toggleExpandToPanelView('debug_result_tabs_container" + v_tab.id + "')><i class='fas fa-expand'></i></button>" +
+    "<button style='position:absolute;top:0.25rem;right:0.25rem;' type='button' class='btn btn-sm btn-secondary' onclick=toggleExpandToPanelView('debug_result_tabs_container" + v_tab.id + "')><i class='fas fa-expand'></i></button>" +
     "<div id='debug_result_tabs_" + v_tab.id + "'>" +
     "</div>" +
   "</div>";

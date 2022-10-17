@@ -125,6 +125,27 @@ SOFTWARE.
     color: #DCDDDE;
   }
 
+  .btn {
+    &-primary {
+      background-color: #394E83;
+      color: #DCDDDE;
+      border-color: #394E83;
+    }
+    &-primary:hover:not([disabled]) {
+      background-color: #0069d9;
+      border-color: #0062cc;
+    }
+    &-secondary {
+      background-color: #4C5365;
+      color: #DCDDDE;
+      border-color: #4C5365;
+    }
+    &-secondary:hover:not([disabled]) {
+      background-color: #747986;
+      border-color: #747986;
+    }
+  }
+
   /* CONSOLE */
   .omnidb__console__text-input .ace_content {
     background-color: #282A2F;
@@ -1224,5 +1245,121 @@ SOFTWARE.
   li.welcome_release_item span {
     background: #25282c !important;
     color: #f6f6f6 !important;
+  }
+
+
+  /* PEV2 */
+  .plan-container {
+    .nav-pills {
+      .active {
+        background-color: #394E83;
+      }
+    }
+
+    .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+      color: #495057;
+      background-color: #fff;
+      border-color: #dee2e6 #dee2e6 #fff;
+        border-top-color: rgb(222, 226, 230);
+    }
+
+    .text-primary {
+      color: #92c7ff !important;
+    }
+
+    .border-top,
+    .border-bottom,
+    .border-left,
+    .border-right {
+      border-color: #383B42 !important;
+    }
+
+
+    a[href="https://github.com/dalibo/pev2"]{
+      &:before{
+        background-color: #2F3136;
+        color: inherit;
+      }
+    }
+
+    .plan-stats .btn {
+      color: #DCDDDE;
+    }
+
+    .splitpanes.default-theme {
+      .splitpanes__pane {
+        background-color: #282A2F;
+      }
+      .splitpanes__splitter {
+        background-color:#2F3136;
+        border: 1px solid #373944;
+        &:before, &:after {
+          background-color: #4C5365;
+
+        }
+        &:hover:before, &:hover:after {
+          background-color: #6F7995;
+        }
+      }
+    }
+
+    .plan-diagram {
+      th, td {
+        color: #ABABAB;
+      }
+    }
+
+    .plan-node-body {
+      .card-body.header {
+        background-color: #fff !important;
+      }
+
+      .border-top {
+        border-color: #dee2e6 !important;
+      }
+    }
+
+    .progress {
+      border: none;
+    }
+
+    .node-bar-container {
+      background-color: #dedede;
+    }
+
+    .plan-node.selected {
+      box-shadow: none;
+      border: 2px solid #00b5e2;
+      border-radius: 2px;
+    }
+
+    .plan-diagram {
+      tr.highlight {
+        background-color: #2F3136;
+      }
+      tr.selected {
+        box-shadow: none;
+        background-color: #2F3136;
+      }
+    }
+
+    .tab-pane {
+      code {
+        color: #DCDDDE;
+        .hljs-keyword {
+          color: #52A2EF;
+        }
+      }
+
+      .stats {
+        table tbody {
+          background-color: #F8F9FA;
+        }
+      }
+    }
+  }
+
+  .plan-container.bg-light {
+    background-color: #2F3136 !important;
   }
 }

@@ -84,17 +84,17 @@ function showConnectionList(p_open_modal, p_change_group) {
 			v_row.innerHTML =
 			'<div id="connections_management_empty_all" class="my-4 text-center w-100" style="display:none;">' +
 				'<h5 class="">No connections available.</h5>' +
-				'<button type="button" class="mt-4 btn omnidb__theme__btn--primary" onclick="newConnection();">New Connection</button>' +
+				'<button type="button" class="mt-4 btn btn-primary" onclick="newConnection();">New Connection</button>' +
 			'</div>' +
 			'<div id="connections_management_empty_with_public" class="my-4 text-center w-100" style="display:none;">' +
 				'<i class="fas fa-arrow-up text-info"></i>' +
 				'<h5 class="">Your user has no connections configured yet, but there are <i class="fas fa-users text-info mx-2"></i> public connections.</h5>' +
 				'<h5 class="d-inline-block mt-4 mr-2">You can also create your own</h5>' +
-				'<button type="button" class="mt-2 btn omnidb__theme__btn--primary" onclick="newConnection();">New Connection</button>' +
+				'<button type="button" class="mt-2 btn btn-primary" onclick="newConnection();">New Connection</button>' +
 			'</div>' +
 			'<div id="connections_management_empty_group" class="my-4 text-center w-100" style="display:none;">' +
 				'<h5 class="">No connections assigned to this group yet.</h5>' +
-				'<button type="button" class="mt-4 btn omnidb__theme__btn--primary" onclick="manageGroup();">Manage Groups</button>' +
+				'<button type="button" class="mt-4 btn btn-primary" onclick="manageGroup();">Manage Groups</button>' +
 			'</div>';
 
       for (var i=0; i<p_return.v_data.v_conn_list.length; i++) {
@@ -204,7 +204,7 @@ function showConnectionList(p_open_modal, p_change_group) {
 				v_card_body_buttons.appendChild(v_button_select);
 
         var v_button_edit = document.createElement('button');
-        v_button_edit.className = 'btn btn-sm mx-1 omnidb__theme__btn--primary';
+        v_button_edit.className = 'btn btn-sm mx-1 btn-primary';
         v_button_edit.title = "Edit";
         /*if (v_conn_obj.locked==true) {
 					v_button_edit.setAttribute("disabled",true);

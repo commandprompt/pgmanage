@@ -419,7 +419,7 @@ function cellDataModal(p_ht, p_row, p_col, p_content, p_can_alter) {
 	}
 
 	v_canEditContent = p_can_alter;
-	v_save_btn = '<button type="button" class="btn omnidb__theme__btn--primary" onclick="saveEditContent()">Save</button>';
+	v_save_btn = '<button type="button" class="btn btn-primary" onclick="saveEditContent()">Save</button>';
 	v_edit_modal.innerHTML =
 	`<div id="modal_message_dialog" class="modal-dialog" role="document" style="width: 1200px;max-width: 90vw;">
 		<div class="modal-content">
@@ -435,7 +435,7 @@ function cellDataModal(p_ht, p_row, p_col, p_content, p_can_alter) {
 			</div>
 			<div class="modal-footer">
 				${v_canEditContent ? v_save_btn : ""}
-				<button type="button" class="btn omnidb__theme__btn--secondary" data-dismiss="modal" onclick="cancelEditContent()">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelEditContent()">
 				${v_canEditContent ? "Cancel" : "Close"}
 				</button>
 			</div>
