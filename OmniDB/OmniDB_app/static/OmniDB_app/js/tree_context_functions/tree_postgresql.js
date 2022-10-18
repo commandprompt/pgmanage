@@ -2506,15 +2506,17 @@ function getTreePostgresql(p_div) {
                         )
                     );
                 }
-            }, {
-                text: 'Debug Function',
-                icon: 'fas cm-all fa-bug',
-                action: function(node) {
-                    v_connTabControl.tag.createDebuggerTab(
-                        node.text);
-                    setupDebug(node, 'f');
-                }
-            }, {
+            }, 
+            // {
+            //     text: 'Debug Function',
+            //     icon: 'fas cm-all fa-bug',
+            //     action: function(node) {
+            //         v_connTabControl.tag.createDebuggerTab(
+            //             node.text);
+            //         setupDebug(node, 'f');
+            //     }
+            // }
+            {
                 text: 'Edit Comment',
                 icon: 'fas cm-all fa-edit',
                 action: function(node) {
@@ -2602,15 +2604,17 @@ function getTreePostgresql(p_div) {
                         )
                     );
                 }
-            }, {
-                text: 'Debug Procedure',
-                icon: 'fas cm-all fa-bug',
-                action: function(node) {
-                    v_connTabControl.tag.createDebuggerTab(
-                        node.text);
-                    setupDebug(node, 'p');
-                }
-            }, {
+            },
+            //  {
+            //     text: 'Debug Procedure',
+            //     icon: 'fas cm-all fa-bug',
+            //     action: function(node) {
+            //         v_connTabControl.tag.createDebuggerTab(
+            //             node.text);
+            //         setupDebug(node, 'p');
+            //     }
+            // }
+            , {
                 text: 'Edit Comment',
                 icon: 'fas cm-all fa-edit',
                 action: function(node) {
