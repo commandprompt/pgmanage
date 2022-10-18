@@ -169,7 +169,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
   //   let v_getting_started_buttons_list_item = v_getting_started_buttons_list[i];
   //   v_getting_started_buttons_list_html +=
   //   '<li class="mb-2">' +
-  //     '<button type="button" class="btn btn-lg omnidb__theme__btn--primary" onclick="startTutorial(' + v_getting_started_buttons_list_item.tutorial + ');">' +
+  //     '<button type="button" class="btn btn-lg btn-primary" onclick="startTutorial(' + v_getting_started_buttons_list_item.tutorial + ');">' +
   //       v_getting_started_buttons_list_item.icon +
   //       v_getting_started_buttons_list_item.text +
   //     '</button>' +
