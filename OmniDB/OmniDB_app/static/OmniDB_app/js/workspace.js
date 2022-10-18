@@ -325,6 +325,8 @@ function adjustQueryTabObjects(p_all_tabs) {
 	var v_objects = $(v_target_div).find("." + v_dbms + "_object").each(function() {
 		if (!$( this ).hasClass('dbms_object_hidden')) {
       $( this ).css('display','inline-block');
+      if ($(this).hasClass('form-check-inline'))
+        $(this).removeAttr("style");
     }
 	});
 
