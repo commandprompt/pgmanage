@@ -430,9 +430,11 @@
                 <li class="nav-item">
                   <a class="nav-link" id="config_options-tab" data-toggle="tab" href="#config_options" role="tab" aria-controls="config_options" aria-selected="false">Options</a>
                 </li>
+                {% if not desktop_mode %}
                 <li class="nav-item">
                   <a class="nav-link" id="config_password-tab" data-toggle="tab" href="#config_password" role="tab" aria-controls="config_password" aria-selected="false">Password</a>
                 </li>
+                {% endif %}
               </ul>
               <div class="tab-content p-2 omnidb__theme-border--primary">
 
