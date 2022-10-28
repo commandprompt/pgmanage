@@ -7,4 +7,4 @@ cd ./depploy/linux
 run ./build_images.sh
 once build_images.sh completes run./deploy.sh
 
-The build process takes about 2 minutes to complete. Once deploy.sh completes the current directory should contain omnidb-app and omnidb-server tar.gz archives
+The build process takes about 2 minutes to complete. Once deploy.sh completes the current directory should contain pgmanage-app and pgmanage-server tar.gz archives

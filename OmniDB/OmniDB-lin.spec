@@ -3,7 +3,7 @@
 block_cipher = None
 
 data_files = [
-  ('omnidb.db','.'),
+  ('pgmanage.db','.'),
   ('config.py','.'),
   ('OmniDB_app/static','OmniDB_app/static'),
   ('OmniDB_app/include','OmniDB_app/include'),

@@ -460,7 +460,7 @@
 
     setTimeout(function() {
 
-      django = child_process.spawn(path.join(global.__dirname,'omnidb-server/omnidb-server'),['-A'],{detached: false});
+      django = child_process.spawn(path.join(global.__dirname,'pgmanage-server/omnidb-server'),['-A'],{detached: false});
 
       django.stderr.on('data', (data) => {
        v_loading_data_content.innerHTML += `${data}` + '<br/>';

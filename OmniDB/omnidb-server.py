@@ -111,9 +111,9 @@ if options.homedir!='':
         OmniDB.custom_settings.HOME_DIR = options.homedir
 else:
     if OmniDB.custom_settings.DESKTOP_MODE:
-        OmniDB.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.omnidb', 'omnidb-app')
+        OmniDB.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-app')
     else:
-        OmniDB.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.omnidb', 'omnidb-server')
+        OmniDB.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-server')
 
     if not os.path.exists(OmniDB.custom_settings.HOME_DIR):
         print("Creating home directory.",flush=True)
@@ -232,7 +232,7 @@ except Exception as exc:
 
 from omnidb_server_helper import *
 
-old_db_file = dbfile = os.path.expanduser(os.path.join(OmniDB.custom_settings.HOME_DIR,'omnidb.db'))
+old_db_file = dbfile = os.path.expanduser(os.path.join(OmniDB.custom_settings.HOME_DIR,'pgmanage.db'))
 
 # SQlite database file exists, proceed with migration
 if os.path.exists(old_db_file) and not options.migratedb:
