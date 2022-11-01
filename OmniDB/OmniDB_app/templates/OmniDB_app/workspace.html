@@ -144,7 +144,7 @@
               <span id="group_actions_2" style='display: none;'>
                 <button id="button_new_group" type="button" class="btn btn-success ml-2" onclick="manageGroupSave();">Save changes</button>
               </span>
-              <div class="d-inline-block ml-4">
+              <div class="{{ desktop_mode|yesno:'d-none, d-inline-block' }} ml-4">
                 <span>Show Public Connections (<span id="conn_list_public_counter">0</span>)</span>
                 <div class="d-inline-block omnidb__switch ml-2" data-toggle="tooltip" data-placement="right" data-html="true" title="<h5>Show Public Connections.</h5><div>Switch ON shows all public connections.</div>">
                   <input type="checkbox" id="conn_list_public" class="omnidb__switch--input" onchange="toggleConnectionsPublic(event)">
@@ -185,6 +185,7 @@
                   <label for="conn_form_title">Title</label>
                   <input type="text" class="form-control" id="conn_form_title" placeholder="Title">
                 </div>
+                {% if not desktop_mode %}
                 <div class="col-md-4 mt-auto mb-3">
                   <span class="ml-2">Public connection?</span>
         					<div class="d-inline-block ml-2">
@@ -194,6 +195,7 @@
         						</div>
         					</div>
                 </div>
+                {% endif %}
               </div>
 
               <div class="card">

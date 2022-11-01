@@ -240,7 +240,7 @@ function showConnectionList(p_open_modal, p_change_group) {
         }(v_conn_obj));
 
 				// Adding public visuals.
-				if (v_conn_obj.public) {
+				if (v_conn_obj.public && !gv_desktopMode) {
 					v_total_public_conn += 1;
 					var v_public_icon = document.createElement('i');
 					v_public_icon.setAttribute('style', 'color: #FFF;position: absolute;top: -5px;left: -5px;background-color: #c57dd2;padding: 4px 2px;border-radius: 100%;');
@@ -626,7 +626,7 @@ function saveConnection() {
 	var input = JSON.stringify({
     "id": v_connections_data.current_id,
     "type": document.getElementById('conn_form_type').value,
-		"public": document.getElementById('conn_form_public').checked,
+		"public": !gv_desktopMode ?  document.getElementById('conn_form_public').checked : false,
     "connstring": document.getElementById('conn_form_connstring').value,
     "server": document.getElementById('conn_form_server').value,
     "port": document.getElementById('conn_form_port').value,
@@ -711,7 +711,9 @@ function editConnection(p_conn_obj) {
   document.getElementById('conn_form_ssh_user').value = p_conn_obj.tunnel.user;
   document.getElementById('conn_form_ssh_password').value = '';
   document.getElementById('conn_form_ssh_key').value = '';
-	document.getElementById('conn_form_public').checked = (p_conn_obj.public);
+	if (!gv_desktopMode) {
+		document.getElementById('conn_form_public').checked = (p_conn_obj.public);
+	}
 
 	let v_enable_list = [];
 	let v_disable_list = [];
@@ -860,7 +862,9 @@ function newConnection() {
 	document.getElementById('conn_form_button_save_connection').setAttribute('disabled',true);
   document.getElementById('conn_form_type').value = -1;
 	document.getElementById('conn_form_title').value = '';
+  if (!gv_desktopMode) {
 	document.getElementById('conn_form_public').checked = false;
+  }
   document.getElementById('conn_form_connstring').value = '';
   document.getElementById('conn_form_server').value = '';
   document.getElementById('conn_form_port').value = '';
