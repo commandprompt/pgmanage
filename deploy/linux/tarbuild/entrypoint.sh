@@ -3,7 +3,6 @@
 # Checking environment
 echo "REPO=$REPO"
 echo "BRANCH=$BRANCH"
-echo "VERSION=$VERSION"
 
 # Cloning repo
 git clone $REPO --depth 1 -b $BRANCH OmniDB
@@ -12,8 +11,18 @@ git clone $REPO --depth 1 -b $BRANCH OmniDB
 cd OmniDB/
 pip3 install -r requirements.txt
 
+# Fetching all tags from remote repository
+git fetch --all --tags
+
+# Getting last tag version
+export VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+
 # Building server
 cd OmniDB/
+
+# Adding VERSION to .env file for pyinstaller
+echo 'VERSION'=$VERSION > .env
+
 rm -f pgmanage.db pgmanage.log
 touch pgmanage.db
 pyinstaller OmniDB-lin.spec

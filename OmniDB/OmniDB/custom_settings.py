@@ -1,8 +1,16 @@
 import os
+import sys
+from dotenv import load_dotenv
+
+# this is for pyinstaller script to collect .env file
+extDataDir = os.getcwd()
+if getattr(sys, 'frozen', False):
+    extDataDir = sys._MEIPASS
+    load_dotenv(dotenv_path=os.path.join(extDataDir, '.env'))
 
 # OmniDB settings
-OMNIDB_VERSION = 'PgManage 1.0'
-OMNIDB_SHORT_VERSION = '1.0'
+OMNIDB_VERSION = f"PgManage {os.getenv('VERSION', 'dev')}"
+OMNIDB_SHORT_VERSION = os.getenv('VERSION', 'dev')
 DEV_MODE = True
 DESKTOP_MODE = False
 APP_TOKEN = None
