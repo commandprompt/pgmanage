@@ -8,9 +8,11 @@ SHELL ["/bin/bash", "-c"]
 
 ARG REPO="https://github.com/commandprompt/pgmanage"
 ARG BRANCH="dev"
+ARG VERSION=""
 
 ENV REPO=$REPO
 ENV BRANCH=$BRANCH
+ENV VERSION=$VERSION
 
 RUN apt-get update && apt-get install -y git build-essential software-properties-common  zlib1g-dev libpq-dev libsasl2-dev  libldap2-dev libssl-dev curl
 RUN add-apt-repository --yes ppa:deadsnakes/ppa

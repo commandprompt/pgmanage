@@ -17,4 +17,3 @@ PyMySQL==1.0.*
 pgspecial==1.13.0
 sshtunnel==0.1.5
 pexpect==4.7.0
-python-dotenv==0.21.0
