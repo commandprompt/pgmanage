@@ -11,6 +11,8 @@ from OmniDB import settings
 from OmniDB_app.include import OmniDatabase
 from OmniDB_app.models import Technology, Connection, Group, GroupConnection
 from OmniDB_app.views.memory_objects import user_authenticated
+from OmniDB_app.utils.crypto import encrypt, decrypt
+from OmniDB_app.utils.master_password import master_pass_manager
 
 
 @user_authenticated
@@ -25,7 +27,7 @@ def get_connections(request):
     v_connection_list = []
     connections = Connection.objects.filter(Q(user=request.user) | Q(public=True))
 
-    if connections:
+    if connections and master_pass_manager.get(request.user):
         for conn in connections:
 
             v_conn_object = {
@@ -310,12 +312,19 @@ def save_connection(request):
     v_return = {'v_data': '', 'v_error': False, 'v_error_id': -1}
 
     v_session = request.session.get('omnidb_session')
+    key = master_pass_manager.get(request.user)
 
     json_object = json.loads(request.POST.get('data', None))
     p_id = json_object['id']
     try:
         # New connection
         if p_id == -1:
+            password = ''
+            tunnel_password = ''
+            if json_object['password']:
+                password = encrypt(json_object['password'], key)
+            if json_object['tunnel']['password'] != '':
+                tunnel_password = encrypt(json_object['tunnel']['password'], key)
             conn = Connection(
                 user=request.user,
                 technology=Technology.objects.get(name=json_object['type']),
@@ -323,12 +332,12 @@ def save_connection(request):
                 port=json_object['port'],
                 database=json_object['database'],
                 username=json_object['user'],
-                password=json_object['password'],
+                password=password,
                 alias=json_object['title'],
                 ssh_server=json_object['tunnel']['server'],
                 ssh_port=json_object['tunnel']['port'],
                 ssh_user=json_object['tunnel']['user'],
-                ssh_password=json_object['tunnel']['password'],
+                ssh_password=tunnel_password,
                 ssh_key=json_object['tunnel']['key'],
                 use_tunnel=json_object['tunnel']['enabled'],
                 conn_string=json_object['connstring'],
@@ -351,13 +360,13 @@ def save_connection(request):
             conn.database = json_object['database']
             conn.username = json_object['user']
             if json_object['password'].strip() != '':
-                conn.password = json_object['password']
+                conn.password = encrypt(json_object['password'], key)
             conn.alias = json_object['title']
             conn.ssh_server = json_object['tunnel']['server']
             conn.ssh_port = json_object['tunnel']['port']
             conn.ssh_user = json_object['tunnel']['user']
             if json_object['tunnel']['password'].strip() != '':
-                conn.ssh_password = json_object['tunnel']['password']
+                conn.ssh_password = encrypt(json_object['tunnel']['password'], key)
             if json_object['tunnel']['key'].strip() != '':
                 conn.ssh_key = json_object['tunnel']['key']
 
@@ -371,17 +380,18 @@ def save_connection(request):
             'server': conn.ssh_server,
             'port': conn.ssh_port,
             'user': conn.ssh_user,
-            'password': conn.ssh_password,
+            'password': decrypt(conn.ssh_password, key) if conn.ssh_password else '',
             'key': conn.ssh_key
         }
-
+        # this is for sqlite3 db connection because it has no password
+        password = decrypt(conn.password, key) if conn.password else ''
         database = OmniDatabase.Generic.InstantiateDatabase(
             conn.technology.name,
             conn.server,
             conn.port,
             conn.database,
             conn.username,
-            conn.password,
+            password,
             conn.id,
             conn.alias,
             p_conn_string=conn.conn_string,

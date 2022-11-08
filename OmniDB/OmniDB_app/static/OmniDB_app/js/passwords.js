@@ -112,3 +112,45 @@ function checkPasswordPrompt(p_database_index, p_callback_function, p_cancel_cal
     );
   }
 }
+
+
+function showMasterPassPrompt(p_message) {
+  v_modal_password_ok_clicked = false;
+  var v_content_div = document.getElementById('modal_password_content');
+  var v_button_ok = document.getElementById('modal_password_ok');
+  var v_button_cancel = document.getElementById('modal_password_cancel');
+  var v_modal_password_input = document.getElementById('txt_password_prompt');
+
+  if (p_message)
+    v_content_div.innerHTML = p_message;
+
+  $('#modal_password').modal();
+
+  v_modal_password_ok_function = function() {
+    v_modal_password_ok_clicked = true;
+  }
+
+  v_modal_password_ok_after_hide_function = function() {
+    execAjax('/master_password/',
+      JSON.stringify({"master_password": v_modal_password_input.value}),
+      function(p_return) {
+
+        // Retrieving database list.
+        getDatabaseList(true);
+
+        // Retrieving connection list
+        showConnectionList(false, false);
+      },
+      function(p_return) {
+        showMasterPassPrompt(p_return.v_data);
+      },
+      'box'
+    );
+  }
+
+  v_button_ok.onclick = v_modal_password_ok_function;
+
+  v_button_cancel.onclick = function() {
+    v_modal_password_ok_clicked = false;
+  }
+}

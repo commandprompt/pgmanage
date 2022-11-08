@@ -1,3 +1,4 @@
+from unittest.util import _MAX_LENGTH
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -14,6 +15,7 @@ class UserDetails(models.Model):
     csv_encoding = models.CharField(max_length=50, blank=False, default='utf-8')
     csv_delimiter = models.CharField(max_length=10, blank=False, default=';')
     welcome_closed = models.BooleanField(default=False)
+    masterpass_check = models.CharField(max_length=256, default='')
 
 class Shortcut(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)

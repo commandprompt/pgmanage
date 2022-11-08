@@ -24,6 +24,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 from OmniDB_app.views.memory_objects import *
+from OmniDB_app.utils.master_password import master_pass_manager
 
 import logging
 logger = logging.getLogger(__name__)
@@ -84,6 +85,7 @@ def logout(request):
 
     v_session = request.session.get('omnidb_session')
     logger.info('User "{0}" logged out.'.format(v_session.v_user_name))
+    master_pass_manager.remove(request.user)
     logout_django(request)
 
     return redirect(settings.PATH + '/omnidb_login')

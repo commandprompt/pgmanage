@@ -1,3 +1,5 @@
+from OmniDB_app.utils.crypto import decrypt
+from OmniDB_app.utils.master_password import master_pass_manager
 import OmniDB_app.include.Spartacus as Spartacus
 import OmniDB_app.include.Spartacus.Database as Database
 import OmniDB_app.include.Spartacus.Utils as Utils
@@ -191,23 +193,26 @@ class Session(object):
         self.v_databases = {}
 
         try:
+            current_user = UserDetails.objects.get(user__id=self.v_user_id)
+            key = master_pass_manager.get(current_user)
             for conn in Connection.objects.filter(Q(user=User.objects.get(id=self.v_user_id)) | Q(public=True)):
                 tunnel_information = {
                     'enabled': conn.use_tunnel,
                     'server': conn.ssh_server,
                     'port': conn.ssh_port,
                     'user': conn.ssh_user,
-                    'password': conn.ssh_password,
+                    'password': decrypt(conn.ssh_password, key) if conn.ssh_password else '',
                     'key': conn.ssh_key
                 }
-
+                # this is for sqlite3 db connection because it has now password
+                password = decrypt(conn.password, key) if conn.password else ''
                 database = OmniDatabase.Generic.InstantiateDatabase(
     				conn.technology.name,
     				conn.server,
     				conn.port,
     				conn.database,
     				conn.username,
-                    conn.password,
+                    password,
                     conn.id,
                     conn.alias,
                     p_conn_string = conn.conn_string,

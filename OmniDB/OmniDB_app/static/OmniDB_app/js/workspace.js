@@ -101,17 +101,23 @@ $(function () {
   // Creating the snippets panel.
   v_connTabControl.tag.createSnippetPanel();
 
+  // Ask for master password
+  if (master_key === 'False') {
+    showMasterPassPrompt(`Enter a master password for this session.
+    It will be used to secure your database passwords.`);
+  } else {
+    // Retrieving database list.
+    getDatabaseList(true);
+
+    // Retrieving connection list
+    showConnectionList(false, false);
+  }
+
   // Updating explain component choice.
   updateExplainComponent();
 
   // Retrieving global snippets
   getAllSnippets();
-
-  // Retrieving database list.
-  getDatabaseList(true);
-
-  // Retrieving connection list
-  showConnectionList(false, false)
 
   // Creating omnis.
   v_omnis.root = document.getElementById('omnidb__main');

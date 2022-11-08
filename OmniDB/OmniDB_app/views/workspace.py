@@ -28,6 +28,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 from OmniDB_app.views.memory_objects import *
+from OmniDB_app.utils.crypto import make_hash
+from OmniDB_app.utils.master_password import master_pass_manager
 
 @login_required
 def index(request):
@@ -44,8 +46,8 @@ def index(request):
         return redirect(settings.LOGIN_REDIRECT_URL)
 
     v_session = request.session.get('omnidb_session')
-
-    v_session.RefreshDatabaseList();
+    if master_pass_manager.get(request.user):
+        v_session.RefreshDatabaseList()
 
     #Shortcuts
     default_shortcuts = []
@@ -106,7 +108,8 @@ def index(request):
         'tab_token': ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(20)),
         'show_terminal_option': v_show_terminal_option,
         'url_folder': settings.PATH,
-        'csrf_cookie_name': settings.CSRF_COOKIE_NAME
+        'csrf_cookie_name': settings.CSRF_COOKIE_NAME,
+        'master_key': bool(master_pass_manager.get(request.user))
     }
 
     #wiping saved tabs databases list
@@ -1246,5 +1249,57 @@ def get_autocomplete_results(request, v_database):
         'max_result_word': max_result_word,
         'max_complement_word': max_complement_word
     }
+
+    return JsonResponse(v_return)
+
+
+@user_authenticated
+def master_password(request):
+    """
+    Set the master password and store in the memory
+    This password will be used to encrypt/decrypt saved server passwords
+    """
+
+    v_return = {'v_data': '', 'v_error': False, 'v_error_id': -1}
+
+    v_session = request.session.get('omnidb_session')
+
+    # Invalid session
+    if not v_session:
+        v_return['v_error'] = True
+        v_return['v_error_id'] = 1
+        return JsonResponse(v_return)
+
+    json_object = json.loads(request.POST.get('data', None))
+    master_pass = json_object['master_password']
+
+    master_pass_hash = make_hash(master_pass)
+    user_details = UserDetails.objects.get(user=request.user)
+
+    # if master pass is set previously
+    if user_details.masterpass_check \
+        and not master_pass_manager.validate_master_password(user_details, master_pass_hash):
+        v_return['v_error'] = True
+        v_return['v_data'] = "Master password is not correct."
+        return JsonResponse(v_return)
+
+    if json_object != '' and json_object.get('master_password', '') != '':
+
+        # store the master pass in the memory
+        master_pass_manager.set(request.user, master_pass_hash)
+
+        # set the encrypted sample text with the new master pass
+        master_pass_manager.set_masterpass_check_text(user_details, master_pass_hash)
+    
+    elif json_object.get('master_password', '') == '':
+        v_return['v_error'] = True
+        v_return['v_data'] = "Master password cannot be empty."
+        return JsonResponse(v_return)
+
+    # refreshing database session list with provided master password
+    v_session.RefreshDatabaseList()
+
+    # saving new omnidb_session
+    request.session['omnidb_session'] = v_session
 
     return JsonResponse(v_return)

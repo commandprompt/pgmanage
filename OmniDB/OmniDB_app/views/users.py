@@ -20,6 +20,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User
 
 from OmniDB_app.views.memory_objects import *
+from OmniDB_app.utils.master_password import master_pass_manager
 
 
 @superuser_required
@@ -89,6 +90,7 @@ def remove_user(request):
 
     try:
         user = User.objects.get(id=v_id)
+        master_pass_manager.remove(user)
         user.delete()
     except Exception as exc:
         v_return['v_data'] = str(exc)
