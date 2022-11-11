@@ -531,14 +531,14 @@ function createTree(p_div,p_backColor,p_contextMenu) {
 			if (p_items!=null) {
 				v_items_list = v_items_list.concat(p_items);
 			}
-
-			customMenu(
-				{
-					x:p_event.clientX+5,
-					y:p_event.clientY+5
-				},
-				v_items_list,
-				p_node);
+			if (v_items_list.length !== 0)
+				customMenu(
+					{
+						x:p_event.clientX+5,
+						y:p_event.clientY+5
+					},
+					v_items_list,
+					p_node);
 		}
 	}
 
