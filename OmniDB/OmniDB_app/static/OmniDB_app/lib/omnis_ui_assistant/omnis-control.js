@@ -329,7 +329,7 @@ function createOmnisUiAssistant({p_callback_end = false, p_omnis, p_steps = []})
 
         var v_title = '';
         if (v_step_item.title) {
-          v_title += '<div class="omnis__step__title card-title p-2 mt-2 mb-0"><h5 class="mb-0">' + v_step_item.title + '</h5></div>';
+          v_title += '<div class="omnis__step__title card-title p-2 mt-2 mb-0"><h2 class="mb-0">' + v_step_item.title + '</h2></div>';
         }
 
         var v_message = '';

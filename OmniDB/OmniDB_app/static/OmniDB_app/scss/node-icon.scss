@@ -36,9 +36,31 @@ SOFTWARE.
 }
 
 .node-spin {
-  background-image: url("../images/omnidb_loading.svg");
-  background-size: 16px;
+  -webkit-animation-name: fa-spin;
+    animation-name: fa-spin;
+  -webkit-animation-delay: var(--fa-animation-delay, 0s);
+    animation-delay: var(--fa-animation-delay, 0s);
+  -webkit-animation-direction: var(--fa-animation-direction, normal);
+    animation-direction: var(--fa-animation-direction, normal);
+  -webkit-animation-duration: var(--fa-animation-duration, 2s);
+    animation-duration: var(--fa-animation-duration, 2s);
+  -webkit-animation-iteration-count: var(--fa-animation-iteration-count, infinite);
+    animation-iteration-count: var(--fa-animation-iteration-count, infinite);
+  -webkit-animation-timing-function: var(--fa-animation-timing, linear);
+    animation-timing-function: var(--fa-animation-timing, linear);
+
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-rendering: auto;
+
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  &::before {
+    content: "\f110";
+  }
 }
+
 
 .node-postgresql {
   background-image: url( "../images/postgresql_medium.png")

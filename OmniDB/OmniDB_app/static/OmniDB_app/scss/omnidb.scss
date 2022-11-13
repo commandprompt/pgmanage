@@ -411,19 +411,6 @@ button.close {
 }
 
 /* WELCOME */
-.omnidb__welcome__loading {
-  animation: workspaceFadeIn 0.45s ease forwards 0.3s;
-  background: url('../images/omnidb_loading.svg') no-repeat;
-  background-size: 84px 84px;
-  display: inline-block;
-  height: 84px;
-  width: 84px;
-  opacity: 0;
-  position: absolute;
-  z-index: 1;
-  left: 0px;
-  bottom: -36px;
-}
 .omnidb__welcome__intro-text {
   animation: workspaceSlideInFromRight 0.45s ease forwards 0.85s;
   display: inline-block;
@@ -1857,6 +1844,15 @@ body {
   height: 28px;
   text-align: center;
 }
+
+.omnis__step__body {
+  ol {
+    li::marker {
+      font-size: 18px;
+    }
+  }
+}
+
 .omnis__cloned-element__waves {
   display: inline-block;
   position: relative;

@@ -113,10 +113,8 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
 
   // Title html string
   let v_html_title =
-  '<h1 class="mb-4" style="padding-left: 100px; position: relative;">' +
-    // '<span class="omnidb__welcome__loading"></span>' +
-    '<span class="omnidb__welcome__loading mb-3" style="background: none;">' + v_animated_omnis + '</span>' +
-    '<span class="omnidb__welcome__intro-text">Hi, welcome to <span style="color:#4a6cbb;">PgManage!</span></span>' +
+  '<h1 class="mb-4">' +
+  '<span class="omnidb__welcome__intro-text">Hi, welcome to <span style="color:#4a6cbb;">PgManage!</span></span>' +
   '</h1>';
   // Intro html string
   let v_html_intro =
@@ -126,17 +124,16 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
 
 
     '<button type="button" class="btn btn-lg btn-primary w-auto mx-auto my-4" onclick="startTutorial(' + "'getting_started'" + ');">' +
-      '<i class="fas fa-list mr-2"></i>' +
       'Getting started' +
     '</button>' +
 
 
     '<div class="alert-info p-2 rounded mt-4" style="display: grid; grid-template: \'icon text\';">' +
-      '<i class="fas fa-exclamation-triangle p-4" style="grid-area: icon;"></i>' +
+      '<i class="mt-4 fas fa-2xl fa-exclamation-triangle p-4" style="grid-area: icon;"></i>' +
       '<div style="grid-area: text;">' +
         `
         Our focus is to provide a very flexible, secure and work-effective environment for multiple DBMS.<br>
-        With that in mind, you should <strong>be aware the many actions on the UI can lead to a direct interaction with the database</strong> that you are connected with.</br>
+        With that in mind, you should <strong>be aware that many actions on the UI can lead to a direct interaction with the database</strong> that you are connected with.</br>
         ` +
       '</div>' +
     '</div>' +
@@ -192,7 +189,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
   let v_html_useful_links =
   '<div class="alert alert-success p-3 omnidb__welcome__useful-card">' +
     '<h2 class="text-center mb-4">Useful stuff</h2>' +
-    '<ul>' +
+    '<ul class="list-unstyled">' +
       '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="https://github.com/commandprompt/pgmanage"><i class="fas fa-user"></i> <span>PgManage website</span></a></li>' +
       '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="https://github.com/commandprompt/pgmanage"><i class="fab fa-github"></i> <span>Github repo</span></a></li>' +
       '<li><a class="btn btn-success text-white" target="_blank" href="https://omnidb.readthedocs.io/"><i class="fas fa-list"></i> <span>Read the docs</span></a></li>' +

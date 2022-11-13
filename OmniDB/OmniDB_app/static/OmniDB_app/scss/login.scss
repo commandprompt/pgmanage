@@ -192,18 +192,7 @@ button {
 body.loading .div_loading {
     display: block;
 }
-/*
-.div_loading {
-  display: none;
-  position: absolute;
-  z-index: 100005;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  background: rgba(252, 253, 253, 0.6) url(../images/omnidb_loading.svg) 50% 50% no-repeat
-}
-*/
+
 /* MODAL State controls */
 .isModal {
   display: none;
@@ -243,67 +232,90 @@ body.loading .div_loading {
 	animation: slideInFromRight 0.45s ease forwards 2.1s;
 }
 
-/* Animated Logo Omnidb styles */
-.omnidb__login__logo svg {
-	width: 100%;
-}
+/* Animated Logo styles */
+.pgmanage__login__logo {
+	svg {
+		width: 100%;
 
-.logo_omnidb path,
-.logo_omnidb rect {
-	fill: transparent;
-	stroke: #818181;
-	stroke-width: 1px;
+		#gear-0 path,
+		#gear-0 rect {
+		  animation: fadeIn 0.5s ease forwards 0.2s;
+		  opacity: 0;
+		}
 
-	stroke-dasharray: 100;
-	stroke-dashoffset: 100;
-}
+		#gear-1 path,
+		#gear-1 rect {
+		  animation: fadeIn 0.5s ease forwards 0.5s;
+		  opacity: 0;
+		}
 
-.logo_omnidb_to-blue path,
-.logo_omnidb_to-blue rect {
-	animation:  svgDrawStrokes 1s linear forwards 0.3s,
-				svgToBlue 0.6s linear forwards 1.3s,
-				svgFadeStrokes 0.6s linear forwards 1.3s;
-}
+		#gear-2 path,
+		#gear-2 rect {
+		  animation: fadeIn 0.5s ease forwards 0.9s;
+		  opacity: 0;
+		}
 
-.logo_omnidb_to-darkblue path,
-.logo_omnidb_to-darkblue rect {
-	animation:  svgDrawStrokes 1s linear forwards 0.3s,
-				svgToDarkblue 0.6s linear forwards 1.3s,
-				svgFadeStrokes 0.6s linear forwards 1.3s;
-}
+		#gear-3 path,
+		#gear-3 rect {
+		  animation: fadeIn 0.5s ease forwards 1.2s;
+		  opacity: 0;
+		}
 
-@keyframes  svgDrawStrokes {
-	to {
-		stroke-dashoffset: 0;
+		#text_pg path,
+		#text_pg rect,
+		#text_manage path,
+		#text_manage rect {
+		  fill-opacity: 0;
+		  stroke: #818181;
+		  stroke-width: 1px;
+		  stroke-dasharray: 100;
+		  stroke-dashoffset: 100;
+		}
+
+		#text_pg path,
+		#text_pg rect,
+		#text_manage path,
+		#text_manage rect {
+		  animation: svgDrawStrokes 1s linear forwards 0.3s,
+			fadeInInfill 0.6s linear forwards 1.3s,
+			svgFadeStrokes 0.6s linear forwards 1.3s;
+		}
 	}
 }
+
+@keyframes svgDrawStrokes {
+  to {
+	stroke-dashoffset: 0;
+  }
+}
+
 @keyframes svgFadeStrokes {
-	to {
-		stroke: transparent;
-	}
+  to {
+	stroke: transparent;
+  }
 }
-@keyframes svgToBlue {
-	to {
-		fill: #878FC6;
-	}
-}
-@keyframes svgToDarkblue {
-	to {
-		fill: #525678;
-	}
-}
+
 @keyframes fadeIn {
-	to {
-		opacity: 1;
-	}
+  to {
+	opacity: 1;
+  }
 }
+
+@keyframes fadeInInfill {
+  to {
+	fill-opacity: 1;
+  }
+}
+
 @keyframes slideInFromRight {
-	to {
-		transform: translateX(0);
-	}
+  to {
+	transform: translateX(0);
+  }
 }
+
 @keyframes growInFromTop {
-	to {
-		height: 210px;
-	}
+  to {
+	height: 210px;
+	overflow-y: auto;
+  }
 }
