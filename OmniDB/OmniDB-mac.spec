@@ -3,7 +3,7 @@
 block_cipher = None
 
 data_files_server = [
-  ('omnidb.db','.'),
+  ('pgmanage.db','.'),
   ('config.py','.'),
   ('OmniDB_app/static','OmniDB_app/static'),
   ('OmniDB_app/include','OmniDB_app/include'),
@@ -28,19 +28,21 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
+          a.binaries,
+          a.zipfiles,
+          a.datas,
           [],
-          exclude_binaries=True,
-          name='omnidb-server',
+          name='pgmanage',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=True )
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
-               strip=False,
-               upx=True,
-               upx_exclude=[],
-               name='omnidb-server')
+          upx_exclude=[],
+          runtime_tmpdir=None,
+          console=False,
+          disable_windowed_traceback=False,
+          argv_emulation=False,
+          target_arch=None,
+          codesign_identity=None,
+          entitlements_file=None,
+          )
