@@ -484,7 +484,7 @@
 
     setTimeout(function() {
 
-      django = child_process.spawn(path.join(global.__dirname,'pgmanage-server/pgmanage'),['-A'],{detached: false});
+      django = child_process.spawn(path.join(global.__dirname,'pgmanage-server/pgmanage-server'),['-A'],{detached: false});
 
       django.stderr.on('data', (data) => {
        v_loading_data_content.innerHTML += `${data}` + '<br/>';

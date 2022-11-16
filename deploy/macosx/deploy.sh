@@ -53,7 +53,7 @@ sed -i '' "s/dev/$APP_VERSION/" OmniDB/custom_settings.py
 
 pyinstaller OmniDB-mac.spec
 
-mkdir pgmanage-server && mv dist/pgmanage pgmanage-server
+mkdir pgmanage-server && mv dist/pgmanage-server pgmanage-server
 
 curl -LO https://dl.nwjs.io/v0.69.1/nwjs-v0.69.1-osx-x64.zip
 unzip nwjs-v0.69.1-osx-x64.zip

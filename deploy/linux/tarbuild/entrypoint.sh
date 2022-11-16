@@ -32,11 +32,11 @@ sed -i "s/dev/$VERSION/" OmniDB/custom_settings.py
 rm -f pgmanage.db pgmanage.log
 touch pgmanage.db
 pyinstaller OmniDB-lin.spec
-mv dist/omnidb-server $HOME
+mv dist/pgmanage-server $HOME
 rm -rf build dist
 cd $HOME
 mkdir pgmanage-server_$VERSION
-cp omnidb-server pgmanage-server_$VERSION/
+cp pgmanage-server pgmanage-server_$VERSION/
 tar -czvf pgmanage-server_$VERSION.tar.gz pgmanage-server_$VERSION/
 mv pgmanage-server_$VERSION.tar.gz /tmp/
 
@@ -51,10 +51,10 @@ rm ./lib/libvulkan.so.1
 rm ./lib/libvk_swiftshader.so
 rm ./lib/*.json
 mkdir pgmanage-server
-cp $HOME/omnidb-server ./pgmanage-server/
+cp $HOME/pgmanage-server ./pgmanage-server/
 cp $HOME/OmniDB/deploy/app/* .
 sed -i "s/version_placeholder/v$VERSION/" index.html
-mv nw omnidb-app
+mv nw pgmanage-app
 cd $HOME
 tar -czvf pgmanage-app_$VERSION.tar.gz pgmanage-app_$VERSION/
 mv pgmanage-app_$VERSION.tar.gz /tmp/
