@@ -44,18 +44,18 @@ $(function () {
   // Create the branding item for omnidb.
   if (v_connTabControl.tabList.length === 0) {
     // Creating the toggling button.
-    v_connTabControl.createTab(
-      {
-        p_icon: '<i class="fas fa-bars collapse-menu"></i>',
-        p_name: 'Collapse menu',
-        p_close: false,
-        p_selectable: false,
-        p_clickFunction: function(e) {
-          v_connTabControl.toggleTabMenu();
-          refreshHeights();
-        },
-      }
-    );
+    // v_connTabControl.createTab(
+    //   {
+    //     p_icon: '<i class="fas fa-bars collapse-menu"></i>',
+    //     p_name: 'Collapse menu',
+    //     p_close: false,
+    //     p_selectable: false,
+    //     p_clickFunction: function(e) {
+    //       v_connTabControl.toggleTabMenu();
+    //       refreshHeights();
+    //     },
+    //   }
+    // );
 
     v_connTabControl.createTab({
       p_icon: '<i class="fas fa-bolt"></i>',

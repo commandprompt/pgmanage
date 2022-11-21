@@ -117,6 +117,17 @@ a:not([href]):not([tabindex]){
 .omnidb__tab-menu.omnidb__tab-menu--primary:hover .omnidb__tab-menu__link-close {
   opacity: 1;
 }
+
+.omnidb__tab-menu.omnidb__tab-menu--primary .omnidb__tab-menu__link-close {
+  opacity: 0.25;
+  position: absolute;
+  right: 0px;
+  top: 25%;
+  transform: translateY(-50%);
+  transition: 0.3s;
+  color: white;
+}
+
 .omnidb__tab-menu--primary .omnidb__tab-menu__link-name {
   display: inline-block;
   overflow: hidden;
@@ -152,7 +163,7 @@ a:not([href]):not([tabindex]){
   position: relative;
 }
 .omnidb__tab-menu .omnidb__tab-menu__link-close {
-  opacity: 0;
+  opacity: 0.25;
   position: absolute;
   right: 0px;
   top: 50%;
@@ -1805,33 +1816,38 @@ body {
   cursor: pointer;
   position: fixed;
   transition: all 0.35s linear 0s;
+  opacity: 0.8;
+  svg {
+    .icon-body {
+      fill: #4A81D4;
+    }
+    .icon-bg {
+      fill: white;
+    }
+  }
 }
+
 .omnis--active {
   cursor: unset;
+  opacity: 1;
   pointer-events: none;
+  background-color: transparent;
+  animation: float 6s ease-in-out infinite;
 }
-.omnis--active .animated-omnis__group--to-blue path,
-.omnis--active .animated-omnis__group--to-blue rect {
-  fill: #009bff;
-}
-.omnis--active:hover {
-  // .omnis--active .animated-omnis__group--to-blue path,
-  // .omnis--active .animated-omnis__group--to-blue rect {
-  //   animation: animatedOmnisSvgDrawStrokes 2s linear infinite alternate 0s,
-  // 				animatedOmnisSvgToActiveBlue 1.2s linear infinite alternate 1s,
-  // 				animatedOmnisSvgFadeStrokes 1.2s linear infinite alternate 1s;
-  // }
-  // .omnis--active .animated-omnis__group--to-darkblue path,
-  // .omnis--active .animated-omnis__group--to-darkblue rect {
-  //   animation: animatedOmnisSvgDrawStrokes 2s linear infinite alternate 0s,
-  //         animatedOmnisSvgToActiveBlue 1.2s linear infinite alternate 2s,
-  //         animatedOmnisSvgFadeStrokes 1.2s linear infinite alternate 2s;
-  // }
-  // .omnis--active .animated-omnis__icon-external {
-  //   transform: rotate(0deg);
-  //   transform-origin: center;
-  //   animation: animatedOmnisSvgRotate 5s linear infinite 0s;
-  // }
+
+@keyframes float {
+	0% {
+		box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6);
+		transform: translateY(0px);
+	}
+	50% {
+		box-shadow: 0 15px 15px 0px rgba(0,0,0,0.2);
+		transform: translateY(-10px);
+	}
+	100% {
+		box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6);
+		transform: translateY(0px);
+	}
 }
 
 /* Omnis UI Assistant */

@@ -77,6 +77,14 @@ SOFTWARE.
   /* OMNIS */
   .omnis {
     background-color: rgba(47,49,54,0.25);
+    svg {
+      .icon-body {
+        fill: #394E83;
+      }
+      .icon-bg {
+        fill: white;
+      }
+    }
   }
   .omnis.omnis--active {
     background-color: rgba(47,49,54,1);

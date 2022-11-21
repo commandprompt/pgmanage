@@ -39,7 +39,7 @@ var v_createGraphTabFunction = function(p_name) {
     p_icon: `<i class="fab fa-hubspot icon-tab-title"></i>`,
     p_name: '<span id="tab_title">' + v_name + '</span><span id="tab_loading" style="visibility:hidden;"><i class="tab-icon node-spin"></i></span><i title="" id="tab_check" style="display: none;" class="fas fa-check-circle tab-icon icon-check"></i>',
     p_selectFunction: function() {
-      document.title = 'OmniDB'
+      document.title = 'PgManage'
       if(this.tag != null) {
         this.tag.resize();
       }

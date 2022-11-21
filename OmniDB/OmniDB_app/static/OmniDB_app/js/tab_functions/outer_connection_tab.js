@@ -82,7 +82,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
       p_icon: v_icon,
       p_name: v_conn_name,
       p_selectFunction: function() {
-        document.title = 'OmniDB'
+        document.title = 'PgManage'
         if(this.tag != null) {
           checkTabStatus(this);
           refreshHeights(true);
@@ -92,7 +92,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
         }
         $('[data-toggle="tooltip"]').tooltip({animation:true});// Loads or Updates all tooltips
       },
-      p_close: false,// Replacing default close icon with contextMenu.
+      p_close: true,
       p_closeFunction: function(e,p_tab) {
         var v_this_tab = p_tab;
         beforeCloseTab(e,
