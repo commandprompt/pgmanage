@@ -770,6 +770,55 @@
       </div>
     </div>
 
+    <!-- Modal Master Password -->
+
+    <div class="modal fade" id="modal_password_set" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header justify-content-center">
+            <h5 class="modal-title">Master Password</h5>
+          </div>
+          <div class="modal-body">
+            <div id="modal_password_content" style='white-space: pre-line;'>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 mb-3">
+                <input id="master_password" type="password" class="form-control" placeholder="New Password" oninput="checkMasterPassword()" minlength="8" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <input id="master_password_confirm" type="password" class="form-control" placeholder="Confirm Password" oninput="checkMasterPassword()" minlength="8" required>
+                <div class="invalid-tooltip">
+                  Password Must be Matching.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="password_set" type="button" class="btn btn-success" data-dismiss="modal" onclick="saveMasterPass()" disabled>Set Master password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modal_password_check" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header justify-content-center">
+            <h5 class="modal-title">Master Password</h5>
+          </div>
+          <div class="modal-body">
+            <div id="master_password_content" style='white-space: pre-line;'>
+            </div>
+            <input id="master_password_check" class="form-control" type="password" placeholder="Password" style="margin-top: 20px; margin-bottom:20px; text-align: center;" minlength="8" required/>
+          </div>
+          <div class="modal-footer">
+            <button id="password_check_button" type="button" class="btn btn-success" data-dismiss="modal" disabled>Ok</button>
+            <button id="password_reset_button" type="button" class="btn btn-danger" data-dismiss="modal">Reset Master Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="div_autocomplete" class="omnidb__autocomplete">
       <div id='div_autocomplete_loading' class='div_loading_local' style='z-index: 1000;'></div>
       <div id="div_test_length"></div>

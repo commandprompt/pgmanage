@@ -12,7 +12,7 @@ from OmniDB_app.include import OmniDatabase
 from OmniDB_app.models import Technology, Connection, Group, GroupConnection
 from OmniDB_app.views.memory_objects import user_authenticated
 from OmniDB_app.utils.crypto import encrypt, decrypt
-from OmniDB_app.utils.master_password import master_pass_manager
+from OmniDB_app.utils.key_manager import key_manager
 
 
 @user_authenticated
@@ -27,7 +27,7 @@ def get_connections(request):
     v_connection_list = []
     connections = Connection.objects.filter(Q(user=request.user) | Q(public=True))
 
-    if connections and master_pass_manager.get(request.user):
+    if connections and key_manager.get(request.user):
         for conn in connections:
 
             v_conn_object = {
@@ -312,7 +312,7 @@ def save_connection(request):
     v_return = {'v_data': '', 'v_error': False, 'v_error_id': -1}
 
     v_session = request.session.get('omnidb_session')
-    key = master_pass_manager.get(request.user)
+    key = key_manager.get(request.user)
 
     json_object = json.loads(request.POST.get('data', None))
     p_id = json_object['id']

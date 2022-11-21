@@ -29,7 +29,8 @@ from django.contrib.auth.decorators import login_required
 
 from OmniDB_app.views.memory_objects import *
 from OmniDB_app.utils.crypto import make_hash
-from OmniDB_app.utils.master_password import master_pass_manager
+from OmniDB_app.utils.key_manager import key_manager
+from OmniDB_app.utils.master_password import set_masterpass_check_text, validate_master_password, reset_master_pass
 
 @login_required
 def index(request):
@@ -46,7 +47,7 @@ def index(request):
         return redirect(settings.LOGIN_REDIRECT_URL)
 
     v_session = request.session.get('omnidb_session')
-    if master_pass_manager.get(request.user):
+    if key_manager.get(request.user):
         v_session.RefreshDatabaseList()
 
     #Shortcuts
@@ -109,7 +110,7 @@ def index(request):
         'show_terminal_option': v_show_terminal_option,
         'url_folder': settings.PATH,
         'csrf_cookie_name': settings.CSRF_COOKIE_NAME,
-        'master_key': bool(master_pass_manager.get(request.user))
+        'master_key': 'new' if not bool(user_details.masterpass_check) else bool(key_manager.get(request.user))
     }
 
     #wiping saved tabs databases list
@@ -1273,12 +1274,12 @@ def master_password(request):
     json_object = json.loads(request.POST.get('data', None))
     master_pass = json_object['master_password']
 
-    master_pass_hash = make_hash(master_pass)
+    master_pass_hash = make_hash(master_pass, request.user)
     user_details = UserDetails.objects.get(user=request.user)
 
     # if master pass is set previously
     if user_details.masterpass_check \
-        and not master_pass_manager.validate_master_password(user_details, master_pass_hash):
+        and not validate_master_password(user_details, master_pass_hash):
         v_return['v_error'] = True
         v_return['v_data'] = "Master password is not correct."
         return JsonResponse(v_return)
@@ -1286,10 +1287,10 @@ def master_password(request):
     if json_object != '' and json_object.get('master_password', '') != '':
 
         # store the master pass in the memory
-        master_pass_manager.set(request.user, master_pass_hash)
+        key_manager.set(request.user, master_pass_hash)
 
         # set the encrypted sample text with the new master pass
-        master_pass_manager.set_masterpass_check_text(user_details, master_pass_hash)
+        set_masterpass_check_text(user_details, master_pass_hash)
     
     elif json_object.get('master_password', '') == '':
         v_return['v_error'] = True
@@ -1302,4 +1303,20 @@ def master_password(request):
     # saving new omnidb_session
     request.session['omnidb_session'] = v_session
 
+    return JsonResponse(v_return)
+
+
+@user_authenticated
+def reset_master_password(request):
+    """
+    Removes the master password and remove all saved connections
+    This password will be used to encrypt/decrypt saved server passwords
+    """
+
+    v_return = {'v_data': '', 'v_error': False, 'v_error_id': -1}
+
+    user_details = UserDetails.objects.get(user=request.user)
+
+    reset_master_pass(user_details)
+    
     return JsonResponse(v_return)

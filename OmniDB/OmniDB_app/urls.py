@@ -49,6 +49,7 @@ base_urlpatterns = [
     re_path(r'^get_database_list/', views.workspace.get_database_list, name='get_database_list'),
     re_path(r'^renew_password/', views.workspace.renew_password, name='renew_password'),
     re_path(r'^master_password/', views.workspace.master_password, name='master_password'),
+    re_path(r'^reset_master_password/', views.workspace.reset_master_password, name='reset_master_password'),
     re_path(r'^draw_graph/', views.workspace.draw_graph, name='draw_graph'),
     re_path(r'^start_edit_data/', views.workspace.start_edit_data, name='start_edit_data'),
     re_path(r'^get_completions/', views.workspace.get_completions, name='get_completions'),

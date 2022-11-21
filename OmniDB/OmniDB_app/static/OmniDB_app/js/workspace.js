@@ -79,9 +79,10 @@ $(function () {
   v_connTabControl.tag.createSnippetPanel();
 
   // Ask for master password
-  if (master_key === 'False') {
-    showMasterPassPrompt(`Enter a master password for this session.
-    It will be used to secure your database passwords.`);
+  if (master_key === 'new') {
+    showNewMasterPassPrompt(`Please set your master password. It will be used to secure your connection credentials.`);
+  } else if (master_key == 'False'){
+    showMasterPassPrompt(`Please provide your master password to unlock your connection credentials for this session.`);
   } else {
     // Retrieving database list.
     getDatabaseList(true);

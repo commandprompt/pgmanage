@@ -1,5 +1,3 @@
-from OmniDB_app.utils.crypto import decrypt
-from OmniDB_app.utils.master_password import master_pass_manager
 import OmniDB_app.include.Spartacus as Spartacus
 import OmniDB_app.include.Spartacus.Database as Database
 import OmniDB_app.include.Spartacus.Utils as Utils
@@ -20,6 +18,8 @@ from collections import OrderedDict
 
 from django.contrib.auth.models import User
 from OmniDB_app.models.main import *
+from OmniDB_app.utils.crypto import decrypt
+from OmniDB_app.utils.key_manager import key_manager
 
 import logging
 logger = logging.getLogger('OmniDB_app.Session')
@@ -194,7 +194,7 @@ class Session(object):
 
         try:
             current_user = UserDetails.objects.get(user__id=self.v_user_id)
-            key = master_pass_manager.get(current_user)
+            key = key_manager.get(current_user)
             for conn in Connection.objects.filter(Q(user=User.objects.get(id=self.v_user_id)) | Q(public=True)):
                 tunnel_information = {
                     'enabled': conn.use_tunnel,

@@ -1,7 +1,9 @@
 import os
 import base64
+import hashlib
+
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import hashes
+from django.utils.crypto import pbkdf2
 
 
 def encrypt(plaintext, key):
@@ -10,7 +12,6 @@ def encrypt(plaintext, key):
     encryptor = cipher.encryptor()
     ct = encryptor.update(plaintext.encode()) + encryptor.finalize()
     return base64.b64encode(iv+ct).decode()
-
 
 
 def decrypt(encrypted_text, key):
@@ -24,7 +25,11 @@ def decrypt(encrypted_text, key):
     return conn_pass.decode()
 
 
-def make_hash(plaintext):
-    digest = hashes.Hash(hashes.SHA256())
-    digest.update(plaintext.encode())
-    return digest.finalize()
+def make_hash(plaintext, current_user):
+    iterations = 150000
+    digest = hashlib.sha256
+    salt = f'{current_user.date_joined}{current_user.id}'
+
+    hash = pbkdf2(plaintext, salt, iterations, digest=digest)
+
+    return hash
