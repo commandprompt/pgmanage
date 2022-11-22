@@ -32,11 +32,8 @@ touch pgmanage.db
 brew update && brew upgrade
 brew install pyenv
 
-# Check if python version exist and create virtual environment
-if test $(pyenv local) != 3.8.10
-then
-    env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.10
-fi
+# Install Python 3.8.10 and create virtual environment
+env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.10 --skip-existing
 
 pyenv local 3.8.10
 PYTHON_EXE=$(pyenv which python)
