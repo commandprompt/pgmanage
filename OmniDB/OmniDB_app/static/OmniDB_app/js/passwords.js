@@ -209,7 +209,7 @@ function showMasterPassPrompt(p_message) {
     $('#modal_message_dialog > div > div > button.close').css('display', 'none');
     
     v_content_div.innerHTML = `Are you sure you want to reset you master password?
-                               You will lose all your connections.`
+                               You will lose your saved connection passwords.`
     
     v_button_yes.onclick = function () {
       execAjax(

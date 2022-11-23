@@ -1309,7 +1309,7 @@ def master_password(request):
 @user_authenticated
 def reset_master_password(request):
     """
-    Removes the master password and remove all saved connections
+    Removes the master password and remove all saved passwords
     This password will be used to encrypt/decrypt saved server passwords
     """
 

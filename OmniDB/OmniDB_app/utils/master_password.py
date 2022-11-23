@@ -52,7 +52,7 @@ def set_masterpass_check_text(current_user, password, reset=False):
 
 def reset_master_pass(current_user):
     """
-    Remove the master password and saved connections from DB which are
+    Remove the master password and saved passwords from DB which are
     encrypted using master password. Also remove the encrypted text
     """
 
@@ -63,7 +63,13 @@ def reset_master_pass(current_user):
 
         key_manager.remove(current_user)
 
-        Connection.objects.filter(user=current_user.user).delete()
+        connections = Connection.objects.filter(user=current_user.user)
+
+        if connections:
+            for conn in connections:
+                conn.password = ''
+                conn.ssh_password = ''
+                conn.save()
         
     except Exception:
         raise
