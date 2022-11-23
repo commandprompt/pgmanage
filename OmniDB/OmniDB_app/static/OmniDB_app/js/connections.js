@@ -240,21 +240,21 @@ function showConnectionList(p_open_modal, p_change_group) {
         }(v_conn_obj));
 
 				// Adding public visuals.
-				if (v_conn_obj.public && !gv_desktopMode) {
-					v_total_public_conn += 1;
-					var v_public_icon = document.createElement('i');
-					v_public_icon.setAttribute('style', 'color: #FFF;position: absolute;top: -5px;left: -5px;background-color: #c57dd2;padding: 4px 2px;border-radius: 100%;');
-					v_public_icon.classList = 'fas fa-users';
-					v_card_body_div.appendChild(v_public_icon);
-					v_card_div.style['border-color'] = '#c57dd2';
-					v_card_div.classList.add('omnidb__connections__card--public');
-					v_card_div.classList.add('d-none');
-					v_card_div.classList.add('fade');
-					if (v_connections_data.show_public || v_conn_obj.is_mine) {
-						v_card_div.classList.remove('d-none');
-						v_card_div.classList.add('show');
-					}
-				}
+				// if (v_conn_obj.public && !gv_desktopMode) {
+				// 	v_total_public_conn += 1;
+				// 	var v_public_icon = document.createElement('i');
+				// 	v_public_icon.setAttribute('style', 'color: #FFF;position: absolute;top: -5px;left: -5px;background-color: #c57dd2;padding: 4px 2px;border-radius: 100%;');
+				// 	v_public_icon.classList = 'fas fa-users';
+				// 	v_card_body_div.appendChild(v_public_icon);
+				// 	v_card_div.style['border-color'] = '#c57dd2';
+				// 	v_card_div.classList.add('omnidb__connections__card--public');
+				// 	v_card_div.classList.add('d-none');
+				// 	v_card_div.classList.add('fade');
+				// 	if (v_connections_data.show_public || v_conn_obj.is_mine) {
+				// 		v_card_div.classList.remove('d-none');
+				// 		v_card_div.classList.add('show');
+				// 	}
+				// }
 
         v_connections_data.card_list.push(
           {
@@ -281,7 +281,7 @@ function showConnectionList(p_open_modal, p_change_group) {
 			}
 
 			// Updating total public connections counter.
-			document.getElementById('conn_list_public_counter').innerHTML = v_total_public_conn;
+			// document.getElementById('conn_list_public_counter').innerHTML = v_total_public_conn;
 
 			updateConnectionsTitleInfo();
 
@@ -862,9 +862,9 @@ function newConnection() {
 	document.getElementById('conn_form_button_save_connection').setAttribute('disabled',true);
   document.getElementById('conn_form_type').value = -1;
 	document.getElementById('conn_form_title').value = '';
-  if (!gv_desktopMode) {
-	document.getElementById('conn_form_public').checked = false;
-  }
+//   if (!gv_desktopMode) {
+// 	document.getElementById('conn_form_public').checked = false;
+//   }
   document.getElementById('conn_form_connstring').value = '';
   document.getElementById('conn_form_server').value = '';
   document.getElementById('conn_form_port').value = '';

@@ -341,7 +341,7 @@ def save_connection(request):
                 ssh_key=json_object['tunnel']['key'],
                 use_tunnel=json_object['tunnel']['enabled'],
                 conn_string=json_object['connstring'],
-                public=json_object['public']
+                public=False
 
             )
             conn.save()
@@ -372,7 +372,6 @@ def save_connection(request):
 
             conn.use_tunnel = json_object['tunnel']['enabled']
             conn.conn_string = json_object['connstring']
-            conn.public = json_object['public']
             conn.save()
 
         tunnel_information = {
