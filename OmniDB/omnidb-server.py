@@ -391,18 +391,6 @@ if platform.system() != 'Windows':
         print("OmniDB is already running pointing to directoy '{0}'.".format(OmniDB.custom_settings.HOME_DIR))
         sys.exit()
 
-import social_django
-import social_django.urls
-import social_django.config
-import social_django.strategy
-import social_django.models
-import social_core.backends.github
-if platform.system() != 'Darwin':
-    import ldap
-    import django_auth_ldap
-    import django_auth_ldap.config
-    import django_auth_ldap.backend
-
 import html.parser
 import http.cookies
 

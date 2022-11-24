@@ -1,13 +1,12 @@
 #from django.conf.urls import url
 from django.urls import include, re_path
-from django.urls import include, path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 
 base_urlpatterns = [
 
-    path('social-auth/', include('social_django.urls', namespace="social")),
+    # path('social-auth/', include('social_django.urls', namespace="social")),
 
     re_path(r'^upload/$', views.plugins.upload_view, name='sign_in'),
 

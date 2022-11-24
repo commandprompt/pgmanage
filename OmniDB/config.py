@@ -46,21 +46,3 @@ CSRF_COOKIE_NAME = 'omnidb_csrftoken'
 #        'PORT': '5432',
 #    }
 #}
-
-### LDAP Authentication ########################################################
-
-#import ldap
-#import django_auth_ldap.config
-#from django_auth_ldap.config import LDAPSearch
-
-#AUTH_LDAP_SERVER_URI = 'SERVER'
-#AUTH_LDAP_BIND_DN = "uid=example,dc=example,dc=com"
-#AUTH_LDAP_BIND_PASSWORD = "password"
-#AUTH_LDAP_USER_SEARCH = django_auth_ldap.config.LDAPSearch(
-#            "uid=example,dc=example,dc=com", ldap.SCOPE_SUBTREE, "uid=%(user)s"
-#            )
-
-#AUTHENTICATION_BACKENDS = [
-#    'django_auth_ldap.backend.LDAPBackend',
-#    'django.contrib.auth.backends.ModelBackend'
-#]
