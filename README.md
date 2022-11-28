@@ -21,16 +21,6 @@ brew install python3 xxx yyy zzz
 ```
 
 ## Build instructions
-### With pip:
-```
-sudo apt install python3-dev python3-venv python3-wheel libpq-dev libldap2-dev libsasl2-dev
-python3 -m venv omenv
-source omenv/bin/activate
-git clone https://github.com/commandprompt/pgmanage
-cd pgmanage
-pip3 install -r requirements.txt
-```
-### With pyenv and poetry:
 ```
 git clone https://github.com/commandprompt/pgmanage
 cd pgmanage
