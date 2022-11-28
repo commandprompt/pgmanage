@@ -213,7 +213,6 @@ django.setup()
 from OmniDB_app.models.main import *
 from django.contrib.auth.models import User
 from django.utils import timezone
-import django_sass
 
 print('''Running database migrations...''',flush=True)
 logger.info('''Running Database Migrations...''')

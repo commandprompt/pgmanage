@@ -45,8 +45,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_sass'
 ]
+
+if DEBUG:
+    INSTALLED_APPS += ['django_sass']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
