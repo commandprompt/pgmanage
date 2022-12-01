@@ -228,12 +228,5 @@ function showMasterPassPrompt(p_message) {
 
   v_button_check.onclick = v_modal_password_ok_function;
 
-  v_button_reset.onclick = v_modal_password_reset_function
-
-  v_modal_password_input.oninput = function() {
-    if (v_modal_password_input.value.length >= 8)
-      v_button_check.disabled = false
-    else
-      v_button_check.disabled = true
-  }
+  v_button_reset.onclick = v_modal_password_reset_function;
 }
