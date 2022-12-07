@@ -124,6 +124,11 @@ function showNewMasterPassPrompt(p_message) {
 
   $('#modal_password_set').modal({backdrop: 'static', keyboard: false});
   $('#master_password').passtrength({passwordToggle: false});
+
+  setTimeout(function() {
+    $('#master_password').focus();
+  }, 500)
+
 }
 
 function saveMasterPass() {
@@ -174,6 +179,10 @@ function showMasterPassPrompt(p_message) {
 
   $('#modal_password_check').modal({backdrop: 'static', keyboard: false});
 
+  setTimeout(function () {
+  	v_modal_password_input.focus();
+  },500);
+  
   v_modal_password_ok_function = function() {
     execAjax('/master_password/',
       JSON.stringify({"master_password": v_modal_password_input.value}),
@@ -224,6 +233,13 @@ function showMasterPassPrompt(p_message) {
       showMasterPassPrompt(`Please provide your master password to unlock your connection credentials for this session.`);
     }
     $('#modal_message').modal({backdrop: 'static', keyboard: false});
+  }
+
+  v_modal_password_input.onkeydown = function (event) {
+    if (event.key === 'Enter') {
+      v_modal_password_ok_function();
+      $('#modal_password_check').modal('hide');
+    }
   }
 
   v_button_check.onclick = v_modal_password_ok_function;
