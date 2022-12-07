@@ -267,14 +267,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "pyaes"
-version = "1.6.1"
-description = "Pure-Python Implementation of the AES block-cipher and common modes of operation"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
@@ -308,14 +300,6 @@ cffi = ">=1.4.1"
 [package.extras]
 docs = ["sphinx (>=1.6.5)", "sphinx_rtd_theme"]
 tests = ["hypothesis (>=3.27.0)", "pytest (>=3.2.1,!=3.3.0)"]
-
-[[package]]
-name = "pyscrypt"
-version = "1.6.2"
-description = "Pure-Python Implementation of the scrypt password-based key derivation function and scrypt file format library"
-category = "main"
-optional = false
-python-versions = "*"
 
 [[package]]
 name = "pytz"
@@ -433,7 +417,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.8.10"
-content-hash = "d8943540e5a658922d6ca2c9c401e3deb4737e65f5cdae7380c3e9701fce14d4"
+content-hash = "aa803803d6eef0568514193c597541e208097be88c58663cbd3fa2b078b1e8ae"
 
 [metadata.files]
 bcrypt = [
@@ -719,9 +703,6 @@ ptyprocess = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
     {file = "ptyprocess-0.7.0.tar.gz", hash = "sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220"},
 ]
-pyaes = [
-    {file = "pyaes-1.6.1.tar.gz", hash = "sha256:02c1b1405c38d3c370b085fb952dd8bea3fadcee6411ad99f312cc129c536d8f"},
-]
 pycparser = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
     {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
@@ -741,9 +722,6 @@ pynacl = [
     {file = "PyNaCl-1.5.0-cp36-abi3-win32.whl", hash = "sha256:e46dae94e34b085175f8abb3b0aaa7da40767865ac82c928eeb9e57e1ea8a543"},
     {file = "PyNaCl-1.5.0-cp36-abi3-win_amd64.whl", hash = "sha256:20f42270d27e1b6a29f54032090b972d97f0a1b0948cc52392041ef7831fee93"},
     {file = "PyNaCl-1.5.0.tar.gz", hash = "sha256:8ac7448f09ab85811607bdd21ec2464495ac8b7c66d146bf545b0f08fb9220ba"},
-]
-pyscrypt = [
-    {file = "pyscrypt-1.6.2.tar.gz", hash = "sha256:bafdd195f10f7c7395f0133bad09746a68e0e6b66da202c9bdb6b1eb4abba5e9"},
 ]
 pytz = [
     {file = "pytz-2022.6-py2.py3-none-any.whl", hash = "sha256:222439474e9c98fced559f1709d89e6c9cbf8d79c794ff3eb9f8800064291427"},

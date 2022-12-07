@@ -1,1 +1,0 @@
-UPDATE version SET ver_id = '2.17.0';--omnidb--

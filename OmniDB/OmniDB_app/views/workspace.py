@@ -269,7 +269,6 @@ def get_database_list(request):
     v_return['v_error_id'] = -1
 
     v_session = request.session.get('omnidb_session')
-    v_cryptor = request.session.get('cryptor')
 
     v_databases = []
     v_groups = []

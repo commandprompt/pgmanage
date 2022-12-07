@@ -6,8 +6,6 @@ tornado==6.0.2
 Click==7.0
 sqlparse==0.3.0
 psycopg2-binary==2.9.*
-pyscrypt==1.6.2
-pyaes==1.6.1
 openpyxl==2.5.14
 RestrictedPython==4.0
 cx_Oracle==8.3.*

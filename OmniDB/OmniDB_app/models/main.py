@@ -2,8 +2,6 @@ from unittest.util import _MAX_LENGTH
 from django.db import models
 from django.contrib.auth.models import User
 
-class Config(models.Model):
-    mig_2_to_3_done = models.BooleanField(default=False)
 
 class Technology(models.Model):
     name = models.CharField(max_length=50, blank=False)

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('OmniDB_app', '0003_3_1_0'),
+        ('OmniDB_app', '0002_3_0_1'),
     ]
 
     operations = [

@@ -61,9 +61,6 @@ parser.add_option_group(group)
 
 group = optparse.OptionGroup(parser, "Management Options",
                              "Options to list, create and drop users and connections.")
-group.add_option("-M", "--migratedatabase", dest="migratedb",
-                  nargs=1,metavar="dbfile",
-                  help="migrate users and connections from OmniDB 2 to 3: -M dbfile")
 group.add_option("-r", "--resetdatabase", dest="reset",
                   default=False, action="store_true",
                   help="reset user and session databases")
@@ -227,18 +224,6 @@ except Exception as exc:
     sys.exit()
 
 
-# Migration from 2 to 3 ########################################################
-
-from omnidb_server_helper import *
-
-old_db_file = dbfile = os.path.expanduser(os.path.join(OmniDB.custom_settings.HOME_DIR,'pgmanage.db'))
-
-# SQlite database file exists, proceed with migration
-if os.path.exists(old_db_file) and not options.migratedb:
-    migration_main(old_db_file, False, logger)
-
-################################################################################
-
 maintenance_action = False
 
 def create_user(p_user,p_pwd,p_superuser):
@@ -365,15 +350,6 @@ if options.dropconnection:
     maintenance_action = True
     Connection.objects.get(id=options.dropconnection).delete()
 
-
-if options.migratedb:
-    maintenance_action = True
-    dbfile = os.path.expanduser(options.migratedb)
-    if not os.path.exists(dbfile):
-        print('Specified database file does not exist, aborting.')
-        sys.exit()
-    else:
-        migration_main(dbfile, True, logger)
 
 # Maintenance performed, exit before starting webserver
 if maintenance_action == True:

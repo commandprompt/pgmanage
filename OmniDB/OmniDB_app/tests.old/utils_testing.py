@@ -173,16 +173,3 @@ def get_omnidb_database_connection():
         p_alias='',
         p_foreignkeys=True
     )
-
-
-def get_cryptor():
-    """Get a cryptor used by OmniDB.
-
-        Returns:
-            OmniDB_app.include.Spartacus.Utils.Cryptor: corresponding cryptor.
-    """
-
-    return Utils.Cryptor(
-        p_key='omnidb',
-        p_encoding='iso-8859-1'
-    )
