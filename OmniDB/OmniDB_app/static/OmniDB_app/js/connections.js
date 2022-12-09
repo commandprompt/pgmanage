@@ -711,9 +711,9 @@ function editConnection(p_conn_obj) {
   document.getElementById('conn_form_ssh_user').value = p_conn_obj.tunnel.user;
   document.getElementById('conn_form_ssh_password').value = '';
   document.getElementById('conn_form_ssh_key').value = '';
-	if (!gv_desktopMode) {
-		document.getElementById('conn_form_public').checked = (p_conn_obj.public);
-	}
+	// if (!gv_desktopMode) {
+	// 	document.getElementById('conn_form_public').checked = (p_conn_obj.public);
+	// }
 
 	let v_enable_list = [];
 	let v_disable_list = [];
