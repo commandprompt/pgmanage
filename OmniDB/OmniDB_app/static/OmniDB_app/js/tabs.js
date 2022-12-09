@@ -455,6 +455,9 @@ function createTabControl({ p_div, p_hierarchy, p_layout}) {
         if (v_tab.closeFunction!=null) {
           v_tab.closeFunction(e,v_tab);
         }
+        if (p_tooltip) {
+          $(v_a).tooltip('hide');
+        }
 			};
 
       if (p_rightClickFunction) {
@@ -462,6 +465,9 @@ function createTabControl({ p_div, p_hierarchy, p_layout}) {
           e.stopPropagation();
           e.preventDefault();
           p_rightClickFunction(e);
+          if (p_tooltip) {
+            $(v_a).tooltip('hide');
+          }
         }
       }
 
