@@ -502,8 +502,8 @@ class DjangoApplication(object):
             print('Tried 20 different ports without success, closing...',flush=True)
             logger.info('Tried 20 different ports without success, closing...')
 
-print('''Starting OmniDB server...''',flush=True)
-logger.info('''Starting OmniDB server...''')
+print('''Starting PGManage server...''',flush=True)
+logger.info('''Starting PGManage server...''')
 
 #Removing Expired Sessions
 SessionStore.clear_expired()
