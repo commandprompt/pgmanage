@@ -17,7 +17,8 @@ then
     APP_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
 fi
 
-APP_LONG_VERSION=PgManage.$APP_VERSION
+APP_LONG_VERSION=pgmanage-$APP_VERSION
+APP_NAME=PgManage
 
 rm -rf release_$APP_VERSION tmp
 mkdir release_$APP_VERSION tmp
@@ -66,16 +67,29 @@ sed -i '' "s/version_placeholder/v$APP_VERSION/" $APP_LONG_VERSION.app/Contents/
 cp ../mac-icon.icns $APP_LONG_VERSION.app/Contents/Resources/app.icns
 cp ../mac-icon.icns $APP_LONG_VERSION.app/Contents/Resources/document.icns
 
-mv $APP_LONG_VERSION.app ../release_$APP_VERSION/
+# Set up correct application name
+
+plutil -replace CFBundleDisplayName -string "$APP_NAME" $APP_LONG_VERSION.app/Contents/Info.plist
+
+plutil -replace CFBundleExecutable -string "$APP_NAME" $APP_LONG_VERSION.app/Contents/Info.plist
+
+plutil -replace CFBundleShortVersionString -string $APP_VERSION $APP_LONG_VERSION.app/Contents/Info.plist
+
+echo CFBundleDisplayName = \"$APP_NAME\" >> $APP_LONG_VERSION.app/Contents/Resources/el.lproj/InfoPlist.strings
+
+# rename nwjs executable
+mv $APP_LONG_VERSION.app/Contents/MacOS/nwjs $APP_LONG_VERSION.app/Contents/MacOS/$APP_NAME
+
+mv $APP_LONG_VERSION.app ../release_$APP_VERSION/$APP_NAME.app
 
 # Create dmg file
 
 # Install dmgbuild command line tool
 pip3 install dmgbuild
 
-dmgbuild -s ../settings.py -D app=../release_$APP_VERSION/$APP_LONG_VERSION.app "$APP_LONG_VERSION" $APP_LONG_VERSION.dmg
+dmgbuild -s ../settings.py -D app=../release_$APP_VERSION/$APP_NAME.app "$APP_NAME" "$APP_LONG_VERSION"_mac_x64.dmg
 
-mv $APP_LONG_VERSION.dmg ../release_$APP_VERSION/
+mv "$APP_LONG_VERSION"_mac_x64.dmg ../release_$APP_VERSION/
 
 # Remove tmp folder
 cd ..
