@@ -526,5 +526,15 @@ function consoleReturnRender(p_message,p_context) {
 		v_tag.bt_skip_fetch.style.display = '';
 	}
 
+	if (!p_message.v_error) {
+		let mode = ['CREATE', 'DROP', 'ALTER'];
+		let status = p_message.v_data.v_status.split(" ");
+		let status_name = status[1];
 
+		if (mode.includes(status[0])) {
+			let main_node = v_connTabControl.selectedTab.tag.tree.childNodes[0];
+			if (!!status_name)
+				refreshTreeNode(main_node, status_name);
+		}
+	}
 }

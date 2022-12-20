@@ -1215,6 +1215,7 @@ def thread_console(self,args):
                                 v_data_return += v_notices_text
                         except Exception as exc:
                             None
+                        v_response['v_error'] = True
                         v_data_return += str(exc)
                     v_tab_object['remaining_commands'] = []
 
@@ -1223,12 +1224,6 @@ def thread_console(self,args):
 
             v_data_return = v_data_return.replace("\n","\r\n")
 
-            v_response = {
-                'v_code': response.ConsoleResult,
-                'v_context_code': args['v_context_code'],
-                'v_error': False,
-                'v_data': 1
-            }
             v_response['v_data'] = {
                 'v_data' : v_data_return,
                 'v_last_block': True,
@@ -1242,12 +1237,6 @@ def thread_console(self,args):
                     if self.cancel:
                         break
                     if not count==len(chunks)-1:
-                        v_response = {
-                            'v_code': response.ConsoleResult,
-                            'v_context_code': args['v_context_code'],
-                            'v_error': False,
-                            'v_data': 1
-                        }
                         v_response['v_data'] = {
                             'v_data' : chunks[count],
                             'v_last_block': False,
@@ -1256,18 +1245,13 @@ def thread_console(self,args):
                             'v_con_status': '',
                         }
                     else:
-                        v_response = {
-                            'v_code': response.ConsoleResult,
-                            'v_context_code': args['v_context_code'],
-                            'v_error': False,
-                            'v_data': 1
-                        }
                         v_response['v_data'] = {
                             'v_data' : chunks[count],
                             'v_last_block': True,
                             'v_duration': v_duration,
                             'v_show_fetch_button': v_show_fetch_button,
                             'v_con_status': v_database.v_connection.GetConStatus(),
+                            'v_status': v_database.v_connection.GetStatus(),
                         }
                     if not self.cancel:
                         queue_response(v_client_object,v_response)
@@ -1287,6 +1271,7 @@ def thread_console(self,args):
             log_end_time = datetime.now()
             v_duration = GetDuration(log_start_time,log_end_time)
             log_status = 'error'
+            v_response['v_error'] = True
             v_response['v_data'] = {
                 'v_data': str(exc),
                 'v_duration': v_duration
@@ -1309,6 +1294,7 @@ def thread_console(self,args):
 
     except Exception as exc:
         logger.error('''*** Exception ***\n{0}'''.format(traceback.format_exc()))
+        v_response['v_error'] = True
         v_response['v_data'] = {
             'v_data': str(exc),
             'v_duration': ''

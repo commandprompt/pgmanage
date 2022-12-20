@@ -168,9 +168,7 @@ function polling_response(p_message) {
     }
     case parseInt(v_queryResponseCodes.ConsoleResult): {
       if (p_context) {
-        if (!v_message.v_error) {
-          p_context.tab_tag.tempData = p_context.tab_tag.tempData += v_message.v_data.v_data;
-        }
+        p_context.tab_tag.tempData = p_context.tab_tag.tempData += v_message.v_data.v_data;
         if (v_message.v_data.v_last_block || v_message.v_error) {
           v_message.v_data.v_data = [];
           consoleReturn(v_message,p_context);
