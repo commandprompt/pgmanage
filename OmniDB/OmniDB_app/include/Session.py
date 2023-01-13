@@ -1,3 +1,4 @@
+import io
 import OmniDB_app.include.Spartacus as Spartacus
 import OmniDB_app.include.Spartacus.Database as Database
 import OmniDB_app.include.Spartacus.Utils as Utils
@@ -121,15 +122,14 @@ class Session(object):
                 if self.v_databases[p_database_index]['tunnel_object'] == None or v_create_tunnel:
                     try:
                         if self.v_databases[p_database_index]['tunnel']['key'].strip() != '':
-                            v_file_name = '{0}'.format(str(time.time())).replace('.','_')
-                            v_full_file_name = os.path.join(settings.TEMP_DIR, v_file_name)
-                            with open(v_full_file_name,'w') as f:
-                                f.write(self.v_databases[p_database_index]['tunnel']['key'])
+                            key = paramiko.RSAKey.from_private_key(
+                                io.StringIO(self.v_databases[p_database_index]['tunnel']['key']),
+                                password=self.v_databases[p_database_index]['tunnel']['password'])
                             server = SSHTunnelForwarder(
                                 (self.v_databases[p_database_index]['tunnel']['server'], int(self.v_databases[p_database_index]['tunnel']['port'])),
                                 ssh_username=self.v_databases[p_database_index]['tunnel']['user'],
                                 ssh_private_key_password=self.v_databases[p_database_index]['tunnel']['password'],
-                                ssh_pkey = v_full_file_name,
+                                ssh_pkey = key,
                                 remote_bind_address=(self.v_databases[p_database_index]['database'].v_active_server, int(self.v_databases[p_database_index]['database'].v_active_port)),
                                 logger=logger
                             )
@@ -202,7 +202,7 @@ class Session(object):
                     'port': conn.ssh_port,
                     'user': conn.ssh_user,
                     'password': decrypt(conn.ssh_password, key) if conn.ssh_password else '',
-                    'key': conn.ssh_key
+                    'key': decrypt(conn.ssh_key, key) if conn.ssh_key else ''
                 }
                 # this is for sqlite3 db connection because it has now password
                 password = decrypt(conn.password, key) if conn.password else ''

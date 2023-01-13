@@ -1,3 +1,4 @@
+import io
 from django.http import HttpResponse
 from django.template import loader
 from django.http import JsonResponse
@@ -265,11 +266,8 @@ def create_request(request):
 
                     #ssh key provided
                     if v_conn_object['tunnel']['key'].strip() != '':
-                        v_file_name = '{0}'.format(str(time.time())).replace('.','_')
-                        v_full_file_name = os.path.join(settings.TEMP_DIR, v_file_name)
-                        with open(v_full_file_name,'w') as f:
-                            f.write(v_conn_object['tunnel']['key'])
-                        client.connect(hostname=v_conn_object['tunnel']['server'],username=v_conn_object['tunnel']['user'],key_filename=v_full_file_name,passphrase=v_conn_object['tunnel']['password'],port=int(v_conn_object['tunnel']['port']))
+                        key = paramiko.RSAKey.from_private_key(io.StringIO(v_conn_object['tunnel']['key']), password=v_conn_object['tunnel']['password'])
+                        client.connect(hostname=v_conn_object['tunnel']['server'],username=v_conn_object['tunnel']['user'],pkey=key,passphrase=v_conn_object['tunnel']['password'],port=int(v_conn_object['tunnel']['port']))
                     else:
                         client.connect(hostname=v_conn_object['tunnel']['server'],username=v_conn_object['tunnel']['user'],password=v_conn_object['tunnel']['password'],port=int(v_conn_object['tunnel']['port']))
 

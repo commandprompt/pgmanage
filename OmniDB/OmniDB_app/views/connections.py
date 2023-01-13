@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import io
 
 import paramiko
 from django.db.models import Q
@@ -226,12 +227,9 @@ def test_connection(request):
         try:
             # ssh key provided
             if ssh_key.strip() != '':
-                v_file_name = '{0}'.format(str(time.time())).replace('.', '_')
-                v_full_file_name = os.path.join(settings.TEMP_DIR, v_file_name)
-                with open(v_full_file_name, 'w') as f:
-                    f.write(ssh_key)
+                key = paramiko.RSAKey.from_private_key(io.StringIO(ssh_key), password=ssh_password)
                 client.connect(hostname=json_object['tunnel']['server'], username=json_object['tunnel']['user'],
-                               key_filename=v_full_file_name, passphrase=ssh_password,
+                               key_filename=key, passphrase=ssh_password,
                                port=int(json_object['tunnel']['port']))
             else:
                 client.connect(hostname=json_object['tunnel']['server'], username=json_object['tunnel']['user'],
@@ -262,15 +260,12 @@ def test_connection(request):
 
             try:
                 if ssh_key.strip() != '':
-                    v_file_name = '{0}'.format(str(time.time())).replace('.', '_')
-                    v_full_file_name = os.path.join(settings.TEMP_DIR, v_file_name)
-                    with open(v_full_file_name, 'w') as f:
-                        f.write(ssh_key)
+                    key = paramiko.RSAKey.from_private_key(io.StringIO(ssh_key), password=ssh_password)
                     server = SSHTunnelForwarder(
                         (json_object['tunnel']['server'], int(json_object['tunnel']['port'])),
                         ssh_username=json_object['tunnel']['user'],
                         ssh_private_key_password=ssh_password,
-                        ssh_pkey=v_full_file_name,
+                        ssh_pkey=key,
                         remote_bind_address=(database.v_active_server, int(database.v_active_port)),
                         logger=None
                     )
@@ -325,6 +320,8 @@ def save_connection(request):
                 password = encrypt(json_object['password'], key)
             if json_object['tunnel']['password'] != '':
                 tunnel_password = encrypt(json_object['tunnel']['password'], key)
+            if json_object['tunnel']['key'] != '':
+                tunnel_key = encrypt(json_object['tunnel']['key'], key)
             conn = Connection(
                 user=request.user,
                 technology=Technology.objects.get(name=json_object['type']),
@@ -338,7 +335,7 @@ def save_connection(request):
                 ssh_port=json_object['tunnel']['port'],
                 ssh_user=json_object['tunnel']['user'],
                 ssh_password=tunnel_password,
-                ssh_key=json_object['tunnel']['key'],
+                ssh_key=tunnel_key,
                 use_tunnel=json_object['tunnel']['enabled'],
                 conn_string=json_object['connstring'],
                 public=False
@@ -368,7 +365,7 @@ def save_connection(request):
             if json_object['tunnel']['password'].strip() != '':
                 conn.ssh_password = encrypt(json_object['tunnel']['password'], key)
             if json_object['tunnel']['key'].strip() != '':
-                conn.ssh_key = json_object['tunnel']['key']
+                conn.ssh_key = encrypt(json_object['tunnel']['password'], key)
 
             conn.use_tunnel = json_object['tunnel']['enabled']
             conn.conn_string = json_object['connstring']
@@ -380,7 +377,7 @@ def save_connection(request):
             'port': conn.ssh_port,
             'user': conn.ssh_user,
             'password': decrypt(conn.ssh_password, key) if conn.ssh_password else '',
-            'key': conn.ssh_key
+            'key': decrypt(conn.ssh_key, key) if conn.ssh_key else ''
         }
         # this is for sqlite3 db connection because it has no password
         password = decrypt(conn.password, key) if conn.password else ''
