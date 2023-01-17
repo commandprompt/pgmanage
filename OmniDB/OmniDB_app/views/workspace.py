@@ -8,6 +8,7 @@ from math import ceil
 import json
 
 import sys
+from OmniDB_app.views.connections import session_required
 
 import OmniDB_app.include.Spartacus as Spartacus
 import OmniDB_app.include.Spartacus.Database as Database
@@ -50,27 +51,6 @@ def index(request):
     if key_manager.get(request.user):
         v_session.RefreshDatabaseList()
 
-    #Shortcuts
-    default_shortcuts = []
-    user_shortcuts = []
-
-    shortcut_object = {}
-
-    try:
-        user_shortcuts = Shortcut.objects.filter(user=request.user)
-        for shortcut in user_shortcuts:
-            shortcut_object[shortcut.code] = {
-                'ctrl_pressed': 1 if shortcut.ctrl_pressed else 0,
-                'shift_pressed': 1 if shortcut.shift_pressed else 0,
-                'alt_pressed': 1 if shortcut.alt_pressed else 0,
-                'meta_pressed': 1 if shortcut.meta_pressed else 0,
-                'shortcut_key': shortcut.key,
-                'os': shortcut.os,
-                'shortcut_code': shortcut.code
-            }
-    except Exception as exc:
-        None
-
     v_show_terminal_option = 'false'
 
     if user_details.welcome_closed:
@@ -105,7 +85,6 @@ def index(request):
         'omnidb_version': settings.OMNIDB_VERSION,
         'omnidb_short_version': settings.OMNIDB_SHORT_VERSION,
         'menu_item': 'workspace',
-        'shortcuts': shortcut_object,
         'tab_token': ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(20)),
         'show_terminal_option': v_show_terminal_option,
         'url_folder': settings.PATH,
@@ -171,94 +150,97 @@ def close_welcome(request):
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
+@session_required
 def save_config_user(request):
+    response_data = {'data': '', 'status': 'success'}
 
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    session = request.session.get('omnidb_session')
 
-    #Invalid session
-    if not request.session.get('omnidb_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
+    request_data = json.loads(request.body) if request.body else {}
 
-    v_session = request.session.get('omnidb_session')
+    font_size = request_data['font_size']
+    theme = request_data['theme']
+    password = request_data['password']
+    csv_encoding = request_data['csv_encoding']
+    csv_delimiter = request_data['csv_delimiter']
 
-    json_object = json.loads(request.POST.get('data', None))
-    p_font_size = json_object['p_font_size']
-    p_theme = json_object['p_theme']
-    p_pwd = json_object['p_pwd']
-    p_csv_encoding = json_object['p_csv_encoding']
-    p_csv_delimiter = json_object['p_csv_delimiter']
-
-    v_session.v_theme_id = p_theme
-    v_session.v_font_size = p_font_size
-    v_session.v_csv_encoding = p_csv_encoding
-    v_session.v_csv_delimiter = p_csv_delimiter
+    session.v_theme_id = theme
+    session.v_font_size = font_size
+    session.v_csv_encoding = csv_encoding
+    session.v_csv_delimiter = csv_delimiter
 
     user_details = UserDetails.objects.get(user=request.user)
-    user_details.theme = p_theme
-    user_details.font_size = p_font_size
-    user_details.csv_encoding = p_csv_encoding
-    user_details.csv_delimiter = p_csv_delimiter
+    user_details.theme = theme
+    user_details.font_size = font_size
+    user_details.csv_encoding = csv_encoding
+    user_details.csv_delimiter = csv_delimiter
     user_details.save()
 
-    request.session['omnidb_session'] = v_session
+    request.session['omnidb_session'] = session
 
-    if p_pwd!="":
+    if password!="":
         user = User.objects.get(id=request.user.id)
-        user.set_password(p_pwd)
+        user.set_password(password)
         user.save()
-        update_session_auth_hash(request,user)
+        update_session_auth_hash(request, user)
 
-    return JsonResponse(v_return)
+    return JsonResponse(response_data)
+
 
 @user_authenticated
-def save_shortcuts(request):
+@session_required
+def shortcuts(request):
+    response_data = {'data': '', 'status': 'success'}
+    
+    if request.method == 'POST':
+        request_data = json.loads(request.body) if request.body else {}
+        shortcuts = request_data.get('shortcuts')
+        current_os = request_data.get('current_os')
 
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+        try:
+            #Delete existing user shortcuts
+            Shortcut.objects.filter(user=request.user).delete()
 
-    #Invalid session
-    if not request.session.get('omnidb_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
+            #Adding new user shortcuts
+            for shortcut in shortcuts:
+                shortcut_object = Shortcut(
+                    user=request.user,
+                    code=shortcut['shortcut_code'],
+                    os=current_os,
+                    ctrl_pressed=shortcut['ctrl_pressed'],
+                    shift_pressed=shortcut['shift_pressed'],
+                    alt_pressed=shortcut['alt_pressed'],
+                    meta_pressed=shortcut['meta_pressed'],
+                    key=shortcut['shortcut_key']
+                )
+                shortcut_object.save()
+        except Exception as exc:
+            response_data['data'] = str(exc)
+            response_data['status'] = 'failed'
+            return JsonResponse(response_data, status=400)
 
-    v_session = request.session.get('omnidb_session')
+    if request.method == 'GET':
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_shortcuts = json_object['p_shortcuts']
-    v_current_os = json_object['p_current_os']
+        data = {}
 
-    try:
-        #Delete existing user shortcuts
-        Shortcut.objects.filter(user=request.user).delete()
+        user_shortcuts = Shortcut.objects.filter(user=request.user)
+        if user_shortcuts:
+            for shortcut in user_shortcuts:
+                data[shortcut.code] = {
+                    'ctrl_pressed': shortcut.ctrl_pressed,
+                    'shift_pressed': shortcut.shift_pressed,
+                    'alt_pressed': shortcut.alt_pressed,
+                    'meta_pressed': shortcut.meta_pressed,
+                    'shortcut_key': shortcut.key,
+                    'os': shortcut.os,
+                    'shortcut_code': shortcut.code
+                }
+        response_data['data'] = data
+        
+    return JsonResponse(response_data)
 
-        #Adding new user shortcuts
-        for v_shortcut in v_shortcuts:
-            shortcut_object = Shortcut(
-                user=request.user,
-                code=v_shortcut['shortcut_code'],
-                os=v_current_os,
-                ctrl_pressed= True if v_shortcut['ctrl_pressed']==1 else False,
-                shift_pressed= True if v_shortcut['shift_pressed']==1 else False,
-                alt_pressed= True if v_shortcut['alt_pressed']==1 else False,
-                meta_pressed= True if v_shortcut['meta_pressed']==1 else False,
-                key=v_shortcut['shortcut_key']
-            )
-            shortcut_object.save()
-    except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
-
-    return JsonResponse(v_return)
 
 @user_authenticated
 def get_database_list(request):

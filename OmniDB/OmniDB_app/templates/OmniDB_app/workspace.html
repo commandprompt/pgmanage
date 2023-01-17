@@ -35,6 +35,10 @@
     <connections-modal></connections-modal>
   </div>
 
+  <div id="settings-modal-wrap">
+    <settings-modal></settings-modal>
+  </div>
+
 
   <div class="toast" data-autohide="false" style="position: absolute; top: 0; right: 0;">
     <div class="toast-header">
@@ -243,276 +247,6 @@
           </div>
           <div class="modal-body">
             <div id="div_user_list" style="width: 100%; height: 300px; overflow: hidden;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Config -->
-    <div class="modal fade" id="modal_config" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header align-items-center">
-            <h2 class="modal-title font-weight-bold">Settings</h2>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-            </button>
-          </div>
-          <div class="modal-body">
-              <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item">
-                  <a class="nav-link active" id="config_shortcuts-tab" data-toggle="tab" href="#config_shortcuts" role="tab" aria-controls="config_shortcuts" aria-selected="true">Shortcuts</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="config_options-tab" data-toggle="tab" href="#config_options" role="tab" aria-controls="config_options" aria-selected="false">Options</a>
-                </li>
-                {% if not desktop_mode %}
-                <li class="nav-item">
-                  <a class="nav-link" id="config_password-tab" data-toggle="tab" href="#config_password" role="tab" aria-controls="config_password" aria-selected="false">Password</a>
-                </li>
-                {% endif %}
-              </ul>
-              <div class="tab-content p-3">
-                <div class="tab-pane fade show active" id="config_shortcuts" role="tabpanel" aria-labelledby="config_shortcuts-tab">
-                  <div id="div_shortcut_background_dark"><div style="position: absolute; top: 50%; width: 100%;">Press key combination... (ESC to cancel)</div></div>
-                  <div class="form-group row">
-                    <label for="shortcut_run_query" class="col-sm-6 col-form-label">Run Query</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_run_query" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="shortcut_explain" class="col-sm-6 col-form-label">Run Explain</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_explain" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="shortcut_explain_analyze" class="col-sm-6 col-form-label">Run Explain Analyze</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_explain_analyze" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="shortcut_cancel_query" class="col-sm-6 col-form-label">Cancel Query</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_cancel_query" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="shortcut_indent" class="col-sm-6 col-form-label">Indent</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_indent" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="shortcut_autocomplete" class="col-sm-6 col-form-label">Autocomplete</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_autocomplete" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="shortcut_new_inner_tab" class="col-sm-6 col-form-label">New Inner Tab</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_new_inner_tab" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="shortcut_remove_inner_tab" class="col-sm-6 col-form-label">Remove Current Inner Tab</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_remove_inner_tab" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="shortcut_left_inner_tab" class="col-sm-6 col-form-label">Select Left Inner Tab</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_left_inner_tab" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="shortcut_right_inner_tab" class="col-sm-6 col-form-label">Select Right Inner Tab</label>
-                    <div class="col-sm-6">
-                      <button id="shortcut_right_inner_tab" class='btn btn-secondary btn-sm btn-block' onclick="startSetShortcut(this)"></button>
-                    </div>
-                  </div>
-
-                  <div class="text-right">
-                    <button class='btn btn-success' onclick='saveShortcuts()'>Save</button>
-                  </div>
-                </div>
-
-                <div class="tab-pane fade" id="config_options" role="tabpanel" aria-labelledby="config_options-tab">
-                  <div class="form-row">
-                    <div class="form-group col-6">
-                      <label for="sel_editor_theme" class="font-weight-bold mb-3">Theme</label>
-                      <select id="sel_editor_theme" class="form-control" oninput="changeTheme(this.value)">
-  		                	<option value="light">Light</option>
-  							        <option value="dark">Dark</option>
-  		                </select>
-                    </div>
-                    <div class="form-group col-6">
-                      <label for="sel_interface_font_size" class="font-weight-bold mb-3">Font Size</label>
-                      <select id="sel_interface_font_size" class="form-control" oninput="changeInterfaceFontSize(this.value)">
-  		                	<option value="10">10</option>
-  		                	<option value="11">11</option>
-  		                	<option value="12">12</option>
-  		                	<option value="13">13</option>
-  		                	<option value="14">14</option>
-  		                	<option value="15">15</option>
-  		                	<option value="16">16</option>
-  		                	<option value="17">17</option>
-  		                	<option value="18">18</option>
-                        <option value="19">19</option>
-                        <option value="20">20</option>
-  		                </select>
-                    </div>
-                  </div>
-
-                  <div class="form-row">
-                    <div class="form-group col-6">
-                      <label for="sel_csv_encoding" class="font-weight-bold mb-3">CSV Encoding</label>
-                      <select id="sel_csv_encoding" class="form-control">
-                        <option value="ascii">ascii</option>
-                        <option value="big5">big5</option>
-                        <option value="big5hkscs">big5hkscs</option>
-                        <option value="cp037">cp037</option>
-                        <option value="cp273">cp273</option>
-                        <option value="cp424">cp424</option>
-                        <option value="cp437">cp437</option>
-                        <option value="cp500">cp500</option>
-                        <option value="cp720">cp720</option>
-                        <option value="cp737">cp737</option>
-                        <option value="cp775">cp775</option>
-                        <option value="cp850">cp850</option>
-                        <option value="cp852">cp852</option>
-                        <option value="cp855">cp855</option>
-                        <option value="cp856">cp856</option>
-                        <option value="cp857">cp857</option>
-                        <option value="cp858">cp858</option>
-                        <option value="cp860">cp860</option>
-                        <option value="cp861">cp861</option>
-                        <option value="cp862">cp862</option>
-                        <option value="cp863">cp863</option>
-                        <option value="cp864">cp864</option>
-                        <option value="cp865">cp865</option>
-                        <option value="cp866">cp866</option>
-                        <option value="cp869">cp869</option>
-                        <option value="cp874">cp874</option>
-                        <option value="cp875">cp875</option>
-                        <option value="cp932">cp932</option>
-                        <option value="cp949">cp949</option>
-                        <option value="cp950">cp950</option>
-                        <option value="cp1006">cp1006</option>
-                        <option value="cp1026">cp1026</option>
-                        <option value="cp1125">cp1125</option>
-                        <option value="cp1140">cp1140</option>
-                        <option value="cp1250">cp1250</option>
-                        <option value="cp1251">cp1251</option>
-                        <option value="cp1252">cp1252</option>
-                        <option value="cp1253">cp1253</option>
-                        <option value="cp1254">cp1254</option>
-                        <option value="cp1255">cp1255</option>
-                        <option value="cp1256">cp1256</option>
-                        <option value="cp1257">cp1257</option>
-                        <option value="cp1258">cp1258</option>
-                        <option value="cp65001">cp65001</option>
-                        <option value="euc-jp">euc-jp</option>
-                        <option value="euc-jis-2004">euc-jis-2004</option>
-                        <option value="euc-jisx0213">euc-jisx0213</option>
-                        <option value="euc-kr">euc-kr</option>
-                        <option value="gb2312">gb2312</option>
-                        <option value="gbk">gbk</option>
-                        <option value="gb18030">gb18030</option>
-                        <option value="hz">hz</option>
-                        <option value="iso2022-jp">iso2022-jp</option>
-                        <option value="iso2022-jp-1">iso2022-jp-1</option>
-                        <option value="iso2022-jp-2">iso2022-jp-2</option>
-                        <option value="iso2022-jp-2004">iso2022-jp-2004</option>
-                        <option value="iso2022-jp-3">iso2022-jp-3</option>
-                        <option value="iso2022-jp-ext">iso2022-jp-ext</option>
-                        <option value="iso2022-kr">iso2022-kr</option>
-                        <option value="latin-1">latin-1</option>
-                        <option value="iso8859-2">iso8859-2</option>
-                        <option value="iso8859-3">iso8859-3</option>
-                        <option value="iso8859-4">iso8859-4</option>
-                        <option value="iso8859-5">iso8859-5</option>
-                        <option value="iso8859-6">iso8859-6</option>
-                        <option value="iso8859-7">iso8859-7</option>
-                        <option value="iso8859-8">iso8859-8</option>
-                        <option value="iso8859-9">iso8859-9</option>
-                        <option value="iso8859-10">iso8859-10</option>
-                        <option value="iso8859-11">iso8859-11</option>
-                        <option value="iso8859-13">iso8859-13</option>
-                        <option value="iso8859-14">iso8859-14</option>
-                        <option value="iso8859-15">iso8859-15</option>
-                        <option value="iso8859-16">iso8859-16</option>
-                        <option value="johab">johab</option>
-                        <option value="koi8-r">koi8-r</option>
-                        <option value="koi8-t">koi8-t</option>
-                        <option value="koi8-u">koi8-u</option>
-                        <option value="kz1048">kz1048</option>
-                        <option value="mac-cyrillic">mac-cyrillic</option>
-                        <option value="mac-greek">mac-greek</option>
-                        <option value="mac-iceland">mac-iceland</option>
-                        <option value="mac-latin2">mac-latin2</option>
-                        <option value="mac-roman">mac-roman</option>
-                        <option value="mac-turkish">mac-turkish</option>
-                        <option value="ptcp154">ptcp154</option>
-                        <option value="shift-jis">shift-jis</option>
-                        <option value="shift-jis-2004">shift-jis-2004</option>
-                        <option value="shift-jisx0213">shift-jisx0213</option>
-                        <option value="utf-32">utf-32</option>
-                        <option value="utf-32-be">utf-32-be</option>
-                        <option value="utf-32-le">utf-32-le</option>
-                        <option value="utf-16">utf-16</option>
-                        <option value="utf-16-be">utf-16-be</option>
-                        <option value="utf-16-le">utf-16-le</option>
-                        <option value="utf-7">utf-7</option>
-                        <option value="utf-8">utf-8</option>
-                        <option value="utf-8-sig">utf-8-sig</option>
-                        <option value="windows-1252">windows-1252</option>
-                      </select>
-                    </div>
-
-                    <div class="form-group col-6">
-                      <label for="txt_csv_delimiter" class="font-weight-bold mb-3">CSV Delimiter</label>
-                      <input type="text" class="form-control" id="txt_csv_delimiter" placeholder="Delimiter">
-                    </div>
-                  </div>
-
-                  <div class="text-right">
-                    <button class='btn btn-success' onclick='saveConfigUser()'>Save</button>
-                  </div>
-                </div>
-
-                <div class="tab-pane fade" id="config_password" role="tabpanel" aria-labelledby="config_password-tab">
-                  <div class="form-row">
-                    <div class="form-group col-6">
-                      <label for="txt_new_pwd" class="font-weight-bold mb-3">New Password</label>
-                      <input id="txt_new_pwd" type="password" class="form-control" oninput="checkPassword()" minlength="8" required>
-                    </div>
-                    <div class="form-group col-6">
-                      <label for="txt_confirm_new_pwd" class="font-weight-bold mb-3">Confirm</label>
-                      <input id="txt_confirm_new_pwd" type="password" class="form-control" oninput="checkPassword()" minlength="8" required>
-                      <div class="invalid-tooltip">
-                        Password must be matching.
-                      </div>
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <button class='btn btn-success' onclick='saveConfigUser()' disabled>Save</button>
-                  </div>
-                </div>
-              </div>
           </div>
         </div>
       </div>
@@ -879,11 +613,6 @@
     var v_database_list = null;
     var v_completer_ready = true;
     var v_tree_object;
-    var v_shortcut_object = {
-      shortcuts: {{shortcuts|safe}},
-      button: null,
-      actions: null
-    };
     var v_super_user = {{ super_user }};
     var v_csrf_cookie_name = '{{ csrf_cookie_name }}';
     </script>
@@ -898,5 +627,6 @@
       axios.defaults.headers.common['X-CSRFToken'] = getCookie(v_csrf_cookie_name);
     </script>
     <script src="{{url_folder}}/static/OmniDB_app/js/vuejs/components/connections_modal.js"></script>
+    <script src="{{url_folder}}/static/OmniDB_app/js/vuejs/components/settings_modal.js"></script>
   </body>
 </html>

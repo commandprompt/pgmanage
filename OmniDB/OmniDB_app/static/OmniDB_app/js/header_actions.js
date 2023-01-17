@@ -253,50 +253,11 @@ function changeFontSize(p_option) {
 	});
 }
 
-function changeInterfaceFontSize(p_option) {
-	v_font_size = p_option;
-	document.getElementsByTagName('html')[0].style['font-size'] = v_font_size + 'px';
-	$('.ace_editor').each(function(index) {
-		let editor = ace.edit(this);
-		editor.setFontSize(v_font_size + 'px');
-	});
-	var v_outer_tab_list = v_connTabControl.tabList;
-	for (let i = 0; i < v_outer_tab_list.length; i++) {
-		var v_outer_tab_tag = v_outer_tab_list[i].tag;
-		if (v_outer_tab_tag) {
-			var v_outer_tab_tag_inner_tab_control = v_outer_tab_tag.tabControl;
-			if (v_outer_tab_tag_inner_tab_control) {
-				var v_outer_tab_tag_inner_tab_list = v_outer_tab_tag_inner_tab_control.tabList;
-				for (let j = 0; j < v_outer_tab_tag_inner_tab_list.length; j++) {
-					var v_inner_tab_tag = v_outer_tab_tag_inner_tab_list[j].tag;
-					if (v_inner_tab_tag) {
-						if (v_inner_tab_tag.editor_console) {
-							v_inner_tab_tag.editor_console.setOption('fontSize', Number(v_font_size));
-						}
-					}
-				}
-			}
-		}
-	}
-
-	refreshHeights();
-}
-
 /// <summary>
 /// Opens user config window.
 /// </summary>
 function showConfigUser() {
-
-	document.getElementById('sel_interface_font_size').value = v_font_size;
-	document.getElementById('sel_editor_theme').value = v_theme;
-
-	document.getElementById('txt_confirm_new_pwd').value = '';
-	document.getElementById('txt_new_pwd').value = '';
-
-	document.getElementById('sel_csv_encoding').value = v_csv_encoding;
-	document.getElementById('txt_csv_delimiter').value = v_csv_delimiter;
-
-	$('#modal_config').modal({ backdrop: 'static', keyboard: false });
+	$('#modal_settings').modal({ backdrop: 'static', keyboard: false });
 	$('#txt_new_pwd').passtrength({passwordToggle: false});
 }
 
@@ -337,70 +298,6 @@ function showWebsite(p_name, p_url) {
 		$('#modal_about').modal('hide');
 		v_connTabControl.tag.createWebsiteOuterTab(p_name,p_url);
 
-}
-
-/// <summary>
-/// Saves user config to OmniDB database.
-/// </summary>
-function saveConfigUser() {
-
-	v_font_size = document.getElementById('sel_interface_font_size').value;
-	v_theme_id = document.getElementById('sel_editor_theme').value.split('/')[0];
-
-	var v_confirm_pwd = document.getElementById('txt_confirm_new_pwd');
-	var v_pwd = document.getElementById('txt_new_pwd');
-
-	v_csv_encoding = document.getElementById('sel_csv_encoding').value;
-	v_csv_delimiter = document.getElementById('txt_csv_delimiter').value;
-
-	if ((v_confirm_pwd.value!='' || v_pwd.value!='') && (v_pwd.value!=v_confirm_pwd.value))
-		showAlert('New Password and Confirm New Password fields do not match.');
-	else if ((v_pwd.value === v_confirm_pwd.value) && (v_pwd.value.length < 8 && v_pwd.value.length >= 1))
-		showAlert('New Password and Confirm New Password fields must be longer than 8.');
-	else {
-		var input = JSON.stringify(
-			{
-				"p_font_size" : v_font_size,
-				"p_theme" : v_theme,
-				"p_pwd" : v_pwd.value,
-				"p_csv_encoding": v_csv_encoding,
-				"p_csv_delimiter": v_csv_delimiter
-			});
-
-		execAjax('/save_config_user/',
-				input,
-				function(p_return) {
-					$('#modal_config').modal('hide');
-					showAlert('Configuration saved.');
-
-				});
-	}
-}
-
-/// <summary>
-/// Saves shortcuts to OmniDB database.
-/// </summary>
-function saveShortcuts() {
-
-	var v_shortcut_list = [];
-
-	for (var property in v_shortcut_object.shortcuts) {
-    if (v_shortcut_object.shortcuts.hasOwnProperty(property)) {
-        v_shortcut_list.push(v_shortcut_object.shortcuts[property]);
-    }
-  }
-
-	var input = JSON.stringify({
-		"p_shortcuts": v_shortcut_list,
-		"p_current_os": v_current_os
-	});
-
-	execAjax('/save_shortcuts/',
-			input,
-			function(p_return) {
-				showAlert('Shortcuts saved.');
-
-			});
 }
 
 /// <summary>
@@ -544,31 +441,3 @@ function toggleUtilitiesMenu() {
 		}
 	});
 }
-
-
-function checkPassword() {
-	let password1 = document.getElementById('txt_new_pwd');
-	let password2 = document.getElementById('txt_confirm_new_pwd');
-	let form_button = document.getElementById('config_password').getElementsByTagName('button')[0];
-	if (password1.checkValidity() && password2.value === password1.value){
-		password2.classList.remove("is-invalid");
-		password2.classList.add('is-valid');
-		form_button.disabled = false;
-	}else if (password2.value.length >= password1.value.length && password2.value !== password1.value) {
-		password2.classList.add("is-invalid");
-		password2.classList.remove('is-valid');
-		form_button.disabled = true;}
-	else {
-		password2.classList.remove('is-invalid', 'is-valid');
-		form_button.disabled = true;
-	}
-}
-
-$('#modal_config').on('hidden.bs.modal', function (e) {
-	document.getElementById('txt_confirm_new_pwd').value = '';
-	document.getElementById('txt_new_pwd').value = '';
-	document.getElementById('txt_confirm_new_pwd').classList.remove('is-invalid', 'is-valid');
-	document.getElementById('config_password').getElementsByTagName('button')[0].disabled = true;
-	// workaround for removing validation indicator when the empty form is closed
-	$('#txt_new_pwd').keydown();
-});
