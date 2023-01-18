@@ -4000,6 +4000,9 @@ function getTreePostgresql(p_div) {
     node_server.createChildNode('', true, 'node-spin',
         null, null);
     tree.drawTree();
+    setTimeout(function() {
+        tree.expandNode(node_server)
+    }, 200)
 
 }
 
