@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <div ref="settingInput">
     <div class="custom-control custom-switch" v-if="setting.vartype === 'bool'">
-      <input class="custom-control-input" type="checkbox" id="switch-{{ index }}" v-model="setting.setting" true-value="on" false-value="off"
+      <input class="custom-control-input" type="checkbox" :id="`switch-${inputId}`" v-model="setting.setting" true-value="on" false-value="off"
         @change="changeSetting" :disabled="isReadOnly" />
-      <label class="custom-control-label" for="switch-{{ index }}"></label>
+      <label class="custom-control-label" :for="`switch-${inputId}`"></label>
     </div>
 
     <select v-else-if="setting.vartype === 'enum'" class="form-control form-control-sm" :name="setting.name"
@@ -31,6 +31,7 @@
     setting.setting != setting.boot_val &&
     setting.category != 'Preset Options'
   " type="button" class="btn btn-link btn-sm" :id="buttonId" :title="`Reset to: ${setting.boot_val}`"
+    ref="resetButton"
     @click.prevent="setDefault">
     <span class="fa fa-undo" aria-hidden="true"></span>
     Reset to default
@@ -77,7 +78,7 @@ export default {
                 <td><b>${this.initialSetting.max_val}</b></td>
               </tr>
               </table>`,
-      inputId: `${this.initialSetting.name}_input_${Date.now()}`,
+      inputId: `${this.initialSetting.name}_${v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}`,
       buttonId: `buttonResetDefault_${this.initialSetting.name}`,
     };
   },
@@ -115,6 +116,7 @@ export default {
   mounted() {
     this.$nextTick(() => {
       $(`#${this.inputId}`).tooltip({
+        container: this.$refs.settingInput,
         sanitize: false,
         title: this.tooltipTitle,
         boundary: "window",
@@ -122,6 +124,7 @@ export default {
         delay: { show: 500, hide: 100 },
       });
       $(`#${this.buttonId}`).tooltip({
+        container: this.$refs.resetButton,
         sanitize: false,
         boundary: "window",
         html: true,
@@ -131,13 +134,6 @@ export default {
   },
   methods: {
     changeSetting() {
-      $(`#${this.buttonId}`).tooltip("dispose");
-      $(`#${this.buttonId}`).tooltip({
-        sanitize: false,
-        boundary: "window",
-        html: true,
-        delay: { show: 500, hide: 100 },
-      });
       this.$emit("settingChange", {
         changedSetting: this.setting,
         index: this.index,
