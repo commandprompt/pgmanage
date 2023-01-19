@@ -87,7 +87,7 @@ def database_required(p_check_timeout=True, p_open_connection=True):
                         p_attempt_to_open_connection=p_open_connection
                     )
                 except Exception as exc:
-                    v_return['v_data'] = {'password_timeout': True, 'message': str(exc)}
+                    v_return['v_data'] = {'password_timeout': False, 'message': str(exc)}
                     v_return['v_error'] = True
                     return JsonResponse(v_return)
             else:

@@ -1650,7 +1650,7 @@ function getTreeDetailsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -1696,7 +1696,7 @@ function getTablespacesOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -1741,7 +1741,7 @@ function getRolesOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -1802,7 +1802,7 @@ function getTablesOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -1848,7 +1848,7 @@ function getSequencesOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -1897,7 +1897,7 @@ function getViewsOracle(node) {
             afterNodeOpenedCallbackOracle(node);
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -1965,7 +1965,7 @@ function getViewsColumnsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2013,7 +2013,7 @@ function getViewDefinitionOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         true);
@@ -2060,7 +2060,7 @@ function getMaterializedViewsOracle(node) {
             }
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2102,7 +2102,7 @@ function getMaterializedViewsColumnsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2152,7 +2152,7 @@ function getMaterializedViewDefinitionOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         true);
@@ -2262,7 +2262,7 @@ function getColumnsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2311,7 +2311,7 @@ function getPKOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2353,7 +2353,7 @@ function getPKColumnsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2408,7 +2408,7 @@ function getUniquesOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2455,7 +2455,7 @@ function getUniquesColumnsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2512,7 +2512,7 @@ function getIndexesOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2560,7 +2560,7 @@ function getIndexesColumnsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2620,7 +2620,7 @@ function getFKsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2677,7 +2677,7 @@ function getFKsColumnsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2733,7 +2733,7 @@ function getTriggersOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2781,7 +2781,7 @@ function getPartitionsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2834,7 +2834,7 @@ function getFunctionsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2890,7 +2890,7 @@ function getFunctionFieldsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -2919,7 +2919,7 @@ function getFunctionFieldsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         true);
@@ -2967,7 +2967,7 @@ function getFunctionDefinitionOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         true);
@@ -3020,7 +3020,7 @@ function getProceduresOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -3076,7 +3076,7 @@ function getProcedureFieldsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -3105,7 +3105,7 @@ function getProcedureFieldsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         true);
@@ -3153,7 +3153,7 @@ function getProcedureDefinitionOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         true);
@@ -3200,7 +3200,7 @@ function getTriggerFunctionsOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         false);
@@ -3249,7 +3249,7 @@ function getTriggerFunctionDefinitionOracle(node) {
 
         },
         function(p_return) {
-            nodeOpenError(p_return, node);
+            nodeOpenErrorOracle(p_return, node);
         },
         'box',
         true);
@@ -3349,7 +3349,7 @@ function TemplateUpdateOracle(p_schema, p_table) {
         true);
 }
 
-function nodeOpenError(p_return, p_node) {
+function nodeOpenErrorOracle(p_return, p_node) {
 
     if (p_return.v_data.password_timeout) {
         p_node.collapseNode();
@@ -3368,7 +3368,7 @@ function nodeOpenError(p_return, p_node) {
 
         v_node = p_node.createChildNode(
             "Error - <a class='a_link' onclick='showError(&quot;" +
-            p_return.v_data.replace(/\n/g, "<br/>").replace(/"/g, '') +
+            p_return.v_data.message.replace(/\n/g, "<br/>").replace(/"/g, '') +
             "&quot;)'>View Detail</a>", false,
             'fas fa-times node-error', {
                 type: 'error',
