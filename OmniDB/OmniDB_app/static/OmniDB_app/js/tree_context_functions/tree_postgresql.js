@@ -8998,7 +8998,6 @@ function TemplateCallProcedurePostgresql(p_schema, p_procedure, p_procedureid) {
 }
 
 function nodeOpenErrorPostgresql(p_return, p_node) {
-    debugger
     if (p_return.v_data.password_timeout) {
         p_node.collapseNode();
         showPasswordPrompt(

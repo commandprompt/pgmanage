@@ -196,7 +196,12 @@ export default {
                   let distance_name = distance(this.query_filter, row.name)
                   let distance_desc = distance(this.query_filter, row.desc)
 
-                  return distance_desc > 0.7 || distance_name > 0.7
+                  return (
+                    distance_desc > 0.7 ||
+                    distance_name > 0.7 ||
+                    row.name.toLowerCase().includes(this.query_filter.toLowerCase()) ||
+                    row.desc.toLowerCase().includes(this.query_filter.toLowerCase())
+                  )
                 }
               );
               return { ...element, rows: rows };
