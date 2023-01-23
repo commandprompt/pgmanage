@@ -535,7 +535,7 @@ function querySQLReturnRender(p_message,p_context) {
 			}
 
 			let mode = ['CREATE', 'DROP', 'ALTER'];
-			if (!!p_message.v_data.v_status) {
+			if (!!p_message.v_data.v_status && isNaN(p_message.v_data.v_status)) {
 				let status = p_message.v_data.v_status?.split(" ");
 				let status_name = status[1];
 				if (mode.includes(status[0])) {
