@@ -14,12 +14,12 @@
               <div class="modal-connections__panel">
                 <div class="modal-connections__panel_add add-connection d-flex justify-content-between align-items-center">
                   <p class="add-connection__title p-0 m-0"><span>{{ this.connections.length }}</span> connections</p>
-                  <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-success add-connection__btn dropdown-toggle" data-toggle="dropdown">
+                  <div class="btn-group" role="group" >
+                    <button type="button" class="btn btn-success add-connection__btn dropdown-toggle" data-toggle="dropdown" id="add_connection_button">
                       <i class="fa-solid fa-circle-plus"></i> Add
                     </button>
-                    <div class="dropdown-menu dropdown-menu-sm">
-                      <a class="dropdown-item" @click="newConnection" href="#">Connection</a>
+                    <div class="dropdown-menu dropdown-menu-sm" id="add_connection_dropdown_menu">
+                      <a class="dropdown-item" @click="newConnection" href="#" id="add_connection_dropdown_item">Connection</a>
                       <a class="dropdown-item" @click="newGroup" href="#">Group</a>
                     </div>
                   </div>

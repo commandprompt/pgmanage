@@ -6,7 +6,7 @@
         <!-- TODO: integrate with active connection list -->
         <h3 class="connection-form__header_title mb-0">{{initialConnection.alias}} {{connectionLocal.locked ? "(Active/Read Only)": ""}}</h3>
           <div>
-            <button @click="testConnection(this.connectionLocal)" class="btn btn-outline-primary mr-2">Test</button>
+            <button @click="testConnection(this.connectionLocal)" class="btn btn-outline-primary mr-2" id="connectionTestButton">Test</button>
             <button v-if="this.connectionLocal.id" @click="dispatchConnectionSelected(this.connectionLocal)" class="btn btn-success">Connect</button>
           </div>
         </div>
@@ -187,7 +187,7 @@
 
               <div class="form-group col-6">
                   <p class="font-weight-bold mb-3">Select file</p>
-                  <label class="btn btn-secondary">
+                  <label class="btn btn-secondary" id="sshFileLabel">
                   {{connectionLocal.tunnel.key ? 'Key File Loaded' : 'Select Key' }} <input type="file" @change="updateConnectionKey" hidden>
                   </label>
               </div>

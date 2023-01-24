@@ -152,26 +152,36 @@ function startTutorial(p_tutorial_name) {
         p_title: 'Primary menu'
       },
       {
-        p_callback_after_update_start: function() {setTimeout(function(){var v_target = document.getElementById('button_new_connection'); v_omnis.omnis_ui_assistant.divClonedElement.children[0].classList.remove('ml-2');},50);},
         p_callback_start: function() {
           $('#connections-modal').modal({
             show: true
           });
+          setTimeout(function() {
+            document.getElementById('add_connection_button').click()
+          }, 100)
         },
-        p_clone_target: true,
+        p_callback_after_update_start: function() {
+          setTimeout(function() {
+            v_omnis.omnis_ui_assistant.divClonedElement.firstChild.style.transform = ''
+          }, 100)
+        },
+        p_callback_end: function() {
+          document.getElementById('add_connection_dropdown_item').click()
+        },
         p_message: `
-        <p>Click on <strong>New Connection</strong>.</p>
+        <p>Click on <strong> Connection <strong></p>
         `,
-        p_next_button: false,
-        p_target: function() {var v_target = document.getElementById('button_new_connection'); return v_target},
+        p_clone_target: true,
+        p_target: function() {var v_target = document.getElementById('add_connection_dropdown_menu'); return v_target},
         p_title: 'Add a New Connection',
-        p_update_delay: 1000
+        p_update_delay: 1000,
+        p_next_button: false,
       },
       {
         p_message: `
         <p>Select the proper DBMS technology.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_type'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionType'); return v_target},
         p_title: 'Connection Type',
         p_update_delay: 300
       },
@@ -181,7 +191,7 @@ function startTutorial(p_tutorial_name) {
         <p>This is used as name reference on many UI areas.</p>
         <p>i.e: Local dvdrental barman.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_title'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionName'); return v_target},
         p_title: 'Title'
       },
       {
@@ -189,7 +199,7 @@ function startTutorial(p_tutorial_name) {
         <p>Type the server address. Do not include ports.</p>
         <p>i.e:127.0.0.1</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_server'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionServer'); return v_target},
         p_title: 'Server'
       },
       {
@@ -197,7 +207,7 @@ function startTutorial(p_tutorial_name) {
         <p>Type the port of the server.</p>
         <p>i.e: PostgreSQL uses 5432 by default, but if you are using pgbouncer, you may want to use 6432 as the entry point.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_port'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionPort'); return v_target},
         p_title: 'Port'
       },
       {
@@ -205,7 +215,7 @@ function startTutorial(p_tutorial_name) {
         <p>Type the name of the database.</p>
         <p>i.e: postgres, dvdrental.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_database'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionDatabase'); return v_target},
         p_title: 'Database'
       },
       {
@@ -213,16 +223,16 @@ function startTutorial(p_tutorial_name) {
         <p>Type the name of the user with priviledges to access the database.</p>
         <p>i.e: postgres.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_user'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionUsername'); return v_target},
         p_title: 'User'
       },
       {
         p_message: `
         <p>This is <strong>optional</strong>.</p>
         <p>If you don't save the user password, you will be required to manually input it everytime a new connection to this database is started.</p>
-        <p>If saved, this password will be stored in the database configured for OmniDB (default is omnidb.db).</p>
+        <p>If saved, this password will be stored in the database configured for PgManage (default is pgmanage.db).</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_user_pass'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionPassword'); return v_target},
         p_title: 'User password'
       },
       {
@@ -230,7 +240,7 @@ function startTutorial(p_tutorial_name) {
         <p>You may want to hit 'test' before saving the conntion.</p>
         <p>After that, click save.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_button_test_connection'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionTestButton'); return v_target},
         p_title: 'Test the Connection'
       }
     ],
@@ -239,24 +249,34 @@ function startTutorial(p_tutorial_name) {
         p_clone_target: true,
         p_message: `
         <p>First let's open the <strong>connections management</strong> interface.</p>
-        <p>Please, click on the OmniDB Icon button.</p>
         `,
         p_target: document.getElementsByClassName('omnidb__tab-menu omnidb__tab-menu--primary')[0],
-        p_title: 'Accessing connections managemnet'
+        p_title: 'Accessing connections management'
       },
       {
-        p_callback_after_update_start: function() {setTimeout(function(){var v_target = document.getElementById('button_new_connection'); v_omnis.omnis_ui_assistant.divClonedElement.children[0].classList.remove('ml-2');},50);},
+        // p_callback_after_update_start: function() {setTimeout(function(){var v_target = document.getElementById('button_new_connection'); v_omnis.omnis_ui_assistant.divClonedElement.children[0].classList.remove('ml-2');},50);},
         p_callback_start: function() {
           $('#connections-modal').modal({
             show: true
           })
+          setTimeout(function() {
+            document.getElementById('add_connection_button').click()
+          }, 100)
+        },
+        p_callback_after_update_start: function() {
+          setTimeout(function() {
+            v_omnis.omnis_ui_assistant.divClonedElement.firstChild.style.transform = ''
+          }, 100)
+        },
+        p_callback_end: function() {
+          document.getElementById('add_connection_dropdown_item').click()
         },
         p_clone_target: true,
         p_message: `
-        <p>Click on <strong>New Connection</strong>.</p>
+        <p>Click on <strong> Connection <strong></p>
         `,
         p_next_button: false,
-        p_target: function() {var v_target = document.getElementById('button_new_connection'); return v_target},
+        p_target: function() {var v_target = document.getElementById('add_connection_dropdown_menu'); return v_target},
         p_title: 'Add a New Connection',
         p_update_delay: 1000
       },
@@ -264,17 +284,20 @@ function startTutorial(p_tutorial_name) {
         p_message: `
         <p>Select the Terminal technology.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_type'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionType'); return v_target},
         p_title: 'Connection Type',
         p_update_delay: 300
       },
       {
+        p_callback_start: function() {
+          document.getElementById('connectionName').focus()
+        },
         p_message: `
         <p>Type a helpful name for the terminal connection.</p>
         <p>This is used as name reference on many UI areas.</p>
         <p>i.e: Local terminal.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_title'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionName'); return v_target},
         p_title: 'Title'
       },
       {
@@ -282,7 +305,7 @@ function startTutorial(p_tutorial_name) {
         <p>The terminal utilizes SSH technology.</p>
         <p>As you can see, in this case SSH parameters are mandatory.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_use_tunnel'); return v_target},
+        p_target: function() {var v_target = document.getElementById('sshTunel'); return v_target},
         p_title: 'SSH parameters'
       },
       {
@@ -290,7 +313,7 @@ function startTutorial(p_tutorial_name) {
         <p>Type the ssh server address. Do not include ports.</p>
         <p>i.e:127.0.0.1</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_ssh_server'); return v_target},
+        p_target: function() {var v_target = document.getElementById('sshServer'); return v_target},
         p_title: 'SSH server'
       },
       {
@@ -298,7 +321,7 @@ function startTutorial(p_tutorial_name) {
         <p>Type the port of the SSH server.</p>
         <p>i.e: 22 is a default port for working with SSH tunnels.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_ssh_port'); return v_target},
+        p_target: function() {var v_target = document.getElementById('sshPort'); return v_target},
         p_title: 'SSH Port'
       },
       {
@@ -306,32 +329,35 @@ function startTutorial(p_tutorial_name) {
         <p>Type the name of the SSH user.</p>
         <p>i.e: If you are on linux, your linux user is available for a local connection.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_ssh_user'); return v_target},
+        p_target: function() {var v_target = document.getElementById('sshUsername'); return v_target},
         p_title: 'SSH User'
       },
       {
         p_message: `
-        <p>If you want you can save the password of your user.</p>
-        <p>* Leaving this empty will force the tool to request for your password everytime you open a terminal connection.</p>
+        <p>If you want you can save the Passphrase of your user.</p>
+        <p>* Leaving this empty will force the tool to request for your passphrase everytime you open a terminal connection.</p>
         <p>i.e: If you are on linux, your linux user is available for a local connection.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_ssh_password'); return v_target},
-        p_title: 'SSH Password (optional)'
+        p_target: function() {var v_target = document.getElementById('sshPassphrase'); return v_target},
+        p_title: 'SSH Passphrase (optional)'
       },
       {
         p_message: `
         <p>This is <strong>optional</strong>.</p>
         <p>It allows you to configure a SSH key.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_ssh_key_input_label'); return v_target},
+        p_target: function() {var v_target = document.getElementById('sshFileLabel'); return v_target},
         p_title: 'SSH Key'
       },
       {
+        p_callback_start: function() {
+          document.getElementById('connectionTestButton').focus()
+        },
         p_message: `
-        <p>You may want to hit 'test' before saving the conntion.</p>
-        <p>After that, click save.</p>
+        <p>You may want to hit 'test' before saving the connection.</p>
+        <p>After that, click <strong>Save changes</strong>.</p>
         `,
-        p_target: function() {var v_target = document.getElementById('conn_form_button_test_connection'); return v_target},
+        p_target: function() {var v_target = document.getElementById('connectionTestButton'); return v_target},
         p_title: 'Test the Connection'
       }
     ],

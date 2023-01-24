@@ -448,7 +448,7 @@ function createOmnisUiAssistant({p_callback_end = false, p_omnis, p_steps = []})
   }
 
   v_omnisControl.divCardElement = document.createElement('div');
-  v_omnisControl.divCardElement.setAttribute('style', 'position:fixed; width:280px; max-width: 90vw; z-index: ' + v_omnisControl.z_index + 3 + '; box-shadow: 1px 0px 3px rgba(0,0,0,0.15); transition: all 0.45s ease 0.1s;');
+  v_omnisControl.divCardElement.setAttribute('style', 'position:fixed; width:280px; width: fit-content; z-index: ' + v_omnisControl.z_index + 3 + '; box-shadow: 1px 0px 3px rgba(0,0,0,0.15); transition: all 0.45s ease 0.1s;');
 
   v_omnisControl.divClonedElement = document.createElement('div');
   v_omnisControl.divClonedElement.setAttribute('style', 'position:absolute; width:0px; height:0px; overflow:visible; z-index:' + v_omnisControl.z_index + 2 + ';');
