@@ -11,15 +11,15 @@ cryptography = "36.0.2"
 django = "2.2.*"
 tornado = "6.0.2"
 click = "7.0"
-psycopg2-binary = "2.9.*"
 openpyxl = "2.5.14"
 restrictedpython = "4.0"
 cx-oracle = "8.3.*"
 pymysql = "1.0.*"
-pgspecial = "1.13.0"
 sshtunnel = "0.1.5"
 pexpect = "4.7.0"
 cherrypy = "18.1.1"
+psycopg2 = "^2.9.5"
+pgspecial = "1.13.0"
 
 
 [tool.poetry.group.dev.dependencies]
