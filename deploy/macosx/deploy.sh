@@ -24,7 +24,7 @@ rm -rf release_$APP_VERSION tmp
 mkdir release_$APP_VERSION tmp
 
 # Prepare temporary directory
-cp -R ../../OmniDB/ tmp
+cp -R ../../pgmanage/ tmp
 cd tmp/
 rm -rf pgmanage.db pgmanage.log
 touch pgmanage.db
@@ -46,10 +46,10 @@ pip3 install -r ../../../requirements.txt
 pip3 install pyinstaller
 
 # set up versions in custom_settins.py
-sed -i '' "s/Dev/PgManage $APP_VERSION/" OmniDB/custom_settings.py
-sed -i '' "s/dev/$APP_VERSION/" OmniDB/custom_settings.py
+sed -i '' "s/Dev/PgManage $APP_VERSION/" pgmanage/custom_settings.py
+sed -i '' "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
 
-pyinstaller OmniDB-mac.spec
+pyinstaller pgmanage-mac.spec
 
 mkdir pgmanage-server && mv dist/pgmanage-server pgmanage-server
 

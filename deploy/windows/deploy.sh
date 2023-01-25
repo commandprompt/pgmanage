@@ -23,7 +23,7 @@ mkdir release_$APP_VERSION tmp
 
 # Prepare temporary directory
 echo "copying app files into tmp"
-cp -R ../../OmniDB/* tmp
+cp -R ../../pgmanage/* tmp
 cd tmp/
 rm -rf pgmanage.db pgmanage.log
 touch pgmanage.db
@@ -34,11 +34,11 @@ pip3 install pyinstaller
 
 # set up versions in custom_settins.py
 echo "setting app version in sources to $APP_VERSION"
-sed -i "s/Dev/PgManage $APP_VERSION/" OmniDB/custom_settings.py
-sed -i "s/dev/$APP_VERSION/" OmniDB/custom_settings.py
+sed -i "s/Dev/PgManage $APP_VERSION/" pgmanage/custom_settings.py
+sed -i "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
 
 echo "running pyinstaller"
-/cygdrive/c/Users/$USER/AppData/Roaming/Python/Python38/Scripts/pyinstaller.exe ./omnidb-win.spec
+/cygdrive/c/Users/$USER/AppData/Roaming/Python/Python38/Scripts/pyinstaller.exe ./pgmanage-win.spec
 mv dist/pgmanage-server ../release_$APP_VERSION/
 
 cd ..

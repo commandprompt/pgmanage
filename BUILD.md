@@ -3,7 +3,7 @@
 The deploy subdir of this projec has a number of helper scripts which should be used to build the release archive.
 
 Here is the list of steps necessary involved in the build process:
-cd ./depploy/linux
+cd ./deploy/linux
 run ./build_images.sh
 once build_images.sh completes run./deploy.sh
 

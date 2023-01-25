@@ -6,10 +6,10 @@ echo "BRANCH=$BRANCH"
 echo "VERSION=$VERSION"
 
 # Cloning repo
-git clone $REPO --depth 1 -b $BRANCH OmniDB
+git clone $REPO --depth 1 -b $BRANCH pgmanage
 
 # Installing dependencies
-cd OmniDB/
+cd pgmanage/
 pip3 install -r requirements.txt
 
 # if version is not provided, we use last tag from repository
@@ -23,15 +23,15 @@ then
 fi
 
 # Building server
-cd OmniDB/
+cd pgmanage/
 
 # setting up versions in custom_settins.py
-sed -i "s/Dev/PgManage $VERSION/" OmniDB/custom_settings.py
-sed -i "s/dev/$VERSION/" OmniDB/custom_settings.py
+sed -i "s/Dev/PgManage $VERSION/" pgmanage/custom_settings.py
+sed -i "s/dev/$VERSION/" pgmanage/custom_settings.py
 
 rm -f pgmanage.db pgmanage.log
 touch pgmanage.db
-pyinstaller OmniDB-lin.spec
+pyinstaller pgmanage-lin.spec
 mv dist/pgmanage-server $HOME
 rm -rf build dist
 cd $HOME
@@ -53,7 +53,7 @@ rm ./lib/*.json
 
 mkdir pgmanage-server
 cp $HOME/pgmanage-server ./pgmanage-server/
-cp $HOME/OmniDB/deploy/app/* .
+cp $HOME/pgmanage/deploy/app/* .
 sed -i "s/version_placeholder/v$VERSION/" index.html
 mv nw pgmanage-app
 cd $HOME

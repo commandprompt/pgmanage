@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" type="image/x-icon" href="{{url_folder}}/static/assets/images/favicon.ico"/>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/bootstrap/bootstrap.min.css?v{{pgmanage_short_version}}">
+    <link rel="stylesheet" type="text/css" href="{{url_folder}}/static/assets/lib/handsontable/handsontable.full.css?v{{pgmanage_short_version}}">
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/fa/css/all.css?v{{pgmanage_short_version}}">
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/css/xterm.css">
+
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/css/font-poppins.css?{{pgmanage_short_version}}">
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/css/omnidb.min.css?{{pgmanage_short_version}}">
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/css/modal.min.css?{{pgmanage_short_version}}">
+    <link id="ss_theme" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/pev2/css/style.css" />
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/Passtrength/css/passtrength.css">
+
+    <title>PgManage</title>
+  </head>
+  <body>
+
+  <!-- IF CHROME - Security countermeasures -->
+  <form style="display:none;" autocomplete="off">
+    <input type="text" name="prevent_autofill" id="prevent_autofill" value="" />
+    <input type="password" name="password_fake" id="password_fake" value="" />
+  </form>
+  <!-- .IF CHROME -->
+
+
+  <div id="connections-modal-wrap">
+    <connections-modal></connections-modal>
+  </div>
+
+  <div id="settings-modal-wrap">
+    <settings-modal></settings-modal>
+  </div>
+
+
+  <div class="toast" data-autohide="false" style="position: absolute; top: 0; right: 0;">
+    <div class="toast-header">
+      <strong class="mr-auto">Bootstrap</strong>
+      <small>11 mins ago</small>
+      <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="toast-body">
+      Hello, world! This is a toast message.
+    </div>
+  </div>
+
+  <div class="omnidb__utilities-menu omnidb__theme-bg--menu-utilities omnidb__rounded--lg">
+    <nav class="navbar p-0">
+      <span class="omnidb__utilities-menu__branding"></span>
+      <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <div class="navbar-nav">
+        </div>
+      </div> -->
+
+      <form class="form-inline">
+        <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSecond" aria-controls="navbarSecond" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button> -->
+        <div id="navbarSecond">
+            <div class="navbar-nav flex-row">
+              <a id="omnidb__utilities-menu__link-versioning" class="omnidb__menu__btn-text-visible nav-item nav-link d-flex align-items-center justify-content-center">
+                <i class="fas fa-code-branch"></i>
+                <span class="badge badge-info">{{ pgmanage_short_version }}</span>
+              </a>
+              {% if not desktop_mode %}
+              <a id="omnidb__utilities-menu__link-username" class="omnidb__menu__btn-user omnidb__menu__btn-text nav-item nav-link d-flex align-items-center justify-content-center">
+                <!-- <i class="fas fa-user"></i> -->
+                <span>{{ user_name }}</span>
+              </a>
+              {% endif %}
+              <a id="omnidb__utilities-menu__link-connections" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="$('#connections-modal').modal({show: true})"><i class="fas fa-plug" title="Connections"></i></a>
+              {% if not desktop_mode %}
+              {% if super_user == 1 %}
+              <a id="omnidb__utilities-menu__link-user" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="listUsers();"><i class="fas fa-user" title="Users"></i></a>
+              {% endif %}
+              {% endif %}
+              <a id="omnidb__utilities-menu__link-config" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="showConfigUser();"><i class="fas fa-cog" title="Settings"></i></a>
+              <a id="omnidb__utilities-menu__link-plugins" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="showPlugins();"><i class="fas fa-cube" title="Plugins"></i></a>
+              <a id="omnidb__utilities-menu__link-about" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="showAbout();"><i class="fas fa-info-circle" title="About"></i></a>
+              {% if not desktop_mode %}
+              <a id="omnidb__utilities-menu__link-signout" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="confirmSignout()"><i class="fas fa-sign-out-alt" title="Sign out"></i></a>
+              {% endif %}
+              <a id="omnidb__utilities-menu__link-toggle" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="toggleUtilitiesMenu()"><i class="fas fa-tools" title="Utilities Menu"></i></a>
+            </div>
+          </div>
+      </form>
+    </nav>
+  </div>
+
+    <div id="omnidb__main" class="omnidb__main" style="min-height: 100vh">
+      <div id="omnidb_main_tablist">
+      </div>
+    </div>
+
+    <div id="div_loading" class="div_loading" style='z-index: 100005;'>
+      <div class="div_loading_cover"></div>
+      <div class="div_loading_content">
+        <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
+          <span class="sr-only ">Loading...</span>
+        </div>
+        <div>
+          <button id="bt_cancel_ajax" style='display: none; margin-top: 10px;' class='btn btn-light' onclick="cancelAjax()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Modal Query History -->
+    <div class="modal fade" id="modal_query_history" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="btn btn-danger">Delete History</button>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+
+              <div class="form-row">
+                <div class="col-md-3 mb-3">
+                  <label for="query_history_from">From</label>
+                  <input type="text" class="form-control" id="query_history_from" placeholder="From Date">
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="query_history_to">To</label>
+                  <input type="text" class="form-control" id="query_history_to" placeholder="To Date">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="query_history_contains">Query Contains</label>
+                  <input type="text" class="form-control" id="query_history_contains" placeholder="Filter">
+                </div>
+              </div>
+
+              <div class="text-center">
+                <button class="btn btn-secondary btn-sm mr-1">First</button>
+                <button class="btn btn-secondary btn-sm mr-1">Previous</button>
+                <span class="mr-1"> 1 / 217 </span>
+                <button class="btn btn-secondary btn-sm mr-1">Next</button>
+                <button class="btn btn-secondary btn-sm mr-1">Last</button>
+              </div>
+
+              <div id="query_history_grid" style="width: 100%; height: 300px; overflow: hidden;"></div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal About -->
+    <div class="modal fade" id="modal_about" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <h2 class="modal-title font-weight-bold">About</h2>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <div class="row mb-3">
+              <div class="col-5">
+                <p class="font-weight-semibold">Version:</p>
+              </div>
+              <div class="col-7">{{ pgmanage_version }}</div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-5 d-flex align-items-center">
+                <p class="font-weight-semibold mb-0">Supported databases:</p>
+              </div>
+
+              <div class="col-7 modal-about__db d-flex justify-content-between align-items-center">
+                <img src="{{url_folder}}/static/assets/images/postgresql_large.png" title="PostgreSQL"/>
+                <img src="{{url_folder}}/static/assets/images/oracle_large.png" title="Oracle"/>
+                <img src="{{url_folder}}/static/assets/images/mysql_large.png" title="MySQL"/>
+                <img src="{{url_folder}}/static/assets/images/sqlite_large.png" title="SQLite"/>
+                <img src="{{url_folder}}/static/assets/images/mariadb_large.png" title="MariaDB"/>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-5">
+                <p class="font-weight-semibold">Primary Supporter:</p>
+              </div>
+              <div class="col-7">
+                <a target="_blank" class="font-weight-bold" href="https://www.commandprompt.com/">
+                  Command Prompt Inc
+                  <!-- <img src="{{url_folder}}/static/OmniDB_app/images/supporters/command_prompt_inc.png" title="CommandPrompt Inc."/> -->
+                </a>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-5">
+                <p class="font-weight-semibold">Website:</p>
+              </div>
+              <div class="col-7">
+                <a class="font-weight-bold" target="_blank" href="https://github.com/commandprompt/pgmanage">PgManage</a>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Modal Monitoring Units -->
+    <div class="modal fade" id="modal_monitoring_units" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <h2 class="modal-title font-weight-bold">Monitoring Units</h2>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="monitoring_units_grid" style="width: 100%; height: 300px; overflow: hidden;"></div>
+          </div>
+          <div class="modal-footer">
+            <button class='btn btn-primary btn-sm mr-3' onclick='editMonitorUnit()'>New Unit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Users -->
+    <div class="modal fade" id="modal_users" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: max-content;">
+          <div class="modal-header align-items-center">
+            <h2 class="modal-title font-weight-bold">User management</h2>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="div_user_list" style="width: 100%; overflow: hidden;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Plugins -->
+    <div class="modal fade" id="modal_plugins" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <h2 class="modal-title font-weight-bold">Manage plugins</h2>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="custom-file mb-3">
+              <input type="file" class="custom-file-input" id="plugin_file_selector" onchange="upload(this)" required>
+              <label class="custom-file-label" for="plugin_file_selector">Select plugin package to be installed...</label>
+            </div>
+
+            <div id="plugin_grid" style="width: 100%; height: 300px; overflow: hidden;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Monitoring Unit Test -->
+    <div class="modal fade" id="modal_monitoring_unit_test" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="dashboard_unit_content_group">
+              <div id="monitoring_unit_test_result">
+              </div>
+              <div id="monitoring_unit_test_legend" class="dashboard_unit_legend_box">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Generic Message -->
+    <div class="modal show" id="modal_message" tabindex="-1" role="dialog" aria-hidden="true">
+      <div id="modal_message_dialog" class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+            </button>
+          </div>
+          <div id="modal_message_content" class="modal-body" style='white-space: pre-line;'>
+          </div>
+          <div class="modal-footer">
+            <button id="modal_message_yes" type="button" class="btn btn-primary" data-dismiss="modal">Yes</button>
+            <button id="modal_message_ok" type="button" class="btn btn-success" data-dismiss="modal">Ok</button>
+            <button id="modal_message_no" type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+            <button id="modal_message_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Password -->
+    <div class="modal fade" id="modal_password" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="modal_password_content"></div>
+            <div class="form-group">
+              <input id="txt_password_prompt" class="form-control" type="password" placeholder="Password"/>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="modal_password_ok" type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+            <button id="modal_password_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Master Password -->
+
+    <div class="modal fade" id="modal_password_set" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <h2 class="modal-title font-weight-bold">Master Password</h2>
+          </div>
+
+          <div class="modal-body">
+            <div id="modal_password_content">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-6">
+                <input id="master_password" type="password" class="form-control" placeholder="New Password" oninput="checkMasterPassword()" minlength="8" required>
+              </div>
+
+              <div class="form-group col-6">
+                <input id="master_password_confirm" type="password" class="form-control" placeholder="Confirm Password" oninput="checkMasterPassword()" minlength="8" required>
+                <div class="invalid-tooltip">
+                  Password must be matching.
+                </div>
+                </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="password_set" type="button" class="btn btn-success" data-dismiss="modal" onclick="saveMasterPass()" disabled>Set Master password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modal_password_check" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <h2 class="modal-title font-weight-bold">Master Password</h2>
+          </div>
+          <div class="modal-body">
+            <div id="master_password_content" class="mb-3">
+            </div>
+            <div class="form-group">
+              <input id="master_password_check" class="form-control" type="password" placeholder="Password" minlength="8" required/>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="password_check_button" type="button" class="btn btn-success" data-dismiss="modal">Ok</button>
+            <button id="password_reset_button" type="button" class="btn btn-danger" data-dismiss="modal">Reset Master Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="div_autocomplete" class="omnidb__autocomplete">
+      <div id='div_autocomplete_loading' class='div_loading_local' style='z-index: 1000;'></div>
+      <div id="div_test_length"></div>
+      <!--<div id="div_autocomplete_label"></div>-->
+      <div id="div_autocomplete_noresults">No results</div>
+      <div id="div_autocomplete_scroll">
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Keywords</div>
+            <i class="fas fa-font node-all node-keyword" title="Keywords"></i>
+            <div id="autocomplete_count_keyword">0 results</div>
+          </div>
+          <div id="autocomplete_grid_keyword" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Databases</div>
+            <i class="fas fa-database node-all node-database-list" title="Databases"></i>
+            <div id="autocomplete_count_database">0 results</div>
+          </div>
+          <div id="autocomplete_grid_database" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Roles</div>
+            <i class="fas fa-users node-all node-user-list" title="Roles"></i>
+            <div id="autocomplete_count_role">0 results</div>
+          </div>
+          <div id="autocomplete_grid_role" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Tablespaces</div>
+            <i class="fas fa-folder-open node-all node-tablespace-list" title="Tablespaces"></i>
+            <div id="autocomplete_count_tablespace">0 results</div>
+          </div>
+          <div id="autocomplete_grid_tablespace" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Schemas</div>
+            <i class="fas fa-layer-group node-all node-schema-list" title="Schemas"></i>
+            <div id="autocomplete_count_schema">0 results</div>
+          </div>
+          <div id="autocomplete_grid_schema" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Extensions</div>
+            <i class="fas fa-cubes node-all node-extension-list" title="Extensions"></i>
+            <div id="autocomplete_count_extension">0 results</div>
+          </div>
+          <div id="autocomplete_grid_extension" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Tables</div>
+            <i class="fas fa-table node-all node-table-list" title="Tables"></i>
+            <div id="autocomplete_count_table">0 results</div>
+          </div>
+          <div id="autocomplete_grid_table" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Views</div>
+            <i class="fas fa-eye node-all node-view-list" title="Views"></i>
+            <div id="autocomplete_count_view">0 results</div>
+          </div>
+          <div id="autocomplete_grid_view" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Columns</div>
+            <i class="fas fa-columns node-all node-column" title="Columns"></i>
+            <div id="autocomplete_count_column">0 results</div>
+          </div>
+          <div id="autocomplete_grid_column" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Functions</div>
+            <i class="fas fa-cog node-all node-function-list" title="Indexes"></i>
+            <div id="autocomplete_count_function">0 results</div>
+          </div>
+          <div id="autocomplete_grid_function" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+        <div class="omnidb__autocomplete__row">
+          <div class="omnidb__autocomplete__type">
+            <div>Indexes</div>
+            <i class="fas fa-thumbtack node-all node-index" title="Indexes"></i>
+            <div id="autocomplete_count_index">0 results</div>
+          </div>
+          <div id="autocomplete_grid_index" class="omnidb__autocomplete__data">
+          </div>
+        </div>
+      </div>
+      <div id="div_autocomplete_searching">Searching...</div>
+
+    </div>
+
+    <script src="{{url_folder}}/static/assets/lib/jquery/jquery.min.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/jquery-ui.js"></script>
+    <script src="{{url_folder}}/static/assets/js/ajax_control.js?v{{pgmanage_short_version}}"></script>
+
+    <script type="text/javascript">
+    startLoading();
+    </script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/xterm.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/fit.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/lib/popper/popper.min.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/lib/bootstrap/bootstrap.min.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/ace/ace.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/ace/mode-sql.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/ace/ext-language_tools.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/handsontable/handsontable.full.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/cytoscape/cytoscape.min.js"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/cytoscape/cytoscape-spread.js"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/cytoscape/klay.js"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/cytoscape/cytoscape-klay.js"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/Chart.bundle.js?v{{pgmanage_short_version}}"></script>
+    <!--<script type="text/javascript" src="{{url_folder}}/static/OmniDB_app/new/js/chartjs-plugin-datalabels.js?v3.0.6"></script>-->
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/chartjs-plugin-annotation.min.js?v2"></script>
+    <!-- <script type="text/javascript" src="{{url_folder}}/static/OmniDB_app/js/jquery.datetimepicker.full.min.js?v2"></script> -->
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/aimaraJS/lib/Aimara.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/moment/moment.min.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/daterangepicker/daterangepicker.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/tree_context_functions/tree_snippets.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/tree_context_functions/tree_monitor.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/tree_context_functions/tree_postgresql.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/tree_context_functions/tree_oracle.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/tree_context_functions/tree_mariadb.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/tree_context_functions/tree_mysql.js?v{{pgmanage_short_version}}"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/tree_context_functions/tree_sqlite.js?v{{pgmanage_short_version}}"></script>
+
+    <script type="text/javascript" src="{{url_folder}}/static/assets/js/renderers.js?v{{pgmanage_short_version}}"></script>
+
+    <script src="{{url_folder}}/static/assets/js/header_actions.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/query.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/custom_menu.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/debug.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/notification_control.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/panel_functions/outer_snippet_panel.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/passwords.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/properties.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tabs.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/outer_connection_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/outer_terminal_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/outer_welcome_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/inner_edit_data_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/inner_graph_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/inner_snippet_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/inner_query_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/inner_console_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/inner_debugger_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/inner_monitoring_dashboard_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/inner_monitoring_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/website_tab.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/tree_context_functions/edit_data.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/create_tab_functions.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/monitoring.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/workspace.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/plugin_hook.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/users.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/shortcuts.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/command_history.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/console.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/terminal.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/autocomplete.js?v3.0.0b41"></script>
+    <script src="{{url_folder}}/static/assets/js/tutorial_functions/tutorial.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/js/long_polling.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/lib/json_html/components.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{url_folder}}/static/assets/lib/omnis_ui_assistant/omnis-control.js?v{{pgmanage_short_version}}"></script>
+
+    <script type="text/javascript">
+  	//Global variables
+    var master_key = '{{master_key}}'
+    var v_editor_theme = '{{ editor_theme }}';
+  	var	v_theme = '{{ theme }}';
+    var v_font_size = {{ font_size }};
+  	var v_user_id = {{ user_id }};
+    var v_user_key = '{{ user_key }}';
+    var v_user_name = '{{ user_name }}';
+    var v_csv_encoding = '{{ csv_encoding }}';
+    var v_csv_delimiter = '{{ csv_delimiter }}';
+    var v_session_key = v_user_key;
+    var v_user_login = v_user_name;
+    var v_version = '{{ pgmanage_version }}';
+    var v_short_version = '{{ pgmanage_short_version }}';
+    var v_url_folder = '{{ url_folder }}';
+    var v_welcome_closed = {{ welcome_closed }};
+  	var v_connections_data;
+  	var gv_desktopMode = ('{{ desktop_mode }}' === 'True');
+  	var v_tab_token = '{{ tab_token }}';
+  	var v_show_terminal_option = {{ show_terminal_option }};
+    var v_omnis = createOmnis();
+    var v_explain_control = {context: 'default'};
+
+    var v_menu_item = '{{ menu_item }}'
+    $('#menu_' + v_menu_item).addClass('header_a_selected');
+
+    var ht;
+    var network;
+    var v_connTabControl;
+    var v_usersObject;
+    var v_editDataObject;
+    var v_canEditContent;
+    var v_editContentObject;
+    var v_database_list = null;
+    var v_completer_ready = true;
+    var v_tree_object;
+    var v_super_user = {{ super_user }};
+    var v_csrf_cookie_name = '{{ csrf_cookie_name }}';
+    </script>
+    <script src="{{url_folder}}/static/assets/lib/axios@1.2.1/axios.min.js"></script>
+    <script src="{{url_folder}}/static/assets/lib/vue@3.2.45/vue.global.js"></script>
+    <script src="{{url_folder}}/static/assets/lib/vue3-sfc-loader@0.8.4/vue3-sfc-loader.js"></script>
+    <script src="{{url_folder}}/static/assets/js/vuejs/vue3_sfc_config.js"></script>
+    <script src="{{url_folder}}/static/assets/lib/vue-demi@0.13.11/vue-demi"></script>
+    <script src="{{url_folder}}/static/assets/lib/@vuelidate/core"></script>
+    <script src="{{url_folder}}/static/assets/lib/@vuelidate/validators"></script>
+    <script src="{{url_folder}}/static/assets/js/vuejs/explain.js"></script>
+    <script src="{{url_folder}}/static/assets/lib/pev2/pev2.umd.js"></script>
+    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/Passtrength/lib/jquery.passtrength.min.js"></script>
+    <script src="{{url_folder}}/static/assets/js/tab_functions/conf_tab.js"></script>
+    <script src="{{url_folder}}/static/assets/lib/jaro-winkler/jaro-winkler.js"></script>
+    <script type="text/javascript">
+      axios.defaults.headers.common['X-CSRFToken'] = getCookie(v_csrf_cookie_name);
+    </script>
+    <script src="{{url_folder}}/static/assets/js/vuejs/components/connections_modal.js"></script>
+    <script src="{{url_folder}}/static/assets/js/vuejs/components/settings_modal.js"></script>
+  </body>
+</html>

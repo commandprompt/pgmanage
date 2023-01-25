@@ -33,8 +33,8 @@ poetry shell
 
 ## Start it up
 ```
-cd pgmanage/OmniDB
-python3 omnidb-server.py
+cd pgmanage/pgmanage
+python3 pgmanage-server.py
 ```
 
 # PgManage 1.0
