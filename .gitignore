@@ -7,3 +7,4 @@
 *pgmanage.db
 *.vagrant
 *.idea
+*.DS_Store

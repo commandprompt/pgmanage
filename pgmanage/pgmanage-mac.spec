@@ -13,7 +13,7 @@ data_files_server = [
 
 
 a = Analysis(['pgmanage-server.py'],
-             pathex=['C:\\Users\\omnidb\\OmniDB\\OmniDB\\OmniDB'],
+             pathex=[],
              binaries=[],
              datas=data_files_server,
              hiddenimports=['cheroot.ssl','cheroot.ssl.builtin','psycopg2','paramiko'],
