@@ -88,7 +88,7 @@ def logout(request):
     key_manager.remove(request.user)
     logout_django(request)
 
-    return redirect(settings.PATH + '/omnidb_login')
+    return redirect(settings.PATH + '/pgmanage_login')
 
 def check_session_message(request):
 

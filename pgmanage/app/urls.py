@@ -17,7 +17,7 @@ base_urlpatterns = [
 
     #LOGIN
     re_path(r'^$', views.login.check_session, name='check_session'),
-    re_path(r'^omnidb_login/', views.login.index, name='login'),
+    re_path(r'^pgmanage_login/', views.login.index, name='login'),
     re_path(r'^logout/', views.login.logout, name='logout'),
     re_path(r'^check_session_message/$', views.login.check_session_message, name='check_session_message'),
     re_path(r'^sign_in/$', views.login.sign_in, name='sign_in'),
