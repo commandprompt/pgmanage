@@ -180,7 +180,8 @@ export default {
       },
       modalId: `config_modal_${this.tabId}_${Date.now()}`,
       modalRevertConfig: false,
-      configDiffData: ''
+      configDiffData: '',
+      intervalId: ''
     };
   },
   computed: {
@@ -332,9 +333,21 @@ export default {
         .then((response) => {
           this.appliedSettings.restartPending = response.data.restart_pending;
           this.appliedSettings.restartChanges = response.data.restart_changes;
+          if (this.appliedSettings.restartPending && !this.intervalId) {
+            this.intervalId = setInterval(() => {
+              this.getConfigStatus()
+            }, 30000)
+          }
+          if (!this.appliedSettings.restartPending && !!this.intervalId) {
+            clearInterval(this.intervalId)
+            this.getConfiguration()
+          }
         })
         .catch((error) => {
-          showError(error.response.data);
+          if (error.response.data.includes("SSL connection has been closed unexpectedly"))
+            this.getConfigStatus()
+          else
+            showError(error.response.data);
         });
     },
     deleteOldConfig(config_id) {
