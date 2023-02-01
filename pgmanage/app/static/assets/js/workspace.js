@@ -279,13 +279,14 @@ function checkBeforeChangeDatabase(p_cancel_function, p_ok_function) {
         if (p_cancel_function!=null) {
           p_cancel_function();
         }
-        return null;
+        return false;
       }
     }
 	}
 	if (p_ok_function!=null) {
     p_ok_function();
   }
+  return true;
 }
 
 function adjustQueryTabObjects(p_all_tabs) {
