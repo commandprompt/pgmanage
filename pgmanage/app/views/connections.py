@@ -219,7 +219,7 @@ def test_connection(request):
             if ssh_key.strip() != '':
                 key = paramiko.RSAKey.from_private_key(io.StringIO(ssh_key), password=ssh_password)
                 client.connect(hostname=conn_object['tunnel']['server'], username=conn_object['tunnel']['user'],
-                               key_filename=key, passphrase=ssh_password,
+                               pkey=key, passphrase=ssh_password,
                                port=int(conn_object['tunnel']['port']))
             else:
                 client.connect(hostname=conn_object['tunnel']['server'], username=conn_object['tunnel']['user'],
