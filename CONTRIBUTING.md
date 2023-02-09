@@ -13,27 +13,19 @@ transparent as possible, whether it's:
 
 ## PgManage Database Support
 
-Currently OmniDB supports `PostgreSQL`, `Oracle`, `MySQL` and `MariaDB`. We plan
-to support `MSSQL Server`, `SQLite` and `IBM DB2` in the foreseeable
-future. Suggestions and even pull requests for other databases are welcome.
+Currently PgManage supports `PostgreSQL`, `Oracle`, `MySQL`,`SQLite` and `MariaDB`. 
+Suggestions and even pull requests for other databases are welcome.
 
 
 ## PgManage Operating System Support
 
-We currently build OmniDB for Debian/Ubuntu, CentOS/Rocky, Windows and OSX.
+We currently build PgManage for Debian/Ubuntu, Windows and OSX.
 
 
 ## PgManage Repositories
 
 - [https://github.com/commandprompt/pgmanage](https://github.com/commandprompt/pgmanage): Main
 application and server, deployment scripts and tests.
-- [https://github.com/OmniDB/doc](https://github.com/OmniDB/doc): OmniDB
-documentation.
-- [https://github.com/OmniDB/monitors](https://github.com//monitors)
-
-Monitors (charts, grids) for the Monitoring Dashboard.
-- [https://github.com/OmniDB/plugins](https://github.com/OmniDB/plugins): OmniDB
-official plugins.
 
 
 ## We Develop with Github
@@ -59,10 +51,10 @@ under the same [MIT License](http://choosealicense.com/licenses/mit/) that
 covers the project. Feel free to contact the maintainers if that's a concern.
 
 
-## Report bugs using Github's [issues](https://github.com/OmniDB/OmniDB/issues)
+## Report bugs using Github's [issues](https://github.com/commandprompt/pgmanage)
 
 We use GitHub issues to track public bugs. Report a bug by
-[opening a new issue](https://github.com/OmniDB/OmniDB/issues/new); it's that
+[opening a new issue](https://github.com/commandprompt/pgmanage); it's that
 easy!
 
 
