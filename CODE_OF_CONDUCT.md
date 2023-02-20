@@ -1,5 +1,9 @@
 # Contributor Covenant Code of Conduct
 
+# TL;DR; 
+
+Be Nice.
+
 ## Our Pledge
 
 In the interest of fostering an open and welcoming environment, we as

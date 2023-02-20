@@ -2,6 +2,11 @@
 We proudly leverage all of the great work Open Source work done by the original
 (now dormant) project https://github.com/OmniDB/OmniDB 
 
+
+**Website & Downloads**: https://github.com/commandprompt/pgmanage
+
+**Full Documentation**: https://pgmanage.readthedocs.io/en/latest/
+
 # Run it yourself from source
 If you want or need a new feature, submit a pull request for us to consider.
 
@@ -37,86 +42,47 @@ cd pgmanage/pgmanage
 python3 pgmanage-server.py
 ```
 
-# PgManage 1.0
+# PgManage 1.0Alpha
 
 ## Release Date: *pending*
 
 ## Release Notes
 
 - New features:
-  - PostgreSQL 9.6, 10, 11, 12, 13 & 14 support
-  - Database structure tree and Properties/DDL tabs with support to additional PostgreSQL objects
-  - Option to use Active Directory / LDAP to authenticate OmniDB's users
-  - Option to use PostgreSQL as OmniDB's backend database
-  - Additional monitoring units
-  - Omnis UI helper component (offering walkthroughs)
-  - OmniDB's own graphical explain component (displaying Explain and Explain Analyze)
-  - Option to share connections between OmniDB users
+  - new explain/analyze UI powered by pev2, including pev2 dark theme support
+  - connection credential encryption
+  - backported support for monitoring data-grid-based monitoring widgets
+  - backported pie charts widgets for numbackends and database sizes
+  - added password strength validation for user and master passwords
+  - PostgreSQL 9.6, 10, 11, 12, 13, 14 and 15 support
+  -
+- Major Bugs fixed:
+  - fixed data export to csv/xls format in the desktop version of the app
+  - added superuser permission check on all user managepent APIs
+  - extra validations added to prevent creation of unnamed connection groups
+  - fixed extenal links not working in the desktop variant of the app
+  - fixed posgres special commands on postgresql versions 12 and higher
+  - fixed broken postgres documentation links available in database tree view menus
+  - made all web/cdn app dependencies local so pgmanage can work properly without an internet connection
 
+- UI/UX Improvements:
+  - reorganized connection management menus in the left menu bar 
+  - fixed ddl tab auto resizing
+  - the top-right utilities menu now expands on click instead of mouse-hover
+  - added ddl/properties tab resize limits to prevent it from becoming impossible to grab/resize back
+  - unified tooltip appearance throughout the whole app
+  - unified pictogram look and feed thoughout the whole app
+  - improved database tree view navigation by adding smooth scroll to the newly expanded tree node. previously when some tree view node was expanded it jumped out of sight
+  - improved data grid/table readability
+  - improved database entity tree view readability
+  - fixed date formatting in sql command history grid
+  - fixed date formatting in db console command history grid
+  - proper styling for dialog primary and secondary buttons. the secondary buttons in forms and dialogs were previously looked disable/grayed-out which was confusing.
+  - the autocommit checkbox on query tab now stays visible despite of application window size
+removed the option to make connections public in desktop variant of the app (which has only one user so shared/public connections make no sense)
 
-- Improvements:
-  - Core Changes
-    - ~~Websocket~~ > Long Polling
-    - Better handling of database connections, reusing connection when appropriate
-    - Shared tunnels
-    - Updated python and javascript libraries (security + stability)
-    - ~~Electron~~ > NWJS (New desktop technology)
-    - Enhanced shortcuts, allowing users to maintain shortcuts per OS
-  - UX/UI improvements for several elements (Connections management, Autocomplete, Global snippet panel with quick-[save/load], contextual menus).
-
-- 3.0.1 changes
-  - Bug Fixes
-    - Fixed an issue in the long polling mechanism
-    - Dark theme colors on autocomplete selection
-  - Improvements
-    - Added snippets and custom monitoring units to the OmniDB 2 to 3 automatic migration process
-
-- 3.0.2 changes
-  - Re-included
-    - Explain visualizer component from OmniDB 2.x
-    - Shortcuts for issueing Explain and Explain Analyze
-  - Bug Fixes
-    - Fixed missing dark theme colors on connection results when in full-view
-    - Fixed conflict between the z-index of the new explain visualizer and the database tree context menus
-  - Improvements
-    - Added a toggle to switch between the old and new explain components
-    - Improved client-side CPU usage performance (browser rendering gpu-intensive processes)
-    - Added a new node-spin loading icon for dark themes with improved visibility
-
-- 3.0.3 changes
-  - Bug Fixes
-    - Query Tab: Fixed editor key behaviours related to up/down arrows (skipping rows, text selection, text shifting, text indenting)
-    - Console Tab: Fixed issue describe command for tables in PostgreSQL 12+
-    - Console Tab: Fixed background theme color on console output when changing themes
-  - Improvements
-    - Reduced chances of having OmniDB being flagged as a threat by security tools (false-positives)
-    - Outer Menu: Improved layout and behaviour, providing better awareness of the context
-    - Result Grid: Improved resizing behaviours
-    - Added password option on --createconnection
-
-- 3.0.4 Changes
-  - Rebrand to OmniDB-NG
-  - New repo is https://github.com/pgsql-io/omnidb-ng
-  - New website will be http://omnidb-ng.org
-  - PostgreSQL 14 Support
-
-- 3.0.5 Changes
-  - Support latest django (v4)
-  - 1st pass at Packages support for Oracle
-  - Add build instructions to README
-
-- 3.0.6 Changes
-  - Freeze requirements file for prod stability
-  - OmniDB-NG branding sponsored by PGSQL.IO & Denis Lussier
-  - fix error saving PG connections
-  - fix blowfish warning when starting up server
-  - improve the connections form with db specific placeholders
-
-
-
-
-**Website**: https://github.com/commandprompt/pgmanage 
-
-**Full Documentation**: https://pg-manage.readthedocs.io
+- Other changes
+  - added postgresql 14 and 15  support
+  - application data directory and db/log file naming was changed from omnidb* to pgmanage*.
 
 ![](https://raw.githubusercontent.com/OmniDB/doc/master/img/omnidb_3/dashboard.png)
