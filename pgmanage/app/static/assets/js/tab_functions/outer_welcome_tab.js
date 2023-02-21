@@ -192,7 +192,7 @@ var v_createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_n
     '<ul class="list-unstyled">' +
       '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="https://github.com/commandprompt/pgmanage"><i class="fas fa-user"></i> <span>PgManage website</span></a></li>' +
       '<li class="mb-2"><a class="btn btn-success text-white" target="_blank" href="https://github.com/commandprompt/pgmanage"><i class="fab fa-github"></i> <span>Github repo</span></a></li>' +
-      '<li><a class="btn btn-success text-white" target="_blank" href="https://omnidb.readthedocs.io/"><i class="fas fa-list"></i> <span>Read the docs</span></a></li>' +
+      '<li><a class="btn btn-success text-white" target="_blank" href="https://pgmanage.readthedocs.io/en/latest/"><i class="fas fa-list"></i> <span>Read the docs</span></a></li>' +
     '</ul>' +
   '</div>';
   // Template html string
