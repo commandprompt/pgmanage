@@ -26,6 +26,20 @@ mkdir release_$APP_VERSION tmp
 # Prepare temporary directory
 cp -R ../../pgmanage/ tmp
 cd tmp/
+
+# Do a small clean-up
+echo -n "Removing sass and map files"
+find ./ -name "*.map" -delete
+find ./ -name "*.scss" -delete
+
+echo -n "Switching to Release Mode..."
+sed -i -e 's/DEV_MODE = True/DEV_MODE = False/g' pgmanage/custom_settings.py
+echo "Done."
+
+echo -n "Switching to Desktop Mode... "
+sed -i -e 's/DESKTOP_MODE = False/DESKTOP_MODE = True/g' pgmanage/custom_settings.py
+echo "Done."
+
 rm -rf pgmanage.db pgmanage.log
 touch pgmanage.db
 
