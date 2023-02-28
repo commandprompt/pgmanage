@@ -491,6 +491,20 @@
         nw.App.quit();
     });
 
+    v_window.on('closed', function() {
+      if (django!=null) {
+          process.kill(django.pid)
+      }
+    })
+
+    process.on('exit', () => {
+      try{
+        process.kill(django.pid)
+      }
+      catch (e) {}
+      nw.App.quit();
+    })
+
     setTimeout(function() {
 
       django = child_process.spawn(path.join(global.__dirname,'pgmanage-server/pgmanage-server'),['-A'],{detached: false});
