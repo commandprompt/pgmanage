@@ -1,5 +1,8 @@
 # FROM pyappbuild
-FROM ubuntu:18.04
+FROM ubuntu:20.04
+
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 USER root
 ENV HOME /root
@@ -14,12 +17,12 @@ ENV REPO=$REPO
 ENV BRANCH=$BRANCH
 ENV VERSION=$VERSION
 
-RUN apt-get update && apt-get install -y git build-essential software-properties-common  zlib1g-dev libpq-dev libsasl2-dev  libldap2-dev libssl-dev curl fuse
+RUN apt-get update && apt-get install -y git build-essential software-properties-common  zlib1g-dev libpq-dev libsasl2-dev  libldap2-dev libssl-dev curl fuse patchelf
 RUN add-apt-repository --yes ppa:deadsnakes/ppa
-RUN apt-get update && apt-get install -y python3.8 python3-pip python-dev python3.8-dev
+RUN apt-get update && apt-get install -y python3.8 python3-pip python3.8-dev python3.8-distutils
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
-RUN python3 -m pip install --upgrade pip setuptools wheel
-RUN pip3 install pyinstaller setuptools-rust
+RUN python3 -m pip install --upgrade pip setuptools
+RUN pip3 install pyinstaller setuptools-rust staticx
 COPY entrypoint.sh $HOME
 
 ENTRYPOINT ["/root/entrypoint.sh"]

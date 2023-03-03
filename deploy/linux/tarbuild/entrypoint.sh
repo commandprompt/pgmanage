@@ -26,15 +26,15 @@ fi
 cd pgmanage/
 
 # Do a small clean-up
-echo -n "Removing sass and map files"
+echo "Removing sass and map files"
 find ./ -name "*.map" -delete
 find ./ -name "*.scss" -delete
 
-echo -n "Switching to Release Mode..."
+echo "Switching to Release Mode..."
 sed -i -e 's/DEV_MODE = True/DEV_MODE = False/g' pgmanage/custom_settings.py
 echo "Done."
 
-echo -n "Switching to Desktop Mode... "
+echo "Switching to Desktop Mode... "
 sed -i -e 's/DESKTOP_MODE = False/DESKTOP_MODE = True/g' pgmanage/custom_settings.py
 echo "Done."
 
@@ -48,6 +48,9 @@ pyinstaller pgmanage-lin.spec
 mv dist/pgmanage-server $HOME
 rm -rf build dist
 cd $HOME
+
+staticx -l /lib/x86_64-linux-gnu/libcrypt.so.1  ./pgmanage-server ./pgmanage-server-static
+
 # temporarily disabled, we do not distribute the server-only version yet
 # mkdir pgmanage-server_$VERSION
 # cp pgmanage-server pgmanage-server_$VERSION/
@@ -63,14 +66,8 @@ cd -
 tar -xzvf /tmp/nwjs-v0.69.1-linux-x64.tar.gz
 mv nwjs-v0.69.1-linux-x64 pgmanage-app_$VERSION
 cd pgmanage-app_$VERSION
-rm ./lib/libEGL.so
-rm ./lib/libGLESv2.so
-rm ./lib/libvulkan.so.1
-rm ./lib/libvk_swiftshader.so
-rm ./lib/*.json
-
 mkdir pgmanage-server
-cp $HOME/pgmanage-server ./pgmanage-server/
+cp $HOME/pgmanage-server-static ./pgmanage-server/pgmanage-server
 # copy index.html .desktop and pgmanage_icon.png to the output dir
 cp $HOME/pgmanage/deploy/app/* .
 # adjust the version
