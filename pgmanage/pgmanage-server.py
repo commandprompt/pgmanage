@@ -11,6 +11,9 @@ import importlib
 #Parameters
 import optparse
 import configparser
+import threading
+
+import psutil
 import pgmanage.custom_settings
 import app.include.OmniDatabase as OmniDatabase
 import app.include.Spartacus.Utils as Utils
@@ -401,6 +404,24 @@ import socket
 import random
 import urllib.request
 
+
+def check_parent_process():
+    # Get the initial parent process ID using psutil
+    parent_pid = psutil.Process(os.getpid()).parent().parent().pid
+
+    # Check if the parent process ID exists
+    while True:
+        if not psutil.pid_exists(parent_pid):
+            # If the parent process ID doesn't exist, exit the thread and close the Django app
+            cherrypy.engine.exit()
+        time.sleep(5)
+
+if options.app:
+    # Start the check_parent_process function in a separate thread
+    t = threading.Thread(target=check_parent_process)
+    t.daemon = True
+    t.start()
+
 def check_port(port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR, 1)
@@ -416,7 +437,7 @@ class DjangoApplication(object):
 
     def mount_static(self, url, root):
         config = {
-            'tools.staticdir.on': True,
+            'tools.staticdir.on': True, 
             'tools.staticdir.dir': root,
             'tools.expires.on': True,
             'tools.expires.secs': 86400
