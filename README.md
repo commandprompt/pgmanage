@@ -1,4 +1,7 @@
 # PgManage
+PgManage is a Postgres management GUI, though we will be adding features for
+developers the initial focus is on the "management" of Postgres. 
+
 We proudly leverage all of the great work Open Source work done by the original
 (now dormant) project https://github.com/OmniDB/OmniDB 
 
