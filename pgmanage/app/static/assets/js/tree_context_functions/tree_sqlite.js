@@ -496,7 +496,7 @@ function getTreeSqlite(p_div) {
 
     v_connTabControl.selectedTab.tag.divDetails.innerHTML =
         '<i class="fas fa-server mr-1"></i>selected DB: ' +
-        '<b>' + v_connTabControl.selectedTab.tag.selectedDatabase + '</b>' +
+        '<b>' + truncateText(v_connTabControl.selectedTab.tag.selectedDatabase, 10) + '</b>' +
         '<div class="omnidb__switch omnidb__switch--sm float-right" data-toggle="tooltip" data-placement="bottom" data-html="true" title="" data-original-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>">' +
     	'    <input type="checkbox" ' + v_autocomplete_switch_status + ' id="autocomplete_toggler_' + v_connTabControl.selectedTab.tag.tab_id + '" class="omnidb__switch--input" onchange="toggleConnectionAutocomplete(\'autocomplete_toggler_' + v_connTabControl.selectedTab.tag.tab_id + '\')">' +
     	'    <label for="autocomplete_toggler_' + v_connTabControl.selectedTab.tag.tab_id + '" class="omnidb__switch--label"><span><i class="fas fa-spell-check"></i></span></label>' +
@@ -2063,3 +2063,30 @@ function getPropertiesSqlite(node) {
         v_connTabControl.tag.hooks.sqliteTreeNodeClick[i](node);
     }
 }
+
+
+function truncateText(text, maxLength) {
+    if (text.length <= maxLength) {
+      return text;
+    } else if (text.indexOf('/') !== -1) {
+      const ellipsis = '...';
+      const parts = text.split('/');
+      const firstPart = parts[0];
+      const lastPart = parts[parts.length - 1];
+      const middleParts = parts.slice(1, parts.length - 1);
+      let truncatedText = firstPart + '/';
+      for (let i = 0; i < middleParts.length; i++) {
+        if (truncatedText.length + middleParts[i].length + ellipsis.length > maxLength) {
+          truncatedText += ellipsis;
+          break;
+        }
+        truncatedText += middleParts[i] + '/';
+      }
+      truncatedText += '/' + lastPart;
+      return truncatedText;
+    } else {
+      const ellipsis = '...';
+      const truncatedText = text.slice(0, maxLength - ellipsis.length) + ellipsis;
+      return truncatedText;
+    }
+  }
