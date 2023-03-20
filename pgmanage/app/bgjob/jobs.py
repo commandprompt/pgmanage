@@ -140,22 +140,19 @@ class BatchJob:
         )
         job.save()
 
-    def _get_python_interpreter(self):
+    def _get_execution_command(self):
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-            # running in a PyInstaller-compiled executable
-            python_path = shutil.which("python3")
-        else:
-            # running in a normal Python environment
-            python_path = sys.executable
+            executor = os.path.join(os.path.dirname(__file__), "process_executor")
+            return [executor, self.command]
 
-        return python_path
+        executor = os.path.join(os.path.dirname(__file__), "process_executor.py")
+        interpreter = sys.executable
+        return [interpreter, executor, self.command]
 
     def start(self):
-        executor = os.path.join(os.path.dirname(__file__), "process_executor.py")
 
-        interpreter = self._get_python_interpreter()
+        cmd = self._get_execution_command()
 
-        cmd = [interpreter, executor, self.command]
         cmd.extend(self.args)
 
         env = os.environ.copy()

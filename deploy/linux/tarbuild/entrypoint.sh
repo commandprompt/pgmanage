@@ -44,6 +44,8 @@ sed -i "s/dev/$VERSION/" pgmanage/custom_settings.py
 
 rm -f pgmanage.db pgmanage.log
 touch pgmanage.db
+pyinstaller process_executor-lin.spec
+mv dist/process_executor app/bgjob/
 pyinstaller pgmanage-lin.spec
 mv dist/pgmanage-server $HOME
 rm -rf build dist

@@ -126,6 +126,9 @@ class FileManager:
 
     def check_access_permission(self, path):
 
+        if DESKTOP_MODE:
+            return
+
         abs_path = os.path.abspath(path)
 
         try:
