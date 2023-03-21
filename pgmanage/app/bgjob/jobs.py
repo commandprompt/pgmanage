@@ -159,7 +159,9 @@ class BatchJob:
 
         env["JOB_ID"] = self.id
         env["OUTDIR"] = self.log_dir
-
+        if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+            env.pop('LD_LIBRARY_PATH', None)
+            
         if self.env:
             env.update(self.env)
 
