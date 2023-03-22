@@ -9,7 +9,6 @@ data_files = [
   ('app/include','app/include'),
   ('app/templates','app/templates'),
   ('app/plugins','app/plugins'),
-  ('app/bgjob/process_executor', 'app/bgjob')
 ]
 
 a = Analysis(['pgmanage-server.py'],

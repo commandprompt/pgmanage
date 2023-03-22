@@ -45,9 +45,8 @@ sed -i "s/dev/$VERSION/" pgmanage/custom_settings.py
 rm -f pgmanage.db pgmanage.log
 touch pgmanage.db
 pyinstaller process_executor-lin.spec
-mv dist/process_executor app/bgjob/
 pyinstaller pgmanage-lin.spec
-mv dist/pgmanage-server $HOME
+mv dist/* $HOME
 rm -rf build dist
 cd $HOME
 
@@ -70,6 +69,7 @@ mv nwjs-v0.69.1-linux-x64 pgmanage-app_$VERSION
 cd pgmanage-app_$VERSION
 mkdir pgmanage-server
 cp $HOME/pgmanage-server-static ./pgmanage-server/pgmanage-server
+cp $HOME/process_executor ./pgmanage-server/
 # copy index.html .desktop and pgmanage_icon.png to the output dir
 cp $HOME/pgmanage/deploy/app/* .
 # adjust the version

@@ -141,8 +141,12 @@ class BatchJob:
         job.save()
 
     def _get_execution_command(self):
+        if os.environ.get("STATICX_PROG_PATH", False):
+            directory = os.path.dirname(os.environ.get("STATICX_PROG_PATH", ""))
+            executor = os.path.join(directory, "process_executor")
+            return [executor, self.command]
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-            executor = os.path.join(os.path.dirname(__file__), "process_executor")
+            executor = os.path.join(os.getcwd(), "process_executor")
             return [executor, self.command]
 
         executor = os.path.join(os.path.dirname(__file__), "process_executor.py")
@@ -160,8 +164,8 @@ class BatchJob:
         env["JOB_ID"] = self.id
         env["OUTDIR"] = self.log_dir
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-            env.pop('LD_LIBRARY_PATH', None)
-            
+            env.pop("LD_LIBRARY_PATH", None)
+
         if self.env:
             env.update(self.env)
 
