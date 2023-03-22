@@ -9,7 +9,6 @@ data_files_server = [
   ('app/include','app/include'),
   ('app/templates','app/templates'),
   ('app/plugins','app/plugins'),
-  ('app/bgjob/process_executor.py', 'app/bgjob')
 ]
 
 

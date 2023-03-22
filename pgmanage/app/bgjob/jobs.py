@@ -146,7 +146,7 @@ class BatchJob:
             executor = os.path.join(directory, "process_executor")
             return [executor, self.command]
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-            executor = os.path.join(os.getcwd(), "process_executor")
+            executor = os.path.join(os.path.dirname(sys.executable), "process_executor")
             return [executor, self.command]
 
         executor = os.path.join(os.path.dirname(__file__), "process_executor.py")

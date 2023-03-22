@@ -505,6 +505,10 @@
       nw.App.quit();
     })
 
+    if (process.platform === 'darwin') {
+      process.env.PATH=path.join('/usr/local/bin', path.delimiter, process.env.PATH)
+    }
+
     setTimeout(function() {
 
       django = child_process.spawn(path.join(global.__dirname,'pgmanage-server/pgmanage-server'),['-A'],{detached: false});

@@ -64,8 +64,9 @@ sed -i '' "s/Dev/PgManage $APP_VERSION/" pgmanage/custom_settings.py
 sed -i '' "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
 
 pyinstaller pgmanage-mac.spec
+pyinstaller process_executor-mac.spec
 
-mkdir pgmanage-server && mv dist/pgmanage-server pgmanage-server
+mkdir pgmanage-server && mv dist/* pgmanage-server
 
 curl -LO https://dl.nwjs.io/v0.69.1/nwjs-v0.69.1-osx-x64.zip
 unzip nwjs-v0.69.1-osx-x64.zip
