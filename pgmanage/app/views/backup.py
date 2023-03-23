@@ -203,9 +203,6 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
         args.append("--database")
         args.append(conn.v_service)
 
-    if backup_obj_type == "globals":
-        args.append("--globals-only")
-
     set_param("verbose", "--verbose")
     set_param("dqoute", "--quote-all-identifiers")
     set_value("role", "--role")
@@ -241,10 +238,13 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
         "--schema-only",
         data.get("only_schema", None) and not data.get("only_data", None),
     )
+    set_param("only_globals", "--globals-only", backup_obj_type != 'objects')
+    set_param("only_tablespaces", "--tablespaces-only", backup_obj_type != 'objects')
+    set_param("only_roles", "--roles-only", backup_obj_type != 'objects')
 
     set_param("owner", "--no-owner")
     set_param("include_create_database", "--create")
-    set_param("include_drop_database", "--clean")
+    set_param("include_drop_commands", "--clean")
     set_param("pre_data", "--section=pre-data")
     set_param("data", "--section=data")
     set_param("post_data", "--section=post-data")
@@ -254,7 +254,6 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
     set_param("use_insert_commands", "--inserts")
     set_param("use_column_inserts", "--column-inserts")
     set_param("disable_quoting", "--disable-dollar-quoting")
-    set_param("with_oids", "--oids")
     set_param("use_set_session_auth", "--use-set-session-authorization")
 
     set_param("comments", "--no-comments")
@@ -293,9 +292,9 @@ def create_backup(request, database):
 
     data = json.loads(request.body) if request.body else {}
 
-    data = data.get("data", {})
+    backup_type_str = data.get("backup_type", "objects")
 
-    backup_type_str = data.get("type", "objects")
+    data = data.get("data", {})
 
     backup_file = data.get("fileName")
 
@@ -359,9 +358,9 @@ def create_backup(request, database):
 def preview_command(request, database):
     data = json.loads(request.body) if request.body else {}
 
-    data = data.get("data", {})
+    backup_type_str = data.get("backup_type", "objects")
 
-    backup_type_str = data.get("type", "objects")
+    data = data.get("data", {})
 
     backup_file = data.get("fileName")
 
