@@ -4640,15 +4640,6 @@ function getTreeDetailsPostgresql(node) {
             );
             node.tree.contextMenu.cm_server.elements.push(
                 {
-                    text: 'Backup Globals',
-                    icon: 'fa-solid fa-download cm-all',
-                    action: function(node) {
-                        createUtilityTab(node, 'Backup', 'globals')
-                    }
-                }
-            );
-            node.tree.contextMenu.cm_server.elements.push(
-                {
                     text: 'Backup Server',
                     icon: 'fa-solid fa-download cm-all',
                     action: function(node) {

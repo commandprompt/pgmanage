@@ -1,0 +1,27 @@
+.v-toast {
+    &__item {
+        max-width: 400px;
+        color: $primaryLight;
+        border-radius: $borderRadius;
+
+        &--success {
+            background-color: $successColor;
+        }
+
+        &--info {
+            background-color: $infoColor;
+        }
+
+        &--warning {
+            background-color: $warningColor;
+        }
+
+        &.v-toast__item--warning .v-toast__icon {
+            background: url("data:image/svg+xml,%3csvg viewBox='0 0 52 52' xmlns='http://www.w3.org/2000/svg'%3e %3cpath fill='%23fff' d='M49.466 41.26L29.216 6.85c-.69-1.16-1.89-1.85-3.22-1.85-1.32 0-2.53.69-3.21 1.85L2.536 41.26c-.71 1.2-.72 2.64-.03 3.85.68 1.18 1.89 1.89 3.24 1.89h40.51c1.35 0 2.56-.71 3.23-1.89.7-1.21.69-2.65-.02-3.85zm-25.53-21.405h3.381v3.187l-.724 8.92H24.66l-.725-8.92v-3.187zm2.97 17.344a1.712 1.712 0 01-1.267.543c-.491 0-.914-.181-1.268-.543a1.788 1.788 0 01-.531-1.297c0-.502.176-.935.53-1.297a1.712 1.712 0 011.269-.544c.49 0 .914.181 1.268.544s.53.795.53 1.297c0 .503-.176.934-.53 1.297z'/%3e %3c/svg%3e") no-repeat;
+        }
+
+        &-error {
+            background-color: $dangerColor;
+        }
+    }
+}

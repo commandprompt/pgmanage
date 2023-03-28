@@ -177,8 +177,24 @@ export default {
       })
       $(`#${this.modalId}`).modal('hide')
     },
-    showModal() {
-      $(`#${this.modalId}`).modal('show')
+    show(desktop_mode, onChange, file_format) {
+      if (desktop_mode) {
+        this.showNative(onChange, file_format)
+      } else {
+        $(`#${this.modalId}`).modal('show')
+      }
+    },
+    showNative(onChange, file_format) {
+      let inputEl = document.createElement('input');
+      inputEl.setAttribute('type', 'file')
+      inputEl.onchange = onChange
+      if (file_format === 'directory') {
+        inputEl.setAttribute('nwdirectory', '')
+      } else {
+        inputEl.setAttribute('nwsaveas', '')
+      }
+
+      inputEl.dispatchEvent(new MouseEvent('click'))
     }
   }
 }

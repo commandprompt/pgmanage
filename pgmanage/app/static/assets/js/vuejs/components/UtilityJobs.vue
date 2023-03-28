@@ -160,18 +160,19 @@ export default {
         if (completedJobIds.includes(id)) {
           let j = this.jobList.find((j) => j.id == id)
           if (j.process_state != JobState.PROCESS_TERMINATED)
-            this.sendNotifyJobFinished(j.description, j.process_state, () => this.getJobDetails(j.id))
+            this.sendNotifyJobFinished(j.description, j.process_state, () => this.getJobDetails(j.id, event))
           return false
         }
         return true
       })
     },
     createNotifyMessage(title, desc) {
-      return `<div class="text-center">
-                <strong class="mr-auto">${title}</strong>
-              </div>
-              <div class="toast-body">
-                ${desc}  
+      return `<div class="toast-body p-0">
+                  <h4 class="font-weight-bold">${title}</h4>
+                <p>${desc}</p>
+                <div class="text-center">
+                <button class="btn btn-info">View details</button>
+                </div>
               </div>`
     },
     sendNotifyJobFinished(desc, process_state, onClickProcess) {
@@ -183,18 +184,23 @@ export default {
       }
       if (success) {
         this.$toast.success(message, {
-          onClick: onClickProcess
+          onClick: onClickProcess,
         })
       } else {
         this.$toast.error(message, {
-          onClick: onClickProcess
+          onClick: onClickProcess,
         })
       }
     },
-    getJobDetails(job_id) {
-      this.selectedJob = Object.assign({}, this.jobList.find((j) => j.id == job_id))
-      jobDetailState.setJobAndShow(this.selectedJob)
-    }
+    getJobDetails(job_id, event) {
+      if (!event || event.target.tagName === 'BUTTON') {
+        this.selectedJob = Object.assign({}, this.jobList.find((j) => j.id == job_id))
+        jobDetailState.setJobAndShow(this.selectedJob)
+      }
+      else {
+        event.stopPropagation();
+      }
+    },
   }
 }
 </script>
