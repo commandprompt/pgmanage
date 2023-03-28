@@ -2,12 +2,12 @@ import functools
 import json
 import operator
 import os
-import shutil
 from abc import abstractmethod
 
 from app.bgjob.jobs import BatchJob, IJobDesc, escape_dquotes_process_arg
 from app.file_manager.file_manager import FileManager
 from app.models.main import Connection
+from app.utils.postgresql_utilities import get_utility_path
 from app.views.memory_objects import database_required_new, user_authenticated
 from django.http import JsonResponse
 
@@ -238,9 +238,9 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
         "--schema-only",
         data.get("only_schema", None) and not data.get("only_data", None),
     )
-    set_param("only_globals", "--globals-only", backup_obj_type != 'objects')
-    set_param("only_tablespaces", "--tablespaces-only", backup_obj_type != 'objects')
-    set_param("only_roles", "--roles-only", backup_obj_type != 'objects')
+    set_param("only_globals", "--globals-only", backup_obj_type != "objects")
+    set_param("only_tablespaces", "--tablespaces-only", backup_obj_type != "objects")
+    set_param("only_roles", "--roles-only", backup_obj_type != "objects")
 
     set_param("owner", "--no-owner")
     set_param("include_create_database", "--create")
@@ -305,9 +305,16 @@ def create_backup(request, database):
 
     utility = "pg_dump" if backup_type_str == "objects" else "pg_dumpall"
 
-    ret_val = shutil.which(utility)
-    if not ret_val:
-        return JsonResponse(data={"data": f"'{utility}' file not found."}, status=400)
+    utility_path = None
+    try:
+        utility_path = get_utility_path(utility, request.user)
+    except FileNotFoundError:
+        return JsonResponse(
+            data={
+                "data": f"'{utility_path if utility_path else utility}' file not found.Correct the Binary Path in Settings dialog."
+            },
+            status=400,
+        )
 
     args = get_args_params_values(data, database, backup_type_str, backup_file)
 
@@ -315,7 +322,7 @@ def create_backup(request, database):
 
     try:
         backup_type = Backup.get_backup_type(backup_type_str)
-        
+
         if backup_type_str == "objects":
             args.append(data["database"])
             escaped_args.append(data["database"])
@@ -327,7 +334,7 @@ def create_backup(request, database):
                     *args,
                     database=data["database"],
                 ),
-                cmd=utility,
+                cmd=utility_path,
                 args=escaped_args,
                 user=request.user,
             )
@@ -339,7 +346,7 @@ def create_backup(request, database):
                     backup_file,
                     *args,
                 ),
-                cmd=utility,
+                cmd=utility_path,
                 args=escaped_args,
                 user=request.user,
             )
@@ -350,7 +357,9 @@ def create_backup(request, database):
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=410)
 
-    return JsonResponse(data={"job_id": job.id, "description": job.description.message, "Success": 1})
+    return JsonResponse(
+        data={"job_id": job.id, "description": job.description.message, "Success": 1}
+    )
 
 
 @database_required_new(check_timeout=True, open_connection=True)
@@ -371,6 +380,17 @@ def preview_command(request, database):
 
     utility = "pg_dump" if backup_type_str == "objects" else "pg_dumpall"
 
+    utility_path = None
+    try:
+        utility_path = get_utility_path(utility, request.user)
+    except FileNotFoundError:
+        return JsonResponse(
+            data={
+                "data": f"'{utility_path if utility_path else utility}' file not found.Correct the Binary Path in Settings dialog."
+            },
+            status=400,
+        )
+
     args = get_args_params_values(data, database, backup_type_str, backup_file)
 
     backup_type = Backup.get_backup_type(backup_type_str)
@@ -383,4 +403,4 @@ def preview_command(request, database):
         database=data.get(database),
     )
 
-    return JsonResponse(data={"command": backup_message.details(utility)})
+    return JsonResponse(data={"command": backup_message.details(utility_path)})
