@@ -1,10 +1,10 @@
 import json
 import os
-import shutil
 
 from app.bgjob.jobs import BatchJob, IJobDesc
 from app.file_manager.file_manager import FileManager
 from app.models.main import Connection
+from app.utils.postgresql_utilities import get_utility_path
 from app.views.memory_objects import database_required_new, user_authenticated
 from django.http import JsonResponse
 
@@ -136,11 +136,16 @@ def create_restore(request, database):
     data = data.get("data", {})
 
     utility = "psql" if data.get("type") == "server" else "pg_restore"
-
-    ret_val = shutil.which(utility)
-
-    if not ret_val:
-        return JsonResponse(data={"data": f"'{utility}' file not found."}, status=400)
+    utility_path = None
+    try:
+        utility_path = get_utility_path(utility, request.user)
+    except FileNotFoundError:
+        return JsonResponse(
+            data={
+                "data": f"'{utility_path if utility_path else utility}' file not found.Correct the Binary Path in Settings dialog."
+            },
+            status=400,
+        )
 
     backup_file = data.get("fileName")
 
@@ -156,7 +161,7 @@ def create_restore(request, database):
     )
     try:
         job = BatchJob(
-            description=restore_message, cmd=utility, args=args, user=request.user
+            description=restore_message, cmd=utility_path, args=args, user=request.user
         )
 
         os.environ[str(job.id)] = database.v_password
@@ -165,7 +170,9 @@ def create_restore(request, database):
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=410)
 
-    return JsonResponse(data={"job_id": job.id,"description": job.description.message, "Success": 1})
+    return JsonResponse(
+        data={"job_id": job.id, "description": job.description.message, "Success": 1}
+    )
 
 
 @database_required_new(check_timeout=True, open_connection=True)
@@ -184,10 +191,21 @@ def preview_command(request, database):
 
     utility = "psql" if data.get("type") == "server" else "pg_restore"
 
+    utility_path = None
+    try:
+        utility_path = get_utility_path(utility, request.user)
+    except FileNotFoundError:
+        return JsonResponse(
+            data={
+                "data": f"'{utility_path if utility_path else utility}' file not found.Correct the Binary Path in Settings dialog."
+            },
+            status=400,
+        )
+
     args = get_args_param_values(data, database, backup_file)
 
     restore_message = RestoreMessage(
         database.v_conn_id, backup_file, *args, database=data.get("database")
     )
 
-    return JsonResponse(data={"command": restore_message.details(utility)})
+    return JsonResponse(data={"command": restore_message.details(utility_path)})

@@ -1,3 +1,6 @@
+import os
+import shutil
+import subprocess
 from django.http import HttpResponse
 from django.template import loader
 from django.http import JsonResponse
@@ -68,6 +71,11 @@ def index(request):
     else:
         theme = 'omnidb_dark'
 
+    if user_details.binary_path:
+        binary_path = user_details.binary_path
+    else:
+        binary_path = os.path.dirname(shutil.which('psql')) if shutil.which('psql') else ''
+
     context = {
         'session' : None,
         'editor_theme': theme,
@@ -89,7 +97,8 @@ def index(request):
         'show_terminal_option': v_show_terminal_option,
         'url_folder': settings.PATH,
         'csrf_cookie_name': settings.CSRF_COOKIE_NAME,
-        'master_key': 'new' if not bool(user_details.masterpass_check) else bool(key_manager.get(request.user))
+        'master_key': 'new' if not bool(user_details.masterpass_check) else bool(key_manager.get(request.user)),
+        'binary_path': binary_path
     }
 
     #wiping saved tabs databases list
@@ -165,6 +174,7 @@ def save_config_user(request):
     password = request_data['password']
     csv_encoding = request_data['csv_encoding']
     csv_delimiter = request_data['csv_delimiter']
+    binary_path = request_data['binary_path']
 
     session.v_theme_id = theme
     session.v_font_size = font_size
@@ -176,6 +186,7 @@ def save_config_user(request):
     user_details.font_size = font_size
     user_details.csv_encoding = csv_encoding
     user_details.csv_delimiter = csv_delimiter
+    user_details.binary_path = binary_path
     user_details.save()
 
     request.session['pgmanage_session'] = session
@@ -1301,3 +1312,28 @@ def reset_master_password(request):
     reset_master_pass(user_details)
     
     return JsonResponse(v_return)
+
+
+@user_authenticated
+def validate_binary_path(request):
+    data = json.loads(request.body) if request.body else {}
+
+    binary_path = data.get('binary_path')
+
+    result = {}
+
+    for utility in ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql']:
+        full_path = os.path.join(binary_path, utility if os.name != 'nt' else (utility + '.exe'))
+
+        if not os.path.exists(full_path):
+            result[utility] = 'not found on the specifed binary path.'
+            continue
+        
+        utility_version = subprocess.getoutput(f'{full_path} --version')
+
+        result_utility_version = utility_version.replace(utility, '').strip()
+
+        result[utility] = result_utility_version
+
+
+    return JsonResponse(data={'data': result})

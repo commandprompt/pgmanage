@@ -31,8 +31,7 @@
                 <div style="position: absolute; top: 50%; width: 100%;">Press key combination... (ESC to cancel)</div>
               </div>
 
-              <div v-for="(shortcut, shortcut_id, index) in shortcutObject.shortcuts" :key="index"
-                class="form-group row">
+              <div v-for="(shortcut, shortcut_id, index) in shortcutObject.shortcuts" :key="index" class="form-group row">
                 <label :for="shortcut_id" class="col-sm-6 col-form-label">{{ shortcutLabels[index] }}</label>
                 <div class="col-sm-6">
                   <button :id="shortcut_id" class='btn btn-secondary btn-sm btn-block' @click="startSetShortcut">{{
@@ -78,6 +77,17 @@
                   <label for="txt_csv_delimiter" class="font-weight-bold mb-3">CSV Delimiter</label>
                   <input type="text" class="form-control" id="txt_csv_delimiter" placeholder="Delimiter"
                     v-model="csvDelimiter">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-6">
+                  <label for="binary_path" class="font-weight-bold mb-3">PostgreSQL Binary Path</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="binary_path" placeholder="Select binary path"
+                      v-model="binaryPath">
+                    <a class="btn btn-secondary" @click="validateBinaryPath">Validate</a>
+                  </div>
                 </div>
               </div>
 
@@ -131,6 +141,7 @@ export default {
       selectedEditorTheme: window.v_theme,
       selectedCSVEncoding: window.v_csv_encoding,
       csvDelimiter: window.v_csv_delimiter,
+      binaryPath: window.binary_path,
       buttonFormDisabled: true,
       password: '',
       passwordConfirm: '',
@@ -464,6 +475,7 @@ export default {
           "password": this.password,
           "csv_encoding": this.selectedCSVEncoding,
           "csv_delimiter": this.csvDelimiter,
+          "binary_path": this.binaryPath
         })
           .then((resp) => {
             $('#modal_settings').modal('hide');
@@ -529,6 +541,20 @@ export default {
 
       return false;
     },
+    validateBinaryPath() {
+      axios.post('/validate_binary_path/', {
+        binary_path: this.binaryPath
+      })
+        .then((resp) => {
+          const binary_paths = Object.entries(resp.data.data)
+            .map(([key, value]) => `<p>${key}: ${value}</p>`).join('')
+          showAlert(binary_paths)
+          console.log(resp)
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    }
   }
 }
 </script>
