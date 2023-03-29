@@ -81,12 +81,17 @@
               </div>
 
               <div class="form-row">
-                <div class="form-group col-6">
+                <div class="form-group col-12">
                   <label for="binary_path" class="font-weight-bold mb-3">PostgreSQL Binary Path</label>
                   <div class="input-group">
-                    <input type="text" class="form-control" id="binary_path" placeholder="Select binary path"
-                      v-model="binaryPath">
-                    <a class="btn btn-secondary" @click="validateBinaryPath">Validate</a>
+                    <input type="text" class="form-control" v-model="binaryPath" :placeholder="`${action} binary path..`">
+                    <label v-if="desktopMode" class="btn btn-sm">
+                      <i class="fas fa-2x fa-folder"></i>
+                      <input type="file" @change="onFile" nwdirectory hidden>
+                    </label>
+                    <a class="btn btn" @click="validateBinaryPath" title="Validate">
+                      <i class="fas fa-2x fa-check-to-slot"></i>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -175,6 +180,9 @@ export default {
   computed: {
     fontSizeOptions() {
       return Array(11).fill(10).map((x, y) => x + y)
+    },
+    action() {
+      return this.desktopMode ? 'Select' : 'Enter'
     }
   },
   created() {
@@ -554,7 +562,11 @@ export default {
         .catch((error) => {
           console.log(error)
         })
-    }
+    },
+    onFile(e) {
+      const [file] = e.target.files
+      this.binaryPath = file?.path
+    },
   }
 }
 </script>
