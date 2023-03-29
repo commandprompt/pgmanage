@@ -1329,7 +1329,7 @@ def validate_binary_path(request):
             result[utility] = 'not found on the specifed binary path.'
             continue
         
-        utility_version = subprocess.getoutput(f'{full_path} --version')
+        utility_version = subprocess.getoutput(f'"{full_path}" --version')
 
         result_utility_version = utility_version.replace(utility, '').strip()
 
