@@ -29,7 +29,7 @@
               </label>
             </div>
           </div>
-          <div ref="job_detail_output" :style="{ height: '200px', overflowY: 'auto' }" class="border border-radius p-1">
+          <div id="job_detail_output" :style="{ height: '200px', overflowY: 'auto' }" class="border border-radius p-1">
             <p v-for="log in logs"> {{ log }}</p>
           </div>
         </div>
@@ -44,7 +44,6 @@ export default {
   data() {
     return {
       detailJobWorkerId: '',
-      autoScrollWorkerId: '',
       logs: [],
       autoScroll: true
     }
@@ -54,11 +53,9 @@ export default {
       this.setDefault()
       jobDetailState.clearSelectedAndHide()
       clearInterval(this.detailJobWorkerId)
-      clearInterval(this.autoScrollWorkerId)
     })
     $('#jobDetailModal').on('show.bs.modal', () => {
       this.getJobDetails(this.selectedJob.id);
-      this.startAutoScrollWorker()
     })
     setInterval(() => {
       if (this.visible && !this.logs.length) {
@@ -86,6 +83,13 @@ export default {
           this.logs.push(
             ...resp.data.data.err.lines.map((l) => l[1]),
             ...resp.data.data.out.lines.map((l) => l[1]))
+
+          this.$nextTick(() => {
+            setTimeout(function () {
+              $('#job_detail_output').children().last()[0].scrollIntoView()
+            }, 400)
+          })
+
           if (!this.detailJobWorkerId) {
             this.detailJobWorkerId = setInterval(() => {
               if (!!Object.keys(this.selectedJob).length) {
@@ -101,16 +105,7 @@ export default {
           console.log(error)
         })
     },
-    startAutoScrollWorker() {
-      this.autoScrollWorkerId = setInterval(() => {
-        if (this.autoScroll) {
-          let scrollHeight = this.$refs.job_detail_output.scrollHeight
-          this.$refs.job_detail_output.scrollTo({ 'top': scrollHeight, 'behavior': 'smooth' })
-        }
-      }, 1000)
-    },
     setDefault() {
-      this.$refs.job_detail_output.scrollTop = 0;
       this.logs.splice(0)
       this.autoScroll = true
       this.detailJobWorkerId = ''

@@ -557,7 +557,6 @@ export default {
           const binary_paths = Object.entries(resp.data.data)
             .map(([key, value]) => `<p>${key}: ${value}</p>`).join('')
           showAlert(binary_paths)
-          console.log(resp)
         })
         .catch((error) => {
           console.log(error)
