@@ -1322,18 +1322,30 @@ def validate_binary_path(request):
 
     result = {}
 
+    env = os.environ.copy()
+
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        env.pop("LD_LIBRARY_PATH", None)
+
     for utility in ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql']:
         full_path = os.path.join(binary_path, utility if os.name != 'nt' else (utility + '.exe'))
 
         if not os.path.exists(full_path):
             result[utility] = 'not found on the specifed binary path.'
             continue
+
+        shell_result = subprocess.run(
+            f'"{full_path}" --version',
+            shell=True,
+            env=env,
+            capture_output=True,
+            text=True,
+        )
         
-        utility_version = subprocess.getoutput(f'"{full_path}" --version')
+        utility_version = shell_result.stdout
 
         result_utility_version = utility_version.replace(utility, '').strip()
 
         result[utility] = result_utility_version
-
 
     return JsonResponse(data={'data': result})
