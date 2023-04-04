@@ -1,1 +1,4 @@
-from . import login, connections, users, workspace, tree, tree_snippets, tree_postgresql, tree_oracle, tree_mysql, tree_mariadb, tree_sqlite, monitor_dashboard, plugins, polling, configuration, file_manager, backup, bgjob, restore
+from . import (backup, bgjob, commands_history, configuration, connections,
+               file_manager, login, monitor_dashboard, plugins, polling,
+               restore, tree, tree_mariadb, tree_mysql, tree_oracle,
+               tree_postgresql, tree_snippets, tree_sqlite, users, workspace)

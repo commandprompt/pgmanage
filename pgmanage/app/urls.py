@@ -41,8 +41,6 @@ base_urlpatterns = [
 
     #WORKSPACE
     re_path(r'^workspace/', views.workspace.index, name='workspace'),
-    re_path(r'^shortcuts/', views.workspace.shortcuts, name='shortcuts'),
-    re_path(r'^close_welcome/', views.workspace.close_welcome, name='close_welcome'),
     re_path(r'^save_config_user/', views.workspace.save_config_user, name='save_config_user'),
     re_path(r'^shortcuts/', views.workspace.shortcuts, name='shortcuts'),
     re_path(r'^get_database_list/', views.workspace.get_database_list, name='get_database_list'),
@@ -51,16 +49,17 @@ base_urlpatterns = [
     re_path(r'^reset_master_password/', views.workspace.reset_master_password, name='reset_master_password'),
     re_path(r'^draw_graph/', views.workspace.draw_graph, name='draw_graph'),
     re_path(r'^start_edit_data/', views.workspace.start_edit_data, name='start_edit_data'),
-    re_path(r'^get_completions/', views.workspace.get_completions, name='get_completions'),
     re_path(r'^get_completions_table/', views.workspace.get_completions_table, name='get_completions_table'),
-    re_path(r'^get_command_list/', views.workspace.get_command_list, name='get_command_list'),
-    re_path(r'^clear_command_list/', views.workspace.clear_command_list, name='clear_command_list'),
     re_path(r'^indent_sql/', views.workspace.indent_sql, name='indent_sql'),
     re_path(r'^refresh_monitoring/', views.workspace.refresh_monitoring, name='refresh_monitoring'),
-    re_path(r'^get_console_history/', views.workspace.get_console_history, name='get_console_history'),
-    re_path(r'^clear_console_list/', views.workspace.clear_console_list, name='clear_console_list'),
     re_path(r'^get_autocomplete_results/', views.workspace.get_autocomplete_results, name='get_autocomplete_results'),
     re_path(r'^delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),
+
+    #COMMANDS HISTORY
+    re_path(r'^get_command_list/', views.commands_history.get_command_list, name='get_command_list'),
+    re_path(r'^clear_command_list/', views.commands_history.clear_command_list, name='clear_command_list'),
+    re_path(r'^get_console_history/', views.commands_history.get_console_history, name='get_console_history'),
+    re_path(r'^clear_console_list/', views.commands_history.clear_console_list, name='clear_console_list'),
 
     #HOOKS
     re_path(r'^get_plugins/', views.plugins.get_plugins, name='get_plugins'),
