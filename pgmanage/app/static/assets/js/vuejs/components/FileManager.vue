@@ -177,20 +177,20 @@ export default {
       })
       $(`#${this.modalId}`).modal('hide')
     },
-    show(desktop_mode, onChange, file_format) {
+    show(desktop_mode, onChange, dialog_type) {
       if (desktop_mode) {
-        this.showNative(onChange, file_format)
+        this.showNative(onChange, dialog_type)
       } else {
         $(`#${this.modalId}`).modal('show')
       }
     },
-    showNative(onChange, file_format) {
+    showNative(onChange, dialog_type) {
       let inputEl = document.createElement('input');
       inputEl.setAttribute('type', 'file')
       inputEl.onchange = onChange
-      if (file_format === 'directory') {
+      if (dialog_type === 'select_folder') {
         inputEl.setAttribute('nwdirectory', '')
-      } else {
+      } else if (dialog_type === 'create_file') {
         inputEl.setAttribute('nwsaveas', '')
       }
 

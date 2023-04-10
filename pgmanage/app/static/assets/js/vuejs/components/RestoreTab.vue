@@ -298,6 +298,9 @@ export default {
     },
     isNotServer() {
       return this.restoreType !== 'server'
+    },
+    dialogType() {
+      return this.restoreOptions.format === 'custom/tar' ? 'select_file' : 'select_folder'
     }
   },
   mounted() {
@@ -344,14 +347,14 @@ export default {
         })
     },
     onFile(e) {
-      const [file] = e.target.fieldset
+      const [file] = e.target.files
       this.restoreOptions.fileName = file?.path
     },
     changeFilePath(event) {
       this.restoreOptions.fileName = event.filePath
     },
     openFileManagerModal() {
-      this.$refs.fileManager.show(this.desktopMode, this.onFile, this.restoreOptions.format)
+      this.$refs.fileManager.show(this.desktopMode, this.onFile, this.dialogType)
     },
     resetToDefault() {
       this.restoreOptions = { ...this.restoreOptionsDefault }

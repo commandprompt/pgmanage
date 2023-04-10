@@ -374,6 +374,9 @@ export default {
     },
     isOnlyDataOrSchemaSelected() {
       return this.backupOptions.only_data || this.backupOptions.only_schema
+    },
+    dialogType() {
+      return this.backupOptions.format === 'directory' ? 'select_folder' : 'create_file'
     }
   },
   mounted() {
@@ -425,7 +428,7 @@ export default {
       this.backupOptions.fileName = event.filePath
     },
     openFileManagerModal() {
-      this.$refs.fileManager.show(this.desktopMode, this.onFile, this.backupOptions.format)
+      this.$refs.fileManager.show(this.desktopMode, this.onFile, this.dialogType)
     },
     resetToDefault() {
       this.backupOptions = { ...this.backupOptionsDefault }
