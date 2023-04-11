@@ -11,6 +11,7 @@ let createUtilityTab = function (node, utility, backup_type = "objects") {
     p_closeFunction: function (e, tab) {
       let current_tab = tab;
       beforeCloseTab(e, function () {
+        current_tab.app.unmount();
         removeTab(current_tab);
       });
     },
@@ -29,18 +30,6 @@ let createUtilityTab = function (node, utility, backup_type = "objects") {
     div_result: document.getElementById(`${mode}_tab_${tab.id}`),
   };
   tab.tag = tag;
-
-  let add_tab = v_connTabControl.selectedTab.tag.tabControl.createTab({
-    p_name: "+",
-    p_close: false,
-    p_selectable: false,
-    p_clickFunction: function (e) {
-      showMenuNewTab(e);
-    },
-  });
-  add_tab.tag = {
-    mode: "add",
-  };
 
   const { createApp } = Vue;
 
@@ -77,5 +66,20 @@ let createUtilityTab = function (node, utility, backup_type = "objects") {
   app.use(VueToast.ToastPlugin, {
     duration: 0,
   });
+
+  // save app referece in the tab, it will be later used to destroy app instance on tab close
+  tab.app = app;
   app.mount(`#${mode}_tab_${tab.id}`);
+
+  let add_tab = v_connTabControl.selectedTab.tag.tabControl.createTab({
+    p_name: "+",
+    p_close: false,
+    p_selectable: false,
+    p_clickFunction: function (e) {
+      showMenuNewTab(e);
+    },
+  });
+  add_tab.tag = {
+    mode: "add",
+  };
 };

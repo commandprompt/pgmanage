@@ -9,6 +9,7 @@ let createConfTab = function () {
         let current_tab = tab;
         beforeCloseTab(e,
           function() {
+            current_tab.app.unmount()
             removeTab(current_tab);
           });
       }
@@ -29,7 +30,19 @@ let createConfTab = function () {
     )
   }
   tab.tag = tag
-  
+
+  const {createApp} = Vue;
+
+  let app = createApp({
+    components: {
+        'config-tab': Vue.defineAsyncComponent(() => loadModule('../static/assets/js/vuejs/components/ConfigTab.vue', options)),
+    },
+    })
+
+  // save app referece in the tab, it will be later used to restroy app instance on tab close
+  tab.app = app;
+  app.mount(`#configuration_tab_${tab.id}`);
+
   let add_tab = v_connTabControl.selectedTab.tag.tabControl.createTab({
     p_name: '+',
     p_close: false,
@@ -42,13 +55,4 @@ let createConfTab = function () {
     mode: 'add'
   }
 
-  const {createApp} = Vue;  
-
-  const app = createApp({
-    components: {
-        'config-tab': Vue.defineAsyncComponent(() => loadModule('../static/assets/js/vuejs/components/ConfigTab.vue', options)),  
-    },
-    })
-
-  app.mount(`#configuration_tab_${tab.id}`);
-}   
+}
