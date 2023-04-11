@@ -16,7 +16,7 @@
         </option>
       </select>
     </div>
-    
+
     <div class="form-group col-3">
       <label class="font-weight-bold mb-3" for="selectConf">Config History</label>
       <select class="form-control text-truncate" id="selectConf" v-model="selectedConf">
@@ -278,6 +278,7 @@ export default {
           this.updateSettings = {};
           this.commitComment = "";
           this.appliedSettings.data = response.data.settings;
+          this.query_filter = "";
           this.getConfigHistory();
           this.getConfiguration();
           this.getConfigStatus();
@@ -392,5 +393,3 @@ export default {
     overflow-y: scroll;
   }
 </style>
-
-
