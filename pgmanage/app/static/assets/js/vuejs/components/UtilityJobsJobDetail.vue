@@ -45,17 +45,25 @@ export default {
     return {
       detailJobWorkerId: '',
       logs: [],
-      autoScroll: true
+      autoScroll: true,
+      out: 0,
+      err: 0
     }
   },
   mounted() {
-    $('#jobDetailModal').on('hide.bs.modal', () => {
+    $('#jobDetailModal').on('hidden.bs.modal', () => {
+      clearInterval(this.detailJobWorkerId)
       this.setDefault()
       jobDetailState.clearSelectedAndHide()
-      clearInterval(this.detailJobWorkerId)
     })
     $('#jobDetailModal').on('show.bs.modal', () => {
-      this.getJobDetails(this.selectedJob.id);
+      this.logs = this.selectedJob.logs
+      if (!this.logs.length) {
+        this.getJobDetails(this.selectedJob.id, this.out, this.err);
+      }
+    })
+    $('#jobDetailModal').on('shown.bs.modal', () => {
+      this.scrollToBottom()
     })
     setInterval(() => {
       if (this.visible && !this.logs.length) {
@@ -73,32 +81,28 @@ export default {
   },
 
   methods: {
-    getJobDetails(job_id, out = 0, err = 0) {
+    getJobDetails(job_id, out, err) {
       axios.get(`/bgprocess/${job_id}/${out}/${err}/`)
         .then((resp) => {
-          console.log(resp)
-          let out_pos = resp.data.data.out.pos
-          let err_pos = resp.data.data.err.pos
+          this.out = resp.data.data.out.pos
+          this.err = resp.data.data.err.pos
           jobDetailState.setDuration(resp.data.data.duration)
           this.logs.push(
             ...resp.data.data.err.lines.map((l) => l[1]),
             ...resp.data.data.out.lines.map((l) => l[1]))
 
-          this.$nextTick(() => {
-            if (this.autoScroll) {
-              setTimeout($('#job_detail_output').children().last()[0].scrollIntoView(), 400)
-            }
-          })
-
+          this.scrollToBottom()
           if (!this.detailJobWorkerId) {
             this.detailJobWorkerId = setInterval(() => {
               if (!!Object.keys(this.selectedJob).length) {
-                this.getJobDetails(job_id, out_pos, err_pos)
+                this.getJobDetails(job_id, this.out, this.err)
               }
             }, 1000)
           }
-          if (resp.data.data.out.done && resp.data.data.err.done && resp.data.data.exit_code != null && this.detailJobWorkerId) {
+
+          if (resp.data.data.out.done && resp.data.data.err.done && resp.data.data.exit_code != null) {
             clearInterval(this.detailJobWorkerId)
+            this.detailJobWorkerId = ''
           }
         })
         .catch((error) => {
@@ -109,6 +113,20 @@ export default {
       this.logs.splice(0)
       this.autoScroll = true
       this.detailJobWorkerId = ''
+      this.out = 0
+      this.err = 0
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        if (this.autoScroll) {
+          const lastChild = $('#job_detail_output').children().last()[0]
+          if (lastChild) {
+            setTimeout(() => {
+              lastChild.scrollIntoView({ block: "end" })
+            }, 500)
+          }
+        }
+      })
     }
   }
 }

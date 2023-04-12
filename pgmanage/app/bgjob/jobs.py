@@ -37,7 +37,6 @@ class IJobDesc:
 
 class BatchJob:
     def __init__(self, **kwargs):
-
         self.id = (
             self.description
         ) = (
@@ -154,7 +153,6 @@ class BatchJob:
         return [interpreter, executor, self.command]
 
     def start(self):
-
         cmd = self._get_execution_command()
 
         cmd.extend(self.args)
@@ -203,7 +201,6 @@ class BatchJob:
         self.exit_code = p.poll()
 
         if self.exit_code is not None and self.exit_code != 0:
-
             job = Job.objects.filter(id=self.id, user=self.user).first()
             job.start_time = job.end_time = datetime.now().strftime("%Y%m%d%H%M%S%f")
             if not job.exit_code:
@@ -215,8 +212,8 @@ class BatchJob:
             job.process_state = PROCESS_STARTED
             job.save()
 
-    def read_log(self, logfile, log, pos, ctime, ecode=None, enc="utf-8"):
-
+    @staticmethod
+    def read_log(logfile, log, pos, ctime, ecode=None, enc="utf-8", all_records=False):
         completed = True
         idx = 0
         c = re.compile(r"(\d+),(.*$)")
@@ -245,7 +242,7 @@ class BatchJob:
                     break
                 log.append([r[1], r[2]])
                 pos = f.tell()
-                if idx >= 1024:
+                if idx >= 1024 and not all_records:
                     completed = False
                     break
                 if pos == eofs:
@@ -285,10 +282,10 @@ class BatchJob:
                 duration = GetDuration(stime, etime)
 
             if process_output:
-                out, out_completed = self.read_log(
+                out, out_completed = BatchJob.read_log(
                     self.stdout, stdout, out, ctime, self.exit_code, enc
                 )
-                err, err_completed = self.read_log(
+                err, err_completed = BatchJob.read_log(
                     self.stderr, stderr, err, ctime, self.exit_code, enc
                 )
         else:
@@ -363,7 +360,6 @@ class BatchJob:
         type_desc = ""
 
         if isinstance(description, IJobDesc):
-
             args = []
             args_csv = StringIO(
                 job.arguments.encode("utf-8")
@@ -381,11 +377,16 @@ class BatchJob:
 
     @staticmethod
     def list(user):
+        ctime = datetime.now().strftime("%Y%m%d%H%M%S%f")
         jobs = Job.objects.filter(user=user)
         changed = False
 
         res = []
         for job in jobs:
+            logs = []
+            enc = sys.getdefaultencoding()
+            if enc == "ascii":
+                enc = "utf-8"
 
             status, updated = BatchJob.update_job_info(job)
             if not status:
@@ -402,7 +403,11 @@ class BatchJob:
                 details,
                 type_desc,
             ) = BatchJob._check_job_description(job)
-
+            if job.end_time:
+                stdout = os.path.join(job.logdir, "out")
+                stderr = os.path.join(job.logdir, "err")
+                BatchJob.read_log(stdout, logs, 0, ctime, job.exit_code, enc, True)
+                BatchJob.read_log(stderr, logs, 0, ctime, job.exit_code, enc, True)
             res.append(
                 {
                     "id": job.id,
@@ -416,6 +421,7 @@ class BatchJob:
                     "process_state": job.process_state,
                     "utility_pid": job.utility_pid,
                     "conn_id": job.connection.id,
+                    "logs": logs,
                 }
             )
 

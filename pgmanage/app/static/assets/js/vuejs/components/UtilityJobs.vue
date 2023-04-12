@@ -73,13 +73,14 @@ export default {
   },
   methods: {
     getJobList() {
-      axios.get('/bgprocess')
+      axios.get('/bgprocess/')
         .then((resp) => {
           console.log(resp)
           this.jobList = resp.data.data.map((j) => {
             let processState = this.evaluateProcessState(j);
             return {
               ...j,
+              logs: j.logs.map((l) => l[1]),
               start_time: moment(j.start_time).format("DD/MM/YY hh:mm A"),
               process_state: processState,
               canStop: ![JobState.PROCESS_NOT_STARTED, JobState.PROCESS_STARTED].includes(processState),
@@ -194,8 +195,8 @@ export default {
     },
     getJobDetails(job_id, event) {
       if (!event || event.target.tagName === 'BUTTON') {
-        this.selectedJob = Object.assign({}, this.jobList.find((j) => j.id == job_id))
-        jobDetailState.setJobAndShow(this.selectedJob)
+        const job = JSON.parse(JSON.stringify(this.jobList.find((j) => j.id == job_id)));
+        jobDetailState.setJobAndShow(job)
       }
       else {
         event.stopPropagation();
