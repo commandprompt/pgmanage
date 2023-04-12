@@ -57,10 +57,7 @@ export default {
       jobDetailState.clearSelectedAndHide()
     })
     $('#jobDetailModal').on('show.bs.modal', () => {
-      this.logs = this.selectedJob.logs
-      if (!this.logs.length) {
-        this.getJobDetails(this.selectedJob.id, this.out, this.err);
-      }
+      this.getJobDetails(this.selectedJob.id, this.out, this.err);
     })
     $('#jobDetailModal').on('shown.bs.modal', () => {
       this.scrollToBottom()

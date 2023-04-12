@@ -80,7 +80,6 @@ export default {
             let processState = this.evaluateProcessState(j);
             return {
               ...j,
-              logs: j.logs.map((l) => l[1]),
               start_time: moment(j.start_time).format("DD/MM/YY hh:mm A"),
               process_state: processState,
               canStop: ![JobState.PROCESS_NOT_STARTED, JobState.PROCESS_STARTED].includes(processState),

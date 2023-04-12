@@ -212,8 +212,9 @@ class BatchJob:
             job.process_state = PROCESS_STARTED
             job.save()
 
-    @staticmethod
-    def read_log(logfile, log, pos, ctime, ecode=None, enc="utf-8", all_records=False):
+    def read_log(
+        self, logfile, log, pos, ctime, ecode=None, enc="utf-8", all_records=False
+    ):
         completed = True
         idx = 0
         c = re.compile(r"(\d+),(.*$)")
@@ -268,6 +269,7 @@ class BatchJob:
         duration = None
 
         if job is not None:
+            all_records = (out == 0 and err == 0) and job.end_time
             status, updated = BatchJob.update_job_info(job)
             if updated:
                 job.save()
@@ -282,11 +284,11 @@ class BatchJob:
                 duration = GetDuration(stime, etime)
 
             if process_output:
-                out, out_completed = BatchJob.read_log(
-                    self.stdout, stdout, out, ctime, self.exit_code, enc
+                out, out_completed = self.read_log(
+                    self.stdout, stdout, out, ctime, self.exit_code, enc, all_records
                 )
-                err, err_completed = BatchJob.read_log(
-                    self.stderr, stderr, err, ctime, self.exit_code, enc
+                err, err_completed = self.read_log(
+                    self.stderr, stderr, err, ctime, self.exit_code, enc, all_records
                 )
         else:
             out_completed = err_completed = False
@@ -377,17 +379,11 @@ class BatchJob:
 
     @staticmethod
     def list(user):
-        ctime = datetime.now().strftime("%Y%m%d%H%M%S%f")
         jobs = Job.objects.filter(user=user)
         changed = False
 
         res = []
         for job in jobs:
-            logs = []
-            enc = sys.getdefaultencoding()
-            if enc == "ascii":
-                enc = "utf-8"
-
             status, updated = BatchJob.update_job_info(job)
             if not status:
                 continue
@@ -403,11 +399,6 @@ class BatchJob:
                 details,
                 type_desc,
             ) = BatchJob._check_job_description(job)
-            if job.end_time:
-                stdout = os.path.join(job.logdir, "out")
-                stderr = os.path.join(job.logdir, "err")
-                BatchJob.read_log(stdout, logs, 0, ctime, job.exit_code, enc, True)
-                BatchJob.read_log(stderr, logs, 0, ctime, job.exit_code, enc, True)
             res.append(
                 {
                     "id": job.id,
@@ -421,7 +412,6 @@ class BatchJob:
                     "process_state": job.process_state,
                     "utility_pid": job.utility_pid,
                     "conn_id": job.connection.id,
-                    "logs": logs,
                 }
             )
 
