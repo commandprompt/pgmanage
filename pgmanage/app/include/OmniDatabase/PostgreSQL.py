@@ -875,7 +875,11 @@ class PostgreSQL:
         ''', True)
 
     @lock_required
-    def QueryConfiguration(self):
+    def QueryConfiguration(self, exclude_read_only=False):
+        where = ''
+        if exclude_read_only:
+            where = "WHERE category != 'Preset Options'"
+
         return self.v_connection.Query('''
         SELECT name, setting,
       current_setting(name) AS current_setting,
@@ -887,8 +891,9 @@ class PostgreSQL:
         boot_val, reset_val,
         pending_restart
         FROM pg_settings
+        {0}
         ORDER BY category, name
-    ''', True)
+    '''.format(where), True)
 
     @lock_required
     def QueryConfigCategories(self):
