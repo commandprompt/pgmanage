@@ -17,11 +17,12 @@ from app.utils.conf import get_settings, post_settings, get_settings_status
 @database_required_new(check_timeout=True, open_connection=True)
 def get_configuration(request, database):
     data = json.loads(request.body) if request.body else {}
+    exclude_read_only = data.get("exclude_read_only")
     grouped = data.get("grouped", True)
     try:
-        settings = get_settings(database, grouped)
-    except DatabaseError as e:
-        return JsonResponse(data={"data": str(e)}, status=500)
+        settings = get_settings(database, grouped, exclude_read_only)
+    except DatabaseError as exc:
+        return JsonResponse(data={"data": str(exc)}, status=500)
     return JsonResponse({"settings": settings})
 
 
@@ -30,8 +31,8 @@ def get_configuration(request, database):
 def get_configuration_categories(request, database):
     try:
         query = database.QueryConfigCategories().Rows
-    except Exception as e:
-        return JsonResponse(data={"data": str(e)}, status=500)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=500)
     categories = [l.pop() for l in query]
     return JsonResponse({"categories": categories})
 
@@ -42,16 +43,16 @@ def save_configuration(request, database):
     data = json.loads(request.body) if request.body else {}
     update_data = data.get("settings")
     commit_comment = data.get("commit_comment")
-    new_config = data.get("new_config") == True
+    new_config = data.get("new_config")
     try:
         updated_settings = post_settings(
             request, database, update_data, commit_comment, new_config
         )
         return JsonResponse(data=updated_settings)
-    except ValidationError as e:
-        return JsonResponse(data={"data": e.message}, status=400)
-    except DatabaseError as e:
-        return JsonResponse(data={"data": str(e)}, status=500)
+    except ValidationError as exc:
+        return JsonResponse(data={"data": exc.message}, status=400)
+    except DatabaseError as exc:
+        return JsonResponse(data={"data": str(exc)}, status=500)
 
 
 @user_authenticated
@@ -84,8 +85,8 @@ def get_configuration_history(request):
 def get_status(request, database):
     try:
         settings_status = get_settings_status(database)
-    except DatabaseError as e:
-        return JsonResponse(data={"data": str(e)}, status=500)
+    except DatabaseError as exc:
+        return JsonResponse(data={"data": str(exc)}, status=500)
     return JsonResponse(settings_status)
 
 
