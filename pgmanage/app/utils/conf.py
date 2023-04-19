@@ -80,8 +80,7 @@ def human_to_number(h_value, h_unit=None, h_type=int):
 
     return h_value
 
-
-def get_settings(conn, grouped=True, exclude_read_only=False):
+def get_settings(conn, grouped=True):
     """
     Retrieve PostgreSQL settings.
 
@@ -89,7 +88,6 @@ def get_settings(conn, grouped=True, exclude_read_only=False):
         conn: a PostgreSQL connection object.
         grouped: a boolean indicating whether to group the settings by category
         or return a dictionary of settings.
-        exclude_read_only: a boolean indicating whether to exclude read only settings or not
 
     Returns:
         If grouped is True, the function returns a list of dictionaries containing the settings
@@ -117,7 +115,7 @@ def get_settings(conn, grouped=True, exclude_read_only=False):
         their values as values.
     """
     try:
-        tables_json = conn.QueryConfiguration(exclude_read_only).Jsonify()
+        tables_json = conn.QueryConfiguration().Jsonify()
     except Exception as exc:
         raise DatabaseError(exc) from exc
     tables = json.loads(tables_json)
@@ -298,7 +296,9 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
                         "name": item["name"],
                         "setting": setting_val,
                         "previous_setting": item["setting_raw"],
-                        "restart": item["context"] in ["internal", "postmaster"],
+                        "restart": True
+                        if item["context"] in ["internal", "postmaster"]
+                        else False,
                     }
                 )
 

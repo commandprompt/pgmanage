@@ -104,9 +104,8 @@
           </button>
         </div>
         <div class="modal-body">
-          <p v-if="modalRevertConfig && !hasRevertValues" class="text-center">No changes to revert to.</p>
-          <p v-else class="text-center">The following changes will be applied:</p>
-          <table v-if="(modalRevertConfig && hasRevertValues) || !modalRevertConfig" class="table table-sm">
+          <p class="text-center">The following changes will be applied:</p>
+          <table class="table table-sm">
             <tr>
               <th width="50%" class="border-top-0">Name</th>
               <th width="50%" class="border-top-0">New value</th>
@@ -140,7 +139,7 @@
             Save configuration
           </button>
           <button v-else id="config_modal_button" type="button" class="btn btn-primary mr-2" data-dismiss="modal"
-            @click="revertConfig" :disabled="!hasRevertValues">
+            @click="revertConfig">
             Revert configuration
           </button>
         </div>
@@ -221,9 +220,6 @@ export default {
     hasUpdateValues() {
       return !!Object.keys(this.updateSettings).length;
     },
-    hasRevertValues() {
-      return !!Object.keys(this.configDiffData).length;
-    }
   },
   mounted() {
     this.getCategories();
@@ -371,7 +367,6 @@ export default {
           database_index: this.databaseId,
           tab_id: this.tabId,
           grouped: false,
-          exclude_read_only: true
         })
         .then((response) => {
           let diff = Object.keys(response.data.settings).reduce((diff, key) => {
