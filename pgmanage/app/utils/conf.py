@@ -264,6 +264,27 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
             raise ValidationError(
                 code=400, message=f"{setting_name}: Invalid setting."
             ) from exc
+        except TypeError:
+            # temporary solution for customized options
+            query = f"SET {setting_name} TO '{setting_val}';"
+            try:
+                conn.Execute(query)
+            except Exception as exc:
+                if ret["settings"]:
+                    for setting in ret["settings"]:
+                        query = f"ALTER SYSTEM SET {setting['name']} TO '{setting['previous_setting']}';"
+                        conn.Execute(query)
+                raise DatabaseError(exc) from exc
+
+            ret["settings"].append(
+                {
+                    "name": setting_name,
+                    "setting": setting_val,
+                    "previous_setting": "",
+                    "restart": True,
+                }
+            )
+            continue
         if item["category"] == "Preset Options":
             continue
         if setting_valid:
