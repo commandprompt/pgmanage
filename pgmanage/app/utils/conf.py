@@ -2,6 +2,7 @@ import ast
 import json
 import re
 from datetime import datetime
+from time import sleep
 
 from app.models.main import ConfigHistory, Connection
 from django.core.exceptions import ValidationError
@@ -114,7 +115,7 @@ def get_settings(conn, grouped=True, exclude_read_only=False):
             - "pending_restart": a boolean indicating whether the setting requires a restart.
 
         If grouped is False, the function returns a dictionary with the setting names as keys and
-        their values as values.
+        all setting properties as value.
     """
     try:
         tables_json = conn.QueryConfiguration(exclude_read_only).Jsonify()
@@ -122,44 +123,44 @@ def get_settings(conn, grouped=True, exclude_read_only=False):
         raise DatabaseError(exc) from exc
     tables = json.loads(tables_json)
     ret = {}
-    if grouped:
-        for row in tables:
+    for row in tables:
+        if grouped:
             rows = ret.setdefault(row["category"], [])
-            enumvals = row["enumvals"]
-            if enumvals != "":
-                enumvals = list(ast.literal_eval(enumvals))
-
-            rows.append(
-                {
-                    "name": row["name"],
-                    "setting": row["setting"],
-                    "setting_raw": row["current_setting"],
-                    "category": row["category"],
-                    "unit": row["unit"],
-                    "vartype": row["vartype"],
-                    "min_val": row["min_val"],
-                    "max_val": row["max_val"],
-                    "boot_val": row["boot_val"],
-                    "reset_val": row["reset_val"],
-                    "enumvals": enumvals,
-                    "context": row["context"],
-                    "desc": row["desc"],
-                    "pending_restart": row["pending_restart"],
-                }
-            )
-
+        enumvals = row["enumvals"]
+        if enumvals != "":
+            enumvals = list(ast.literal_eval(enumvals))
+        setting = {
+            "name": row["name"],
+            "setting": row["setting"],
+            "setting_raw": row["current_setting"],
+            "category": row["category"],
+            "unit": row["unit"],
+            "vartype": row["vartype"],
+            "min_val": row["min_val"],
+            "max_val": row["max_val"],
+            "boot_val": row["boot_val"],
+            "reset_val": row["reset_val"],
+            "enumvals": enumvals,
+            "context": row["context"],
+            "desc": row["desc"],
+            "pending_restart": row["pending_restart"],
+        }
+        if grouped:
+            rows.append(setting)
+        else:
+            ret[setting["name"]] = setting
+    if grouped:
         return [{"category": k, "rows": v} for k, v in ret.items()]
+    return ret
 
-    return {setting["name"]: setting["setting"] for setting in tables}
 
-
-def validate_setting(setting_name, setting_val, current_settings):
+def validate_setting(setting_name, setting, current_settings):
     """
     Validate a setting value for a given setting name against a list of current settings.
 
     Args:
         setting_name (str): The name of the setting to validate.
-        setting_val (str): The value of the setting to validate.
+        setting (dict): The dict of properties of the setting to validate.
         current_settings (list): A list of dictionaries containing
         information about current settings.
 
@@ -174,6 +175,7 @@ def validate_setting(setting_name, setting_val, current_settings):
     for pg_config_category in current_settings:
         for item in pg_config_category["rows"]:
             if item["name"] == setting_name:
+                setting_val = setting["setting"]
                 if (
                     item["name"] in do_not_check_names
                     or item["category"] == "Preset Options"
@@ -210,6 +212,8 @@ def validate_setting(setting_name, setting_val, current_settings):
                         return True, item
                 if item["vartype"] == "string":
                     return True, item
+    if setting["category"] == "Customized Options":
+        return True, setting
 
 
 def post_settings(request, conn, update, commit_comment=None, new_config=True):
@@ -255,36 +259,16 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
         )
         config_history.save()
 
-    for setting_name, setting_val in update.items():
+    for setting_name, setting in update.items():
         try:
+            setting_val = setting["setting"]
             setting_valid, item = validate_setting(
-                setting_name, setting_val, current_settings
+                setting_name, setting, current_settings
             )
         except ValueError as exc:
             raise ValidationError(
                 code=400, message=f"{setting_name}: Invalid setting."
             ) from exc
-        except TypeError:
-            # temporary solution for customized options
-            query = f"SET {setting_name} TO '{setting_val}';"
-            try:
-                conn.Execute(query)
-            except Exception as exc:
-                if ret["settings"]:
-                    for setting in ret["settings"]:
-                        query = f"ALTER SYSTEM SET {setting['name']} TO '{setting['previous_setting']}';"
-                        conn.Execute(query)
-                raise DatabaseError(exc) from exc
-
-            ret["settings"].append(
-                {
-                    "name": setting_name,
-                    "setting": setting_val,
-                    "previous_setting": "",
-                    "restart": True,
-                }
-            )
-            continue
         if item["category"] == "Preset Options":
             continue
         if setting_valid:
@@ -298,6 +282,7 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
                     item["vartype"] not in ["integer", "real"]
                     and setting_val != item["setting"]
                 )
+                or item["category"] == "Customized Options"
             ):
                 # At this point, all incoming parameters have been checked.
                 if setting_val:
@@ -335,6 +320,8 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
         conn.Execute("SELECT pg_reload_conf()")
 
         if new_config:
+            # wait for reloading and then fetch updated settings
+            sleep(1)
             updated_settings = get_settings(conn, grouped=False)
 
             config_history = ConfigHistory(

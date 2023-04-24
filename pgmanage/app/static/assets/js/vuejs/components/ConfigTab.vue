@@ -115,7 +115,7 @@
               <tr v-for="(setting_value, setting_name) in updateSettings" :key="setting_value">
                 <td>{{ setting_name }}</td>
                 <td>
-                  <b>{{ setting_value }}</b>
+                  <b>{{ setting_value.setting }}</b>
                 </td>
               </tr>
             </template>
@@ -123,7 +123,7 @@
               <tr v-for="(setting_value, setting_name) in configDiffData" :key="setting_value">
                 <td>{{ setting_name }}</td>
                 <td>
-                  <b>{{ setting_value }}</b>
+                  <b>{{ setting_value.setting }}</b>
                 </td>
               </tr>
             </template>
@@ -264,7 +264,7 @@ export default {
       const index = this.categories.indexOf(e.changedGroup.category);
       this.data[index] = e.changedGroup;
       if (e.changedSetting.setting !== e.changedSetting.reset_val)
-        this.updateSettings[e.changedSetting.name] = e.changedSetting.setting;
+        this.updateSettings[e.changedSetting.name] = e.changedSetting;
       else
         delete this.updateSettings[e.changedSetting.name]
     },
@@ -345,6 +345,7 @@ export default {
           if (!this.appliedSettings.restartPending && !!this.intervalId) {
             clearInterval(this.intervalId)
             this.getConfiguration()
+            this.getCategories()
           }
         })
         .catch((error) => {
@@ -375,7 +376,7 @@ export default {
         })
         .then((response) => {
           let diff = Object.keys(response.data.settings).reduce((diff, key) => {
-            if (this.selectedConf.config_snapshot[key] === response.data.settings[key]) return diff
+            if (this.selectedConf.config_snapshot[key]['setting'] === response.data.settings[key]['setting']) return diff
             return {
               ...diff,
               [key]: this.selectedConf.config_snapshot[key]
