@@ -125,6 +125,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, "app/static")
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 #PgManage LOGGING
 
 LOGGING = {
