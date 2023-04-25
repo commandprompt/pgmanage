@@ -320,9 +320,18 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
         conn.Execute("SELECT pg_reload_conf()")
 
         if new_config:
+            # FIXME figure out how we can check if all settings reloaded without using sleep
             # wait for reloading and then fetch updated settings
             sleep(1)
             updated_settings = get_settings(conn, grouped=False)
+
+            for setting in ret["settings"]:
+                if setting["restart"]:
+                    updated_settings[setting["name"]]["setting"] = setting["setting"]
+                    updated_settings[setting["name"]]["setting_raw"] = setting[
+                        "setting"
+                    ]
+                    updated_settings[setting["name"]]["reset_val"] = setting["setting"]
 
             config_history = ConfigHistory(
                 user=request.user,
