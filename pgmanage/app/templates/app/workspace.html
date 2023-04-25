@@ -85,7 +85,7 @@
               </a>
               {% endif %}
               {% if not desktop_mode %}
-              {% if super_user == 1 %}
+              {% if super_user %}
               <a id="omnidb__utilities-menu__link-user" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="listUsers();"><i class="fas fa-user" title="Users"></i></a>
               {% endif %}
               {% endif %}
@@ -598,11 +598,10 @@
     var v_version = '{{ pgmanage_version }}';
     var v_short_version = '{{ pgmanage_short_version }}';
     var v_url_folder = '{{ url_folder }}';
-    var v_welcome_closed = {{ welcome_closed }};
   	var v_connections_data;
   	var gv_desktopMode = ('{{ desktop_mode }}' === 'True');
   	var v_tab_token = '{{ tab_token }}';
-  	var v_show_terminal_option = {{ show_terminal_option }};
+  	var v_show_terminal_option = {{ show_terminal_option|lower }};
     var v_omnis = createOmnis();
     var v_explain_control = {context: 'default'};
 
@@ -619,7 +618,7 @@
     var v_database_list = null;
     var v_completer_ready = true;
     var v_tree_object;
-    var v_super_user = {{ super_user }};
+    var v_super_user = {{ super_user|lower }};
     var v_csrf_cookie_name = '{{ csrf_cookie_name }}';
     var binary_path = '{{ binary_path|addslashes }}';
     </script>

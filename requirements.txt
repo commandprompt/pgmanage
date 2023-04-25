@@ -1,6 +1,6 @@
 cryptography==36.0.2
 django-sass==1.1.0
-Django==2.2.*
+Django==3.2.18
 CherryPy==18.1.1
 tornado==6.0.2
 Click==7.0
