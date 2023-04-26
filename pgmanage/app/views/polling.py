@@ -832,10 +832,13 @@ def thread_query(self,args):
             log_end_time = datetime.now()
             v_duration = GetDuration(log_start_time,log_end_time)
 
-            if v_cmd_type=='export_csv' or v_cmd_type=='export_xlsx':
-
+            if v_cmd_type in ['export_csv','export_xlsx', 'export_csv-no_headers', 'export_xlsx-no_headers']:
+                skip_headers = False
                 #cleaning temp folder
                 clean_temp_folder()
+                if len(v_cmd_type.split('-')) == 2:
+                    v_cmd_type = v_cmd_type.split('-')[0]
+                    skip_headers = True
 
                 if v_cmd_type=='export_csv':
                     v_extension = 'csv'
@@ -853,7 +856,7 @@ def thread_query(self,args):
                 #    f = Spartacus.Utils.DataFileWriter(os.path.join(v_export_dir, v_file_name), v_data1.Columns, 'windows-1252')
                 #else:
                 #    f = Spartacus.Utils.DataFileWriter(os.path.join(v_export_dir, v_file_name), v_data1.Columns)
-                f = Spartacus.Utils.DataFileWriter(os.path.join(v_export_dir, v_file_name), v_data1.Columns,v_session.v_csv_encoding, v_session.v_csv_delimiter)
+                f = Spartacus.Utils.DataFileWriter(os.path.join(v_export_dir, v_file_name), v_data1.Columns,v_session.v_csv_encoding, v_session.v_csv_delimiter, skip_headers=skip_headers)
                 f.Open()
                 if v_database.v_connection.v_start:
                     f.Write(v_data1)

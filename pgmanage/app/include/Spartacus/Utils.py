@@ -35,7 +35,7 @@ class Exception(Exception):
 
 
 class DataFileWriter(object):
-    def __init__(self, p_filename, p_fieldnames=None, p_encoding='utf-8', p_delimiter=';', p_lineterminator='\n'):
+    def __init__(self, p_filename, p_fieldnames=None, p_encoding='utf-8', p_delimiter=';', p_lineterminator='\n', skip_headers=False):
         v_tmp = p_filename.split('.')
         if len(v_tmp) > 1:
             self.v_extension = v_tmp[-1].lower()
@@ -51,12 +51,14 @@ class DataFileWriter(object):
         self.v_lineterminator = p_lineterminator
         self.v_currentrow = 1
         self.v_open = False
+        self.skip_headers = skip_headers
     def Open(self):
         try:
             if self.v_extension == 'csv':
                 self.v_file = open(self.v_filename, 'w', encoding=self.v_encoding)
                 self.v_object = csv.writer(self.v_file, delimiter=self.v_delimiter, lineterminator=self.v_lineterminator)
-                self.v_object.writerow(self.v_header)
+                if not self.skip_headers:
+                    self.v_object.writerow(self.v_header)
                 self.v_open = True
             elif self.v_extension == 'xlsx':
                 self.v_object = openpyxl.Workbook(write_only=True)
@@ -80,8 +82,9 @@ class DataFileWriter(object):
                         v_worksheet = self.v_object.create_sheet(p_sheetname)
                     else:
                         v_worksheet = self.v_object.create_sheet()
-                    v_worksheet.append(p_datatable.Columns)
-                    self.v_currentrow = self.v_currentrow + 1
+                    if not self.skip_headers:
+                        v_worksheet.append(p_datatable.Columns)
+                        self.v_currentrow = self.v_currentrow + 1
                 else:
                     v_worksheet = self.v_object.active
                 for r in range(0, len(p_datatable.Rows)):
