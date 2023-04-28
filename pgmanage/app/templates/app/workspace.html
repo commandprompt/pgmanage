@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/pev2/css/style.css" />
     <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/Passtrength/css/passtrength.css">
     <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/vue-toast-notification/css/theme-sugar.css">
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/vue3-context-menu/vue3-context-menu.css" />
 
     <link rel="stylesheet" href="{{url_folder}}/static/assets/css/font-poppins.css?{{pgmanage_short_version}}">
     <link rel="stylesheet" href="{{url_folder}}/static/assets/css/omnidb.min.css?{{pgmanage_short_version}}">
@@ -601,7 +602,6 @@
   	var v_connections_data;
   	var gv_desktopMode = ('{{ desktop_mode }}' === 'True');
   	var v_tab_token = '{{ tab_token }}';
-  	var v_show_terminal_option = {{ show_terminal_option|lower }};
     var v_omnis = createOmnis();
     var v_explain_control = {context: 'default'};
 
@@ -627,6 +627,7 @@
     <script src="{{url_folder}}/static/assets/lib/vue3-sfc-loader@0.8.4/vue3-sfc-loader.js"></script>
     <script src="{{url_folder}}/static/assets/js/vuejs/vue3_sfc_config.js"></script>
     <script src="{{url_folder}}/static/assets/lib/vue-demi@0.13.11/vue-demi"></script>
+    <script src="{{url_folder}}/static/assets/lib/Pinia/pinia.iife.js"></script>
     <script src="{{url_folder}}/static/assets/lib/@vuelidate/core"></script>
     <script src="{{url_folder}}/static/assets/lib/@vuelidate/validators"></script>
     <script src="{{url_folder}}/static/assets/js/vuejs/explain.js"></script>
@@ -643,5 +644,6 @@
     <script src="{{url_folder}}/static/assets/lib/vue-toast-notification/vue-toast-notification@3.js"></script>
     <script src="{{url_folder}}/static/assets/js/vuejs/job_detail_state.js"></script>
     <script src="{{url_folder}}/static/assets/js/vuejs/components/job_detail_modal.js"></script>
+    <script src="{{url_folder}}/static/assets/lib/vue3-context-menu/vue3-context-menu.umd.js"></script>
   </body>
 </html>
