@@ -66,22 +66,42 @@ SOFTWARE.
   background-image: url( "../images/postgresql_medium.png")
 }
 
+.node-postgresql::after{
+  content: "\200B";
+}
+
 .node-oracle {
   background-image: url("../images/oracle_medium.png")
+}
+
+.node-oracle::after{
+  content: "\200B";
 }
 
 .node-mysql {
   background-image: url("../images/mysql_medium.png")
 }
-
+.node-mysql::after {
+  content: "\200B";
+}
 .node-mariadb {
   background-image: url("../images/mariadb_medium.png")
+}
+.node-mariadb::after{
+  content: "\200B";
 }
 
 .node-sqlite {
   background-image: url("../images/sqlite_medium.png")
 }
 
+.node-sqlite::after{
+  content: "\200B";
+}
+
+.mx-context-menu i{
+	width: 16px;
+}
 
 .node-error {
   color: #d85656;
