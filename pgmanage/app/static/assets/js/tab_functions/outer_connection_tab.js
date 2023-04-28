@@ -28,17 +28,17 @@ SOFTWARE.
 
 var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name = false, p_tooltip_name = false) {
   // Creating the first outer tab without any connections created.
-  if (v_connTabControl.tag.connections.length==0) {
+  if (connectionsStore.connections.length==0) {
     v_connTabControl.selectTabIndex(v_connTabControl.tabList.length-2);
     showAlert('Create connections first.');
   }
   else {
     // v_connTabControl.removeLastTab();
 
-    let v_conn = v_connTabControl.tag.connections[0];
-    for (let i = 0; i < v_connTabControl.tag.connections.length; i++) {
-      if (v_connTabControl.tag.connections[i].v_conn_id === p_index) {
-        v_conn = v_connTabControl.tag.connections[i];
+    let v_conn = connectionsStore.connections[0];
+    for (let i = 0; i < connectionsStore.connections.length; i++) {
+      if (connectionsStore.connections[i].v_conn_id === p_index) {
+        v_conn = connectionsStore.connections[i];
       }
     }
     var v_conn_name = '';
@@ -357,7 +357,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
     v_tag.selectPropertiesTabFunc = v_selectPropertiesTabFunc;
     v_tag.selectDDLTabFunc = v_selectDDLTabFunc;
 
-    var v_index = v_connTabControl.tag.connections[0].v_conn_id;
+    var v_index = connectionsStore.connections[0].v_conn_id;
     if (p_index) {
       v_index = p_index;
     }

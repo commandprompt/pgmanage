@@ -75,7 +75,6 @@ def index(request):
         "tab_token": "".join(
             random.choice(string.ascii_lowercase + string.digits) for i in range(20)
         ),
-        "show_terminal_option": False,
         "url_folder": settings.PATH,
         "csrf_cookie_name": settings.CSRF_COOKIE_NAME,
         "master_key": "new"
@@ -166,7 +165,6 @@ def shortcuts(request):
             return JsonResponse(response_data, status=400)
 
     if request.method == "GET":
-
         data = {}
 
         user_shortcuts = Shortcut.objects.filter(user=request.user)
@@ -187,9 +185,6 @@ def shortcuts(request):
 
 @user_authenticated
 def get_database_list(request):
-
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
-
     session = request.session.get("pgmanage_session")
 
     databases = []
@@ -217,10 +212,7 @@ def get_database_list(request):
 
     # Connection list
     for key, database_object in session.v_databases.items():
-        if (
-            database_object["tunnel"]["enabled"]
-            or database_object["technology"] == "terminal"
-        ):
+        if database_object["technology"] == "terminal":
             alias = ""
             if database_object["alias"] != "":
                 alias = database_object["alias"]
@@ -246,17 +238,10 @@ def get_database_list(request):
                 alias = ""
             else:
                 alias = f"({database.v_alias}) "
-            if not database_object["tunnel"]["enabled"]:
-                details = database.PrintDatabaseDetails()
-            else:
-                details = (
-                    database.PrintDatabaseDetails()
-                    + " <b>("
-                    + database_object["tunnel"]["server"]
-                    + ":"
-                    + database_object["tunnel"]["port"]
-                    + ")</b>"
-                )
+
+            details = database.PrintDatabaseDetails()
+            if database_object["tunnel"]["enabled"]:
+                details += f" <b>({database_object['tunnel']['server']}:{database_object['tunnel']['port']})</b>"
 
             database_data = {
                 "v_db_type": database.v_db_type,
@@ -287,14 +272,12 @@ def get_database_list(request):
 
     request.session["pgmanage_session"] = session
 
-    response_data["v_data"] = {
-        "v_select_html": None,
-        "v_select_group_html": None,
-        "v_connections": databases,
-        "v_groups": groups,
-        "v_remote_terminals": remote_terminals,
-        "v_id": session.v_database_index,
-        "v_existing_tabs": existing_tabs,
+    response_data = {
+        "connections": databases,
+        "groups": groups,
+        "remote_terminals": remote_terminals,
+        "id": session.v_database_index,
+        "existing_tabs": existing_tabs,
     }
 
     return JsonResponse(response_data)
@@ -302,7 +285,6 @@ def get_database_list(request):
 
 @user_authenticated
 def change_active_database(request):
-
     response_data = {"v_data": {}, "v_error": False, "v_error_id": -1}
 
     # Invalid session
@@ -359,7 +341,6 @@ def renew_password(request):
 @user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def draw_graph(request, v_database):
-
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
     json_object = json.loads(request.POST.get("data", None))
@@ -458,7 +439,6 @@ def draw_graph(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def start_edit_data(request, v_database):
-
     response_data = {
         "v_data": {"v_pk": [], "v_cols": [], "v_ini_orderby": ""},
         "v_error": False,
@@ -533,7 +513,6 @@ def start_edit_data(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def get_completions_table(request, v_database):
-
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
     json_object = json.loads(request.POST.get("data", None))
@@ -577,7 +556,6 @@ def get_completions_table(request, v_database):
 
 @user_authenticated
 def indent_sql(request):
-
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
     # Invalid session
@@ -644,7 +622,6 @@ def get_alias(p_sql, p_pos, p_val):
 @user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def get_autocomplete_results(request, v_database):
-
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
     json_object = json.loads(request.POST.get("data", None))
@@ -713,7 +690,6 @@ def get_autocomplete_results(request, v_database):
                 if len(search.Rows) > 0:
                     current_group["type"] = search.Rows[0]["type"]
                 for search_row in search.Rows:
-
                     if current_group["type"] != search_row["type"]:
                         result.append(current_group)
                         current_group = {"type": search_row["type"], "elements": []}
@@ -786,7 +762,6 @@ def master_password(request):
         return JsonResponse(response_data)
 
     if json_object != "" and json_object.get("master_password", "") != "":
-
         # store the master pass in the memory
         key_manager.set(request.user, master_pass_hash)
 

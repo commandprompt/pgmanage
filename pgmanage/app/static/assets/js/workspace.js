@@ -116,80 +116,87 @@ $(function () {
 /// <summary>
 /// Retrieves database list.
 /// </summary>
-function getDatabaseList(p_init, p_callback) {
-
-	execAjax('/get_database_list/',
-			JSON.stringify({}),
-			function(p_return) {
-                v_connTabControl.tag.connections = p_return.v_data.v_connections;
-
-				v_connTabControl.tag.groups = p_return.v_data.v_groups;
-				v_connTabControl.tag.remote_terminals = p_return.v_data.v_remote_terminals;
-
-				if (p_init) {
-
-					if (v_connTabControl.tag.connections.length>0) {
-
-						//Create existing tabs
-						var v_current_parent = null;
-						var v_has_old_tabs = false;
-						if (p_return.v_data.v_existing_tabs.length>0) {
-              v_has_old_tabs = true;
-            }
-
-						for (var i=0; i < p_return.v_data.v_existing_tabs.length; i++) {
-							if (v_current_parent == null || v_current_parent != p_return.v_data.v_existing_tabs[i].index) {
-                startLoading();
-
-                let v_conn = false;
-                let v_name = '';
-                let p_tooltip_name = '';
-                for (let k = 0; k < v_connTabControl.tag.connections.length; k++) {
-                  if (p_return.v_data.v_existing_tabs[i].index === v_connTabControl.tag.connections[k].v_conn_id) {
-                    v_conn = v_connTabControl.tag.connections[k];
-                    v_name = (v_conn.v_alias) ? v_conn.v_alias : '';
-                    if (v_conn.v_alias) {
-                      p_tooltip_name += '<h5 class="mb-1">' + v_conn.v_alias + '</h5>';
-                    }
-                    if (v_conn.v_details1) {
-                      p_tooltip_name += '<div class="mb-1">' + v_conn.v_details1 + '</div>';
-                    }
-                    if (v_conn.v_details2) {
-                      p_tooltip_name += '<div class="mb-1">' + v_conn.v_details2 + '</div>';
-                    }
+function getDatabaseList(init) {
+  axios
+    .post("/get_database_list/")
+    .then((resp) => {
+      connectionsStore.$patch(
+        {
+          connections: resp.data.connections,
+          groups: resp.data.groups,
+          remote_terminals: resp.data.remote_terminals
+        }
+      )
+      if (init) {
+        if (connectionsStore.connections.length > 0) {
+          // Create existing tabs
+          let current_parent = null;
+          for (let i = 0; i < resp.data.existing_tabs.length; i++) {
+            if (
+              current_parent == null ||
+              current_parent != resp.data.existing_tabs[i].index
+            ) {
+              startLoading();
+              let conn = false;
+              let name = "";
+              let tooltip_name = "";
+              for (
+                let k = 0;
+                k < connectionsStore.connections.length;
+                k++
+              ) {
+                if (
+                  resp.data.existing_tabs[i].index ===
+                  connectionsStore.connections[k].v_conn_id
+                ) {
+                  conn = connectionsStore.connections[k];
+                  name = conn.v_alias;
+                  if (conn.v_alias) {
+                    tooltip_name +=
+                      `<h5 class="mb-1">${conn.v_alias}</h5>`;
+                  }
+                  if (conn.v_details1) {
+                    tooltip_name +=
+                      `<div class="mb-1">${conn.v_details1}</div>`;
+                  }
+                  if (conn.v_details2) {
+                    tooltip_name +=
+                      `<div class="mb-1">${conn.v_details2}</div>`;
                   }
                 }
-                if (v_conn !== false) {
-                  v_connTabControl.tag.createConnTab(p_return.v_data.v_existing_tabs[i].index, false, v_name, p_tooltip_name);
-  								v_connTabControl.tag.createConsoleTab();
-                }
-							}
-
-							v_current_parent = p_return.v_data.v_existing_tabs[i].index;
-							v_connTabControl.tag.createQueryTab(p_return.v_data.v_existing_tabs[i].title,p_return.v_data.v_existing_tabs[i].tab_db_id);
-					    v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
-					        p_return.v_data.v_existing_tabs[i].snippet);
-							v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
-					    v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(0, 0, true);
-						}
-
-						if (!v_has_old_tabs) {
-              //startLoading();
-							//v_connTabControl.tag.createConnTab(v_connTabControl.tag.connections[0].v_conn_id);
+              }
+              if (conn !== false) {
+                v_connTabControl.tag.createConnTab(
+                  resp.data.existing_tabs[i].index,
+                  false,
+                  name,
+                  tooltip_name
+                );
+                v_connTabControl.tag.createConsoleTab();
+              }
             }
-
-					}
-					else {
-            // When there are no connections, default initial screen is now a welcome tab with tutorials.
-					}
-				}
-				if (p_callback) {
-          p_callback();
+            current_parent = resp.data.existing_tabs[i].index;
+            v_connTabControl.tag.createQueryTab(
+              resp.data.existing_tabs[i].title,
+              resp.data.existing_tabs[i].tab_db_id
+            );
+            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+              resp.data.existing_tabs[i].snippet
+            );
+            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+              0,
+              0,
+              true
+            );
+          }
         }
-        endLoading();
-			},
-			null,
-			'box');
+      }
+      endLoading();
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 }
 
 function queueChangeActiveDatabaseThreadSafe(p_data) {
@@ -222,15 +229,15 @@ function changeDatabase(p_value) {
 
   // Finding the connection object.
   var v_conn_object = null;
-  for (var i=0; i<v_connTabControl.tag.connections.length; i++) {
-  	if (p_value==v_connTabControl.tag.connections[i].v_conn_id) {
-  		v_conn_object = v_connTabControl.tag.connections[i];
+  for (var i=0; i<connectionsStore.connections.length; i++) {
+  	if (p_value==connectionsStore.connections[i].v_conn_id) {
+  		v_conn_object = connectionsStore.connections[i];
   		break;
   	}
   }
   // Selecting the first connection when none is found.
   if (!v_conn_object) {
-    v_conn_object = v_connTabControl.tag.connections[0];
+    v_conn_object = connectionsStore.connections[0];
   }
 
   v_connTabControl.selectedTab.tag.selectedDatabaseIndex = parseInt(p_value);
@@ -1077,260 +1084,220 @@ function indentSQL(p_mode = false) {
 }
 
 function showMenuNewTabOuter(e) {
-  // Opening connections management when there are no configured connections.
-  if (!v_connTabControl.tag.connections || v_connTabControl.tag.connections.length === 0) {
-    $('#connections-modal').modal({
-      show: true
-    })
-  }
-  // Creating a custom menu for new outter connections.
-  else {
-    var v_option_list = [];
-  	//Hooks
-  	if (v_connTabControl.tag.hooks.outerTabMenu.length>0) {
-  		for (var i=0; i<v_connTabControl.tag.hooks.outerTabMenu.length; i++) {
-        v_option_list = v_option_list.concat(v_connTabControl.tag.hooks.outerTabMenu[i]());
+  function getConnectionInfo(conn) {
+    let conn_name = "";
+    let tooltip_name = "";
+    let name = "";
+    if (conn.v_public) {
+      conn_name += '<i class="fas fa-users mr-3" style="color:#c57dd2;"></i>';
+    }
+    if (conn.v_alias && conn.v_alias !== "") {
+      name = conn.v_alias;
+      conn_name += `(${conn.v_alias})`;
+      tooltip_name += `<h5 class="my-1">${conn.v_alias}</h5>`;
+    }
+    if (conn.v_conn_string && conn.v_conn_string !== "") {
+      conn_name += ` ${conn.v_conn_string}`;
+      tooltip_name += `<div class="mb-1">${conn.v_conn_string}</div>`;
+    } else {
+      if (conn.v_details1) {
+        conn_name += conn.v_details1;
+        tooltip_name += `<div class="mb-1">${conn.v_details1}</div>`;
       }
-  	}
+      if (conn.v_details2) {
+        conn_name += ` - ${conn.v_details2}`;
+        tooltip_name += `<div class="mb-1">${conn.v_details2}</div>`;
+      }
+    }
+    return [conn, conn_name, tooltip_name, name];
+  }
+  // Opening connections management when there are no configured connections.
+  if (
+    !connectionsStore.connections ||
+    connectionsStore.connections.length === 0
+  ) {
+    $("#connections-modal").modal({
+      show: true,
+    });
+  } else {
+    let items = [];
+    //Hooks
+    if (v_connTabControl.tag.hooks.outerTabMenu.length > 0) {
+      for (let i = 0; i < v_connTabControl.tag.hooks.outerTabMenu.length; i++) {
+        items = items.concat(v_connTabControl.tag.hooks.outerTabMenu[i]());
+      }
+    }
 
-  	if (v_show_terminal_option) {
-      v_option_list.push({
-        text: 'Local Terminal',
-        icon: 'fas cm-all fa-terminal',
-        action: function() {
-          v_connTabControl.tag.createOuterTerminalTab();
-        }
+    // Building connection list
+    if (connectionsStore.connections.length > 0) {
+      // No custom groups, render all connections in the same list
+      if (connectionsStore.groups.length == 1) {
+        let submenu_connection_list = [];
+
+        for (let i = 0; i < connectionsStore.connections.length; i++)
+          (function (i) {
+            let [conn, conn_name, tooltip_name, name] = getConnectionInfo(
+              connectionsStore.connections[i]
+            );
+            submenu_connection_list.push({
+              label: conn_name,
+              icon: `fas cm-all node-${conn.v_db_type}`,
+              onCLick: () => {
+                v_connTabControl.tag.createConnTab(
+                  conn.v_conn_id,
+                  true,
+                  name,
+                  tooltip_name
+                );
+              },
+            });
+          })(i);
+
+        items.push({
+          label: "Connections",
+          icon: "fas cm-all fa-plug",
+          children: submenu_connection_list,
+        });
+      }
+      //Render connections split in groups
+      else {
+        let group_list = [];
+
+        for (let i = 0; i < connectionsStore.groups.length; i++)
+          (function (i) {
+            let current_group = connectionsStore.groups[i];
+
+            let group_connections = [];
+
+            //First group, add all connections
+            if (i == 0) {
+              for (let k = 0; k < connectionsStore.connections.length; k++)
+                (function (k) {
+                  let [conn, conn_name, tooltip_name, name] = getConnectionInfo(
+                    connectionsStore.connections[k]
+                  );
+                  group_connections.push({
+                    label: conn_name,
+                    icon: `fas cm-all node-${conn.v_db_type}`,
+                    onClick: () => {
+                      startLoading();
+                      setTimeout(function () {
+                        v_connTabControl.tag.createConnTab(
+                          conn.v_conn_id,
+                          true,
+                          name,
+                          tooltip_name
+                        );
+                      }, 0);
+                    },
+                  });
+                })(k);
+            } else {
+              for (let j = 0; j < current_group.conn_list.length; j++) {
+                //Search corresponding connection to use its data
+                for (let k = 0; k < connectionsStore.connections.length; k++)
+                  (function (k) {
+                    let [conn, conn_name, tooltip_name, name] =
+                      getConnectionInfo(connectionsStore.connections[k]);
+
+                    if (conn.v_conn_id == current_group.conn_list[j]) {
+                      group_connections.push({
+                        label: conn_name,
+                        icon: `fas cm-all node-${conn.v_db_type}`,
+                        onClick: () => {
+                          startLoading();
+                          setTimeout(function () {
+                            v_connTabControl.tag.createConnTab(
+                              conn.v_conn_id,
+                              true,
+                              name,
+                              tooltip_name
+                            );
+                          }, 0);
+                        },
+                      });
+                      return;
+                    }
+                  })(k);
+              }
+            }
+
+            let group_data = {
+              label: current_group.v_name,
+              icon: "fas cm-all fa-plug",
+              children: group_connections,
+            };
+
+            group_list.push(group_data);
+          })(i);
+
+        items.push({
+          label: "Connections",
+          icon: "fas cm-all fa-plug",
+          children: group_list,
+        });
+      }
+    }
+
+    if (connectionsStore.remote_terminals.length > 0) {
+      let submenu_terminal_list = [];
+
+      for (let i = 0; i < connectionsStore.remote_terminals.length; i++)
+        (function (i) {
+          let term = connectionsStore.remote_terminals[i];
+          let name = term.v_alias;
+          let term_name = "";
+          if (term.v_alias && term.v_alias !== "") {
+            term_name = `(${term.v_alias}) `;
+          }
+          if (term.v_details) {
+            term_name += term.v_details;
+          }
+          submenu_terminal_list.push({
+            label: term_name,
+            icon: "fas cm-all fa-terminal",
+            onClick: () => {
+              v_connTabControl.tag.createOuterTerminalTab(
+                term.v_conn_id,
+                name,
+                term.v_details
+              );
+            },
+          });
+        })(i);
+
+      items.push({
+        label: "SSH Consoles",
+        icon: "fas cm-all fa-terminal",
+        children: submenu_terminal_list,
       });
     }
 
-		// Building connection list
-		if (v_connTabControl.tag.connections.length>0) {
+    if (items.length > 0) {
+      items.unshift({
+        label: "Manage Connections",
+        icon: "fas cm-all fa-gears",
+        onClick: () => {
+          $("#connections-modal").modal({
+            show: true,
+          });
+        },
+      });
 
-			// No custom groups, render all connections in the same list
-			if (v_connTabControl.tag.groups.length==1) {
-				var v_submenu_connection_list = []
-
-				for (var i=0; i<v_connTabControl.tag.connections.length; i++) (function(i){
-					var v_conn = v_connTabControl.tag.connections[i];
-          var v_conn_name = '';
-          let p_tooltip_name = '';
-          let v_name = '';
-          if (v_conn.v_public) {
-            v_conn_name += '<i class="fas fa-users mr-3" style="color:#c57dd2;"></i>';
-          }
-          if (v_conn.v_alias && v_conn.v_alias !== '') {
-            v_name = v_conn.v_alias;
-            v_conn_name += '(' + v_conn.v_alias + ')';
-            p_tooltip_name += '<h5 class="my-1">' + v_conn.v_alias + '</h5>';
-          }
-          if (v_conn.v_conn_string && v_conn.v_conn_string !== '') {
-            v_conn_name += ' ' + v_conn.v_conn_string;
-            p_tooltip_name += '<div class="mb-1">' + v_conn.v_conn_string + '</div>';
-          }
-          else {
-            if (v_conn.v_details1) {
-              v_conn_name += v_conn.v_details1;
-              p_tooltip_name += '<div class="mb-1">' + v_conn.v_details1 + '</div>';
-            }
-            if (v_conn.v_details2) {
-              v_conn_name += ' - ' + v_conn.v_details2;
-              p_tooltip_name += '<div class="mb-1">' + v_conn.v_details2 + '</div>';
-            }
-          }
-					v_submenu_connection_list.push({
-						text: v_conn_name,
-						icon: 'fas cm-all node-' + v_conn.v_db_type,
-						action: function() {
-							v_connTabControl.tag.createConnTab(v_conn.v_conn_id, true, v_name, p_tooltip_name);
-						}
-					});
-				})(i);
-
-				v_option_list.push({
-					text: 'Connections',
-					icon: 'fas cm-all fa-plug',
-					submenu: {
-							elements: v_submenu_connection_list
-					}
-				});
-			}
-			//Render connections split in groups
-			else {
-
-				var v_group_list = [];
-
-				for (var i=0; i<v_connTabControl.tag.groups.length; i++) (function(i){
-					var v_current_group = v_connTabControl.tag.groups[i];
-
-					var v_group_connections = [];
-
-					//First group, add all connections
-					if (i==0) {
-						for (var k=0; k<v_connTabControl.tag.connections.length; k++) (function(k){
-							var v_conn = v_connTabControl.tag.connections[k];
-              var v_conn_name = '';
-              let p_tooltip_name = '';
-              let v_name = '';
-              if (v_conn.v_public) {
-                v_conn_name += '<i class="fas fa-users mr-3" style="color:#c57dd2;"></i>';
-              }
-              if (v_conn.v_alias && v_conn.v_alias !== '') {
-                v_name = v_conn.v_alias;
-                v_conn_name += '(' + v_conn.v_alias + ')';
-                p_tooltip_name += '<h5 class="my-1">' + v_conn.v_alias + '</h5>';
-              }
-              if (v_conn.v_conn_string && v_conn.v_conn_string !== '') {
-                v_conn_name += ' ' + v_conn.v_conn_string;
-                p_tooltip_name += '<div class="mb-1">' + v_conn.v_conn_string + '</div>';
-              }
-              else {
-                if (v_conn.v_details1) {
-                  v_conn_name += v_conn.v_details1;
-                  p_tooltip_name += '<div class="mb-1">' + v_conn.v_details1 + '</div>';
-                }
-                if (v_conn.v_details2) {
-                  v_conn_name += ' - ' + v_conn.v_details2;
-                  p_tooltip_name += '<div class="mb-1">' + v_conn.v_details2 + '</div>';
-                }
-              }
-							v_group_connections.push({
-								text: v_conn_name,
-								icon: 'fas cm-all node-' + v_conn.v_db_type,
-								action: function() {
-                  startLoading();
-                  setTimeout(function() { v_connTabControl.tag.createConnTab(v_conn.v_conn_id, true, v_name, p_tooltip_name); },0);
-								}
-							});
-						})(k);
-
-					}
-					else {
-						for (var j=0; j<v_current_group.conn_list.length; j++) {
-
-							//Search corresponding connection to use its data
-							for (var k=0; k<v_connTabControl.tag.connections.length; k++) (function(k){
-								var v_conn = v_connTabControl.tag.connections[k];
-                var v_conn_name = '';
-                let p_tooltip_name = '';
-                let v_name = '';
-                if (v_conn.v_public) {
-                  v_conn_name += '<i class="fas fa-users mr-3" style="color:#c57dd2;"></i>';
-                }
-                if (v_conn.v_alias && v_conn.v_alias !== '') {
-                  v_name = v_conn.v_alias;
-                  v_conn_name += '(' + v_conn.v_alias + ')';
-                  p_tooltip_name += '<h5 class="my-1">' + v_conn.v_alias + '</h5>';
-                }
-                if (v_conn.v_conn_string && v_conn.v_conn_string !== '') {
-                  v_conn_name += ' ' + v_conn.v_conn_string;
-                  p_tooltip_name += '<div class="mb-1">' + v_conn.v_conn_string + '</div>';
-                }
-                else {
-                  if (v_conn.v_details1) {
-                    v_conn_name += v_conn.v_details1;
-                    p_tooltip_name += '<div class="mb-1">' + v_conn.v_details1 + '</div>';
-                  }
-                  if (v_conn.v_details2) {
-                    v_conn_name += ' - ' + v_conn.v_details2;
-                    p_tooltip_name += '<div class="mb-1">' + v_conn.v_details2 + '</div>';
-                  }
-                }
-								if (v_conn.v_conn_id==v_current_group.conn_list[j]) {
-									v_group_connections.push({
-										text: v_conn_name,
-										icon: 'fas cm-all node-' + v_conn.v_db_type,
-										action: function() {
-                      startLoading();
-              				setTimeout(function() { v_connTabControl.tag.createConnTab(v_conn.v_conn_id, true, v_name, p_tooltip_name); },0);
-										}
-									});
-									return;
-								}
-							})(k);
-
-						}
-					}
-
-					var v_group_data = {
-						text: v_current_group.v_name,
-						icon: 'fas cm-all fa-plug',
-						submenu: {
-								elements: v_group_connections
-						}
-					}
-
-					v_group_list.push(v_group_data);
-
-				})(i);
-
-				v_option_list.push({
-					text: 'Connections',
-					icon: 'fas cm-all fa-plug',
-					submenu: {
-							elements: v_group_list
-					}
-				});
-
-			}
+      window["vue3-context-menu"].default.showContextMenu({
+        theme: "mac",
+        x: e.x,
+        y: e.y,
+        zIndex: 1000,
+        minWidth: 230,
+        items: items,
+      });
+    } else {
+      startLoading();
+      setTimeout(function () {
+        v_connTabControl.tag.createConnTab();
+      }, 0);
     }
-
-  	if (v_connTabControl.tag.remote_terminals.length>0) {
-
-  		var v_submenu_terminal_list = []
-
-  		for (var i=0; i<v_connTabControl.tag.remote_terminals.length; i++) (function(i){
-  			var v_term = v_connTabControl.tag.remote_terminals[i];
-        var v_name = v_term.v_alias;
-        var v_term_name = '';
-        if (v_term.v_alias && v_term.v_alias !== '') {
-          v_term_name = '(' + v_term.v_alias + ') ';
-        }
-        if (v_term.v_details) {
-          v_term_name += v_term.v_details;
-        }
-  			v_submenu_terminal_list.push({
-  				text: v_term_name,
-  				icon: 'fas cm-all fa-terminal',
-  				action: function() {
-  						v_connTabControl.tag.createOuterTerminalTab(v_term.v_conn_id,v_name,v_term.v_details);
-  				}
-  			});
-  		})(i);
-
-  		v_option_list.push({
-  			text: 'SSH Consoles',
-  			icon: 'fas cm-all fa-terminal',
-  			submenu: {
-  				elements: v_submenu_terminal_list
-  			}
-  		});
-    }
-
-  	if (v_option_list.length>0) {
-  		v_option_list.unshift(
-      {
-        text: 'Manage Connections',
-        icon: 'fas cm-all fa-gears',
-        action: function() {
-          $('#connections-modal').modal({
-            show: true
-          })
-        }
-        });
-
-  		customMenu(
-  			{
-  				x:e.clientX+5,
-  				y:e.clientY+5
-  			},
-  			v_option_list,
-  			null
-      );
-  	}
-  	else {
-  		startLoading();
-  		setTimeout(function() { v_connTabControl.tag.createConnTab(); },0);
-  	}
   }
 }
 
