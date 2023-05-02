@@ -97,8 +97,6 @@ export default {
   name: 'ConnectionsModal',
   data() {
       return {
-        groups: [],
-        connections: [],
         technologies: [],
         selectedConnection: {},
         selectedGroup: undefined,
@@ -110,6 +108,12 @@ export default {
     'ConnectionsModalConnectionForm': Vue.defineAsyncComponent(() => loadModule('/static/assets/js/vuejs/components/ConnectionsModalConnectionForm.vue', options)),
   },
   computed: {
+    groups() {
+      return connectionsStore.groups
+    },
+    connections() {
+      return connectionsStore.connections
+    },
     // adds group's connections to its .connections property
     // returns array of resulting groups
     groupedConnections() {
@@ -137,30 +141,44 @@ export default {
         url: '/get_groups/',
       })
       .then((response) => {
-        this.groups = response.data.data
+        connectionsStore.$patch({
+          groups: response.data.data
+        }
+        )
       })
       .catch((error) => {
-        this.groups = []
+        connectionsStore.$patch({
+          groups: []
+        })
         console.log(error)
       })
     },
-    getConnections() {
+    getConnections(init) {
       axios({
         method: 'post',
         url: '/get_connections/',
       })
       .then((response) => {
-        this.connections = response.data.data.connections
+        connectionsStore.$patch({
+          connections: response.data.data.connections,
+          remote_terminals: response.data.data.remote_terminals
+        })
         this.technologies = response.data.data.technologies
+
+        if (init) {
+          this.getExistingTabs()
+        }
       })
       .catch((error) => {
-        this.groups = []
+        connectionsStore.$patch({
+          connections: []
+        })
         console.log(error)
       })
     },
-    loadData() {
+    loadData(init) {
       this.getGroups();
-      this.getConnections();
+      this.getConnections(init);
       this.activeForm = undefined
     },
 
@@ -169,8 +187,6 @@ export default {
       .then((response) => {
         this.loadData()
         this.selectedConnection = {}
-        let event = new CustomEvent('connection:changed',)
-        document.dispatchEvent(event)
       })
       .catch((error) => {
         console.log(error)
@@ -179,8 +195,11 @@ export default {
     testConnection(connection) {
       axios.post('/test_connection/', connection)
       .then((response) => {
-        let event = new CustomEvent('connection:tested', { detail: response.data })
-        document.dispatchEvent(event)
+        if(response.data.status !== 'success') {
+            showError(response.data.data);
+        } else {
+            showAlert(response.data.data);
+        }
       })
       .catch((error) => {
         console.log(error)
@@ -190,8 +209,6 @@ export default {
       axios.post('/delete_connection/', connection)
       .then((response) => {
         this.loadData()
-        let event = new CustomEvent('connection:changed',)
-        document.dispatchEvent(event)
       })
       .catch((error) => {
         console.log(error)
@@ -204,8 +221,6 @@ export default {
         // set selected group to something so that if "new group"
         // is clicked again the watcher in group form will fire
         this.selectedGroup = {}
-        let event = new CustomEvent('connection:changed',)
-        document.dispatchEvent(event)
       })
       .catch((error) => {
         console.log(error)
@@ -215,8 +230,6 @@ export default {
       axios.post('/delete_group/', group)
       .then((response) => {
         this.loadData()
-        let event = new CustomEvent('connection:changed',)
-        document.dispatchEvent(event)
       })
       .catch((error) => {
         console.log(error)
@@ -257,10 +270,84 @@ export default {
     newGroup() {
       this.activeForm = 'group'
       this.selectedGroup = undefined
+    },
+    getExistingTabs() {
+        axios.post('/get_existing_tabs/')
+        .then((response) => {
+          if (connectionsStore.connections.length > 0) {
+          // Create existing tabs
+          let current_parent = null;
+          for (let i = 0; i < response.data.existing_tabs.length; i++) {
+            if (
+              current_parent == null ||
+              current_parent != response.data.existing_tabs[i].index
+            ) {
+              startLoading();
+              let conn = false;
+              let name = "";
+              let tooltip_name = "";
+              for (
+                let k = 0;
+                k < connectionsStore.connections.length;
+                k++
+              ) {
+                if (
+                  response.data.existing_tabs[i].index ===
+                  connectionsStore.connections[k].id
+                ) {
+                  conn = connectionsStore.connections[k];
+                  name = conn.alias;
+                  if (conn.alias) {
+                    tooltip_name +=
+                      `<h5 class="mb-1">${conn.alias}</h5>`;
+                  }
+                  if (conn.details1) {
+                    tooltip_name +=
+                      `<div class="mb-1">${conn.details1}</div>`;
+                  }
+                  if (conn.details2) {
+                    tooltip_name +=
+                      `<div class="mb-1">${conn.details2}</div>`;
+                  }
+                }
+              }
+              if (conn !== false) {
+                window.v_connTabControl.tag.createConnTab(
+                  response.data.existing_tabs[i].index,
+                  false,
+                  name,
+                  tooltip_name
+                );
+                window.v_connTabControl.tag.createConsoleTab();
+              }
+            }
+            current_parent = response.data.existing_tabs[i].index;
+            window.v_connTabControl.tag.createQueryTab(
+              response.data.existing_tabs[i].title,
+              response.data.existing_tabs[i].tab_db_id
+            );
+            window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+              response.data.existing_tabs[i].snippet
+            );
+            window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+            window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+              0,
+              0,
+              true
+            );
+          }
+        }
+        endLoading();
+        })
+        .catch((response) => {
+          console.log(response)
+        })
     }
   },
   mounted() {
-    $('#connections-modal').on("shown.bs.modal", this.loadData)
+    this.loadData(true)
+    $('#connections-modal').on("shown.bs.modal", () => {
+      this.loadData(false)})
   },
 }
 </script>

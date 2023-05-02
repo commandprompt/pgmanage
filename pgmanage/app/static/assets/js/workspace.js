@@ -84,8 +84,7 @@ $(function () {
   } else if (master_key == 'False'){
     showMasterPassPrompt(`Please provide your master password to unlock your connection credentials for this session.`);
   } else {
-    // Retrieving database list.
-    getDatabaseList(true);
+    conn_app.mount("#connections-modal-wrap");
   }
 
   // Updating explain component choice.
@@ -113,92 +112,6 @@ $(function () {
 
 });
 
-/// <summary>
-/// Retrieves database list.
-/// </summary>
-function getDatabaseList(init) {
-  axios
-    .post("/get_database_list/")
-    .then((resp) => {
-      connectionsStore.$patch(
-        {
-          connections: resp.data.connections,
-          groups: resp.data.groups,
-          remote_terminals: resp.data.remote_terminals
-        }
-      )
-      if (init) {
-        if (connectionsStore.connections.length > 0) {
-          // Create existing tabs
-          let current_parent = null;
-          for (let i = 0; i < resp.data.existing_tabs.length; i++) {
-            if (
-              current_parent == null ||
-              current_parent != resp.data.existing_tabs[i].index
-            ) {
-              startLoading();
-              let conn = false;
-              let name = "";
-              let tooltip_name = "";
-              for (
-                let k = 0;
-                k < connectionsStore.connections.length;
-                k++
-              ) {
-                if (
-                  resp.data.existing_tabs[i].index ===
-                  connectionsStore.connections[k].v_conn_id
-                ) {
-                  conn = connectionsStore.connections[k];
-                  name = conn.v_alias;
-                  if (conn.v_alias) {
-                    tooltip_name +=
-                      `<h5 class="mb-1">${conn.v_alias}</h5>`;
-                  }
-                  if (conn.v_details1) {
-                    tooltip_name +=
-                      `<div class="mb-1">${conn.v_details1}</div>`;
-                  }
-                  if (conn.v_details2) {
-                    tooltip_name +=
-                      `<div class="mb-1">${conn.v_details2}</div>`;
-                  }
-                }
-              }
-              if (conn !== false) {
-                v_connTabControl.tag.createConnTab(
-                  resp.data.existing_tabs[i].index,
-                  false,
-                  name,
-                  tooltip_name
-                );
-                v_connTabControl.tag.createConsoleTab();
-              }
-            }
-            current_parent = resp.data.existing_tabs[i].index;
-            v_connTabControl.tag.createQueryTab(
-              resp.data.existing_tabs[i].title,
-              resp.data.existing_tabs[i].tab_db_id
-            );
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
-              resp.data.existing_tabs[i].snippet
-            );
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
-              0,
-              0,
-              true
-            );
-          }
-        }
-      }
-      endLoading();
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-}
-
 function queueChangeActiveDatabaseThreadSafe(p_data) {
 	v_connTabControl.tag.change_active_database_call_list.push(p_data);
 	if (!v_connTabControl.tag.change_active_database_call_running) {
@@ -225,49 +138,44 @@ function changeActiveDatabaseThreadSafe(p_data) {
 /// </summary>
 function changeDatabase(p_value) {
   // Emptying the details of the connected db.
-  v_connTabControl.selectedTab.tag.divDetails.innerHTML = '';
+  v_connTabControl.selectedTab.tag.divDetails.innerHTML = "";
 
   // Finding the connection object.
-  var v_conn_object = null;
-  for (var i=0; i<connectionsStore.connections.length; i++) {
-  	if (p_value==connectionsStore.connections[i].v_conn_id) {
-  		v_conn_object = connectionsStore.connections[i];
-  		break;
-  	}
+  var conn_object = null;
+  for (var i = 0; i < connectionsStore.connections.length; i++) {
+    if (p_value == connectionsStore.connections[i].id) {
+      conn_object = connectionsStore.connections[i];
+      break;
+    }
   }
   // Selecting the first connection when none is found.
-  if (!v_conn_object) {
-    v_conn_object = connectionsStore.connections[0];
+  if (!conn_object) {
+    conn_object = connectionsStore.connections[0];
   }
 
   v_connTabControl.selectedTab.tag.selectedDatabaseIndex = parseInt(p_value);
-  v_connTabControl.selectedTab.tag.selectedDBMS = v_conn_object.v_db_type;
-  v_connTabControl.selectedTab.tag.consoleHelp = v_conn_object.v_console_help;
-  v_connTabControl.selectedTab.tag.selectedDatabase = v_conn_object.v_database;
-  v_connTabControl.selectedTab.tag.selectedTitle = v_conn_object.v_alias;
+  v_connTabControl.selectedTab.tag.selectedDBMS = conn_object.technology;
+  v_connTabControl.selectedTab.tag.consoleHelp = conn_object.console_help;
+  v_connTabControl.selectedTab.tag.selectedDatabase = conn_object.service;
+  v_connTabControl.selectedTab.tag.selectedTitle = conn_object.alias;
 
   queueChangeActiveDatabaseThreadSafe({
-  		"p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-  		"p_tab_id": v_connTabControl.selectedTab.id,
-  		"p_database": v_connTabControl.selectedTab.tag.selectedDatabase
+    p_database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+    p_tab_id: v_connTabControl.selectedTab.id,
+    p_database: v_connTabControl.selectedTab.tag.selectedDatabase,
   });
 
-  if (v_conn_object.v_db_type=='postgresql') {
+  if (conn_object.technology == "postgresql") {
     getTreePostgresql(v_connTabControl.selectedTab.tag.divTree.id);
-  }
-  else if (v_conn_object.v_db_type=='oracle') {
+  } else if (conn_object.technology == "oracle") {
     getTreeOracle(v_connTabControl.selectedTab.tag.divTree.id);
-  }
-  else if (v_conn_object.v_db_type=='mysql') {
+  } else if (conn_object.technology == "mysql") {
     getTreeMysql(v_connTabControl.selectedTab.tag.divTree.id);
-  }
-  else if (v_conn_object.v_db_type=='mariadb') {
+  } else if (conn_object.technology == "mariadb") {
     getTreeMariadb(v_connTabControl.selectedTab.tag.divTree.id);
-  }
-  else if (v_conn_object.v_db_type=='sqlite') {
+  } else if (conn_object.technology == "sqlite") {
     getTreeSqlite(v_connTabControl.selectedTab.tag.divTree.id);
   }
-
 }
 
 /// <summary>
@@ -1088,25 +996,25 @@ function showMenuNewTabOuter(e) {
     let conn_name = "";
     let tooltip_name = "";
     let name = "";
-    if (conn.v_public) {
+    if (conn.public) {
       conn_name += '<i class="fas fa-users mr-3" style="color:#c57dd2;"></i>';
     }
-    if (conn.v_alias && conn.v_alias !== "") {
-      name = conn.v_alias;
-      conn_name += `(${conn.v_alias})`;
-      tooltip_name += `<h5 class="my-1">${conn.v_alias}</h5>`;
+    if (conn.alias && conn.lias !== "") {
+      name = conn.alias;
+      conn_name += `(${conn.alias})`;
+      tooltip_name += `<h5 class="my-1">${conn.alias}</h5>`;
     }
-    if (conn.v_conn_string && conn.v_conn_string !== "") {
-      conn_name += ` ${conn.v_conn_string}`;
-      tooltip_name += `<div class="mb-1">${conn.v_conn_string}</div>`;
+    if (conn.conn_string && conn.conn_string !== "") {
+      conn_name += ` ${conn.conn_string}`;
+      tooltip_name += `<div class="mb-1">${conn.conn_string}</div>`;
     } else {
-      if (conn.v_details1) {
-        conn_name += conn.v_details1;
-        tooltip_name += `<div class="mb-1">${conn.v_details1}</div>`;
+      if (conn.details1) {
+        conn_name += conn.details1;
+        tooltip_name += `<div class="mb-1">${conn.details1}</div>`;
       }
-      if (conn.v_details2) {
-        conn_name += ` - ${conn.v_details2}`;
-        tooltip_name += `<div class="mb-1">${conn.v_details2}</div>`;
+      if (conn.details2) {
+        conn_name += ` - ${conn.details2}`;
+        tooltip_name += `<div class="mb-1">${conn.details2}</div>`;
       }
     }
     return [conn, conn_name, tooltip_name, name];
@@ -1131,20 +1039,23 @@ function showMenuNewTabOuter(e) {
     // Building connection list
     if (connectionsStore.connections.length > 0) {
       // No custom groups, render all connections in the same list
-      if (connectionsStore.groups.length == 1) {
+      if (!connectionsStore.groups.length) {
         let submenu_connection_list = [];
 
         for (let i = 0; i < connectionsStore.connections.length; i++)
           (function (i) {
+            if (connectionsStore.connections[i].technology === "terminal") {
+              return;
+            }
             let [conn, conn_name, tooltip_name, name] = getConnectionInfo(
               connectionsStore.connections[i]
             );
             submenu_connection_list.push({
               label: conn_name,
-              icon: `fas cm-all node-${conn.v_db_type}`,
+              icon: `fas cm-all node-${conn.technology}`,
               onCLick: () => {
                 v_connTabControl.tag.createConnTab(
-                  conn.v_conn_id,
+                  conn.id,
                   true,
                   name,
                   tooltip_name
@@ -1163,67 +1074,85 @@ function showMenuNewTabOuter(e) {
       else {
         let group_list = [];
 
+        //First group, add all connections
+        let group_connections = [];
+
+        for (let k = 0; k < connectionsStore.connections.length; k++)
+          (function (k) {
+            if (connectionsStore.connections[k].technology === "terminal") {
+              return;
+            }
+
+            let [conn, conn_name, tooltip_name, name] = getConnectionInfo(
+              connectionsStore.connections[k]
+            );
+            group_connections.push({
+              label: conn_name,
+              icon: `fas cm-all node-${conn.technology}`,
+              onClick: () => {
+                startLoading();
+                setTimeout(function () {
+                  v_connTabControl.tag.createConnTab(
+                    conn.id,
+                    true,
+                    name,
+                    tooltip_name
+                  );
+                }, 0);
+              },
+            });
+          })(k);
+
+        let group_data = {
+          label: "All Connections",
+          icon: "fas cm-all fa-plug",
+          children: group_connections,
+        };
+
+        group_list.push(group_data);
+
         for (let i = 0; i < connectionsStore.groups.length; i++)
           (function (i) {
             let current_group = connectionsStore.groups[i];
 
             let group_connections = [];
 
-            //First group, add all connections
-            if (i == 0) {
+            for (let j = 0; j < current_group.conn_list.length; j++) {
+              //Search corresponding connection to use its data
               for (let k = 0; k < connectionsStore.connections.length; k++)
                 (function (k) {
+                  if (
+                    connectionsStore.connections[k].technology === "terminal"
+                  ) {
+                    return;
+                  }
                   let [conn, conn_name, tooltip_name, name] = getConnectionInfo(
                     connectionsStore.connections[k]
                   );
-                  group_connections.push({
-                    label: conn_name,
-                    icon: `fas cm-all node-${conn.v_db_type}`,
-                    onClick: () => {
-                      startLoading();
-                      setTimeout(function () {
-                        v_connTabControl.tag.createConnTab(
-                          conn.v_conn_id,
-                          true,
-                          name,
-                          tooltip_name
-                        );
-                      }, 0);
-                    },
-                  });
-                })(k);
-            } else {
-              for (let j = 0; j < current_group.conn_list.length; j++) {
-                //Search corresponding connection to use its data
-                for (let k = 0; k < connectionsStore.connections.length; k++)
-                  (function (k) {
-                    let [conn, conn_name, tooltip_name, name] =
-                      getConnectionInfo(connectionsStore.connections[k]);
 
-                    if (conn.v_conn_id == current_group.conn_list[j]) {
-                      group_connections.push({
-                        label: conn_name,
-                        icon: `fas cm-all node-${conn.v_db_type}`,
-                        onClick: () => {
-                          startLoading();
-                          setTimeout(function () {
-                            v_connTabControl.tag.createConnTab(
-                              conn.v_conn_id,
-                              true,
-                              name,
-                              tooltip_name
-                            );
-                          }, 0);
-                        },
-                      });
-                      return;
-                    }
-                  })(k);
-              }
+                  if (conn.id == current_group.conn_list[j]) {
+                    group_connections.push({
+                      label: conn_name,
+                      icon: `fas cm-all node-${conn.technology}`,
+                      onClick: () => {
+                        startLoading();
+                        setTimeout(function () {
+                          v_connTabControl.tag.createConnTab(
+                            conn.id,
+                            true,
+                            name,
+                            tooltip_name
+                          );
+                        }, 0);
+                      },
+                    });
+                    return;
+                  }
+                })(k);
             }
 
             let group_data = {
-              label: current_group.v_name,
+              label: current_group.name,
               icon: "fas cm-all fa-plug",
               children: group_connections,
             };
@@ -1245,22 +1174,22 @@ function showMenuNewTabOuter(e) {
       for (let i = 0; i < connectionsStore.remote_terminals.length; i++)
         (function (i) {
           let term = connectionsStore.remote_terminals[i];
-          let name = term.v_alias;
+          let name = term.alias;
           let term_name = "";
-          if (term.v_alias && term.v_alias !== "") {
-            term_name = `(${term.v_alias}) `;
+          if (term.alias && term.alias !== "") {
+            term_name = `(${term.alias}) `;
           }
-          if (term.v_details) {
-            term_name += term.v_details;
+          if (term.details) {
+            term_name += term.details;
           }
           submenu_terminal_list.push({
             label: term_name,
             icon: "fas cm-all fa-terminal",
             onClick: () => {
               v_connTabControl.tag.createOuterTerminalTab(
-                term.v_conn_id,
+                term.id,
                 name,
-                term.v_details
+                term.details
               );
             },
           });

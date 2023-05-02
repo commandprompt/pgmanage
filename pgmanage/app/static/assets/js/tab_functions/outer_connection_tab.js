@@ -37,7 +37,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
 
     let v_conn = connectionsStore.connections[0];
     for (let i = 0; i < connectionsStore.connections.length; i++) {
-      if (connectionsStore.connections[i].v_conn_id === p_index) {
+      if (connectionsStore.connections[i].id === p_index) {
         v_conn = connectionsStore.connections[i];
       }
     }
@@ -45,33 +45,32 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
     if (p_name) {
       v_conn_name = p_name;
     }
-    if (v_conn_name === '' && v_conn.v_alias && v_conn.v_alias !== '') {
-      v_conn_name = v_conn.v_alias;
+    if (v_conn_name === '' && v_conn.alias && v_conn.alias !== '') {
+      v_conn_name = v_conn.alias;
     }
     if (!p_tooltip_name) {
       p_tooltip_name = '';
 
-      if (v_conn.v_conn_string && v_conn.v_conn_string !== '') {
-        if (v_conn.v_alias) {
-          p_tooltip_name += '<h5 class="my-1">' + v_conn.v_alias + '</h5>';
+      if (v_conn.conn_string && v_conn.conn_string !== '') {
+        if (v_conn.alias) {
+          p_tooltip_name += '<h5 class="my-1">' + v_conn.alias + '</h5>';
         }
-        p_tooltip_name += '<div class="mb-1">' + v_conn.v_conn_string + '</div>';
+        p_tooltip_name += '<div class="mb-1">' + v_conn.conn_string + '</div>';
       }
       else {
-        if (v_conn.v_alias) {
-          p_tooltip_name += '<h5 class="my-1">' + v_conn.v_alias + '</h5>';
+        if (v_conn.alias) {
+          p_tooltip_name += '<h5 class="my-1">' + v_conn.alias + '</h5>';
         }
-        if (v_conn.v_details1) {
-          p_tooltip_name += '<div class="mb-1">' + v_conn.v_details1 + '</div>';
+        if (v_conn.details1) {
+          p_tooltip_name += '<div class="mb-1">' + v_conn.details1 + '</div>';
         }
-        if (v_conn.v_details2) {
-          p_tooltip_name += '<div class="mb-1">' + v_conn.v_details2 + '</div>';
+        if (v_conn.details2) {
+          p_tooltip_name += '<div class="mb-1">' + v_conn.details2 + '</div>';
         }
       }
     }
-
-    let v_icon = '<img src="' + v_url_folder + '/static/assets/images/' + v_conn.v_db_type;
-    if (v_conn.v_db_type === 'postgresql' || v_conn.v_db_type === 'oracle'|| v_conn.v_db_type === 'mariadb' || v_conn.v_db_type === 'mysql' || v_conn.v_db_type === 'sqlite') {
+    let v_icon = '<img src="' + v_url_folder + '/static/assets/images/' + v_conn.technology;
+    if (v_conn.technology === 'postgresql' || v_conn.technology === 'oracle'|| v_conn.technology === 'mariadb' || v_conn.technology === 'mysql' || v_conn.technology === 'sqlite') {
       v_icon += '.svg"/>';
     }
     else {
@@ -357,7 +356,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
     v_tag.selectPropertiesTabFunc = v_selectPropertiesTabFunc;
     v_tag.selectDDLTabFunc = v_selectDDLTabFunc;
 
-    var v_index = connectionsStore.connections[0].v_conn_id;
+    var v_index = connectionsStore.connections[0].id;
     if (p_index) {
       v_index = p_index;
     }

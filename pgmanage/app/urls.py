@@ -32,6 +32,7 @@ base_urlpatterns = [
     re_path(r'^save_group/$', views.connections.save_group, name='save_group'),
     re_path(r'^delete_group/$', views.connections.delete_group, name='delete_group'),
 
+    re_path(r'^get_existing_tabs/$', views.connections.get_existing_tabs, name='get_existing_tabs'),
 
     #USERS
     re_path(r'^get_users/$', views.users.get_users, name='get_users'),
@@ -43,7 +44,6 @@ base_urlpatterns = [
     re_path(r'^workspace/', views.workspace.index, name='workspace'),
     re_path(r'^save_config_user/', views.workspace.save_config_user, name='save_config_user'),
     re_path(r'^shortcuts/', views.workspace.shortcuts, name='shortcuts'),
-    re_path(r'^get_database_list/', views.workspace.get_database_list, name='get_database_list'),
     re_path(r'^renew_password/', views.workspace.renew_password, name='renew_password'),
     re_path(r'^master_password/', views.workspace.master_password, name='master_password'),
     re_path(r'^reset_master_password/', views.workspace.reset_master_password, name='reset_master_password'),

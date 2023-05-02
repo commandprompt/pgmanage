@@ -8,7 +8,7 @@ import sys
 from datetime import datetime
 
 import sqlparse
-from app.models.main import Group, GroupConnection, Shortcut, Tab, UserDetails
+from app.models.main import Shortcut, UserDetails
 from app.utils.crypto import make_hash
 from app.utils.key_manager import key_manager
 from app.utils.master_password import (
@@ -179,106 +179,6 @@ def shortcuts(request):
                 "shortcut_code": shortcut.code,
             }
         response_data["data"] = data
-
-    return JsonResponse(response_data)
-
-
-@user_authenticated
-def get_database_list(request):
-    session = request.session.get("pgmanage_session")
-
-    databases = []
-    groups = []
-    remote_terminals = []
-
-    # Global group
-    current_group_data = {
-        "v_group_id": 0,
-        "v_name": "All connections",
-        "conn_list": [],
-    }
-    groups.append(current_group_data)
-
-    for group in Group.objects.filter(user=request.user):
-        current_group_data = {
-            "v_group_id": group.id,
-            "v_name": group.name,
-            "conn_list": [],
-        }
-        for group_conn in GroupConnection.objects.filter(group=group):
-            current_group_data["conn_list"].append(group_conn.connection.id)
-
-        groups.append(current_group_data)
-
-    # Connection list
-    for key, database_object in session.v_databases.items():
-        if database_object["technology"] == "terminal":
-            alias = ""
-            if database_object["alias"] != "":
-                alias = database_object["alias"]
-            details = (
-                database_object["tunnel"]["user"]
-                + "@"
-                + database_object["tunnel"]["server"]
-                + ":"
-                + database_object["tunnel"]["port"]
-            )
-            terminal_object = {
-                "v_conn_id": key,
-                "v_alias": alias,
-                "v_details": details,
-                "v_public": database_object["public"],
-            }
-            remote_terminals.append(terminal_object)
-
-        if database_object["database"] is not None:
-            database = database_object["database"]
-
-            if database.v_alias == "":
-                alias = ""
-            else:
-                alias = f"({database.v_alias}) "
-
-            details = database.PrintDatabaseDetails()
-            if database_object["tunnel"]["enabled"]:
-                details += f" <b>({database_object['tunnel']['server']}:{database_object['tunnel']['port']})</b>"
-
-            database_data = {
-                "v_db_type": database.v_db_type,
-                "v_alias": database.v_alias,
-                "v_conn_id": database.v_conn_id,
-                "v_console_help": database.v_console_help,
-                "v_database": database.v_active_service,
-                "v_conn_string": database.v_conn_string,
-                "v_details1": database.PrintDatabaseInfo(),
-                "v_details2": details,
-                "v_public": database_object["public"],
-            }
-
-            databases.append(database_data)
-
-    # retrieving saved tabs
-    existing_tabs = []
-    for tab in Tab.objects.filter(user=request.user).order_by("connection"):
-        if tab.connection.public or tab.connection.user.id == request.user.id:
-            existing_tabs.append(
-                {
-                    "index": tab.connection.id,
-                    "snippet": tab.snippet,
-                    "title": tab.title,
-                    "tab_db_id": tab.id,
-                }
-            )
-
-    request.session["pgmanage_session"] = session
-
-    response_data = {
-        "connections": databases,
-        "groups": groups,
-        "remote_terminals": remote_terminals,
-        "id": session.v_database_index,
-        "existing_tabs": existing_tabs,
-    }
 
     return JsonResponse(response_data)
 

@@ -6,8 +6,6 @@ const conn_app = createApp({
     },
   })
 
-let conn_modal = conn_app.mount("#connections-modal-wrap");
-
 // this is a temporary supporting code to glue the new vue app and old app code
 // connection manager just emits the event with a selected connection as a payload
 // the glue code does the necessary stuff in the old app
@@ -23,16 +21,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })
 
-    document.addEventListener('connection:tested', function(event){
-        let result = event.detail
-        if(result.status !== 'success') {
-            showError(result.data);
-        } else {
-            showAlert(result.data);
-        }
-    })
-
-    document.addEventListener('connection:changed', function(event){
-        getDatabaseList();
-    })
+    // document.addEventListener('connection:tested', function(event){
+    //     let result = event.detail
+    //     if(result.status !== 'success') {
+    //         showError(result.data);
+    //     } else {
+    //         showAlert(result.data);
+    //     }
+    // })
 });
