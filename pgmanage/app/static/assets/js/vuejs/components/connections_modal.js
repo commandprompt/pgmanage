@@ -20,13 +20,4 @@ document.addEventListener("DOMContentLoaded", function () {
             v_connTabControl.tag.createConnTab(connection.id);
         }
     })
-
-    // document.addEventListener('connection:tested', function(event){
-    //     let result = event.detail
-    //     if(result.status !== 'success') {
-    //         showError(result.data);
-    //     } else {
-    //         showAlert(result.data);
-    //     }
-    // })
 });
