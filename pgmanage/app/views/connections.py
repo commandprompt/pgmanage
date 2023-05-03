@@ -32,8 +32,6 @@ def get_connections(request):
     connection_list = []
     connections = Connection.objects.filter(Q(user=request.user) | Q(public=True))
 
-    remote_terminals = []
-
     if connections and key_manager.get(request.user):
         for conn in connections:
             # FIXME: refactor this into a proper join
@@ -65,10 +63,7 @@ def get_connections(request):
             }
             database_object = session.v_databases.get(conn.id)
 
-            if database_object["technology"] == "terminal":
-                alias = ""
-                if database_object["alias"] != "":
-                    alias = database_object["alias"]
+            if conn.technology.name == 'terminal':
                 details = (
                     database_object["tunnel"]["user"]
                     + "@"
@@ -76,13 +71,7 @@ def get_connections(request):
                     + ":"
                     + database_object["tunnel"]["port"]
                 )
-                terminal_object = {
-                    "id": conn.id,
-                    "alias": alias,
-                    "details": details,
-                    "public": database_object["public"],
-                }
-                remote_terminals.append(terminal_object)
+                conn_object['details1'] = details
 
             if conn.technology.name != 'terminal':
                 database = database_object.get('database')
@@ -105,7 +94,6 @@ def get_connections(request):
 
     response_data['data'] = {
         'connections': connection_list,
-        'remote_terminals': remote_terminals,
         'technologies': tech_list
     }
 

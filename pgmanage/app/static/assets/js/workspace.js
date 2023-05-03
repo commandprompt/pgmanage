@@ -1022,24 +1022,36 @@ function showMenuNewTabOuter(e) {
 
   function createConnectionGroup(group) {
     const group_connections = connectionsStore.connections
-      .filter((conn) => conn.technology !== "terminal")
       .filter((conn) => group.conn_list.includes(conn.id))
       .map((conn) => {
         const [_, conn_name, tooltip_name, name] = getConnectionInfo(conn);
+        let icon =
+          conn.technology == "terminal"
+            ? "fa-terminal"
+            : `node-${conn.technology}`;
+        let onClick;
+        if (conn.technology == "terminal") {
+          onClick = () => {
+            v_connTabControl.tag.createOuterTerminalTab(
+              conn.id,
+              conn.alias,
+              conn.details1
+            );
+          };
+        } else {
+          onClick = () => {
+            v_connTabControl.tag.createConnTab(
+              conn.id,
+              true,
+              name,
+              tooltip_name
+            );
+          };
+        }
         return {
           label: conn_name,
-          icon: `fas cm-all node-${conn.technology}`,
-          onClick: () => {
-            startLoading();
-            setTimeout(() => {
-              v_connTabControl.tag.createConnTab(
-                conn.id,
-                true,
-                name,
-                tooltip_name
-              );
-            }, 0);
-          },
+          icon: `fas cm-all ${icon}`,
+          onClick: onClick,
         };
       });
 
@@ -1072,9 +1084,7 @@ function showMenuNewTabOuter(e) {
       if (!connectionsStore.groups.length) {
         const connectionsList = createConnectionGroup({
           name: "Connections",
-          conn_list: connectionsStore.connections
-            .filter((conn) => conn.technology !== "terminal")
-            .map((conn) => conn.id),
+          conn_list: connectionsStore.connections.map((conn) => conn.id),
         });
 
         items.push(connectionsList);
@@ -1084,9 +1094,7 @@ function showMenuNewTabOuter(e) {
         const group_list = [
           createConnectionGroup({
             name: "All Connections",
-            conn_list: connectionsStore.connections
-              .filter((conn) => conn.technology !== "terminal")
-              .map((conn) => conn.id),
+            conn_list: connectionsStore.connections.map((conn) => conn.id),
           }),
           ...connectionsStore.groups.map(createConnectionGroup),
         ];
@@ -1100,22 +1108,18 @@ function showMenuNewTabOuter(e) {
     }
 
     if (connectionsStore.remote_terminals.length > 0) {
-      // let submenu_terminal_list = [];
       const submenu_terminal_list = connectionsStore.remote_terminals.map(
         (term) => {
-          const { id, alias, details } = term;
-          let term_name = "";
-          if (term.alias) {
-            term_name = `(${term.alias}) `;
-          }
-          if (term.details) {
-            term_name += term.details;
+          const { id, alias, details1 } = term;
+          let term_name = alias ? `(${alias})` : "";
+          if (details1) {
+            term_name += details1;
           }
           return {
             label: term_name,
             icon: "fas cm-all fa-terminal",
             onClick: () => {
-              v_connTabControl.tag.createOuterTerminalTab(id, alias, details);
+              v_connTabControl.tag.createOuterTerminalTab(id, alias, details1);
             },
           };
         }

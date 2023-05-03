@@ -161,7 +161,6 @@ export default {
       .then((response) => {
         connectionsStore.$patch({
           connections: response.data.data.connections,
-          remote_terminals: response.data.data.remote_terminals
         })
         this.technologies = response.data.data.technologies
 
