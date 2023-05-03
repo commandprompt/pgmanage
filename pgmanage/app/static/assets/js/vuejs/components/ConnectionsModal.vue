@@ -272,31 +272,19 @@ export default {
       this.selectedGroup = undefined
     },
     getExistingTabs() {
-        axios.post('/get_existing_tabs/')
+      axios.post('/get_existing_tabs/')
         .then((response) => {
           if (connectionsStore.connections.length > 0) {
-          // Create existing tabs
-          let current_parent = null;
-          for (let i = 0; i < response.data.existing_tabs.length; i++) {
-            if (
-              current_parent == null ||
-              current_parent != response.data.existing_tabs[i].index
-            ) {
-              startLoading();
-              let conn = false;
-              let name = "";
+            // Create existing tabs
+            let currentParent = null;
+
+            response.data.existing_tabs.forEach((tab) => {
               let tooltip_name = "";
-              for (
-                let k = 0;
-                k < connectionsStore.connections.length;
-                k++
-              ) {
-                if (
-                  response.data.existing_tabs[i].index ===
-                  connectionsStore.connections[k].id
-                ) {
-                  conn = connectionsStore.connections[k];
-                  name = conn.alias;
+              if (currentParent !== tab.index) {
+                startLoading();
+                const conn = connectionsStore.connections.find((c) => c.id === tab.index)
+
+                if (conn) {
                   if (conn.alias) {
                     tooltip_name +=
                       `<h5 class="mb-1">${conn.alias}</h5>`;
@@ -309,35 +297,30 @@ export default {
                     tooltip_name +=
                       `<div class="mb-1">${conn.details2}</div>`;
                   }
+
+                  window.v_connTabControl.tag.createConnTab(
+                    tab.index,
+                    false,
+                    conn.alias,
+                    tooltip_name
+                  );
+                  window.v_connTabControl.tag.createConsoleTab();
+
                 }
+
               }
-              if (conn !== false) {
-                window.v_connTabControl.tag.createConnTab(
-                  response.data.existing_tabs[i].index,
-                  false,
-                  name,
-                  tooltip_name
-                );
-                window.v_connTabControl.tag.createConsoleTab();
-              }
-            }
-            current_parent = response.data.existing_tabs[i].index;
-            window.v_connTabControl.tag.createQueryTab(
-              response.data.existing_tabs[i].title,
-              response.data.existing_tabs[i].tab_db_id
-            );
-            window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
-              response.data.existing_tabs[i].snippet
-            );
-            window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
-            window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
-              0,
-              0,
-              true
-            );
+              currentParent = tab.index
+
+              window.v_connTabControl.tag.createQueryTab(tab.title, tab.tab_db_id);
+              window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(tab.snippet);
+              window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+              window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+                0,
+                0,
+                true);
+            })
+            endLoading();
           }
-        }
-        endLoading();
         })
         .catch((response) => {
           console.log(response)

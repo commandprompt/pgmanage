@@ -999,12 +999,12 @@ function showMenuNewTabOuter(e) {
     if (conn.public) {
       conn_name += '<i class="fas fa-users mr-3" style="color:#c57dd2;"></i>';
     }
-    if (conn.alias && conn.lias !== "") {
+    if (conn.alias) {
       name = conn.alias;
       conn_name += `(${conn.alias})`;
       tooltip_name += `<h5 class="my-1">${conn.alias}</h5>`;
     }
-    if (conn.conn_string && conn.conn_string !== "") {
+    if (conn.conn_string) {
       conn_name += ` ${conn.conn_string}`;
       tooltip_name += `<div class="mb-1">${conn.conn_string}</div>`;
     } else {
@@ -1018,6 +1018,36 @@ function showMenuNewTabOuter(e) {
       }
     }
     return [conn, conn_name, tooltip_name, name];
+  }
+
+  function createConnectionGroup(group) {
+    const group_connections = connectionsStore.connections
+      .filter((conn) => conn.technology !== "terminal")
+      .filter((conn) => group.conn_list.includes(conn.id))
+      .map((conn) => {
+        const [_, conn_name, tooltip_name, name] = getConnectionInfo(conn);
+        return {
+          label: conn_name,
+          icon: `fas cm-all node-${conn.technology}`,
+          onClick: () => {
+            startLoading();
+            setTimeout(() => {
+              v_connTabControl.tag.createConnTab(
+                conn.id,
+                true,
+                name,
+                tooltip_name
+              );
+            }, 0);
+          },
+        };
+      });
+
+    return {
+      label: group.name,
+      icon: "fas cm-all fa-plug",
+      children: group_connections,
+    };
   }
   // Opening connections management when there are no configured connections.
   if (
@@ -1040,125 +1070,26 @@ function showMenuNewTabOuter(e) {
     if (connectionsStore.connections.length > 0) {
       // No custom groups, render all connections in the same list
       if (!connectionsStore.groups.length) {
-        let submenu_connection_list = [];
-
-        for (let i = 0; i < connectionsStore.connections.length; i++)
-          (function (i) {
-            if (connectionsStore.connections[i].technology === "terminal") {
-              return;
-            }
-            let [conn, conn_name, tooltip_name, name] = getConnectionInfo(
-              connectionsStore.connections[i]
-            );
-            submenu_connection_list.push({
-              label: conn_name,
-              icon: `fas cm-all node-${conn.technology}`,
-              onCLick: () => {
-                v_connTabControl.tag.createConnTab(
-                  conn.id,
-                  true,
-                  name,
-                  tooltip_name
-                );
-              },
-            });
-          })(i);
-
-        items.push({
-          label: "Connections",
-          icon: "fas cm-all fa-plug",
-          children: submenu_connection_list,
+        const connectionsList = createConnectionGroup({
+          name: "Connections",
+          conn_list: connectionsStore.connections
+            .filter((conn) => conn.technology !== "terminal")
+            .map((conn) => conn.id),
         });
+
+        items.push(connectionsList);
       }
       //Render connections split in groups
       else {
-        let group_list = [];
-
-        //First group, add all connections
-        let group_connections = [];
-
-        for (let k = 0; k < connectionsStore.connections.length; k++)
-          (function (k) {
-            if (connectionsStore.connections[k].technology === "terminal") {
-              return;
-            }
-
-            let [conn, conn_name, tooltip_name, name] = getConnectionInfo(
-              connectionsStore.connections[k]
-            );
-            group_connections.push({
-              label: conn_name,
-              icon: `fas cm-all node-${conn.technology}`,
-              onClick: () => {
-                startLoading();
-                setTimeout(function () {
-                  v_connTabControl.tag.createConnTab(
-                    conn.id,
-                    true,
-                    name,
-                    tooltip_name
-                  );
-                }, 0);
-              },
-            });
-          })(k);
-
-        let group_data = {
-          label: "All Connections",
-          icon: "fas cm-all fa-plug",
-          children: group_connections,
-        };
-
-        group_list.push(group_data);
-
-        for (let i = 0; i < connectionsStore.groups.length; i++)
-          (function (i) {
-            let current_group = connectionsStore.groups[i];
-
-            let group_connections = [];
-
-            for (let j = 0; j < current_group.conn_list.length; j++) {
-              //Search corresponding connection to use its data
-              for (let k = 0; k < connectionsStore.connections.length; k++)
-                (function (k) {
-                  if (
-                    connectionsStore.connections[k].technology === "terminal"
-                  ) {
-                    return;
-                  }
-                  let [conn, conn_name, tooltip_name, name] = getConnectionInfo(
-                    connectionsStore.connections[k]
-                  );
-
-                  if (conn.id == current_group.conn_list[j]) {
-                    group_connections.push({
-                      label: conn_name,
-                      icon: `fas cm-all node-${conn.technology}`,
-                      onClick: () => {
-                        startLoading();
-                        setTimeout(function () {
-                          v_connTabControl.tag.createConnTab(
-                            conn.id,
-                            true,
-                            name,
-                            tooltip_name
-                          );
-                        }, 0);
-                      },
-                    });
-                    return;
-                  }
-                })(k);
-            }
-
-            let group_data = {
-              label: current_group.name,
-              icon: "fas cm-all fa-plug",
-              children: group_connections,
-            };
-
-            group_list.push(group_data);
-          })(i);
+        const group_list = [
+          createConnectionGroup({
+            name: "All Connections",
+            conn_list: connectionsStore.connections
+              .filter((conn) => conn.technology !== "terminal")
+              .map((conn) => conn.id),
+          }),
+          ...connectionsStore.groups.map(createConnectionGroup),
+        ];
 
         items.push({
           label: "Connections",
@@ -1169,31 +1100,26 @@ function showMenuNewTabOuter(e) {
     }
 
     if (connectionsStore.remote_terminals.length > 0) {
-      let submenu_terminal_list = [];
-
-      for (let i = 0; i < connectionsStore.remote_terminals.length; i++)
-        (function (i) {
-          let term = connectionsStore.remote_terminals[i];
-          let name = term.alias;
+      // let submenu_terminal_list = [];
+      const submenu_terminal_list = connectionsStore.remote_terminals.map(
+        (term) => {
+          const { id, alias, details } = term;
           let term_name = "";
-          if (term.alias && term.alias !== "") {
+          if (term.alias) {
             term_name = `(${term.alias}) `;
           }
           if (term.details) {
             term_name += term.details;
           }
-          submenu_terminal_list.push({
+          return {
             label: term_name,
             icon: "fas cm-all fa-terminal",
             onClick: () => {
-              v_connTabControl.tag.createOuterTerminalTab(
-                term.id,
-                name,
-                term.details
-              );
+              v_connTabControl.tag.createOuterTerminalTab(id, alias, details);
             },
-          });
-        })(i);
+          };
+        }
+      );
 
       items.push({
         label: "SSH Consoles",
