@@ -1,0 +1,23 @@
+.pgmanage {
+    font-size: $fontSize;
+    border-radius: $borderRadius;
+    border-width: 1px;
+    box-shadow: $dropdownBoxShadow;
+    padding: 0.5rem 0;
+
+    @include themify() {
+        background-color: themed($surfaceBg);
+        border: themed($border);
+    }
+
+    .mx-context-menu-item {
+        
+        @include themify() {
+            color: themed($color);
+        }
+
+        &:hover, &.open {
+            background-color: rgba($primaryMutedColor, 0.15);
+        }
+    }
+}

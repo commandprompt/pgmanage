@@ -10,12 +10,13 @@ $dropdownMinWidth: 11rem;
         font-size: $fontSize;
         border-radius: $borderRadius;
         border-width: 1px;
-        box-shadow: 0 0.5rem 1rem rgba(0,  0,  0,  0.15);
+        box-shadow: $dropdownBoxShadow;
         min-width: $dropdownMinWidth;
         overflow-y: auto;
 
         @include themify() {
             background-color: themed($surfaceBg);
+            border: $border;
         }
 
         &-sm {
@@ -36,7 +37,7 @@ $dropdownMinWidth: 11rem;
         }
 
         &:hover {
-            background-color: rgba($primaryMutedColor, 0.04);
+            background-color: rgba($primaryMutedColor, 0.15);
         }
     }
 }

@@ -1144,7 +1144,7 @@ function showMenuNewTabOuter(e) {
       });
 
       window["vue3-context-menu"].default.showContextMenu({
-        theme: "mac",
+        theme: "pgmanage",
         x: e.x,
         y: e.y,
         zIndex: 1000,
