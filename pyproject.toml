@@ -13,7 +13,6 @@ tornado = "6.0.2"
 click = "7.0"
 openpyxl = "2.5.14"
 restrictedpython = "4.0"
-cx-oracle = "8.3.*"
 pymysql = "1.0.*"
 sshtunnel = "0.1.5"
 pexpect = "4.7.0"
@@ -21,6 +20,7 @@ cherrypy = "18.1.1"
 psycopg2 = "^2.9.5"
 pgspecial = "1.13.0"
 psutil = "^5.9.4"
+oracledb = "1.3.1"
 
 
 [tool.poetry.group.dev.dependencies]
