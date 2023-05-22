@@ -230,18 +230,6 @@ SOFTWARE.
     color: #ffffff;
   }
 
-  /* ACE EDITOR */
-  .ace_editor.ace-tomorrow-night {
-    background-color: #2F3136 !important;
-    border: 1px solid #383b42 !important;
-  }
-  .ace_editor.ace-tomorrow-night .ace_gutter {
-  	background-color: #282A2F;
-  }
-  .ace_editor.ace-tomorrow-night .ace_folding-enabled > .ace_gutter-cell {
-    color: #DCDDDE;
-  }
-
   /* SECONDARY TAB */
   .omnidb__tab-menu--secondary {
     /* border-bottom-color: #94A5E3; */
@@ -762,7 +750,7 @@ SOFTWARE.
   .conn_tabs div > div.tab, .white_box div > div.tab, .config_box div > div.tab {
     background-color: #373b41 !important;
   }
-  .white_box .div_tabs, .ace_editor {
+  .white_box .div_tabs {
     border: 1px solid #484a55 !important;
   }
   .conn_tabs .tabs, .white_box .tabs, .config_box .tabs {

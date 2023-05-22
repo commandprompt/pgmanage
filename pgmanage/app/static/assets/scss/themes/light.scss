@@ -86,7 +86,7 @@ SOFTWARE.
       background-color: #FFFFFF;
     }
     &__div-right {
-      background-color: #F4F4F4;
+      background-color: #F8FAFC;
     }
   }
 
@@ -148,9 +148,6 @@ SOFTWARE.
   }
 
   /* CONSOLE */
-  .ace_content {
-    box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2);
-  }
   .omnidb__txt-console {
     border-color: #DEDEDE;
   }
@@ -214,23 +211,6 @@ SOFTWARE.
 
   a {
     color: #4A81D4;
-  }
-
-  /* ACE EDITOR */
-  .ace_editor {
-    &.ace-omnidb {
-      background-color: #F4F4F4 !important;
-      border: 1px solid #DEDEDE !important;
-      font-size: 1em !important;
-
-      .ace_gutter {
-        background-color: #FFF;
-      }
-
-      .ace_folding-enabled > .ace_gutter-cell {
-        color: #828282;
-      }
-    }
   }
 
   /* SECONDARY TAB */

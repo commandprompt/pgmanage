@@ -2077,7 +2077,6 @@ SOFTWARE.
   content: "\200B";
 }
 
-
 .node-oracle {
   background-image: url("../images/oracle_medium.png");
 }
@@ -2097,7 +2096,6 @@ SOFTWARE.
 .node-mariadb {
   background-image: url("../images/mariadb_medium.png");
 }
-
 
 .node-mariadb::after {
   content: "\200B";
@@ -2422,7 +2420,6 @@ SOFTWARE.
   /* TEXT */
   /* PRIMARY TAB */
   /* UTILITIES MENU */
-  /* ACE EDITOR */
   /* SECONDARY TAB */
   /* TREE TAB */
   /* QUERY RESULT TABS */
@@ -2737,19 +2734,6 @@ SOFTWARE.
 
 .omnidb--theme-dark a:hover {
   color: #ffffff;
-}
-
-.omnidb--theme-dark .ace_editor.ace-tomorrow-night {
-  background-color: #2F3136 !important;
-  border: 1px solid #383b42 !important;
-}
-
-.omnidb--theme-dark .ace_editor.ace-tomorrow-night .ace_gutter {
-  background-color: #282A2F;
-}
-
-.omnidb--theme-dark .ace_editor.ace-tomorrow-night .ace_folding-enabled > .ace_gutter-cell {
-  color: #DCDDDE;
 }
 
 .omnidb--theme-dark .omnidb__tab-menu--secondary {
@@ -3208,7 +3192,7 @@ SOFTWARE.
   background-color: #373b41 !important;
 }
 
-.omnidb--theme-dark .white_box .div_tabs, .omnidb--theme-dark .ace_editor {
+.omnidb--theme-dark .white_box .div_tabs {
   border: 1px solid #484a55 !important;
 }
 
@@ -3851,7 +3835,6 @@ SOFTWARE.
   /* TABS */
   /* PRIMARY TAB */
   /* UTILITIES MENU */
-  /* ACE EDITOR */
   /* SECONDARY TAB */
   /* TREE TAB */
   /* QUERY RESULT TABS */
@@ -3942,7 +3925,7 @@ SOFTWARE.
 
 .omnidb--theme-light .omnidb__workspace__div-right,
 .omnidb--theme-light .omnidb__snippets__div-right {
-  background-color: #F4F4F4;
+  background-color: #F8FAFC;
 }
 
 .omnidb--theme-light .omnis {
@@ -3997,10 +3980,6 @@ SOFTWARE.
   border-color: #5a6268;
 }
 
-.omnidb--theme-light .ace_content {
-  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
-}
-
 .omnidb--theme-light .omnidb__txt-console {
   border-color: #DEDEDE;
 }
@@ -4046,20 +4025,6 @@ SOFTWARE.
 
 .omnidb--theme-light a {
   color: #4A81D4;
-}
-
-.omnidb--theme-light .ace_editor.ace-omnidb {
-  background-color: #F4F4F4 !important;
-  border: 1px solid #DEDEDE !important;
-  font-size: 1em !important;
-}
-
-.omnidb--theme-light .ace_editor.ace-omnidb .ace_gutter {
-  background-color: #FFF;
-}
-
-.omnidb--theme-light .ace_editor.ace-omnidb .ace_folding-enabled > .ace_gutter-cell {
-  color: #828282;
 }
 
 .omnidb--theme-light .omnidb__tab-menu--secondary {
