@@ -80,7 +80,7 @@ export default {
             let processState = this.evaluateProcessState(j);
             return {
               ...j,
-              start_time: moment(j.start_time).format("DD/MM/YY hh:mm A"),
+              start_time: moment(j.start_time).format(),
               process_state: processState,
               canStop: ![JobState.PROCESS_NOT_STARTED, JobState.PROCESS_STARTED].includes(processState),
             }

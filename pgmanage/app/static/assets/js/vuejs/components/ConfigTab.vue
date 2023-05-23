@@ -300,7 +300,7 @@ export default {
           this.configHistory = response.data.config_history.map((el) => {
             return {
               ...el,
-              start_time: moment(el.start_time).format("DD/MM/YY hh:mm A"),
+              start_time: moment(el.start_time).format(),
             };
           });
         })

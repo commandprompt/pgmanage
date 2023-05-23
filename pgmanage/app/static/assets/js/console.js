@@ -302,7 +302,7 @@ function refreshConsoleHistoryList() {
 			v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.spanCurrPage.innerHTML = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.currentPage;
 
 			for (let i = 0; i < v_conn_tag.consoleHistoryList.length; i++) {
-				v_conn_tag.consoleHistoryList[i][0] = new Date(v_conn_tag.consoleHistoryList[i][0]).toLocaleString();
+				v_conn_tag.consoleHistoryList[i][0] = moment(v_conn_tag.consoleHistoryList[i][0]).format();
 			};
 
 			v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.grid.loadData(v_conn_tag.consoleHistoryList);

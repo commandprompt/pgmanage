@@ -15,6 +15,7 @@ class UserDetails(models.Model):
     welcome_closed = models.BooleanField(default=False)
     masterpass_check = models.CharField(max_length=256, default='')
     binary_path = models.CharField(max_length=256, null=True)
+    date_format = models.CharField(max_length=200, null=True)
 
 class Shortcut(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)

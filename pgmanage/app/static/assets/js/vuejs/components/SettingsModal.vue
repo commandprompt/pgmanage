@@ -81,6 +81,16 @@
               </div>
 
               <div class="form-row">
+                <div class="form-group col-6">
+                  <label for="date_format" class="font-weight-bold mb-3">Date format</label>
+                  <select id="date_format" class="form-control" v-model="selectedDateFormat">
+                    <option v-for="(dateFormat, formatName) in dateFormats" :key="formatName" :value="dateFormat">{{ formatName }}</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <div class="form-row">
                 <div class="form-group col-12">
                   <label for="binary_path" class="font-weight-bold mb-3">PostgreSQL Binary Path</label>
                   <div class="d-flex">
@@ -149,6 +159,7 @@ export default {
       selectedFontSize: window.v_font_size,
       selectedEditorTheme: window.v_theme,
       selectedCSVEncoding: window.v_csv_encoding,
+      selectedDateFormat: window.date_format,
       csvDelimiter: window.v_csv_delimiter,
       binaryPath: window.binary_path,
       buttonFormDisabled: true,
@@ -179,6 +190,7 @@ export default {
         "Remove Current Inner Tab", "Select Left Inner Tab", "Select Right Inner Tab",
         "Autocomplete", "Run Explain", "Run Explain Analyze",
       ],
+      dateFormats: moment.HTML5_FMT
     }
   },
   computed: {
@@ -487,10 +499,12 @@ export default {
           "password": this.password,
           "csv_encoding": this.selectedCSVEncoding,
           "csv_delimiter": this.csvDelimiter,
-          "binary_path": this.binaryPath
+          "binary_path": this.binaryPath,
+          "date_format": this.selectedDateFormat
         })
           .then((resp) => {
             $('#modal_settings').modal('hide');
+            moment.defaultFormat = this.selectedDateFormat
             showAlert('Configuration saved.');
           })
           .catch((error) => {

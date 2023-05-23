@@ -323,8 +323,8 @@ function refreshCommandList() {
 			v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.commandHistory.spanCurrPage.innerHTML = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.commandHistory.currentPage;
 
 			for (let i = 0; i < p_return.v_data.commandList.length; i++) {
-				p_return.v_data.commandList[i][0] = new Date(p_return.v_data.commandList[i][0]).toLocaleString();
-				p_return.v_data.commandList[i][1] = new Date(p_return.v_data.commandList[i][1]).toLocaleString();
+				p_return.v_data.commandList[i][0] = moment(p_return.v_data.commandList[i][0]).format();
+				p_return.v_data.commandList[i][1] = moment(p_return.v_data.commandList[i][1]).format();
 			}
 
 			v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.commandHistory.grid.loadData(p_return.v_data.commandList);

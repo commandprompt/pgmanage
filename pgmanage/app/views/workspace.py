@@ -81,6 +81,7 @@ def index(request):
         if not bool(user_details.masterpass_check)
         else bool(key_manager.get(request.user)),
         "binary_path": binary_path,
+        "date_format": user_details.date_format
     }
 
     # wiping saved tabs databases list
@@ -107,6 +108,7 @@ def save_config_user(request):
     csv_encoding = request_data["csv_encoding"]
     csv_delimiter = request_data["csv_delimiter"]
     binary_path = request_data["binary_path"]
+    date_format = request_data["date_format"]
 
     session.v_theme_id = theme
     session.v_font_size = font_size
@@ -119,6 +121,7 @@ def save_config_user(request):
     user_details.csv_encoding = csv_encoding
     user_details.csv_delimiter = csv_delimiter
     user_details.binary_path = binary_path
+    user_details.date_format = date_format
     user_details.save()
 
     request.session["pgmanage_session"] = session

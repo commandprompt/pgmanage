@@ -624,6 +624,7 @@
     var v_super_user = {{ super_user|lower }};
     var v_csrf_cookie_name = '{{ csrf_cookie_name }}';
     var binary_path = '{{ binary_path|addslashes }}';
+    var date_format = '{{ date_format }}' === 'None' ? moment.HTML5_FMT.DATETIME_LOCAL_SECONDS : '{{ date_format }}'
     </script>
     <script src="{{url_folder}}/static/assets/lib/axios@1.2.1/axios.min.js"></script>
     <script src="{{url_folder}}/static/assets/lib/vue@3.2.45/vue.global.js"></script>
@@ -640,6 +641,7 @@
     <script src="{{url_folder}}/static/assets/lib/jaro-winkler/jaro-winkler.js"></script>
     <script type="text/javascript">
       axios.defaults.headers.common['X-CSRFToken'] = getCookie(v_csrf_cookie_name);
+      moment.defaultFormat = date_format;
     </script>
     <script src="{{url_folder}}/static/assets/js/vuejs/components/connections_modal.js"></script>
     <script src="{{url_folder}}/static/assets/js/vuejs/components/settings_modal.js"></script>
