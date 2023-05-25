@@ -84,7 +84,8 @@
                 <div class="form-group col-6">
                   <label for="date_format" class="font-weight-bold mb-3">Date format</label>
                   <select id="date_format" class="form-control" v-model="selectedDateFormat">
-                    <option v-for="(dateFormat, formatName) in dateFormats" :key="formatName" :value="dateFormat">{{ formatName }}</option>
+                    <option v-for="dateFormat in dateFormats" :key="dateFormat" :value="dateFormat">{{ dateFormat }}
+                    </option>
                   </select>
                 </div>
 
@@ -95,7 +96,8 @@
                   <label for="binary_path" class="font-weight-bold mb-3">PostgreSQL Binary Path</label>
                   <div class="d-flex">
                     <div class="input-group">
-                      <input type="text" class="form-control" v-model="binaryPath" :placeholder="`${action} binary path..`">
+                      <input type="text" class="form-control" v-model="binaryPath"
+                        :placeholder="`${action} binary path..`">
                       <div v-if="desktopMode" class="input-group-append">
                         <label class="btn btn-outline-secondary mb-0" type="button">
                           Select
@@ -190,7 +192,7 @@ export default {
         "Remove Current Inner Tab", "Select Left Inner Tab", "Select Right Inner Tab",
         "Autocomplete", "Run Explain", "Run Explain Analyze",
       ],
-      dateFormats: moment.HTML5_FMT
+      dateFormats: ['YYYY-MM-DD, HH:mm:ss', 'MM/D/YYYY, h:mm:ss A', 'MMM D YYYY, h:mm:ss A']
     }
   },
   computed: {
