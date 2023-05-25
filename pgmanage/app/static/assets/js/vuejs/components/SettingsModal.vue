@@ -89,6 +89,11 @@
                   </select>
                 </div>
 
+                <div class="form-group col-6">
+                  <label class="font-weight-bold mb3">Preview</label>
+                  <p class="font-weight-bold mt-3"> {{ formattedDatePreview }}</p>
+                </div>
+                
               </div>
 
               <div class="form-row">
@@ -201,6 +206,9 @@ export default {
     },
     action() {
       return this.desktopMode ? 'Select' : 'Enter'
+    },
+    formattedDatePreview() {
+      return moment().format(this.selectedDateFormat)
     }
   },
   created() {
