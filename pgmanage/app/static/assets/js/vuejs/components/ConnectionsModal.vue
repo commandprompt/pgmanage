@@ -306,7 +306,7 @@ export default {
               }
               currentParent = tab.index
 
-              window.v_connTabControl.tag.createQueryTab(tab.title, tab.tab_db_id);
+              window.v_connTabControl.tag.createQueryTab(tab.title, tab.tab_db_id, tab.database_name);
               window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(tab.snippet);
               window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
               window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(

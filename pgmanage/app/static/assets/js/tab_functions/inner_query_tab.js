@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-var v_createQueryTabFunction = function(p_table, p_tab_db_id) {
+var v_createQueryTabFunction = function(p_table, p_tab_db_id, tab_db_name=null) {
   // Removing last tab of the inner tab list.
   v_connTabControl.selectedTab.tag.tabControl.removeLastTab();
 
@@ -393,6 +393,7 @@ var v_createQueryTabFunction = function(p_table, p_tab_db_id) {
     currQueryTab: null,
     connTab: v_connTabControl.selectedTab,
     currDatabaseIndex: null,
+    currDatabase: !!tab_db_name ? tab_db_name : v_connTabControl.selectedTab.tag.selectedDatabase,
     tab_db_id: v_tab_db_id,
     tempData: [],
     commandHistory: {

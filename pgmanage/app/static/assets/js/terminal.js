@@ -90,7 +90,7 @@ function terminalContextMenu(e,p_tab) {
 		          text: 'Confirm',
 		          icon: 'fas cm-all fa-check',
 		          action: function() {
-								createRequest(v_queryRequestCodes.CloseTab, [{ tab_id: v_tag.tab_id, tab_db_id: null }]);
+								createRequest(v_queryRequestCodes.CloseTab, [{ conn_tab_id: v_tag.tab_id, tab_db_id: null }]);
 								if (v_tab.closeFunction!=null) {
 									v_tab.closeFunction(e,v_tab);
 								}
@@ -144,7 +144,6 @@ function terminalRun(p_spawn = false, p_query = '') {
                d.getMinutes().padLeft(),
                d.getSeconds().padLeft()].join(':');
 
-    //sendWebSocketMessage(v_queryWebSocket, v_queryRequestCodes.Terminal, v_message_data, false, v_tag.context.code);
     createRequest(v_queryRequestCodes.Terminal, v_message_data, v_tag.context.code);
 
     v_tag.state = v_consoleState.Executing;

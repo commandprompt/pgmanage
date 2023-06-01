@@ -88,9 +88,9 @@ function cancelSQL(p_tab_tag) {
 	else
 		v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
 
-	var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-	//sendWebSocketMessage(v_queryWebSocket, v_queryRequestCodes.CancelThread, v_tab_tag.tab_id, false);
-	createRequest(v_queryRequestCodes.CancelThread, v_tab_tag.tab_id);
+	let message_data = { tab_id: v_tab_tag.tab_id, tab_db_id: null, conn_tab_id: v_connTabControl.selectedTab.id};
+
+	createRequest(v_queryRequestCodes.CancelThread, message_data);
 
 	cancelSQLTab();
 }
@@ -177,7 +177,8 @@ function querySQL(p_mode,
 				v_all_data: p_all_data,
 				v_log_query: p_log_query,
 				v_tab_title: p_tab_title,
-				v_autocommit: v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.check_autocommit.checked
+				v_autocommit: v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.check_autocommit.checked,
+				database_name: v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.currDatabase
 			}
 
 			if(v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor) {
@@ -238,7 +239,6 @@ function querySQL(p_mode,
 			}
 			v_context.tab_tag.query_info.innerHTML = '<b>Start time</b>: ' + dformat + '<br><b>Running...</b>';
 
-			//sendWebSocketMessage(v_queryWebSocket, v_queryRequestCodes.Query, v_message_data, false, v_context);
 			createRequest(v_queryRequestCodes.Query, v_message_data, v_context);
 
 			/*setTimeout(function() {

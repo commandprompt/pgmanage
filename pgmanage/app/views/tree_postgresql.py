@@ -12,7 +12,7 @@ import app.include.Spartacus.Utils as Utils
 from app.include.Session import Session
 from datetime import datetime
 
-from app.views.memory_objects import *
+from app.utils.decorators import database_required, database_required_new, user_authenticated
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)

@@ -19,7 +19,7 @@ from django.contrib.auth import update_session_auth_hash
 
 from django.contrib.auth.models import User
 
-from app.views.memory_objects import *
+from app.utils.decorators import superuser_required, user_authenticated
 from app.utils.key_manager import key_manager
 
 

@@ -423,7 +423,6 @@ function consoleSQL(p_check_command = true, p_mode = 0) {
         }
         v_context.tab_tag.context = v_context;
 
-        //sendWebSocketMessage(v_queryWebSocket, v_queryRequestCodes.Console, v_message_data, false, v_context);
 				createRequest(v_queryRequestCodes.Console, v_message_data, v_context);
 
         v_tag.state = v_consoleState.Executing;
@@ -450,9 +449,8 @@ function cancelConsole(p_tab_tag) {
 	else
 		v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
 
-	var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-	//sendWebSocketMessage(v_queryWebSocket, v_queryRequestCodes.CancelThread, v_tab_tag.tab_id, false);
-	createRequest(v_queryRequestCodes.CancelThread, v_tab_tag.tab_id, null);
+	let message_data = { tab_id: v_tab_tag.tab_id, tab_db_id: null, conn_tab_id: v_connTabControl.selectedTab.id};
+	createRequest(v_queryRequestCodes.CancelThread, message_data, null);
 
 	cancelConsoleTab(v_tab_tag);
 

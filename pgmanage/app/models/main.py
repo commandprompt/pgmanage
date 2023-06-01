@@ -67,6 +67,7 @@ class Tab(models.Model):
     connection = models.ForeignKey(Connection,on_delete=models.CASCADE)
     title = models.CharField(max_length=200, blank=False, default='')
     snippet = models.TextField(blank=False, default='')
+    database = models.CharField(max_length=200, null=True)
 
 class QueryHistory(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)

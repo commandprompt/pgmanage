@@ -2,7 +2,7 @@ import json
 from math import ceil
 
 from app.models.main import Connection, ConsoleHistory, QueryHistory
-from app.views.memory_objects import user_authenticated
+from app.utils.decorators import user_authenticated
 from django.http import JsonResponse
 
 from pgmanage import settings

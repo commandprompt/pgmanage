@@ -138,7 +138,9 @@ function cancelEditData(p_tab_tag) {
 	else
 		v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
 
-	sendWebSocketMessage(v_queryWebSocket, v_queryRequestCodes.CancelThread, v_tab_tag.tab_id, false);
+	let message_data = { tab_id: v_tab_tag.tab_id, tab_db_id: null, conn_tab_id: v_connTabControl.selectedTab.id};
+
+	createRequest(v_queryRequestCodes.CancelThread, message_data);
 
 	cancelEditDataTab();
 
@@ -213,7 +215,6 @@ function queryEditData() {
 		v_context.tab_tag.div_result.innerHTML = 'Running...';
 		v_context.tab_tag.query_info.innerHTML = '';
 
-		//sendWebSocketMessage(v_queryWebSocket, v_queryRequestCodes.QueryEditData, v_message_data, false, v_context);
 		createRequest(v_queryRequestCodes.QueryEditData, v_message_data, v_context);
 
 		setTimeout(function() {
@@ -538,7 +539,6 @@ function saveEditData() {
 
 		v_context.tab_tag.query_info.innerHTML = '';
 
-		//sendWebSocketMessage(v_queryWebSocket, v_queryRequestCodes.SaveEditData, v_message_data, false, v_context);
 		createRequest(v_queryRequestCodes.SaveEditData, message_data, v_context);
 
 	}

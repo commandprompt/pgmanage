@@ -29,7 +29,7 @@ import app.include.custom_paramiko_expect as custom_paramiko_expect
 from django.contrib.auth.models import User
 from app.models.main import *
 
-from app.views.memory_objects import *
+from app.client_manager import client_manager
 
 import traceback
 
@@ -85,15 +85,13 @@ class StoppableThread(threading.Thread):
 import time
 
 def clear_client(request):
-    clear_client_object(
-        p_client_id = request.session.session_key
-    )
+    client_manager.clear_client(request.session.session_key)
     return JsonResponse(
     {}
     )
 
 def client_keep_alive(request):
-    client_object = get_client_object(request.session.session_key)
+    client_object = client_manager.get_or_create_client(client_id=request.session.session_key)
     client_object['last_update'] = datetime.now()
 
     return JsonResponse(
@@ -116,8 +114,7 @@ def long_polling(request):
     json_object = json.loads(request.POST.get('data', None))
     startup = json_object['p_startup']
 
-    #get client attribute in global object or create if it doesn't exist
-    client_object = get_client_object(request.session.session_key)
+    client_object = client_manager.get_or_create_client(client_id=request.session.session_key)
 
     if startup:
         try:
@@ -177,18 +174,18 @@ def create_request(request):
     v_context_code = json_object['v_context_code']
     v_data = json_object['v_data']
 
-    client_object = get_client_object(request.session.session_key)
+    client_object = client_manager.get_or_create_client(client_id=request.session.session_key)
 
     # Release lock to avoid dangling ajax polling requests
     try:
         client_object['polling_lock'].release()
-    except:
-        None
+    except RuntimeError:
+        pass
 
     #Cancel thread
     if v_code == requestType.CancelThread:
         try:
-            thread_data = client_object['tab_list'][v_data]
+            thread_data = client_manager.get_tab(client_id=request.session.session_key, tab_id=v_data.get('tab_id'), conn_tab_id=v_data.get('conn_tab_id'))
             if thread_data:
                 if thread_data['type'] == 'advancedobjectsearch':
                     def callback(self):
@@ -204,21 +201,20 @@ def create_request(request):
                 else:
                     thread_data['thread'].stop()
                     thread_data['omnidatabase'].v_connection.Cancel(False)
-        except Exception as exc:
-            print(str(exc))
-            None;
+        except Exception:
+            pass
 
     #Close Tab
     elif v_code == requestType.CloseTab:
         for v_tab_close_data in v_data:
-            close_tab_handler(client_object,v_tab_close_data['tab_id'])
+            client_manager.close_tab(client_id=request.session.session_key, tab_id=v_tab_close_data.get('tab_id'), conn_tab_id=v_tab_close_data.get('conn_tab_id'))
             #remove from tabs table if db_tab_id is not null
-            if v_tab_close_data['tab_db_id']:
+            if v_tab_close_data.get('tab_db_id'):
                 try:
-                    tab = Tab.objects.get(id=v_tab_close_data['tab_db_id'])
+                    tab = Tab.objects.get(id=v_tab_close_data.get('tab_db_id'))
                     tab.delete()
-                except Exception as exc:
-                    None
+                except Exception:
+                    pass
 
     else:
 
@@ -235,26 +231,19 @@ def create_request(request):
                 )
 
         if v_code == requestType.Terminal:
-            #create tab object if it doesn't exist
-            try:
-                tab_object = client_object['tab_list'][v_data['v_tab_id']]
-                if not tab_object['terminal_transport'].is_active():
-                    raise
-                try:
-                    tab_object['last_update'] = datetime.now()
-                    tab_object['terminal_object'].send(v_data['v_cmd'])
-                except:
-                    None
-            except Exception as exc:
-                tab_object = create_tab_object(
-                    request.session,
-                    v_data['v_tab_id'],
-                    {
-                        'thread': None,
-                        'terminal_object': None
+            tab_object = client_manager.get_tab(client_id=request.session.session_key,
+                                                conn_tab_id=v_data['v_tab_id']
+                                                )
+
+            if tab_object is None or not tab_object.get('terminal_transport').is_active():
+                tab_object = client_manager.create_main_tab(
+                client_id=request.session.session_key,
+                conn_tab_id=v_data['v_tab_id'],
+                tab={
+                    "thread": None,
+                    "terminal_object": None
                     }
                 )
-
                 start_thread = True
 
                 try:
@@ -298,33 +287,38 @@ def create_request(request):
                     tab_object['type'] = 'terminal'
                     tab_object['tab_id'] = v_data['v_tab_id']
                     t.start()
-
+            else:
+                try:
+                    tab_object['last_update'] = datetime.now()
+                    tab_object['terminal_object'].send(v_data['v_cmd'])
+                except OSError:
+                    pass
 
         elif v_code == requestType.Query or v_code == requestType.QueryEditData or v_code == requestType.SaveEditData or v_code == requestType.AdvancedObjectSearch or v_code == requestType.Console:
             #create tab object if it doesn't exist
-            try:
-                tab_object = client_object['tab_list'][v_data['v_tab_id']]
-            except Exception as exc:
-                tab_object = create_tab_object(
-                    request.session,
-                    v_data['v_tab_id'],
-                    {
+            tab_object = client_manager.get_tab(client_id=request.session.session_key,
+                                                        conn_tab_id=v_data['v_conn_tab_id'],
+                                                        tab_id=v_data['v_tab_id'])
+            if tab_object is None:
+                tab_object = client_manager.create_tab(
+                    client_id=request.session.session_key,
+                    conn_tab_id=v_data['v_conn_tab_id'],
+                    tab_id=v_data['v_tab_id'],
+                    tab={
                         'thread': None,
                         'omnidatabase': None,
                         'inserted_tab': False
-                     }
+                    }
+
                 )
 
             try:
-                get_database_tab_object(
-                    v_session,
-                    client_object,
-                    tab_object,
-                    v_data['v_conn_tab_id'],
-                    v_data['v_db_index'],
-                    True
-                )
-
+                client_manager.get_tab_database(session=v_session,
+                                                        tab=tab_object,
+                                                        conn_tab_id=v_data['v_conn_tab_id'],
+                                                        database_index=v_data['v_db_index'],
+                                                        attempt_to_open_connection=True,
+                                                        current_database=v_data.get('database_name'))
             except Exception as exc:
                 v_return['v_code'] = response.PasswordRequired
                 v_return['v_context_code'] = v_context_code
@@ -382,14 +376,17 @@ def create_request(request):
         elif v_code == requestType.Debug:
 
             #create tab object if it doesn't exist
-            try:
-                tab_object = client_object['tab_list'][v_data['v_tab_id']]
-            except Exception as exc:
-                tab_object = create_tab_object(
-                    request.session,
-                    v_data['v_tab_id'],
-                    {
-                        'thread': None,
+            tab_object = client_manager.get_tab(client_id=request.session.session_key,
+                                                conn_tab_id=v_data.get('v_conn_tab_id'),
+                                                tab_id=v_data.get('v_tab_id'))
+            
+            if tab_object is None:
+                tab_object = client_manager.create_tab(
+                    client_id=request.session.session_key,
+                    conn_tab_id=v_data.get('v_conn_tab_id'),
+                    tab_id=v_data.get('v_tab_id'),
+                    tab={
+                        "thread": None,
                         'omnidatabase_debug': None,
                         'omnidatabase_control': None,
                         'port': None,
@@ -398,6 +395,7 @@ def create_request(request):
                         'tab_id': v_data['v_tab_id'],
                         'type': 'debug'
                     }
+
                 )
 
             #New debugger, create connections
@@ -820,7 +818,8 @@ def thread_query(self,args):
                         user=User.objects.get(id=v_session.v_user_id),
                         connection=Connection.objects.get(id=v_database.v_conn_id),
                         title=v_tab_title,
-                        snippet=v_tab_object['sql_save']
+                        snippet=v_tab_object['sql_save'],
+                        database=v_database.v_active_service
                     )
                     tab_object.save()
                     v_inserted_id = tab_object.id

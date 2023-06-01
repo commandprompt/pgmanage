@@ -430,7 +430,7 @@ function removeTab(p_tab) {
 		p_tab.tag.editor.destroy();
 
 	if (p_tab.tag.mode=='query' || p_tab.tag.mode=='edit' || p_tab.tag.mode=='console' || p_tab.tag.mode=='outer_terminal') {
-		var v_message_data = { tab_id: p_tab.tag.tab_id, tab_db_id: null };
+		var v_message_data = { tab_id: p_tab.tag.tab_id, tab_db_id: null , conn_tab_id: v_connTabControl.selectedTab.id};
 		if (p_tab.tag.mode=='query') {
       v_message_data.tab_db_id = p_tab.tag.tab_db_id;
     }

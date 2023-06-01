@@ -8,8 +8,10 @@ import sys
 from datetime import datetime
 
 import sqlparse
+from app.client_manager import client_manager
 from app.models.main import Shortcut, UserDetails
 from app.utils.crypto import make_hash
+from app.utils.decorators import database_required, user_authenticated
 from app.utils.key_manager import key_manager
 from app.utils.master_password import (
     reset_master_pass,
@@ -17,11 +19,6 @@ from app.utils.master_password import (
     validate_master_password,
 )
 from app.views.connections import session_required
-from app.views.memory_objects import (
-    clear_client_object,
-    database_required,
-    user_authenticated,
-)
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -81,14 +78,14 @@ def index(request):
         if not bool(user_details.masterpass_check)
         else bool(key_manager.get(request.user)),
         "binary_path": binary_path,
-        "date_format": user_details.date_format
+        "date_format": user_details.date_format,
     }
 
     # wiping saved tabs databases list
     session.v_tabs_databases = dict([])
     request.session["pgmanage_session"] = session
 
-    clear_client_object(p_client_id=request.session.session_key)
+    client_manager.clear_client(client_id=request.session.session_key)
 
     return render(request, "app/workspace.html", context)
 

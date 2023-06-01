@@ -1,16 +1,13 @@
 import json
-from django.http import (
-    JsonResponse,
-    HttpResponse,
-)
+
+from app.models import ConfigHistory, Connection
+from app.utils.conf import get_settings, get_settings_status, post_settings
+from app.utils.decorators import database_required_new, user_authenticated
 from django.core.exceptions import ValidationError
 from django.db import DatabaseError
 from django.db.models import Q
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
-
-from app.models import ConfigHistory, Connection
-from app.views.memory_objects import database_required_new, user_authenticated
-from app.utils.conf import get_settings, post_settings, get_settings_status
 
 
 @user_authenticated

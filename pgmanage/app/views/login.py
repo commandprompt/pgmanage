@@ -22,11 +22,11 @@ from app.models.main import *
 from django.contrib.auth.models import User
 
 from django.contrib.auth.decorators import login_required
-
-from app.views.memory_objects import *
+from app.utils.decorators import user_authenticated
 from app.utils.key_manager import key_manager
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 @login_required

@@ -98,15 +98,12 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
           function() {
             var v_tabs_to_remove = [];
 
-            var v_message_data = { tab_id: p_tab.tag.tab_id, tab_db_id: null };
-            v_tabs_to_remove.push(v_message_data);
-
             for (var i=0; i < p_tab.tag.tabControl.tabList.length; i++) {
 
               var v_tab = p_tab.tag.tabControl.tabList[i];
               if (v_tab.tag!=null) {
                 if (v_tab.tag.mode=='query' || v_tab.tag.mode=='edit' || v_tab.tag.mode=='debug' || v_tab.tag.mode=='console') {
-                  var v_message_data = { tab_id: v_tab.tag.tab_id, tab_db_id: null };
+                  var v_message_data = { tab_id: v_tab.tag.tab_id, tab_db_id: null , conn_tab_id: p_tab.id};
                   if (v_tab.tag.mode=='query')
                     v_message_data.tab_db_id = v_tab.tag.tab_db_id;
                   v_tabs_to_remove.push(v_message_data);
@@ -120,6 +117,10 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
               if (v_tab.tag.tabCloseFunction)
                 v_tab.tag.tabCloseFunction(v_tab.tag);
             }
+
+            var v_message_data = { conn_tab_id: p_tab.tag.tab_id, tab_db_id: null, tab_id: null };
+            v_tabs_to_remove.push(v_message_data);
+
             if (v_tabs_to_remove.length>0) {
               createRequest(v_queryRequestCodes.CloseTab, v_tabs_to_remove);
             }

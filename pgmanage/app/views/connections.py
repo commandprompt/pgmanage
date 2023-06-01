@@ -6,7 +6,7 @@ from app.include import OmniDatabase
 from app.models import Connection, Group, GroupConnection, Tab, Technology
 from app.utils.crypto import decrypt, encrypt
 from app.utils.key_manager import key_manager
-from app.views.memory_objects import user_authenticated
+from app.utils.decorators import user_authenticated
 from django.db.models import Q
 from django.http import JsonResponse
 from sshtunnel import SSHTunnelForwarder
@@ -483,6 +483,7 @@ def get_existing_tabs(request):
                     "snippet": tab.snippet,
                     "title": tab.title,
                     "tab_db_id": tab.id,
+                    "database_name": tab.database
                 }
             )
 

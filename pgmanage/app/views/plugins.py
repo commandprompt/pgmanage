@@ -18,7 +18,7 @@ import os
 
 from django import forms
 
-from app.views.memory_objects import *
+from app.utils.decorators import user_authenticated, database_required
 from app.views.monitor_dashboard import monitoring_units
 
 class UploadFileForm(forms.Form):

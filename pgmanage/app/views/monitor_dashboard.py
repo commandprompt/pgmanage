@@ -26,7 +26,7 @@ from app.models.main import *
 from django.contrib.auth.models import User
 from django.db.models import Q
 
-from app.views.memory_objects import *
+from app.utils.decorators import user_authenticated, database_required
 from app.views.monitoring_units import postgresql as postgresql_units
 from app.views.monitoring_units import mysql as mysql_units
 

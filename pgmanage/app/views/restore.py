@@ -4,8 +4,8 @@ import os
 from app.bgjob.jobs import BatchJob, IJobDesc
 from app.file_manager.file_manager import FileManager
 from app.models.main import Connection
+from app.utils.decorators import database_required_new, user_authenticated
 from app.utils.postgresql_utilities import get_utility_path
-from app.views.memory_objects import database_required_new, user_authenticated
 from django.http import JsonResponse
 
 

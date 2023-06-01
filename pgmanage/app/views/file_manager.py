@@ -1,7 +1,7 @@
 import json
 
 from app.file_manager.file_manager import FileManager
-from app.views.memory_objects import user_authenticated
+from app.utils.decorators import user_authenticated
 from django.http import HttpResponse, JsonResponse
 
 
