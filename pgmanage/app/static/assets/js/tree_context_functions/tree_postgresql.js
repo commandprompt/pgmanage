@@ -8991,7 +8991,7 @@ function TemplateSelectPostgresql(p_schema, p_table, p_kind) {
             "p_kind": p_kind
         }),
         function(p_return) {
-            let v_tab_name = p_schema + '.' + p_table;
+            let v_tab_name = `${v_connTabControl.selectedTab.tag.selectedDatabase}@${p_schema}.${p_table}`
             v_connTabControl.tag.createQueryTab(v_tab_name);
 
             var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;

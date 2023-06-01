@@ -152,10 +152,14 @@ class ClientManager:
 
         client = self.get_or_create_client(client_id=client_id)
 
-        if tab_id is None:
-            return client["connection_sessions"].get(conn_tab_id)
+        main_tab = client["connection_sessions"].get(conn_tab_id)
 
-        return client["connection_sessions"].get(conn_tab_id)["tab_list"].get(tab_id)
+        if tab_id is None:
+            return main_tab
+
+        if main_tab:
+            return main_tab["tab_list"].get(tab_id)
+        return None
 
     def create_tab(
         self,
@@ -264,12 +268,7 @@ class ClientManager:
         else:
             del client["connection_sessions"][conn_tab_id]
 
-        if (
-            tab["type"] == "query"
-            or tab["type"] == "console"
-            or tab["type"] == "connection"
-            or tab["type"] == "edit"
-        ):
+        if tab["type"] in ["query", "console", "connection", "edit"]:
             try:
                 tab["omnidatabase"].v_connection.Cancel(False)
             except Exception:
@@ -280,32 +279,55 @@ class ClientManager:
                 pass
 
         elif tab["type"] == "debug":
-            tab["cancelled"] = True
-            try:
-                tab["omnidatabase_control"].v_connection.Cancel(False)
-            except Exception:
-                pass
-            try:
-                tab["omnidatabase_control"].v_connection.Terminate(tab["debug_pid"])
-            except Exception:
-                pass
-            try:
-                tab["omnidatabase_control"].v_connection.Close()
-            except Exception:
-                pass
-            try:
-                tab["omnidatabase_debug"].v_connection.Close()
-            except Exception:
-                pass
+            self._close_debug_tab(tab)
 
         elif tab["type"] == "terminal":
-            if tab["thread"] is not None:
-                tab["thread"].stop()
-            if tab["terminal_type"] == "local":
-                tab["terminal_object"].terminate()
-            else:
-                tab["terminal_object"].close()
-                tab["terminal_ssh_client"].close()
+            self._close_terminal_tab(tab)
+
+    def _close_debug_tab(self, tab: Dict[str, Any]) -> None:
+        """Closes a debug tab by canceling, terminating, and closing the associated connections.
+
+        Args:
+            tab (Dict[str, Any]): The debug tab dictionary.
+
+        Returns:
+            None
+        """
+        tab["cancelled"] = True
+        try:
+            tab["omnidatabase_control"].v_connection.Cancel(False)
+        except Exception:
+            pass
+        try:
+            tab["omnidatabase_control"].v_connection.Terminate(tab["debug_pid"])
+        except Exception:
+            pass
+        try:
+            tab["omnidatabase_control"].v_connection.Close()
+        except Exception:
+            pass
+        try:
+            tab["omnidatabase_debug"].v_connection.Close()
+        except Exception:
+            pass
+
+    def _close_terminal_tab(self, tab: Dict[str, Any]) -> None:
+        """Closes a terminal tab by stopping the associated thread and closing the connections.
+
+        Args:
+            tab (Dict[str, Any]): The terminal tab dictionary.
+
+        Returns:
+            None
+        """
+
+        if tab["thread"] is not None:
+            tab["thread"].stop()
+        if tab["terminal_type"] == "local":
+            tab["terminal_object"].terminate()
+        else:
+            tab["terminal_object"].close()
+            tab["terminal_ssh_client"].close()
 
     def get_database(
         self,
