@@ -29,7 +29,7 @@ import app.include.custom_paramiko_expect as custom_paramiko_expect
 from django.contrib.auth.models import User
 from app.models.main import *
 
-from app.client_manager import client_manager
+from app.client_manager import client_manager, Client
 
 import traceback
 
@@ -91,8 +91,8 @@ def clear_client(request):
     )
 
 def client_keep_alive(request):
-    client_object = client_manager.get_or_create_client(client_id=request.session.session_key)
-    client_object['last_update'] = datetime.now()
+    client = client_manager.get_or_create_client(client_id=request.session.session_key)
+    client.last_update = datetime.now()
 
     return JsonResponse(
     {}
@@ -118,21 +118,21 @@ def long_polling(request):
 
     if startup:
         try:
-            client_object['polling_lock'].release()
+            client_object.release_polling_lock()
         except:
             None
 
     # Acquire client polling lock to read returning data
-    client_object['polling_lock'].acquire()
+    client_object.polling_lock.acquire()
 
     v_returning_data = []
 
-    client_object['returning_data_lock'].acquire()
+    client_object.returning_data_lock.acquire()
 
-    while len(client_object['returning_data'])>0:
-        v_returning_data.append(client_object['returning_data'].pop(0))
+    while len(client_object.returning_data)>0:
+        v_returning_data.append(client_object.returning_data.pop(0))
 
-    client_object['returning_data_lock'].release()
+    client_object.release_returning_data_lock()
 
     return JsonResponse(
     {
@@ -140,18 +140,18 @@ def long_polling(request):
     }
     )
 
-def queue_response(p_client_object, p_data):
+def queue_response(client: Client, p_data):
 
-    p_client_object['returning_data_lock'].acquire()
+    client.returning_data_lock.acquire()
 
-    p_client_object['returning_data'].append(p_data)
+    client.returning_data.append(p_data)
 
     try:
         # Attempt to release client polling lock so that the polling thread can read data
-        p_client_object['polling_lock'].release()
-    except Exception as exc:
-        None
-    p_client_object['returning_data_lock'].release()
+        client.release_polling_lock()
+    except RuntimeError:
+        pass
+    client.release_returning_data_lock()
 
 
 def create_request(request):
@@ -178,14 +178,14 @@ def create_request(request):
 
     # Release lock to avoid dangling ajax polling requests
     try:
-        client_object['polling_lock'].release()
+        client_object.release_polling_lock()
     except RuntimeError:
         pass
 
     #Cancel thread
     if v_code == requestType.CancelThread:
         try:
-            thread_data = client_manager.get_tab(client_id=request.session.session_key, tab_id=v_data.get('tab_id'), conn_tab_id=v_data.get('conn_tab_id'))
+            thread_data = client_object.get_tab(tab_id=v_data.get('tab_id'), conn_tab_id=v_data.get('conn_tab_id'))
             if thread_data:
                 if thread_data['type'] == 'advancedobjectsearch':
                     def callback(self):
@@ -207,7 +207,7 @@ def create_request(request):
     #Close Tab
     elif v_code == requestType.CloseTab:
         for v_tab_close_data in v_data:
-            client_manager.close_tab(client_id=request.session.session_key, tab_id=v_tab_close_data.get('tab_id'), conn_tab_id=v_tab_close_data.get('conn_tab_id'))
+            client_object.close_tab(tab_id=v_tab_close_data.get('tab_id'), conn_tab_id=v_tab_close_data.get('conn_tab_id'))
             #remove from tabs table if db_tab_id is not null
             if v_tab_close_data.get('tab_db_id'):
                 try:
@@ -231,13 +231,10 @@ def create_request(request):
                 )
 
         if v_code == requestType.Terminal:
-            tab_object = client_manager.get_tab(client_id=request.session.session_key,
-                                                conn_tab_id=v_data['v_tab_id']
-                                                )
+            tab_object = client_object.get_tab(conn_tab_id=v_data['v_tab_id'])
 
             if tab_object is None or not tab_object.get('terminal_transport').is_active():
-                tab_object = client_manager.create_main_tab(
-                client_id=request.session.session_key,
+                tab_object = client_object.create_main_tab(
                 conn_tab_id=v_data['v_tab_id'],
                 tab={
                     "thread": None,
@@ -296,12 +293,10 @@ def create_request(request):
 
         elif v_code == requestType.Query or v_code == requestType.QueryEditData or v_code == requestType.SaveEditData or v_code == requestType.AdvancedObjectSearch or v_code == requestType.Console:
             #create tab object if it doesn't exist
-            tab_object = client_manager.get_tab(client_id=request.session.session_key,
-                                                        conn_tab_id=v_data['v_conn_tab_id'],
-                                                        tab_id=v_data['v_tab_id'])
+            tab_object = client_object.get_tab(conn_tab_id=v_data['v_conn_tab_id'],
+                                                tab_id=v_data['v_tab_id'])
             if tab_object is None:
-                tab_object = client_manager.create_tab(
-                    client_id=request.session.session_key,
+                tab_object = client_object.create_tab(
                     conn_tab_id=v_data['v_conn_tab_id'],
                     tab_id=v_data['v_tab_id'],
                     tab={
@@ -313,7 +308,7 @@ def create_request(request):
                 )
 
             try:
-                client_manager.get_tab_database(session=v_session,
+                client_object.get_tab_database(session=v_session,
                                                         tab=tab_object,
                                                         conn_tab_id=v_data['v_conn_tab_id'],
                                                         database_index=v_data['v_db_index'],
@@ -376,13 +371,11 @@ def create_request(request):
         elif v_code == requestType.Debug:
 
             #create tab object if it doesn't exist
-            tab_object = client_manager.get_tab(client_id=request.session.session_key,
-                                                conn_tab_id=v_data.get('v_conn_tab_id'),
+            tab_object = client_object.get_tab(conn_tab_id=v_data.get('v_conn_tab_id'),
                                                 tab_id=v_data.get('v_tab_id'))
             
             if tab_object is None:
-                tab_object = client_manager.create_tab(
-                    client_id=request.session.session_key,
+                tab_object = client_object.create_tab(
                     conn_tab_id=v_data.get('v_conn_tab_id'),
                     tab_id=v_data.get('v_tab_id'),
                     tab={

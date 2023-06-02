@@ -1,1 +1,1 @@
-from .client_manager import client_manager
+from .client_manager import client_manager, Client
