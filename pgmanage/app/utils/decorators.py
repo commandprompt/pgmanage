@@ -9,9 +9,8 @@ def user_authenticated(function):
         # User not authenticated
         if request.user.is_authenticated:
             return function(request, *args, **kwargs)
-        else:
-            v_return = {"v_data": "", "v_error": True, "v_error_id": 1}
-            return JsonResponse(v_return)
+        v_return = {"v_data": "", "v_error": True, "v_error_id": 1}
+        return JsonResponse(v_return)
 
     wrap.__doc__ = function.__doc__
     wrap.__name__ = function.__name__
@@ -28,6 +27,9 @@ def database_required(p_check_timeout=True, p_open_connection=True):
             json_object = json.loads(request.POST.get("data", None))
             v_database_index = json_object["p_database_index"]
             v_tab_id = json_object["p_tab_id"]
+            client = client_manager.get_or_create_client(
+                client_id=request.session.session_key
+            )
 
             if v_database_index is not None:
                 try:
@@ -44,8 +46,8 @@ def database_required(p_check_timeout=True, p_open_connection=True):
                             v_return["v_error"] = True
                             return JsonResponse(v_return)
 
-                    v_database = client_manager.get_database(
-                        session=request.session,
+                    v_database = client.get_main_tab_database(
+                        session=v_session,
                         conn_tab_id=v_tab_id,
                         database_index=v_database_index,
                         attempt_to_open_connection=p_open_connection,
@@ -77,6 +79,9 @@ def database_required_new(check_timeout=True, open_connection=True):
             json_object = json.loads(request.body) if request.body else {}
             database_index = json_object.get("database_index")
             tab_id = json_object.get("tab_id")
+            client = client_manager.get_or_create_client(
+                client_id=request.session.session_key
+            )
 
             if database_index is not None:
                 try:
@@ -92,8 +97,8 @@ def database_required_new(check_timeout=True, open_connection=True):
                             }
                             return JsonResponse(data=data, status=400)
 
-                    database = client_manager.get_database(
-                        session=request.session,
+                    database = client.get_main_tab_database(
+                        session=session,
                         conn_tab_id=tab_id,
                         database_index=database_index,
                         attempt_to_open_connection=open_connection,
@@ -119,12 +124,11 @@ def superuser_required(function):
 
         if v_session.v_super_user:
             return function(request, *args, **kwargs)
-        else:
-            v_return = {
-                "v_data": "You must be superuser to perform this operation",
-                "v_error": True,
-            }
-            return JsonResponse(v_return)
+        v_return = {
+            "v_data": "You must be superuser to perform this operation",
+            "v_error": True,
+        }
+        return JsonResponse(v_return)
 
     wrap.__doc__ = function.__doc__
     wrap.__name__ = function.__name__

@@ -1,148 +1,69 @@
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from app.include import OmniDatabase
 from app.include.Session import Session
-from django.contrib.sessions.backends.db import SessionStore
 
 
-class ClientManager:
+class Client:
     """
-    The ClientManager class manages the clients and their associated tabs.
+    Represents a client object that manages connection sessions and tabs.
 
     Attributes:
         _to_be_removed (List[Any]): A list of tabs to be removed.
-        _clients (Dict[str, Any]): A dictionary of clients, where the client ID is the key.
-        _instance (ClientManager): The singleton instance of the ClientManager class.
-        _lock (threading.Lock): A lock for thread safety.
+        id (str): The unique identifier of the client.
+        polling_lock (threading.Lock): A lock used for synchronization during polling.
+        returning_data_lock (threading.Lock): A lock used for synchronization while accessing returning_data.
+        returning_data (List[Any]): A list containing data returned by the client.
+        _connection_sessions (dict): A dictionary storing connection sessions for the client.
+        last_update (datetime.datetime): The timestamp of the client's last update.
     """
+    to_be_removed = []
 
-    _to_be_removed = []
-    _clients = {}
-    _instance = None
-    _lock = threading.Lock()
-
-    def __new__(cls, *args, **kwargs):
-        with cls._lock:
-            if not cls._instance:
-                cls._instance = super().__new__(cls)
-
-        return cls._instance
+    def __init__(self, client_id: str) -> None:
+        self.id = client_id
+        self.polling_lock = threading.Lock()
+        self.returning_data_lock = threading.Lock()
+        self.returning_data = []
+        self._connection_sessions = {}
+        self.last_update = datetime.now()
 
     @property
-    def to_be_removed(self) -> Union[List[Any], List]:
+    def connection_sessions(self) -> Union[Dict[str, Any], Dict]:
         """
-        Get the list of tabs to be removed.
+        Property to access the connection sessions of the client.
 
         Returns:
-            Union[List[Any], List]: The list of tabs to be removed.
+            Union[Dict[str, Any], Dict]: The connection sessions dictionary.
         """
+        return self._connection_sessions
 
-        return self._to_be_removed
-
-    @property
-    def clients(self) -> Union[Dict[str, Any], Dict]:
+    def release_polling_lock(self) -> None:
         """
-        Get the dictionary of clients.
-
-        Returns:
-            Union[Dict[str, Any], Dict]: The dictionary of clients.
+        Releases the polling lock if acquired.
         """
-
-        return self._clients
-
-    def get_client(self, client_id: str) -> Union[Dict[str, Any], None]:
-        """
-        Get the client with the specified client ID.
-
-        Args:
-            client_id (str): The ID of the client.
-
-        Returns:
-            Union[Dict[str, Any], None]: The client dictionary if found, None otherwise.
-        """
-        client = self._clients.get(client_id)
-        return client
-
-    def create_client(self, client_id: str) -> Dict[str, Any]:
-        """
-        Create a new client with the specified client ID.
-
-        Args:
-            client_id (str): The ID of the client.
-
-        Returns:
-            Dict[str, Any]: The newly created client dictionary.
-        """
-
-        client = {
-            "id": client_id,
-            "polling_lock": threading.Lock(),
-            "returning_data_lock": threading.Lock(),
-            "returning_data": [],
-            "connection_sessions": {},
-            "last_update": datetime.now(),
-        }
-
-        self._clients[client_id] = client
-
-        return client
-
-    def get_or_create_client(self, client_id: str) -> Dict[str, Any]:
-        """Retrieves the client with the given client_id. If the client does not exist,
-        creates a new client with the given client_id.
-
-        Args:
-            client_id (str): The ID of the client.
-
-        Returns:
-            Dict[str, Any]: The client object.
-        """
-
-        client = self.get_client(client_id=client_id)
-
-        if client is None:
-            client = self.create_client(client_id=client_id)
-
-        return client
-
-    def clear_client(self, client_id: str) -> None:
-        """Clears the client with the given client_id by removing
-        all associated connection sessions and releasing locks.
-
-        Args:
-            client_id (str): The ID of the client.
-
-        Returns:
-            None
-        """
-
-        client = self.get_or_create_client(client_id=client_id)
-
-        for conn_tab in client["connection_sessions"].values():
-            for tab in conn_tab.get("tab_list", {}).values():
-                tab["to_be_removed"] = True
-            conn_tab["to_be_removed"] = True
-
         try:
-            client["polling_lock"].release()
+            self.polling_lock.release()
         except RuntimeError:
             pass
 
+    def release_returning_data_lock(self) -> None:
+        """
+        Releases the returning data lock if acquired.
+        """
         try:
-            client["returning_data_lock"].release()
+            self.returning_data_lock.release()
         except RuntimeError:
             pass
 
     def get_tab(
-        self, client_id: str, conn_tab_id: str, tab_id: Optional[str] = None
+        self, conn_tab_id: str, tab_id: Optional[str] = None
     ) -> Union[Dict[str, Any], None]:
         """Retrieves the tab with the given IDs from the client.
 
         Args:
-            client_id (str): The ID of the client.
             conn_tab_id (str): The ID of the connection tab.
             tab_id (Optional[str], None): The ID of the tab. Defaults to None.
 
@@ -150,9 +71,7 @@ class ClientManager:
             Union[Dict[str, Any], None]: The tab object if found, otherwise None.
         """
 
-        client = self.get_or_create_client(client_id=client_id)
-
-        main_tab = client["connection_sessions"].get(conn_tab_id)
+        main_tab = self.connection_sessions.get(conn_tab_id)
 
         if tab_id is None:
             return main_tab
@@ -163,7 +82,6 @@ class ClientManager:
 
     def create_tab(
         self,
-        client_id: str,
         conn_tab_id: str,
         tab: Dict[str, Any],
         tab_id: Optional[str] = None,
@@ -172,7 +90,6 @@ class ClientManager:
         adds it to the tab_list of client's connection session.
 
         Args:
-            client_id (str): The ID of the client.
             conn_tab_id (str): The ID of the connection tab.
             tab (Dict[str, Any]): The details of the tab.
             tab_id (Optional[str], optional): The ID of the tab. Defaults to None.
@@ -182,7 +99,6 @@ class ClientManager:
         """
 
         tab = self._create_tab_internal(
-            client_id=client_id,
             conn_tab_id=conn_tab_id,
             tab=tab,
             tab_id=tab_id,
@@ -190,14 +106,11 @@ class ClientManager:
         )
         return tab
 
-    def create_main_tab(
-        self, client_id: str, conn_tab_id: str, tab: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def create_main_tab(self, conn_tab_id: str, tab: Dict[str, Any]) -> Dict[str, Any]:
         """Creates a new main tab with the given details and
         adds it to the client's connection sessions.
 
         Args:
-            client_id (str): The ID of the client.
             conn_tab_id (str): The ID of the connection tab.
             tab (Dict[str, Any]): The details of the main tab.
 
@@ -205,13 +118,12 @@ class ClientManager:
             Dict[str, Any]: The created main tab object.
         """
         tab = self._create_tab_internal(
-            client_id=client_id, conn_tab_id=conn_tab_id, tab=tab, is_main_tab=True
+            conn_tab_id=conn_tab_id, tab=tab, is_main_tab=True
         )
         return tab
 
     def _create_tab_internal(
         self,
-        client_id: str,
         conn_tab_id: str,
         tab: Dict[str, Any],
         tab_id: Optional[str] = None,
@@ -221,7 +133,6 @@ class ClientManager:
         add it to the client's connection sessions.
 
         Args:
-            client_id (str): The ID of the client.
             conn_tab_id (str): The ID of the connection tab.
             tab (Dict[str, Any]): The details of the tab.
             tab_id (Optional[str], optional): The ID of the tab. Defaults to None.
@@ -234,23 +145,18 @@ class ClientManager:
         tab["last_update"] = datetime.now()
         tab["to_be_removed"] = False
 
-        client = self.get_or_create_client(client_id=client_id)
-
         if is_main_tab:
-            client["connection_sessions"][conn_tab_id] = tab
+            self._connection_sessions[conn_tab_id] = tab
         else:
-            client["connection_sessions"][conn_tab_id]["tab_list"][tab_id] = tab
+            self._connection_sessions[conn_tab_id]["tab_list"][tab_id] = tab
 
         return tab
 
-    def close_tab(
-        self, client_id: str, conn_tab_id: str, tab_id: Optional[str] = None
-    ) -> None:
+    def close_tab(self, conn_tab_id: str, tab_id: Optional[str] = None) -> None:
         """Closes the tab with the given IDs by removing it from the client's connection sessions
         and closing associated connections.
 
         Args:
-            client_id (str): The ID of the client.
             conn_tab_id (str): The ID of the connection tab.
             tab_id (Optional[str], optional): The ID of the tab. Defaults to None.
 
@@ -258,15 +164,14 @@ class ClientManager:
             None
         """
 
-        client = self.get_or_create_client(client_id=client_id)
-        tab = self.get_tab(client_id=client_id, tab_id=tab_id, conn_tab_id=conn_tab_id)
+        tab = self.get_tab(tab_id=tab_id, conn_tab_id=conn_tab_id)
         if tab is None:
             return
 
         if tab_id:
-            del client["connection_sessions"][conn_tab_id]["tab_list"][tab_id]
+            del self._connection_sessions[conn_tab_id]["tab_list"][tab_id]
         else:
-            del client["connection_sessions"][conn_tab_id]
+            del self._connection_sessions[conn_tab_id]
 
         if tab["type"] in ["query", "console", "connection", "edit"]:
             try:
@@ -329,9 +234,9 @@ class ClientManager:
             tab["terminal_object"].close()
             tab["terminal_ssh_client"].close()
 
-    def get_database(
+    def get_main_tab_database(
         self,
-        session: SessionStore,
+        session: Session,
         conn_tab_id: str,
         database_index: int,
         attempt_to_open_connection: bool = False,
@@ -339,7 +244,7 @@ class ClientManager:
         """Retrieves the database for the specified session and connection tab.
 
         Args:
-            session (SessionStore): The session object.
+            session (Session): The session object.
             conn_tab_id (str): The ID of the connection tab.
             database_index (int): The index of the database.
             attempt_to_open_connection (bool, optional): Specifies whether
@@ -348,20 +253,17 @@ class ClientManager:
         Returns:
             The database object.
         """
-        pgmanage_session = session.get("pgmanage_session")
-        client_id = session.session_key
 
         # Retrieving tab object
-        tab = self.get_tab(client_id=client_id, conn_tab_id=conn_tab_id)
+        tab = self.get_tab(conn_tab_id=conn_tab_id)
         if tab is None:
             tab = self.create_main_tab(
-                client_id=client_id,
                 tab={"omnidatabase": None, "type": "connection", "tab_list": {}},
                 conn_tab_id=conn_tab_id,
             )
 
         return self.get_tab_database(
-            session=pgmanage_session,
+            session=session,
             tab=tab,
             conn_tab_id=conn_tab_id,
             database_index=database_index,
@@ -437,7 +339,7 @@ class ClientManager:
             database_new.v_lock = threading.Lock()
 
         if tab["omnidatabase"]:
-            self._to_be_removed.append(tab["omnidatabase"])
+            self.to_be_removed.append(tab["omnidatabase"])
 
         tab["omnidatabase"] = database_new
 
@@ -496,6 +398,109 @@ class ClientManager:
         return tab["omnidatabase"]
 
 
+class ClientManager:
+    """
+    The ClientManager class manages the clients.
+
+    Attributes:
+        _clients (Dict[str, Client]): A dictionary of clients, where the client ID is the key.
+        _instance (ClientManager): The singleton instance of the ClientManager class.
+        _lock (threading.Lock): A lock for thread safety.
+    """
+
+    _clients = {}
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls, *args, **kwargs):
+        with cls._lock:
+            if not cls._instance:
+                cls._instance = super().__new__(cls)
+
+        return cls._instance
+
+    @property
+    def clients(self) -> Union[Dict[str, Client], Dict]:
+        """
+        Get the dictionary of clients.
+
+        Returns:
+            Union[Dict[str, Any], Dict]: The dictionary of clients.
+        """
+
+        return self._clients
+
+    def get_client(self, client_id: str) -> Union[Client, None]:
+        """
+        Get the client with the specified client ID.
+
+        Args:
+            client_id (str): The ID of the client.
+
+        Returns:
+            Union[Dict[str, Client], None]: The client object if found, None otherwise.
+        """
+        client = self._clients.get(client_id)
+        return client
+
+    def create_client(self, client_id: str) -> Client:
+        """
+        Create a new client with the specified client ID.
+
+        Args:
+            client_id (str): The ID of the client.
+
+        Returns:
+            Dict[str, Client]: The newly created client object.
+        """
+
+        client = Client(client_id=client_id)
+
+        self._clients[client_id] = client
+
+        return client
+
+    def get_or_create_client(self, client_id: str) -> Client:
+        """Retrieves the client with the given client_id. If the client does not exist,
+        creates a new client with the given client_id.
+
+        Args:
+            client_id (str): The ID of the client.
+
+        Returns:
+            Dict[str, Client]: The client object.
+        """
+
+        client = self.get_client(client_id=client_id)
+
+        if client is None:
+            client = self.create_client(client_id=client_id)
+
+        return client
+
+    def clear_client(self, client_id: str) -> None:
+        """Clears the client with the given client_id by removing
+        all associated connection sessions and releasing locks.
+
+        Args:
+            client_id (str): The ID of the client.
+
+        Returns:
+            None
+        """
+
+        client = self.get_or_create_client(client_id=client_id)
+
+        for conn_tab in client.connection_sessions.values():
+            for tab in conn_tab.get("tab_list", {}).values():
+                tab["to_be_removed"] = True
+            conn_tab["to_be_removed"] = True
+
+        client.release_polling_lock()
+
+        client.release_returning_data_lock()
+
+
 client_manager = ClientManager()
 
 
@@ -511,37 +516,29 @@ def cleanup_thread():
         None
     """
     while True:
-        while client_manager.to_be_removed:
-            conn = client_manager.to_be_removed.pop(0)
+        while Client.to_be_removed:
+            conn = Client.to_be_removed.pop(0)
             conn.v_connection.Close()
 
         for client_id in list(client_manager.clients):
             client = client_manager.get_client(client_id=client_id)
-            client_timeout_reached = datetime.now() > client["last_update"] + timedelta(
+            client_timeout_reached = datetime.now() > client.last_update + timedelta(
                 0, 3600
             )
 
-            for conn_tab_id in list(client["connection_sessions"]):
+            for conn_tab_id in list(client.connection_sessions):
                 for tab_id in list(
-                    client["connection_sessions"][conn_tab_id].get("tab_list", [])
+                    client.connection_sessions[conn_tab_id].get("tab_list", [])
                 ):
-                    tab = client_manager.get_tab(
-                        client_id=client_id, conn_tab_id=conn_tab_id, tab_id=tab_id
-                    )
+                    tab = client.get_tab(conn_tab_id=conn_tab_id, tab_id=tab_id)
 
                     if is_tab_expired(tab, client_timeout_reached):
-                        client_manager.close_tab(
-                            client_id=client_id, tab_id=tab_id, conn_tab_id=conn_tab_id
-                        )
+                        client.close_tab(tab_id=tab_id, conn_tab_id=conn_tab_id)
 
-                if not client["connection_sessions"][conn_tab_id].get("tab_list"):
-                    tab = client_manager.get_tab(
-                        client_id=client_id, conn_tab_id=conn_tab_id
-                    )
+                if not client.connection_sessions[conn_tab_id].get("tab_list"):
+                    tab = client.get_tab(conn_tab_id=conn_tab_id)
                     if is_tab_expired(tab, client_timeout_reached):
-                        client_manager.close_tab(
-                            client_id=client_id, conn_tab_id=conn_tab_id
-                        )
+                        client.close_tab(conn_tab_id=conn_tab_id)
         time.sleep(30)
 
 
