@@ -156,7 +156,7 @@ function changeDatabase(p_value) {
   v_connTabControl.selectedTab.tag.selectedDatabaseIndex = parseInt(p_value);
   v_connTabControl.selectedTab.tag.selectedDBMS = conn_object.technology;
   v_connTabControl.selectedTab.tag.consoleHelp = conn_object.console_help;
-  v_connTabControl.selectedTab.tag.selectedDatabase = conn_object.service;
+  v_connTabControl.selectedTab.tag.selectedDatabase = conn_object.last_used_database || conn_object.service;
   v_connTabControl.selectedTab.tag.selectedTitle = conn_object.alias;
 
   queueChangeActiveDatabaseThreadSafe({

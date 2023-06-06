@@ -45,6 +45,7 @@ class Connection(models.Model):
     conn_string = models.TextField(blank=False, default='')
     public = models.BooleanField(default=False)
     connection_params = models.JSONField(default=dict)
+    last_used_database = models.CharField(max_length=200, null=True)
 
 class SnippetFolder(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)

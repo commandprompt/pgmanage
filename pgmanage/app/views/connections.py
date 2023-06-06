@@ -60,7 +60,8 @@ def get_connections(request):
                     'key': '',
                     'key_set': False if conn.ssh_key.strip() == '' else True
                 },
-                'connection_params': conn.connection_params
+                'connection_params': conn.connection_params,
+                'last_used_database': conn.last_used_database
             }
             database_object = session.v_databases.get(conn.id)
 

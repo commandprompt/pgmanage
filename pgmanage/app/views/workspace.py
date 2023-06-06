@@ -9,7 +9,7 @@ from datetime import datetime
 
 import sqlparse
 from app.client_manager import client_manager
-from app.models.main import Shortcut, UserDetails
+from app.models.main import Connection, Shortcut, UserDetails
 from app.utils.crypto import make_hash
 from app.utils.decorators import database_required, user_authenticated
 from app.utils.key_manager import key_manager
@@ -198,8 +198,13 @@ def change_active_database(request):
     json_object = json.loads(request.POST.get("data", None))
     tab_id = json_object["p_tab_id"]
     new_database = json_object["p_database"]
+    conn_id = json_object["p_database_index"]
 
     session.v_tabs_databases[tab_id] = new_database
+
+    conn = Connection.objects.get(id=conn_id)
+    conn.last_used_database = new_database
+    conn.save()
 
     request.session["pgmanage_session"] = session
 
