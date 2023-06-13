@@ -18,15 +18,15 @@ It also depends on the following environment variable for proper execution.
 JOB_ID - Job-id
 OUTDIR - Output directory
 """
-
 import json
 import logging
 import os
 import signal
+import subprocess
 import sys
 from datetime import datetime
-from subprocess import PIPE, Popen
 from threading import Thread
+from typing import Any, Dict, List, Optional
 
 _IS_WIN = os.name == "nt"
 sys_encoding = None
@@ -51,13 +51,13 @@ def unescape_dquotes_process_arg(arg):
 class ProcessLogger(Thread):
     def __init__(self, stream_type):
         Thread.__init__(self)
-        self.process = None
-        self.stream = None
+        self.processes = []
+        self.streams = []
         self.logger = open(os.path.join(out_dir, stream_type), "wb", buffering=0)
 
     def attach_process_stream(self, process, stream):
-        self.process = process
-        self.stream = stream
+        self.processes.append(process)
+        self.streams.append(stream)
 
     def log(self, msg):
         """
@@ -82,15 +82,16 @@ class ProcessLogger(Thread):
         return False
 
     def run(self):
-        if self.process and self.stream:
-            while True:
-                nextline = self.stream.readline()
+        for process, stream in zip(self.processes, self.streams):
+            if process and stream:
+                while True:
+                    nextline = stream.readline()
 
-                if nextline:
-                    self.log(nextline)
-                else:
-                    if self.process.poll() is not None:
-                        break
+                    if nextline:
+                        self.log(nextline)
+                    else:
+                        if process.poll() is not None:
+                            break
 
     def release(self):
         if self.logger:
@@ -98,134 +99,264 @@ class ProcessLogger(Thread):
             self.logger = None
 
 
-def update_process_status(**kwargs):
-    if out_dir:
-        status = dict(
-            (k, v)
-            for k, v in kwargs.items()
-            if k in ("start_time", "end_time", "exit_code", "pid")
-        )
-        json_status = json.dumps(status)
-        logging.info("Updating the status:\n %s", json_status)
-        with open(os.path.join(out_dir, "status"), "w") as fp:
-            json.dump(status, fp)
-    else:
-        raise ValueError("Please verify pid and db_file arguments.")
+class ProcessExecutor:
+    """Class for executing and managing processes."""
 
+    def __init__(self) -> None:
+        self.process_stdout = None
+        self.process_stderr = None
+        self.status_args = {}
 
-def _handle_execute_exception(exc, args, _stderr, exit_code=None):
-    """
-    Used internally by execute to handle exception
-    :param ex: exception object
-    :param args: execute args dict
-    :param _stderr: stderr
-    :param exit_code: exit code override
-    """
-    logging.exception("Exception occurred")
-    if _stderr:
-        _stderr.log(str(exc).encode())
-    args.update({"end_time": datetime.now().strftime("%Y%m%d%H%M%S%f")})
-    args.update({"exit_code": exc.errno if exit_code is None else exit_code})
+    def execute(self, argv: List[str]) -> None:
+        """
+        Execute the command specified in argv.
 
+        Args:
+            argv: List of command line arguments.
 
-def _fetch_execute_output(process, _stdout, _stderr):
-    """
-    Used internally by execute to fetch execute output and log it.
-    :param process: process obj
-    :param _stdout: stdout
-    :param _stderr: stderr
-    """
-    data = process.communicate()
-    if data:
-        if data[0]:
-            _stdout.log(data[0])
-        if data[1]:
-            _stderr.log(data[1])
+        Returns:
+            None
+        """
+        command = argv[1:]
 
+        self.status_args = {
+            "start_time": datetime.now().strftime("%Y%m%d%H%M%S%f"),
+            "pid": os.getpid(),
+        }
 
-def execute(argv):
-    """
-    This function will execute the background process
+        logging.info("Initialize the process execution: %s", command)
 
-    Returns:
-        None
-    """
-    command = argv[1:]
-    args = dict()
+        self._create_loggers()
 
-    logging.info("Initialize the process execution: %s", command)
+        try:
+            self._update_process_status()
+            logging.info("Status updated.")
 
-    # Create separate thread for stdout and stderr
-    process_stdout = ProcessLogger("out")
-    process_stderr = ProcessLogger("err")
+            if os.environ.get(os.environ.get("JOB_ID", None), None):
+                os.environ["PGPASSWORD"] = os.environ[os.environ["JOB_ID"]]
 
-    try:
-        args.update(
-            {
-                "start_time": datetime.now().strftime("%Y%m%d%H%M%S%f"),
-                "stdout": process_stdout.log,
-                "stderr": process_stderr.log,
-                "pid": os.getpid(),
+            kwargs = {
+                "close_fds": False,
+                "shell": True if _IS_WIN else False,
+                "env": os.environ.copy(),
             }
-        )
 
-        update_process_status(**args)
-        logging.info("Status updated.")
+            logging.info("Starting the command execution...")
+            if len(command[-1].split()) >= 3:
+                self._execute_with_pigz(command, kwargs)
+            else:
+                self._execute_without_pigz(command, kwargs)
+        except OSError as exc:
+            self._handle_execute_exception(exc, exit_code=None)
+        except Exception as exc:
+            self._handle_execute_exception(exc, exit_code=-1)
+        finally:
+            self._update_process_status()
+            logging.info("Exiting the process executor...")
+            self._cleanup_loggers()
+            logging.info("Job is finished.")
 
-        if os.environ.get(os.environ.get("JOB_ID", None), None):
-            os.environ["PGPASSWORD"] = os.environ[os.environ["JOB_ID"]]
+    def _create_loggers(self) -> None:
+        """Create loggers for process stdout and stderr."""
+        self.process_stdout = ProcessLogger("out")
+        self.process_stderr = ProcessLogger("err")
 
-        kwargs = dict()
-        kwargs["close_fds"] = False
-        kwargs["shell"] = True if _IS_WIN else False
-        kwargs["env"] = os.environ.copy()
+    def _cleanup_loggers(self) -> None:
+        if self.process_stdout:
+            self.process_stdout.release()
+        if self.process_stderr:
+            self.process_stderr.release()
 
-        logging.info("Starting the command execution...")
-        process = Popen(command, stdout=PIPE, stderr=PIPE, stdin=None, **kwargs)
-        args.update(
+    def _update_process_status(self) -> None:
+        if out_dir:
+            status = dict(
+                (k, v)
+                for k, v in self.status_args.items()
+                if k in ("start_time", "end_time", "exit_code", "pid")
+            )
+            json_status = json.dumps(status)
+            logging.info("Updating the status:\n %s", json_status)
+            with open(os.path.join(out_dir, "status"), "w") as fp:
+                json.dump(status, fp)
+        else:
+            raise ValueError("Please verify pid and db_file arguments.")
+
+    def _update_process_info(self, process: subprocess.Popen) -> None:
+        self.status_args.update(
             {
                 "start_time": datetime.now().strftime("%Y%m%d%H%M%S%f"),
-                "stdout": process_stdout.log,
-                "stderr": process_stderr.log,
                 "pid": process.pid,
             }
         )
-        update_process_status(**args)
+        self._update_process_status()
+
+    def _execute_without_pigz(self, command: List[str], kwargs: Dict[str, Any]) -> None:
+        """Execute the command without pigz compression."""
+        process = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+        )
+
+        self._update_process_info(process)
+
         logging.info("Status updated after starting child process...")
 
         logging.info("Attaching the loggers to stdout, and stderr...")
-        process_stdout.attach_process_stream(process, process.stdout)
-        process_stdout.start()
-        process_stderr.attach_process_stream(process, process.stderr)
-        process_stderr.start()
+        self.process_stdout.attach_process_stream(process, process.stdout)
+        self.process_stdout.start()
+        self.process_stderr.attach_process_stream(process, process.stderr)
+        self.process_stderr.start()
 
-        process_stdout.join()
-        process_stderr.join()
+        self.process_stdout.join()
+        self.process_stderr.join()
 
         logging.info("Waiting for the process to finish...")
         exit_code = process.wait()
 
         if exit_code is None:
             exit_code = process.poll()
+
         logging.info("Process exited with code: %s", exit_code)
-        args.update({"exit_code": exit_code})
 
-        args.update({"end_time": datetime.now().strftime("%Y%m%d%H%M%S%f")})
+        self.status_args.update({"exit_code": exit_code})
 
-        _fetch_execute_output(process, process_stdout, process_stderr)
+        self.status_args.update({"end_time": datetime.now().strftime("%Y%m%d%H%M%S%f")})
 
-    except OSError as exc:
-        _handle_execute_exception(exc, args, process_stderr, exit_code=None)
-    except Exception as exc:
-        _handle_execute_exception(exc, args, process_stderr, exit_code=-1)
-    finally:
-        update_process_status(**args)
-        logging.info("Exiting the process executor...")
-        if process_stderr:
-            process_stderr.release()
-        if process_stdout:
-            process_stdout.release()
-        logging.info("Job is finished.")
+        self._fetch_execute_output(process)
+
+    def _execute_with_pigz(self, command: List[str], kwargs: Dict[str, Any]):
+        """Execute the command with pigz compression."""
+
+        pigz_command = command[-1].split()
+        utility_command = command[:-1]
+
+        if "-dc" in pigz_command:
+            self._execute_decompress_restore(utility_command, pigz_command, kwargs)
+        else:
+            self._execute_dump_compress(utility_command, pigz_command, kwargs)
+
+    def _execute_dump_compress(
+        self,
+        utility_command: List[str],
+        pigz_command: List[str],
+        kwargs: Dict[str, Any],
+    ) -> None:
+        """Execute dump and compress process."""
+        process = subprocess.Popen(
+            utility_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+        )
+
+        pigz_command = [arg for arg in pigz_command if arg not in ["|", ">"]]
+
+        with open(pigz_command[-1], "wb") as output_file:
+            second_process = subprocess.Popen(
+                pigz_command[:-1],
+                stdin=process.stdout,
+                stdout=output_file,
+                stderr=subprocess.PIPE,
+                **kwargs
+            )
+
+        process.stdout.close()  # Allow process to receive a SIGPIPE if second_process exits.
+
+        self._update_process_info(process=second_process)
+
+        logging.info("Status updated after starting dump/compress child process...")
+
+        self.process_stderr.attach_process_stream(process, process.stderr)
+        self.process_stderr.attach_process_stream(second_process, second_process.stderr)
+        self.process_stderr.start()
+
+        self.process_stderr.join()
+
+        logging.info("Waiting for the dump/compress process to finish...")
+
+        exit_code = second_process.wait()
+
+        if exit_code is None:
+            exit_code = second_process.poll()
+
+        logging.info("Process exited with code: %s", exit_code)
+
+        self.status_args.update(
+            {
+                "exit_code": exit_code,
+                "end_time": datetime.now().strftime("%Y%m%d%H%M%S%f"),
+            }
+        )
+
+        self._fetch_execute_output(second_process)
+
+    def _execute_decompress_restore(
+        self,
+        utility_command: List[str],
+        pigz_command: List[str],
+        kwargs: Dict[str, Any],
+    ) -> None:
+        """Execute decompress and restore process."""
+        process = subprocess.Popen(
+            pigz_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+        )
+
+        second_process = subprocess.Popen(
+            utility_command,
+            stdin=process.stdout,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            **kwargs
+        )
+
+        process.stdout.close()  # Allow process to receive a SIGPIPE if second_process exits.
+
+        self._update_process_info(second_process)
+
+        logging.info(
+            "Status updated after starting decompress/restore child process..."
+        )
+
+        self.process_stderr.attach_process_stream(second_process, second_process.stderr)
+        self.process_stderr.start()
+
+        self.process_stderr.join()
+
+        exit_code = second_process.wait()
+
+        if exit_code is None:
+            exit_code = second_process.poll()
+
+        logging.info("Process exited with code: %s", exit_code)
+
+        self.status_args.update(
+            {
+                "exit_code": exit_code,
+                "end_time": datetime.now().strftime("%Y%m%d%H%M%S%f"),
+            }
+        )
+
+        self._fetch_execute_output(second_process)
+
+    def _handle_execute_exception(
+        self, exc: Exception, exit_code: Optional[int] = None
+    ):
+        logging.exception("Exception occurred")
+
+        if self.process_stderr:
+            self.process_stderr.log(str(exc).encode())
+
+        self.status_args.update(
+            {
+                "end_time": datetime.now().strftime("%Y%m%d%H%M%S%f"),
+                "exit_code": exc.errno if exit_code is None else exit_code,
+            }
+        )
+
+    def _fetch_execute_output(self, process: subprocess.Popen) -> None:
+        data = process.communicate()
+
+        if data:
+            if data[0]:
+                self.process_stdout.log(data[0])
+            if data[1]:
+                self.process_stderr.log(data[1])
 
 
 def signal_handler(signal, msg):
@@ -234,7 +365,6 @@ def signal_handler(signal, msg):
 
 
 if __name__ == "__main__":
-
     argv = [unescape_dquotes_process_arg(arg) for arg in sys.argv]
 
     sys_encoding = sys.getdefaultencoding()
@@ -253,6 +383,8 @@ if __name__ == "__main__":
 
     logging.info("Starting the process executor...")
 
+    executor = ProcessExecutor()
+
     # Ignore any signals
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
@@ -270,14 +402,13 @@ if __name__ == "__main__":
         # Let's do the job assigning to it.
         try:
             logging.info("Executing the command now from the detached child...")
-            execute(argv)
+            executor.execute(argv)
         except Exception:
             logging.exception("Exception occurred")
     else:
         r, w = os.pipe()
 
         if os.fork() == 0:
-
             logging.info("[CHILD] Forked the child process...")
             try:
                 os.close(r)
@@ -293,7 +424,7 @@ if __name__ == "__main__":
                 w.write("1")
                 w.close()
                 logging.info("[CHILD] Start executing the background process...")
-                execute(argv)
+                executor.execute(argv)
             except Exception as error:
                 logging.exception("Exception occurred")
                 sys.exit(1)

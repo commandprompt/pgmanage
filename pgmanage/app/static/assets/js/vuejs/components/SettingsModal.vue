@@ -110,7 +110,28 @@
                         </label>
                       </div>
                     </div>
-                    <a class="btn btn-outline-primary ml-2" @click="validateBinaryPath" title="Validate">
+                    <a class="btn btn-outline-primary ml-2" @click="validateBinaryPath(binaryPath, ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])" title="Validate">
+                      Validate
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-12">
+                  <label for="pigz_path" class="font-weight-bold mb-3">Pigz Binary Path</label>
+                  <div class="d-flex">
+                    <div class="input-group">
+                      <input type="text" class="form-control" v-model="pigzPath"
+                        :placeholder="`${action} binary path..`">
+                      <div v-if="desktopMode" class="input-group-append">
+                        <label class="btn btn-outline-secondary mb-0" type="button">
+                          Select
+                          <input type="file" @change="onFile" nwdirectory hidden>
+                        </label>
+                      </div>
+                    </div>
+                    <a class="btn btn-outline-primary ml-2" @click="validateBinaryPath(pigzPath, ['pigz'])" title="Validate">
                       Validate
                     </a>
                   </div>
@@ -169,6 +190,7 @@ export default {
       selectedDateFormat: window.date_format,
       csvDelimiter: window.v_csv_delimiter,
       binaryPath: window.binary_path,
+      pigzPath: window.pigz_path,
       buttonFormDisabled: true,
       password: '',
       passwordConfirm: '',
@@ -510,7 +532,8 @@ export default {
           "csv_encoding": this.selectedCSVEncoding,
           "csv_delimiter": this.csvDelimiter,
           "binary_path": this.binaryPath,
-          "date_format": this.selectedDateFormat
+          "date_format": this.selectedDateFormat,
+          "pigz_path": this.pigzPath
         })
           .then((resp) => {
             $('#modal_settings').modal('hide');
@@ -577,9 +600,10 @@ export default {
 
       return false;
     },
-    validateBinaryPath() {
+    validateBinaryPath(binary_path,utilies) {
       axios.post('/validate_binary_path/', {
-        binary_path: this.binaryPath
+        binary_path: binary_path,
+        utilities: utilies
       })
         .then((resp) => {
           const binary_paths = Object.entries(resp.data.data)

@@ -42,8 +42,10 @@
 
               <div v-if="isNotServer" class="form-group mb-1">
                 <label for="restoreNumberOfJobs" class="font-weight-bold mb-1">Number of jobs</label>
-                  <input type="text" class="form-control" id="restoreNumberOfJobs"
-                    v-model.number="restoreOptions.number_of_jobs">
+                <select id="restoreNumberOfJobs" class="form-control" v-model="restoreOptions.number_of_jobs">
+                  <option value="" disabled>Select an item...</option>
+                  <option v-for="number_of_jobs in numberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
+                </select>
               </div>
 
               <div v-if="isNotServer" class="form-group mb-1">
@@ -53,6 +55,23 @@
                   <option v-for="name in roleNames" :value="name" :key="name">{{ name }}</option>
                 </select>
               </div>
+
+              <div class="form-group mb-1">
+                <div class="custom-control custom-switch">
+                  <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPigz`" v-model="restoreOptions.pigz" :disabled="isDirectoryFormat">
+                  <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsPigz`">
+                    Decompress with Pigz
+                  </label>
+                </div>
+              </div>
+              
+                <div class="form-group" :class="(restoreOptions.pigz) ? 'collapse show':'collapse'">
+                  <label for="restorePigzNumberOfJobs" class="font-weight-bold mb-1">Number of jobs</label>
+                  <select id="restorePigzNumberOfJobs" class="form-control" v-model="restoreOptions.pigz_number_of_jobs">
+                    <option v-for="number_of_jobs in pigzNumberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
+                  </select>
+                </div>
+
             </div>
           </div>
       </div>
@@ -285,7 +304,9 @@ export default {
         number_of_jobs: "",
         quiet: false,
         echo_queries: false,
-        format: 'custom/tar'
+        format: 'custom/tar',
+        pigz: false,
+        pigz_number_of_jobs: 'auto',
       },
       restoreOptions: {},
       desktopMode: window.gv_desktopMode,
@@ -301,6 +322,22 @@ export default {
     },
     dialogType() {
       return this.restoreOptions.format === 'custom/tar' ? 'select_file' : 'select_folder'
+    },
+    pigzNumberOfJobs() {
+      return ['auto', ...Array.from({length: 8}, (_, index) => index + 1)]
+    },
+    isDirectoryFormat() {
+      return this.restoreOptions.format === 'directory'
+    },
+    numberOfJobs() {
+      return Array.from({length: 8}, (_, index) => index + 1)
+    },
+  },
+  watch: {
+    'restoreOptions.format'(newValue){
+      if (newValue === 'directory') {
+        this.restoreOptions.pigz = false
+      }
     }
   },
   mounted() {

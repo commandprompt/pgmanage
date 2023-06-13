@@ -22,12 +22,22 @@
                   <option v-for="(value, key) in formats" :value="key" :key="key">{{ value }}</option>
                 </select>
               </div>
-              <div v-if="isObjectsType" class="form-group mb-1">
-                <label for="backupCompressionRatio" class="font-weight-bold mb-1">Compression ratio</label>
-                <select id="backupCompressionRatio" class="form-control" v-model="backupOptions.compression_ratio" :disabled="isTarFormat">
-                  <option value="" disabled>Select an item...</option>
-                  <option v-for="compress_ratio in compressionRatioValues" :value="compress_ratio" :key="compress_ratio">{{ compress_ratio }}</option>
-                </select>
+              <div v-if="isObjectsType" class="form-row mt-1">
+                <div class="form-group col-6">
+                  <label for="backupCompressionRatio" class="font-weight-bold mb-1">Compression ratio</label>
+                  <select id="backupCompressionRatio" class="form-control" v-model="backupOptions.compression_ratio" :disabled="isTarFormat">
+                    <option value="" disabled>Select an item...</option>
+                    <option v-for="compress_ratio in compressionRatioValues" :value="compress_ratio" :key="compress_ratio">{{ compress_ratio }}</option>
+                  </select>
+                </div>
+                <div class="form-group col-6">
+                  <label for="backupNumberOfJobs" class="font-weight-bold mb-1">Number of jobs</label>
+                  <select id="backupNumberOfJobs" class="form-control" v-model="backupOptions.number_of_jobs" :disabled="!isDirectoryFormat">
+                    <option value="" disabled>Select an item...</option>
+                    <option v-for="number_of_jobs in numberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
+                  </select>
+                </div>
+
               </div>
               <div class="form-group mb-1">
                 <label for="backupEncoding" class="font-weight-bold mb-1">Encoding</label>
@@ -36,11 +46,6 @@
                   <option v-for="encoding in encodingList" :key="encoding" :value="encoding">{{ encoding }}</option>
                 </select>
               </div>
-              <div v-if="isObjectsType" class="form-group mb-1">
-                <label for="backupNumberOfJobs" class="font-weight-bold mb-1">Number of jobs</label>
-                <input type="text" class="form-control" id="backupNumberOfJobs"
-                  v-model.number="backupOptions.number_of_jobs" :disabled="backupOptions.format != 'directory'">
-              </div>
               <div class="form-group mb-1">
                 <label for="backupRoleName" class="font-weight-bold mb-1">Backup as:</label>
                 <select id="backupRoleName" class="form-control" v-model="backupOptions.role">
@@ -48,6 +53,30 @@
                   <option v-for="name in roleNames" :value="name" :key="name">{{ name }}</option>
                 </select>
               </div>
+              <div class="form-group mb-1">
+                <div class="custom-control custom-switch">
+                  <input class="custom-control-input" type="checkbox" :id="`${backupTabId}_backupOptionsPigz`" v-model="backupOptions.pigz" :disabled="isDirectoryFormat || isTarFormat">
+                  <label class="custom-control-label" :for="`${backupTabId}_backupOptionsPigz`">
+                    Pigz
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-row mt-1" :class="(backupOptions.pigz) ? 'collapse show':'collapse'">
+                <div class="form-group col-6">
+                  <label for="backupPigzCompressionRatio" class="font-weight-bold mb-1">Compression ratio</label>
+                  <select id="backupPigzCompressionRatio" class="form-control" v-model="backupOptions.pigz_compression_ratio">
+                    <option value="" disabled>Select an item...</option>
+                    <option v-for="compress_ratio in compressionRatioValues" :value="compress_ratio" :key="compress_ratio">{{ compress_ratio }}</option>
+                  </select>
+                </div>
+                <div class="form-group col-6">
+                  <label for="backupPigzNumberOfJobs" class="font-weight-bold mb-1">Number of jobs</label>
+                  <select id="backupPigzNumberOfJobs" class="form-control" v-model="backupOptions.pigz_number_of_jobs">
+                    <option v-for="number_of_jobs in pigzNumberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
+                  </select>
+                </div>
+            </div>
               <div v-if="isServerType" class="d-flex font-italic mt-auto muted-text">
                 <i class="fa-solid fa-circle-info mr-1"></i>
                 <p>The backup will be in PLAIN format.</p>
@@ -347,6 +376,9 @@ export default {
         use_set_session_auth: false,
         number_of_jobs: "",
         compression_ratio: "",
+        pigz: false,
+        pigz_number_of_jobs: "auto",
+        pigz_compression_ratio: "6"
       },
       backupOptions: {},
       desktopMode: window.gv_desktopMode,
@@ -377,6 +409,15 @@ export default {
     },
     dialogType() {
       return this.backupOptions.format === 'directory' ? 'select_folder' : 'create_file'
+    },
+    numberOfJobs() {
+      return Array.from({length: 8}, (_, index) => index + 1)
+    },
+    pigzNumberOfJobs() {
+      return ['auto', ...this.numberOfJobs]
+    },
+    isDirectoryFormat() {
+      return this.backupOptions.format === 'directory'
     }
   },
   mounted() {
@@ -389,6 +430,13 @@ export default {
       this.backupOptions = { ...this.backupOptionsDefault }
       this.getRoleNames()
     })
+  },
+  watch: {
+    'backupOptions.format'(newValue){
+      if (['directory', 'tar'].includes(newValue)) {
+        this.backupOptions.pigz = false
+      }
+    }
   },
   methods: {
     getRoleNames() {

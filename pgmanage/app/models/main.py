@@ -1,3 +1,5 @@
+import os
+import shutil
 from unittest.util import _MAX_LENGTH
 from django.db import models
 from django.contrib.auth.models import User
@@ -16,6 +18,27 @@ class UserDetails(models.Model):
     masterpass_check = models.CharField(max_length=256, default='')
     binary_path = models.CharField(max_length=256, null=True)
     date_format = models.CharField(max_length=200, null=True)
+    pigz_path = models.CharField(max_length=256, null=True)
+
+    def get_pigz_path(self):
+
+        if self.pigz_path:
+            pigz_path = self.pigz_path
+        else:
+            pigz_path = (
+                os.path.dirname(shutil.which("pigz")) if shutil.which("pigz") else ""
+            )
+        return pigz_path
+
+    def get_binary_path(self):
+
+        if self.binary_path:
+            binary_path = self.binary_path
+        else:
+            binary_path = (
+                os.path.dirname(shutil.which("psql")) if shutil.which("psql") else ""
+            )
+        return binary_path
 
 class Shortcut(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)

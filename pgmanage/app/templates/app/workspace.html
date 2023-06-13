@@ -624,6 +624,7 @@
     var v_super_user = {{ super_user|lower }};
     var v_csrf_cookie_name = '{{ csrf_cookie_name }}';
     var binary_path = '{{ binary_path|addslashes }}';
+    var pigz_path = '{{ pigz_path|addslashes}}';
     var date_format = '{{ date_format }}' === 'None' ? 'YYYY-MM-DD, HH:mm:ss' : '{{ date_format }}'
     </script>
     <script src="{{url_folder}}/static/assets/lib/axios@1.2.1/axios.min.js"></script>

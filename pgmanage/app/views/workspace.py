@@ -47,13 +47,6 @@ def index(request):
 
     theme = "omnidb" if user_details.theme == "light" else "omnidb_dark"
 
-    if user_details.binary_path:
-        binary_path = user_details.binary_path
-    else:
-        binary_path = (
-            os.path.dirname(shutil.which("psql")) if shutil.which("psql") else ""
-        )
-
     context = {
         "session": None,
         "editor_theme": theme,
@@ -77,7 +70,8 @@ def index(request):
         "master_key": "new"
         if not bool(user_details.masterpass_check)
         else bool(key_manager.get(request.user)),
-        "binary_path": binary_path,
+        "binary_path": user_details.get_binary_path(),
+        "pigz_path": user_details.get_pigz_path(),
         "date_format": user_details.date_format,
     }
 
@@ -106,6 +100,7 @@ def save_config_user(request):
     csv_delimiter = request_data["csv_delimiter"]
     binary_path = request_data["binary_path"]
     date_format = request_data["date_format"]
+    pigz_path = request_data["pigz_path"]
 
     session.v_theme_id = theme
     session.v_font_size = font_size
@@ -119,6 +114,7 @@ def save_config_user(request):
     user_details.csv_delimiter = csv_delimiter
     user_details.binary_path = binary_path
     user_details.date_format = date_format
+    user_details.pigz_path = pigz_path
     user_details.save()
 
     request.session["pgmanage_session"] = session
@@ -709,6 +705,8 @@ def validate_binary_path(request):
 
     binary_path = data.get("binary_path")
 
+    utilities = data.get("utilities")
+
     result = {}
 
     env = os.environ.copy()
@@ -716,7 +714,7 @@ def validate_binary_path(request):
     if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
         env.pop("LD_LIBRARY_PATH", None)
 
-    for utility in ["pg_dump", "pg_dumpall", "pg_restore", "psql"]:
+    for utility in utilities:
         full_path = os.path.join(
             binary_path, utility if os.name != "nt" else (utility + ".exe")
         )
