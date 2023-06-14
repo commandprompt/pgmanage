@@ -493,7 +493,7 @@ const { required, between, maxLength, helpers } = window.VuelidateValidators
         this.v$.connectionLocal.$reset()
       },
       'connectionLocal.technology': function (newVal, oldVal) {
-        if (oldVal === undefined || this.connectionLocal.alias !== 'New Connection') {
+        if (oldVal === undefined || this.connectionLocal.id !== null) {
           this.tempMode  = Object.keys(this.connectionLocal.connection_params)[0]
           return
         }
