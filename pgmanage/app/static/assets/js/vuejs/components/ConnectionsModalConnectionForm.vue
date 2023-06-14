@@ -344,7 +344,9 @@ const { required, between, maxLength, helpers } = window.VuelidateValidators
             key: "",
             key_set: false
           },
-          connection_params: {}
+          connection_params: {
+            sslmode: "prefer"
+          }
         }
       },
       technologies: Array,
