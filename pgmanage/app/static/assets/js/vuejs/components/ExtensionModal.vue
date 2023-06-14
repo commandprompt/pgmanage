@@ -97,14 +97,16 @@ export default {
       if (!!this.selectedExtension && this.mode === 'Create') {
         const schema = !!this.selectedSchema ? `\n    SCHEMA ${this.selectedSchema}` : ''
         const version = !!this.selectedVersion ? `\n    VERSION "${this.selectedVersion}"` : ''
-        return `CREATE EXTENSION ${this.selectedExtension?.name}${schema}${version};`
+        const name = this.selectedExtension.name.includes('-') ? `"${this.selectedExtension.name}"` : this.selectedExtension.name
+        return `CREATE EXTENSION ${name}${schema}${version};`
       } else if (this.mode === 'Alter' && !!this.selectedExtension) {
+        const name = this.selectedExtension.name.includes('-') ? `"${this.selectedExtension.name}"` : this.selectedExtension.name
         const clauses = [];
         if (this.selectedSchema !== this.selectedExtension?.schema) {
-          clauses.push(`ALTER EXTENSION ${this.selectedExtension?.name}\n    SET SCHEMA ${this.selectedSchema};`)
+          clauses.push(`ALTER EXTENSION ${name}\n    SET SCHEMA ${this.selectedSchema};`)
         }
         if (this.selectedVersion !== this.selectedExtension?.version) {
-          clauses.push(`ALTER EXTENSION ${this.selectedExtension?.name}\n    UPDATE TO "${this.selectedVersion}";`)
+          clauses.push(`ALTER EXTENSION ${name}\n    UPDATE TO "${this.selectedVersion}";`)
         }
         if (clauses.length > 0) {
           return clauses.join('\n')
@@ -225,7 +227,7 @@ export default {
     dropExtension() {
       const checkedValues = this.$refs.modal.checkboxes
       const cascade = checkedValues[0].checked ? 'CASCADE' : ''
-      const query = `DROP EXTENSION IF EXISTS ${this.treeNode.text} ${cascade};`
+      const query = `DROP EXTENSION IF EXISTS "${this.treeNode.text}" ${cascade};`
       axios.post('/save_postgresql_extension/', {
         database_index: this.databaseIndex,
         tab_id: this.tabId,
