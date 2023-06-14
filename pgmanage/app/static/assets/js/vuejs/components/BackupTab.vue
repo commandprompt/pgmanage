@@ -384,7 +384,7 @@ export default {
       if (this.treeNode.tag.type === 'schema') {
         this.backupOptionsDefault.schemas.push(this.treeNode.text)
       } else if (this.treeNode.tag.type === 'table') {
-        this.backupOptionsDefault.tables.push(`"${this.treeNode.tag.schema}.${this.treeNode.text}"`)
+        this.backupOptionsDefault.tables.push(`${this.treeNode.tag.schema}.${this.treeNode.text}`)
       }
       this.backupOptions = { ...this.backupOptionsDefault }
       this.getRoleNames()

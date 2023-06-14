@@ -308,11 +308,11 @@ export default {
       if (this.treeNode.tag.type === 'schema') {
         this.restoreOptionsDefault.schema = this.treeNode.text
       } else if (this.treeNode.tag.type === 'table') {
-        this.restoreOptionsDefault.table = `"${this.treeNode.tag.schema}.${this.treeNode.text}"`
+        this.restoreOptionsDefault.table = `${this.treeNode.tag.schema}.${this.treeNode.text}`
       } else if (this.treeNode.tag.type === 'trigger') {
-        this.restoreOptionsDefault.trigger = `"${this.treeNode.tag.schema}.${this.treeNode.text}"`
+        this.restoreOptionsDefault.trigger = `${this.treeNode.tag.schema}.${this.treeNode.text}`
       } else if (this.treeNode.tag.type === 'function') {
-        this.restoreOptionsDefault.function = `"${this.treeNode.tag.id}"`
+        this.restoreOptionsDefault.function = `${this.treeNode.tag.id}`
       }
       this.restoreOptions = { ...this.restoreOptionsDefault }
       this.getRoleNames()
