@@ -4020,7 +4020,47 @@ function getTreePostgresql(p_div) {
                     }
                 }
             }]
-        }
+        },
+        'cm_jobs': {
+            elements: [{
+                text: 'Refresh',
+                icon: 'fas cm-all fa-sync-alt',
+                action: function(node) {
+                    if (node.childNodes == 0)
+                        refreshTreePostgresql(node);
+                    else {
+                        node.collapseNode();
+                        node.expandNode();
+                    }
+                }
+            },
+            {
+                text: 'New Job',
+                icon: 'fas cm-all fa-edit',
+                action: function(node) {
+                    createPgCronModal(node, 'Create')
+                }
+            },
+            ]
+        },
+        'cm_job': {
+            elements: [{
+                text: 'View/Edit',
+                icon: 'fas cm-all fa-edit',
+                action: function(node) {
+                    createPgCronModal(node, 'Edit')
+                }
+            },
+            {
+                text: 'Unschedule',
+                icon: 'fas cm-all fa-cross',
+                action: function(node) {
+                    alert('unscheduling ' + node.tag.job_meta.name)
+                    deleteJobPostgresql(node)
+                }
+            },
+            ]
+        },
     };
     var tree = createTree(p_div, '#fcfdfd', context_menu);
     v_connTabControl.selectedTab.tag.tree = tree;
@@ -4602,6 +4642,8 @@ function refreshTreePostgresqlConfirm(node) {
         getAggregatesPostgresql(node);
     } else if (node.tag.type == 'aggregate') {
         getFunctionFieldsPostgresql(node);
+    } else if (node.tag.type == 'job_list') {
+        getPgCronJobsPostgresql(node);
     } else {
       afterNodeOpenedCallbackPostgreSQL(node);
     }
@@ -4954,7 +4996,8 @@ function getDatabaseObjectsPostgresql(node) {
             if (node.childNodes.length > 0)
                 node.removeChildNodes();
 
-            node.tag.database_data = p_return.v_data;
+            // FIXME: this seem to be unused
+            // node.tag.database_data = p_return.v_data;
 
             var node_schemas = node.createChildNode('Schemas',
                 false, 'fas node-all fa-layer-group node-schema-list', {
@@ -5016,6 +5059,20 @@ function getDatabaseObjectsPostgresql(node) {
                 node_subscriptions.createChildNode('', true,
                     'node-spin', null, null);
             }
+
+            if(p_return.data.has_pg_cron) {
+                var node_jobs = node.createChildNode(
+                    'Jobs', false,
+                    'fas node-all fa-clock', {
+                        type: 'job_list', //this used to dispatch proper callback on node expand
+                        num_jobs: 0,
+                        database: v_connTabControl.selectedTab.tag.selectedDatabase
+                    }, 'cm_jobs'); //context menu
+
+                node_jobs.createChildNode('', true,
+                    'node-spin', null, null);
+            }
+
 
             afterNodeOpenedCallbackPostgreSQL(node);
 
@@ -8975,6 +9032,63 @@ function getInheritedsChildrenPostgresql(node) {
         },
         'box',
         false);
+}
+
+/// <summary>
+/// Retrieving pg_cron jobs.
+/// </summary>
+/// <param name="node">Node object.</param>
+function getPgCronJobsPostgresql(node) {
+
+    node.removeChildNodes();
+    node.createChildNode('', false, 'node-spin', null,
+        null);
+    axios.post('/get_pgcron_jobs/', {
+        database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+        tab_id: v_connTabControl.selectedTab.id
+    }).then((resp) => {
+        if (node.childNodes.length > 0)
+        node.removeChildNodes();
+
+        let jobs = resp.data.data.jobs;
+        node.tag.num_jobs = jobs.length;
+
+        jobs.forEach(function(job) {
+            node.createChildNode(job.name,
+                false,
+                'fas node-all fa-clock', {
+                    database: v_connTabControl.selectedTab.tag.selectedDatabase,
+                    job_meta: job
+                }, 'cm_job', null, false);
+        })
+
+        node.drawChildNodes();
+
+        afterNodeOpenedCallbackPostgreSQL(node);
+    }).catch((error) => {
+        nodeOpenErrorPostgresqlNew(error, node)
+    })
+}
+
+/// <summary>
+/// Unschedule pg_cron job.
+/// </summary>
+/// <param name="node">Node object.</param>
+function deleteJobPostgresql(node) {
+
+    axios.post('/delete_pgcron_job/', {
+        database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+        tab_id: v_connTabControl.selectedTab.id,
+        job_meta: node.tag.job_meta
+    })
+    .then((resp) => {
+        node.removeNode()
+
+        afterNodeOpenedCallbackPostgreSQL(node);
+    })
+    .catch((error) => {
+        nodeOpenErrorPostgresqlNew(error, node)
+    })
 }
 
 /// <summary>

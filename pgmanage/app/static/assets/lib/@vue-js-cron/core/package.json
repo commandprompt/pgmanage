@@ -1,0 +1,80 @@
+{
+  "_args": [
+    [
+      "@vue-js-cron/core@3.7.1",
+      "/home/eugend/cmd/mps/pgmanage/pgmanage"
+    ]
+  ],
+  "_from": "@vue-js-cron/core@3.7.1",
+  "_id": "@vue-js-cron/core@3.7.1",
+  "_inBundle": false,
+  "_integrity": "sha512-aWCkbfCbwpEJwmptY0tRFlxH4ZaVtnmR2Q3f0L8SzSC58cn45VYMe2/eSK53221cBmk/w+18Hq563u+W7Jp9Eg==",
+  "_location": "/@vue-js-cron/core",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "@vue-js-cron/core@3.7.1",
+    "name": "@vue-js-cron/core",
+    "escapedName": "@vue-js-cron%2fcore",
+    "scope": "@vue-js-cron",
+    "rawSpec": "3.7.1",
+    "saveSpec": null,
+    "fetchSpec": "3.7.1"
+  },
+  "_requiredBy": [
+    "/@vue-js-cron/light"
+  ],
+  "_resolved": "https://registry.npmjs.org/@vue-js-cron/core/-/core-3.7.1.tgz",
+  "_spec": "3.7.1",
+  "_where": "/home/eugend/cmd/mps/pgmanage/pgmanage",
+  "author": {
+    "name": "Andreas Bichinger"
+  },
+  "browser": {
+    "./sfc": "src/core.vue"
+  },
+  "bugs": {
+    "url": "https://github.com/abichinger/vue-js-cron/issues"
+  },
+  "dependencies": {
+    "mustache": "^4.2.0"
+  },
+  "description": "A renderless Vue.js cron editor.",
+  "devDependencies": {},
+  "files": [
+    "package.json",
+    "dist",
+    "README.md"
+  ],
+  "homepage": "https://github.com/abichinger/vue-js-cron#readme",
+  "keywords": [
+    "vue",
+    "vue.js",
+    "vue component",
+    "cron",
+    "cron expression",
+    "cron editor",
+    "renderless"
+  ],
+  "license": "MIT",
+  "main": "dist/core.umd.js",
+  "module": "dist/core.esm.js",
+  "name": "@vue-js-cron/core",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abichinger/vue-js-cron.git"
+  },
+  "scripts": {
+    "build": "yarn build:umd & yarn run build:es & yarn run build:unpkg",
+    "build:es": "yarn rollup --config build/rollup.config.js --format es --file dist/core.esm.js",
+    "build:umd": "yarn rollup --config build/rollup.config.js --format umd --file dist/core.umd.js",
+    "build:unpkg": "yarn rollup --config build/rollup.config.js --format iife --file dist/core.min.js",
+    "clean": "git clean -xf dist",
+    "serve": "vue-cli-service serve dev/serve.js",
+    "test": "jest"
+  },
+  "unpkg": "dist/core.min.js",
+  "version": "3.7.1"
+}

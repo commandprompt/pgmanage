@@ -44,3 +44,36 @@ function createExtensionModal(node, mode) {
   });
   app.mount(`#extension-modal-wrap`);
 }
+
+function createPgCronModal(node, mode) {
+  const cronLight = light //exported from light.min.js
+  const wrap_div = document.getElementById("pgcron-modal-wrap");
+
+  wrap_div.innerHTML = `<pgcron-modal :mode=mode :tree-node=treeNode></pgcron-modal>`;
+
+  const app = createApp({
+    components: {
+      "pgcron-modal": Vue.defineAsyncComponent(() =>
+        loadModule(
+          "../static/assets/js/vuejs/components/PgCronModal.vue",
+          options
+        )
+      ),
+    },
+    data() {
+      return {
+        mode: mode,
+        treeNode: node,
+      };
+    },
+    mounted() {
+      setTimeout(() => {
+        $("#pgCronModal").on("hidden.bs.modal", () => {
+          app.unmount();
+        });
+      }, 500);
+    },
+  });
+  app.use(cronLight);
+  app.mount(`#pgcron-modal-wrap`);
+}

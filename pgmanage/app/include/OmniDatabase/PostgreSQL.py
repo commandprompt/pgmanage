@@ -874,7 +874,7 @@ class PostgreSQL:
             order by extname
         ''', True)
 
-    
+
     @lock_required
     def QueryAvailableExtensionsVersions(self):
         return self.v_connection.Query('''
@@ -884,7 +884,7 @@ class PostgreSQL:
                 GROUP BY name
                 ORDER BY name ASC;
         ''')
-    
+
     @lock_required
     def QueryExtensionByName(self, name):
         return self.v_connection.Query('''
@@ -932,7 +932,7 @@ class PostgreSQL:
             '''
             SELECT DISTINCT(category) FROM pg_settings ORDER BY category
             ''', True)
-            
+
     @lock_required
     def QuerySchemas(self):
         return self.v_connection.Query('''
@@ -2840,6 +2840,40 @@ CREATE MATERIALIZED VIEW {0}.{1} AS
             order by 1, 2
         '''.format(v_filter), True)
         return v_table
+
+
+    @lock_required
+    def QueryPgCronJobs(self):
+        return self.v_connection.Query('''select jobid, jobname from cron.job''', True)
+
+    @lock_required
+    def DeletePgCronJob(self, job_id):
+        return self.v_connection.Query('''select cron.unschedule({0})'''.format(job_id), True)
+
+    @lock_required
+    def DeletePgCronJobLogs(self, job_id):
+        return self.v_connection.Query('''delete from cron.job_run_details where jobid = {0}'''.format(job_id), True)
+
+    @lock_required
+    def GetPgCronJob(self, job_id):
+        return self.v_connection.Query('''select jobid, jobname, schedule, command from cron.job where jobid = {0}'''.format(job_id), True)
+
+    @lock_required
+    def GetPgCronJobLogs(self, job_id):
+        return self.v_connection.Query('''select runid, job_pid, database, username, status, return_message, command
+            from cron.job_run_details
+            where jobid = {0}
+            order by runid desc limit 50'''.format(job_id), True)
+
+    @lock_required
+    def GetPgCronJobStats(self, job_id):
+        return self.v_connection.Query('''select
+            (select count(job_run_details.status) from cron.job_run_details where jobid = {0} and status='succeeded') as succeeded,
+            (select count(job_run_details.status) from cron.job_run_details where jobid = {0} and status='failed') as failed'''.format(job_id), True)
+
+    @lock_required
+    def SavePgCronJob(self, job_name, job_schedule, job_command):
+        return self.v_connection.Query('''select cron.schedule('{0}', '{1}', '{2}')'''.format(job_name, job_schedule, job_command), True)
 
     def AdvancedObjectSearchData(self, p_textPattern, p_caseSentive, p_regex, p_inSchemas, p_dataCategoryFilter):
         v_sqlDict = {}

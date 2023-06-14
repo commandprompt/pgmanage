@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/Passtrength/css/passtrength.css">
     <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/vue-toast-notification/css/theme-sugar.css">
     <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/vue3-context-menu/vue3-context-menu.css" />
+    <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/@vue-js-cron/light/dist/light.css" />
 
     <link rel="stylesheet" href="{{url_folder}}/static/assets/css/font-poppins.css?{{pgmanage_short_version}}">
     <link rel="stylesheet" href="{{url_folder}}/static/assets/css/omnidb.min.css?{{pgmanage_short_version}}">
@@ -44,11 +45,14 @@
   <div id="utility-job-detail-wrap">
     <job-detail></job-detail>
   </div>
-  
+
   <div id="extension-modal-wrap">
   </div>
 
   <div id="generic-message-modal-wrap">
+  </div>
+
+  <div id="pgcron-modal-wrap">
   </div>
 
   <div class="toast" data-autohide="false" style="position: absolute; top: 0; right: 0;">
@@ -664,5 +668,8 @@
     <script src="{{url_folder}}/static/assets/js/vuejs/components/postgresql_modals.js"></script>
     <script src="{{url_folder}}/static/assets/js/vuejs/stores/connections.js"></script>
     <script src="{{url_folder}}/static/assets/lib/vue3-context-menu/vue3-context-menu.umd.js"></script>
+    <script src="{{url_folder}}/static/assets/lib/mustache/mustache.min.js"></script>
+    <script src="{{url_folder}}/static/assets/lib/@vue-js-cron/core/dist/core.min.js"></script>
+    <script src="{{url_folder}}/static/assets/lib/@vue-js-cron/light/dist/light.min.js"></script>
   </body>
 </html>

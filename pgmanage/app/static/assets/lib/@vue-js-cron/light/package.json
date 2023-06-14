@@ -1,0 +1,78 @@
+{
+  "_from": "@vue-js-cron/light@latest",
+  "_id": "@vue-js-cron/light@2.3.3",
+  "_inBundle": false,
+  "_integrity": "sha512-4D7U2vQHtSAJ4AKj/x/40YwsIz8XRCUYhMkEIXaiVk1ROuzGDrBjp5XsS5UdopKhiKDLkB4ask3ZF6xbhzYwfg==",
+  "_location": "/@vue-js-cron/light",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@vue-js-cron/light@latest",
+    "name": "@vue-js-cron/light",
+    "escapedName": "@vue-js-cron%2flight",
+    "scope": "@vue-js-cron",
+    "rawSpec": "latest",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/@vue-js-cron/light/-/light-2.3.3.tgz",
+  "_shasum": "e1c73bf9425e24ecf5648626215eaff702b226a5",
+  "_spec": "@vue-js-cron/light@latest",
+  "_where": "/home/eugend/cmd/mps/pgmanage/pgmanage",
+  "author": {
+    "name": "Andreas Bichinger"
+  },
+  "browser": {
+    "./sfc": "src/CronEditor.vue"
+  },
+  "bugs": {
+    "url": "https://github.com/abichinger/vue-js-cron/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "@vue-js-cron/core": "3.7.1"
+  },
+  "deprecated": false,
+  "description": "lightweight vue.js cron editor",
+  "devDependencies": {},
+  "files": [
+    "package.json",
+    "dist",
+    "README.md"
+  ],
+  "homepage": "https://github.com/abichinger/vue-js-cron#readme",
+  "keywords": [
+    "vue",
+    "vue.js",
+    "vue component",
+    "cron",
+    "cron expression",
+    "cron editor",
+    "light"
+  ],
+  "license": "MIT",
+  "main": "dist/light.umd.js",
+  "module": "dist/light.esm.js",
+  "name": "@vue-js-cron/light",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abichinger/vue-js-cron.git"
+  },
+  "scripts": {
+    "build": "yarn build:umd & yarn run build:es & yarn run build:unpkg",
+    "build:es": "yarn rollup --config build/rollup.config.js --format es --file dist/light.esm.js",
+    "build:umd": "yarn rollup --config build/rollup.config.js --format umd --file dist/light.umd.js",
+    "build:unpkg": "yarn rollup --config build/rollup.config.js --format iife --file dist/light.min.js",
+    "clean": "git clean -xf dist",
+    "serve": "vue-cli-service serve dev/serve.js",
+    "test": "jest"
+  },
+  "unpkg": "dist/light.min.js",
+  "version": "2.3.3"
+}
