@@ -38,8 +38,8 @@ sed -i "s/Dev/PgManage $APP_VERSION/" pgmanage/custom_settings.py
 sed -i "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
 
 echo "running pyinstaller"
-/cygdrive/c/Users/$USER/AppData/Roaming/Python/Python38/Scripts/pyinstaller.exe ./pgmanage-win.spec
-/cygdrive/c/Users/$USER/AppData/Roaming/Python/Python38/Scripts/pyinstaller.exe ./process_executor-win.spec
+pyinstaller ./pgmanage-win.spec
+pyinstaller ./process_executor-win.spec
 mv dist/pgmanage-server ../release_$APP_VERSION/
 mv dist/process_executor ../release_$APP_VERSION/pgmanage-server/
 

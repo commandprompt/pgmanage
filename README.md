@@ -1,9 +1,12 @@
 # PgManage
+PgManage is a Postgres management GUI, though we will be adding features for
+developers the initial focus is on the "management" of Postgres.
+
 We proudly leverage all of the great work Open Source work done by the original
 (now dormant) project https://github.com/OmniDB/OmniDB
 
 
-**Website & Downloads**: https://github.com/commandprompt/pgmanage
+**Website & Downloads**: https://www.commandprompt.com/products/pgmanage/
 
 **Full Documentation**: https://pgmanage.readthedocs.io/en/latest/
 
@@ -37,7 +40,38 @@ Once all app requirements are installed cd to **pgmanage** subdirectory and star
 ```
 Once you see that he application server is ready, open http://localhost:8000 URL in your preferred browser. Then login with **admin:admin** credentials
 
+# PgManage 1.0 Beta 2
 
+## Release Date: Jun 15 2023
+
+## Release Notes
+
+ - New features:
+   - ability to disable CSV header when exporting data grid contents
+   - added UI for Postgres extension management
+   - new hierarchical connections menu
+   - use random TCP port number for the application back-end process so Pgmanage does not occupy ports commonly used by other applications
+   - ability to select SSL connection options in Connection Management dialog
+   - remember and restore application window position and size when the app starts
+   - added configurable date/time display format in the application settings dialog
+   - restore the last used database and query tabs when pgmanage starts
+
+ - Major Bugs fixed:
+   - if the query entered by the user contains explain keyword, clicking on explain/analyze button will no longer prepend the query with an extra explain keyword (previously this bug resulted in syntactically incorrect query)
+   
+ - UI/UX Improvements:
+    - ability to work with multiple databases within a DB session without needing to select the "active" database
+    - if query entered by the user contains explain keyword, the explain tab will be opened automatically when user clicks the "Run query" button
+    - explain and analyze buttons are now grouped together and separated from other query buttons
+    - pre-set database connection TCP port in the Connection Management dialog based on selected database type
+    - add visually matching themes for query editor
+  
+ - Other changes
+    - django has been updated from 2.2 to 3.2
+    - code clean-up and refactoring
+    - moved application shared data into globally accessible Pinia store
+    - replace cx_Oracle library with oracledb
+    
 # PgManage 1.0 Beta
 
 ## Release Date: Apr 20 2023

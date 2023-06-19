@@ -449,7 +449,6 @@ class DjangoApplication(object):
 
     def run(self,parameters):
         #cherrypy.engine.unsubscribe('graceful', cherrypy.log.reopen_files)
-        print(parameters)
         logging.config.dictConfig(pgmanage.settings.LOGGING)
         #cherrypy.log.error_log.propagate = False
         cherrypy.log.access_log.propagate = False

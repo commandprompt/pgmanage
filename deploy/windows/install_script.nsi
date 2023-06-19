@@ -54,6 +54,11 @@
 Section "Program" AppFiles
   SectionIn RO
 
+  ;Add check for directory existence and delete if it exists
+  IfFileExists "$INSTDIR\pgmanage-server" 0 +2
+    RMDir /r "$INSTDIR\pgmanage-server"
+
+
   SetOutPath "$INSTDIR"
 
   File /r ${SRCDIR}\*.*

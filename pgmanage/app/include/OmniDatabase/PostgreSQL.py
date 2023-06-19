@@ -868,7 +868,7 @@ class PostgreSQL:
     @lock_required
     def QueryExtensions(self):
         return self.v_connection.Query('''
-            select quote_ident(extname) as extension_name,
+            select extname as extension_name,
                    oid
             from pg_extension
             order by extname
