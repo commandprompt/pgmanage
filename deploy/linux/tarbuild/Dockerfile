@@ -19,8 +19,8 @@ ENV VERSION=$VERSION
 
 RUN apt-get update && apt-get install -y git build-essential software-properties-common  zlib1g-dev libpq-dev libsasl2-dev  libldap2-dev libssl-dev curl fuse patchelf
 RUN add-apt-repository --yes ppa:deadsnakes/ppa
-RUN apt-get update && apt-get install -y python3.8 python3-pip python3.8-dev python3.8-distutils
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+RUN apt-get update && apt-get install -y python3.9 python3-pip python3.9-dev python3.9-distutils
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
 RUN python3 -m pip install --upgrade pip setuptools
 RUN pip3 install pyinstaller setuptools-rust staticx
 COPY entrypoint.sh $HOME

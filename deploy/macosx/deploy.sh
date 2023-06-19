@@ -46,11 +46,12 @@ touch pgmanage.db
 # Install pyenv to manage specific python version
 brew update && brew upgrade
 brew install pyenv
+brew install xz
 
-# Install Python 3.8.10 and create virtual environment
-env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.10 --skip-existing
+# Install Python 3.9.13 and create virtual environment
+env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.13 --skip-existing
 
-pyenv local 3.8.10
+pyenv local 3.9.13
 PYTHON_EXE=$(pyenv which python)
 $PYTHON_EXE -m venv venv
 source venv/bin/activate
@@ -67,8 +68,8 @@ pyinstaller pgmanage-mac.spec
 pyinstaller process_executor-mac.spec
 
 mkdir pgmanage-server 
-echo 'Removing signature from libpython3.8.dylib library'
-codesign --remove-signature dist/pgmanage-server/libpython3.8.dylib
+echo 'Removing signature from libpython3.9.dylib library'
+codesign --remove-signature dist/pgmanage-server/libpython3.9.dylib
 mv dist/process_executor pgmanage-server/
 mv dist/pgmanage-server/* pgmanage-server/
 

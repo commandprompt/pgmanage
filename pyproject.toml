@@ -6,13 +6,13 @@ authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "~3.8.10"
+python = "~3.9.13"
 cryptography = "36.0.2"
 django = "3.2.18"
 tornado = "6.0.2"
 click = "7.0"
 openpyxl = "2.5.14"
-restrictedpython = "4.0"
+restrictedpython = "6.0"
 pymysql = "1.0.*"
 sshtunnel = "0.1.5"
 pexpect = "4.7.0"

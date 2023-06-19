@@ -337,16 +337,14 @@ python-versions = "*"
 
 [[package]]
 name = "restrictedpython"
-version = "4.0"
+version = "6.0"
 description = "RestrictedPython is a defined subset of the Python language which allows to provide a program input into a trusted environment."
 category = "main"
 optional = false
-python-versions = "*"
-
-[package.dependencies]
-setuptools = "*"
+python-versions = ">=3.6, <3.12"
 
 [package.extras]
+docs = ["Sphinx", "sphinx-rtd-theme"]
 test = ["pytest", "pytest-mock"]
 
 [[package]]
@@ -434,8 +432,8 @@ test = ["zope.testing"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "~3.8.10"
-content-hash = "a4afc25f8811189cdc4096c31763d0dd4d6929f4d475c44cec1b25ac5f20f8d7"
+python-versions = "~3.9.13"
+content-hash = "24c3551a610d60097d6b5c474027f944bc1d3e9e15dcbb9cd79b05217a155dae"
 
 [metadata.files]
 asgiref = [
@@ -721,8 +719,8 @@ pywin32 = [
     {file = "pywin32-305-cp39-cp39-win_amd64.whl", hash = "sha256:50768c6b7c3f0b38b7fb14dd4104da93ebced5f1a50dc0e834594bff6fbe1271"},
 ]
 restrictedpython = [
-    {file = "RestrictedPython-4.0-py2.py3-none-any.whl", hash = "sha256:3122bdb1681e72893caa4c5bff93df889d4b8548e75caec95f1b4b8713a2e0ce"},
-    {file = "RestrictedPython-4.0.tar.gz", hash = "sha256:998bcd1648796e238d1cebbefcd2ffd34b1b750e8d5b6ef5c4774780c51449e4"},
+    {file = "RestrictedPython-6.0-py3-none-any.whl", hash = "sha256:3479303f7bff48a7dedad76f96e7704993c5e86c5adbd67f607295d5352f0fb8"},
+    {file = "RestrictedPython-6.0.tar.gz", hash = "sha256:405cf0bd9eec2f19b1326b5f48228efe56d6590b4e91826b8cc3b2cd400a96ad"},
 ]
 setuptools = [
     {file = "setuptools-65.6.3-py3-none-any.whl", hash = "sha256:57f6f22bde4e042978bcd50176fdb381d7c21a9efa4041202288d3737a0c6a54"},
