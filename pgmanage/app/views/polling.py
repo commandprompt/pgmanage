@@ -17,8 +17,7 @@ import app.include.OmniDatabase as OmniDatabase
 from pgmanage.startup import clean_temp_folder
 
 from enum import IntEnum
-from datetime import datetime
-from django.utils.timezone import make_aware
+from datetime import datetime, timezone
 from pgmanage import settings
 import sys
 import sqlparse
@@ -697,8 +696,8 @@ def LogHistory(p_user_id,
         query_object = QueryHistory(
             user=User.objects.get(id=p_user_id),
             connection=Connection.objects.get(id=p_conn_id),
-            start_time=make_aware(p_start),
-            end_time=make_aware(p_end),
+            start_time=p_start,
+            end_time=p_end,
             duration=p_duration,
             status=p_status,
             snippet=p_sql
@@ -799,7 +798,7 @@ def thread_query(self,args):
         v_session = args['v_session']
         v_database = args['v_database']
 
-        log_start_time = datetime.now()
+        log_start_time = datetime.now(timezone.utc)
         log_status = 'success'
 
         v_inserted_id = None
@@ -821,7 +820,7 @@ def thread_query(self,args):
                 except Exception as exc:
                     None
 
-            log_end_time = datetime.now()
+            log_end_time = datetime.now(timezone.utc)
             v_duration = GetDuration(log_start_time,log_end_time)
 
             if v_cmd_type in ['export_csv','export_xlsx', 'export_csv-no_headers', 'export_xlsx-no_headers']:
@@ -872,7 +871,7 @@ def thread_query(self,args):
                 v_database.v_connection.Close()
                 f.Flush()
 
-                log_end_time = datetime.now()
+                log_end_time = datetime.now(timezone.utc)
                 v_duration = GetDuration(log_start_time,log_end_time)
 
                 v_response['v_data'] = {
@@ -905,7 +904,7 @@ def thread_query(self,args):
                             v_notices_text += v_notice.replace('\n','<br/>')
                     v_database.v_connection.ClearNotices()
 
-                    log_end_time = datetime.now()
+                    log_end_time = datetime.now(timezone.utc)
                     v_duration = GetDuration(log_start_time,log_end_time)
 
                     v_response = {
@@ -954,7 +953,7 @@ def thread_query(self,args):
                                 v_notices_text += v_notice.replace('\n','<br/>')
                         v_database.v_connection.ClearNotices()
 
-                        log_end_time = datetime.now()
+                        log_end_time = datetime.now(timezone.utc)
                         v_duration = GetDuration(log_start_time,log_end_time)
 
                         v_response = {
@@ -998,7 +997,7 @@ def thread_query(self,args):
                             for v_notice in v_notices:
                                 v_notices_text += v_notice.replace('\n','<br/>')
 
-                        log_end_time = datetime.now()
+                        log_end_time = datetime.now(timezone.utc)
                         v_duration = GetDuration(log_start_time,log_end_time)
 
                         v_response = {
@@ -1064,7 +1063,7 @@ def thread_query(self,args):
                     v_notices = []
                     v_notices_text = ''
 
-                log_end_time = datetime.now()
+                log_end_time = datetime.now(timezone.utc)
                 v_duration = GetDuration(log_start_time,log_end_time)
                 log_status = 'error'
                 v_response = {
@@ -1139,7 +1138,7 @@ def thread_console(self,args):
         if v_sql[-1:]==';':
             v_sql = v_sql[:-1]
 
-        log_start_time = datetime.now()
+        log_start_time = datetime.now(timezone.utc)
         log_status = 'success'
 
         try:
@@ -1212,7 +1211,7 @@ def thread_console(self,args):
                         v_data_return += str(exc)
                     v_tab_object['remaining_commands'] = []
 
-            log_end_time = datetime.now()
+            log_end_time = datetime.now(timezone.utc)
             v_duration = GetDuration(log_start_time,log_end_time)
 
             v_data_return = v_data_return.replace("\n","\r\n")
@@ -1261,7 +1260,7 @@ def thread_console(self,args):
             #    v_database.v_connection.Close()
             #except:
             #    pass
-            log_end_time = datetime.now()
+            log_end_time = datetime.now(timezone.utc)
             v_duration = GetDuration(log_start_time,log_end_time)
             log_status = 'error'
             v_response['v_error'] = True
@@ -1278,7 +1277,7 @@ def thread_console(self,args):
             query_object = ConsoleHistory(
                 user=User.objects.get(id=v_session.v_user_id),
                 connection=Connection.objects.get(id=v_database.v_conn_id),
-                start_time=make_aware(datetime.now()),
+                start_time=datetime.now(timezone.utc),
                 snippet=v_sql.replace("'","''")
             )
 
