@@ -56,7 +56,7 @@
                 </select>
               </div>
 
-              <div class="form-group mb-1">
+              <div v-if="!isWindowsOS" class="form-group mb-1">
                 <div class="custom-control custom-switch">
                   <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPigz`" v-model="restoreOptions.pigz" :disabled="isDirectoryFormat">
                   <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsPigz`">
@@ -332,6 +332,9 @@ export default {
     numberOfJobs() {
       return Array.from({length: 8}, (_, index) => index + 1)
     },
+    isWindowsOS() {
+      return navigator.userAgent.indexOf("Win") != -1
+    }
   },
   watch: {
     'restoreOptions.format'(newValue){

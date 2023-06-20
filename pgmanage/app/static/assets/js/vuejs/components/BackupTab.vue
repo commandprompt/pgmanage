@@ -53,7 +53,7 @@
                   <option v-for="name in roleNames" :value="name" :key="name">{{ name }}</option>
                 </select>
               </div>
-              <div class="form-group mb-1">
+              <div v-if="!isWindowsOS" class="form-group mb-1">
                 <div class="custom-control custom-switch">
                   <input class="custom-control-input" type="checkbox" :id="`${backupTabId}_backupOptionsPigz`" v-model="backupOptions.pigz" :disabled="isDirectoryFormat || isTarFormat">
                   <label class="custom-control-label" :for="`${backupTabId}_backupOptionsPigz`">
@@ -418,6 +418,9 @@ export default {
     },
     isDirectoryFormat() {
       return this.backupOptions.format === 'directory'
+    },
+    isWindowsOS() {
+      return navigator.userAgent.indexOf("Win") != -1
     }
   },
   mounted() {
