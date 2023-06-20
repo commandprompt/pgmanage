@@ -57,7 +57,7 @@
                 <div class="custom-control custom-switch">
                   <input class="custom-control-input" type="checkbox" :id="`${backupTabId}_backupOptionsPigz`" v-model="backupOptions.pigz" :disabled="isDirectoryFormat || isTarFormat">
                   <label class="custom-control-label" :for="`${backupTabId}_backupOptionsPigz`">
-                    Pigz
+                    Compress with Pigz
                   </label>
                 </div>
               </div>

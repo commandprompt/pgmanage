@@ -99,8 +99,8 @@ def get_args_param_values(data, conn, backup_file, listing_file=None):
             if data.get("pigz_number_of_jobs") != "auto"
             else ""
         )
-
-        pigz_line = [f"pigz -dc {pigz_number_of_jobs} {backup_file}"]
+        pigz_path = data.get("pigz_path", "pigz")
+        pigz_line = [f"{pigz_path} -dc {pigz_number_of_jobs} {backup_file}"]
 
     if data.get("type") == "server":
         set_param("quiet", "--quiet", data, args)
@@ -175,7 +175,8 @@ def create_restore(request, database):
 
     if data.get("pigz"):
         try:
-            get_utility_path("pigz", request.user)
+            pigz_path = get_utility_path("pigz", request.user)
+            data["pigz_path"] = pigz_path
         except FileNotFoundError as exc:
             return JsonResponse(
                 data={"data": str(exc)},
@@ -235,7 +236,8 @@ def preview_command(request, database):
 
     if data.get("pigz"):
         try:
-            get_utility_path("pigz", request.user)
+            pigz_path = get_utility_path("pigz", request.user)
+            data["pigz_path"] = pigz_path
         except FileNotFoundError as exc:
             return JsonResponse(data={"data": str(exc)}, status=400)
 
