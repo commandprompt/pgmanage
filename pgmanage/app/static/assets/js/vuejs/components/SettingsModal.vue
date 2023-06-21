@@ -117,7 +117,7 @@
                 </div>
               </div>
 
-              <div class="form-row">
+              <div v-if="!isWindowsOS" class="form-row">
                 <div class="form-group col-12">
                   <label for="pigz_path" class="font-weight-bold mb-3">Pigz Binary Path</label>
                   <div class="d-flex">
@@ -231,6 +231,9 @@ export default {
     },
     formattedDatePreview() {
       return moment().format(this.selectedDateFormat)
+    },
+    isWindowsOS() {
+      return navigator.userAgent.indexOf("Win") != -1
     }
   },
   created() {
