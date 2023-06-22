@@ -216,15 +216,16 @@ def test_connection(request):
     password = conn_object['password'].strip()
     ssh_password = conn_object['tunnel']['password'].strip()
     ssh_key = conn_object['tunnel']['key']
+    key = key_manager.get(request.user)
 
     if conn_id:
         conn = Connection.objects.get(id=conn_id)
         if conn_object['password'].strip() == '':
-            password = conn.password
+            password = decrypt(conn.password, key) if conn.password else ''
         if conn_object['tunnel']['password'].strip() == '':
-            ssh_password = conn.ssh_password
+            ssh_password = decrypt(conn.ssh_password, key) if conn.ssh_password else ''
         if conn_object['tunnel']['key'].strip() == '':
-            ssh_key = conn.ssh_key
+            ssh_key = decrypt(conn.ssh_key, key) if conn.ssh_key else ''
 
     # if conn_object['temp_password']:
     #     password = conn_object['temp_password']
