@@ -329,7 +329,7 @@ const { required, between, maxLength, helpers } = window.VuelidateValidators
           group: null,
           conn_string: "",
           server: "",
-          port: "",
+          port: "5432",
           service: "",
           user: "",
           password: "",
