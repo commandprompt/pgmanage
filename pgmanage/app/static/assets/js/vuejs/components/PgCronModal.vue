@@ -53,7 +53,7 @@
 
               <div class="form-group mb-2">
                 <label class="font-weight-bold mb-1">Run At</label>
-                <div>
+                <div @click.capture="clickProxy">
                   <cron-light v-model="schedule" @error="scheduleError=$event"></cron-light>
                 </div>
               </div>
@@ -226,6 +226,13 @@ export default {
   },
 
   methods: {
+    clickProxy(e) {
+      //block click events if vue-cron component is "disabled"
+      if(this.manualInput) {
+        e.stopPropagation()
+      }
+    },
+
     getDatabases() {
       axios.post('/get_databases_postgresql/', {
         p_database_index: this.databaseIndex,
