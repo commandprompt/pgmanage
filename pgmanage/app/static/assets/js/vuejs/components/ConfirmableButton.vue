@@ -17,7 +17,7 @@ export default {
     },
     confirmText: {
       type: String,
-      default: "Confirm Delete"
+      default: "Confirm Delete?"
     }
   },
   data() {

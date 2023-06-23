@@ -202,7 +202,7 @@
     </div>
   </div>
   <div class="modal-footer mt-auto justify-content-between w-100">
-    <ConfirmableButton v-if="connectionLocal.id" defaultText="Delete" confirmText="Confirm Delete?" :callbackFunc="deleteConnection" class="btn btn-danger" />
+    <ConfirmableButton v-if="connectionLocal.id" :callbackFunc="deleteConnection" class="btn btn-danger" />
     <button type="button"
       @click="trySave(this.connectionLocal)"
       :disabled="connectionLocal.locked"
