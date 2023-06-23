@@ -80,10 +80,10 @@
 
               <div class="form-group mb-2">
                 <p class="font-weight-bold mb-1">Command to Run</p>
-                <div id="job_command" style="height: 10vh"
-                  :class="['ace_editor', 'ace-omnidb',{ 'is-invalid': v$.command.$invalid }]">
+                <div id="job_command" style="height: 10vh">
                 </div>
-                <div class="invalid-feedback">
+                <div :class="[{ 'is-invalid': v$.command.$invalid }]"></div>
+                <div class="[{ 'is-invalid': v$.command.$invalid }]" class="invalid-feedback">
                   <span v-for="error of v$.command.$errors" :key="error.$uid">
                     {{ error.$message }}
                   </span>
