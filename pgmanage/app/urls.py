@@ -157,12 +157,12 @@ base_urlpatterns = [
     re_path(r'^get_object_description_postgresql/', views.tree_postgresql.get_object_description, name='get_object_description'),\
 
     #PG_CRON
-    re_path(r'^get_pgcron_jobs/', views.tree_postgresql.get_pgcron_jobs, name='get_pgcron_jobs'),
-    re_path(r'^get_pgcron_job_details/', views.tree_postgresql.get_pgcron_job_details, name='get_pgcron_job_details'),
-    re_path(r'^get_pgcron_job_logs/', views.tree_postgresql.get_pgcron_job_logs, name='get_pgcron_job_logs'),
-    re_path(r'^delete_pgcron_job_logs/', views.tree_postgresql.delete_pgcron_job_logs, name='delete_pgcron_job_logs'),
-    re_path(r'^save_pgcron_job/', views.tree_postgresql.save_pgcron_job, name='save_pgcron_job'),
-    re_path(r'^delete_pgcron_job/', views.tree_postgresql.delete_pgcron_job, name='delete_pgcron_job'),
+    re_path(r'^get_pgcron_jobs/', views.pgextras.get_pgcron_jobs, name='get_pgcron_jobs'),
+    re_path(r'^get_pgcron_job_details/', views.pgextras.get_pgcron_job_details, name='get_pgcron_job_details'),
+    re_path(r'^get_pgcron_job_logs/', views.pgextras.get_pgcron_job_logs, name='get_pgcron_job_logs'),
+    re_path(r'^delete_pgcron_job_logs/', views.pgextras.delete_pgcron_job_logs, name='delete_pgcron_job_logs'),
+    re_path(r'^save_pgcron_job/', views.pgextras.save_pgcron_job, name='save_pgcron_job'),
+    re_path(r'^delete_pgcron_job/', views.pgextras.delete_pgcron_job, name='delete_pgcron_job'),
 
     #TREE_ORACLE
     re_path(r'^get_tree_info_oracle/', views.tree_oracle.get_tree_info, name='get_tree_info'),

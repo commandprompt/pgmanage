@@ -4052,10 +4052,9 @@ function getTreePostgresql(p_div) {
                 }
             },
             {
-                text: 'Unschedule',
-                icon: 'fas cm-all fa-cross',
+                text: 'Delete',
+                icon: 'fas cm-all fa-xmark',
                 action: function(node) {
-                    alert('unscheduling ' + node.tag.job_meta.name)
                     deleteJobPostgresql(node)
                 }
             },

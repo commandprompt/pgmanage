@@ -25,31 +25,45 @@
             <!-- Job main tab -->
             <div class="tab-pane fade show active" id="job_schedule" role="tabpanel"
                 aria-labelledby="job_schedule-tab">
-              <div class="form-group mb-2">
-                <label for="extensionComment" class="font-weight-bold mb-1">Job Name</label>
-                <input
-                  v-model="jobName" type="text" :disabled="jobId"
-                  :class="['form-control', { 'is-invalid': v$.jobName.$invalid }]">
-                <div class="invalid-feedback">
-                  <span v-for="error of v$.jobName.$errors" :key="error.$uid">
-                    {{ error.$message }}
-                  </span>
+              <div class="form-row">
+                <div class="form-group col-6 mb-2">
+                  <label for="job_name" class="font-weight-bold mb-1">Job Name</label>
+                  <input
+                    v-model="jobName" id="job_name" type="text" :disabled="jobId"
+                    :class="['form-control', { 'is-invalid': v$.jobName.$invalid }]">
+                  <div class="invalid-feedback">
+                    <span v-for="error of v$.jobName.$errors" :key="error.$uid">
+                      {{ error.$message }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="form-group col-6 mb-2">
+                  <label for="in_database" class="font-weight-bold mb-1">Run In Database</label>
+                  <select v-model="inDatabase" :disabled="jobId" id="in_database" class="form-control">
+                      <option value=""></option>
+                      <option v-for="(database, index) in databases"
+                        :key=index
+                        :value="database">
+                          {{database}}
+                      </option>
+                  </select>
                 </div>
               </div>
+
               <div class="form-group mb-2">
-                <label for="extensionComment" class="font-weight-bold mb-1">Run At</label>
+                <label class="font-weight-bold mb-1">Run At</label>
                 <div>
                   <cron-light v-model="schedule" @error="scheduleError=$event"></cron-light>
                 </div>
-
               </div>
+
               <div class="form-row">
                 <div class="form-group col-4">
-                  <label for="extensionVersions" class="font-weight-bold mb-1">Cron Expression</label>
+                  <label for="schedule_override" class="font-weight-bold mb-1">Cron Expression</label>
                   <input
-                    v-model="scheduleOverride" type="text" :disabled="!manualInput"
+                    v-model="scheduleOverride" id="schedule_override" type="text" :disabled="!manualInput"
                     :class="['form-control', { 'is-invalid': scheduleError }]">
-
                   <div class="invalid-feedback">
                     <span>
                       {{ scheduleError }}
@@ -58,8 +72,8 @@
                 </div>
                 <div class="form-group col-4 d-flex align-items-end">
                   <div class="custom-control custom-switch mb-1">
-                    <input v-model="manualInput" id="manualSwitch" type="checkbox" class="custom-control-input" >
-                    <label class="custom-control-label font-weight-bold" for="manualSwitch">Define Manually</label>
+                    <input v-model="manualInput" id="manual_switch" type="checkbox" class="custom-control-input" >
+                    <label class="custom-control-label font-weight-bold" for="manual_switch">Define Manually</label>
                   </div>
                 </div>
               </div>
@@ -76,6 +90,7 @@
                 </div>
               </div>
             </div>
+
             <!-- Job stats tab -->
             <div v-if="mode==='Edit'" class="tab-pane fade show" id="job_statistics" role="tabpanel"
                 aria-labelledby="job_statistics-tab">
@@ -91,9 +106,9 @@
                 <h4 v-if="jobLogs.length" class="mb-0 mt-2">Showing last {{jobLogs.length}} records</h4>
                 <div v-if="!jobLogs.length">No Logs</div>
             </div>
-
           </div>
         </div>
+
         <div class="modal-footer mt-auto justify-content-between">
           <button v-if="mode==='Edit'" type="button" class="btn btn-danger mr-2"
             @click="deleteJob">
@@ -112,9 +127,8 @@
 
 
 <script>
-const { required, between, maxLength, helpers } = window.VuelidateValidators
-import GenericMessageModal from './GenericMessageModal.vue'
-const { render } = Vue
+const { required, maxLength } = window.VuelidateValidators
+
 export default {
   name: 'PgCronModal',
   props: {
@@ -130,6 +144,8 @@ export default {
       jobName: '',
       jobId: null,
       command: '',
+      databases: [],
+      inDatabase: null,
       schedule: '* * * * *',
       scheduleOverride: '* * * * *',
       scheduleError: null,
@@ -171,6 +187,7 @@ export default {
       return ''
     }
   },
+
   watch: {
     command() {
       this.editor.setValue(this.command)
@@ -191,8 +208,15 @@ export default {
         this.schedule = this.scheduleOverride
       }
     },
+    manualInput() {
+      if(!this.manualInput) {
+        this.schedule = this.scheduleOverride
+      }
+    }
   },
+
   mounted() {
+    this.getDatabases()
     if (this.mode === 'Edit') {
         this.getJobDetails()
         $('#job_statistics-tab').on('shown.bs.tab', this.setupJobStatisticsTab)
@@ -200,7 +224,21 @@ export default {
     this.setupEditor()
     $('#pgCronModal').modal('show')
   },
+
   methods: {
+    getDatabases() {
+      axios.post('/get_databases_postgresql/', {
+        p_database_index: this.databaseIndex,
+        p_tab_id: this.tabId,
+      })
+        .then((resp) => {
+          this.databases = resp.data.v_data.map((x) => x.v_name)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    },
+
     getJobDetails() {
       axios.post('/get_pgcron_job_details/', {
         database_index: this.databaseIndex,
@@ -210,14 +248,15 @@ export default {
         .then((resp) => {
           this.jobId = resp.data.jobid
           this.jobName = resp.data.jobname
-          // FIXME: make schedule manual input work without obstructions from vue cron
           this.schedule = resp.data.schedule
           this.command = resp.data.command
+          this.inDatabase = resp.data.database
         })
         .catch((error) => {
             console.log(error)
         })
     },
+
     setupJobStatisticsTab() {
       let container = document.querySelector('#job_statistics_grid')
       // reset grid container state if it already has hansontable stuff
@@ -262,8 +301,6 @@ export default {
           // FIXME: send a proper error response so that this code works
           showError(error.response.data.data);
         })
-
-
     },
 
     clearJobStats() {
@@ -287,9 +324,11 @@ export default {
           axios.post('/save_pgcron_job/', {
             database_index: this.databaseIndex,
             tab_id: this.tabId,
+            jobId: this.jobId,
             jobName: this.jobName,
             schedule: this.schedule,
             command: this.command,
+            inDatabase: this.inDatabase
           })
             .then((resp) => {
               refreshTreePostgresql(this.treeNode)
@@ -301,6 +340,7 @@ export default {
             })
         }
     },
+
     setupEditor() {
       this.editor = ace.edit('job_command');
       this.editor.setTheme("ace/theme/" + window.v_editor_theme);
@@ -314,6 +354,7 @@ export default {
     	  this.command = this.editor.getValue()
       })
     },
+
     deleteJob() {
       axios.post('/delete_pgcron_job/', {
         database_index: this.databaseIndex,
@@ -328,7 +369,6 @@ export default {
           showError(error.response.data.data);
         })
     }
-
   },
 }
 </script>

@@ -166,9 +166,12 @@ def get_tree_info(request, v_database):
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_database_objects(request, v_database):
     response_data = {'data': None, 'status': 'success'}
+    unsupported_versions = ['1.0', '1.1', '1.2', '1.3']
+    version_filter = lambda extension: extension[0] == 'pg_cron' and extension[2] not in unsupported_versions
+
     try:
         extensions = v_database.QueryExtensions().Rows
-        has_pg_cron = len(list(filter(lambda extension: extension[0] == 'pg_cron', extensions))) > 0
+        has_pg_cron = len(list(filter(version_filter, extensions))) > 0
         response_data['data'] = {'has_pg_cron': has_pg_cron}
     except Exception as exc:
         response_data['status'] = 'failed'
@@ -1107,7 +1110,10 @@ def get_databases(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
+    if request.content_type == 'application/json':
+        json_object = json.loads(request.body)
+    else:
+        json_object = json.loads(request.POST.get("data", None))
     v_database_index = json_object['p_database_index']
     v_tab_id = json_object['p_tab_id']
 
@@ -1608,7 +1614,8 @@ def get_extensions(request, v_database):
         for v_extension in v_extensions.Rows:
             v_extension_data = {
                 'v_name': v_extension['extension_name'],
-                'v_oid': v_extension['oid']
+                'v_oid': v_extension['oid'],
+                'v_version': v_extension['extversion']
             }
             v_list_extensions.append(v_extension_data)
     except Exception as exc:
@@ -2496,103 +2503,3 @@ def get_object_description(request, v_database):
     v_return['v_data'] = v_data
 
     return JsonResponse(v_return)
-
-@user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
-def get_pgcron_jobs(request, v_database):
-
-    response_data = {'data': None, 'status': 'success'}
-    try:
-        job_rows = v_database.QueryPgCronJobs().Rows
-        response_data['data'] = {'jobs': [{"id": int(job[0]), "name":job[1]} for job in job_rows]}
-    except Exception as exc:
-        response_data['status'] = 'failed'
-
-    return JsonResponse(response_data)
-
-
-@user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
-def get_extension_details(request, database):
-    data = json.loads(request.body)
-
-    extension = database.QueryExtensionByName(data.get("ext_name"))
-
-    if not extension.Rows:
-        return JsonResponse({
-            "data": f"Extension '{data.get('ext_name')}' does not exist."
-            }, status=400)
-
-    [extension_detail] = extension.Rows
-
-    return JsonResponse(data=dict(extension_detail))
-
-@user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
-def get_pgcron_job_details(request, database):
-    data = json.loads(request.body)
-    job_meta = data.get('job_meta', None)
-    if job_meta:
-        job = database.GetPgCronJob(job_meta.get('id'))
-        if not job.Rows:
-            return JsonResponse({
-                "data": f"Job does not exist."
-            }, status=400)
-        [job_details] = job.Rows
-
-        return JsonResponse(data=dict(job_details))
-
-    return JsonResponse(data={'data': 'invalid job details supplied'}, status=400)
-
-@user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
-def get_pgcron_job_logs(request, database):
-    data = json.loads(request.body)
-    job_meta = data.get('job_meta', None)
-    if job_meta:
-        logs = database.GetPgCronJobLogs(job_meta.get('id'))
-        [stats] = database.GetPgCronJobStats(job_meta.get('id')).Rows
-        return JsonResponse(data={'logs':logs.Rows, 'stats': dict(stats)}, safe=False)
-
-    return JsonResponse(data={'data': 'invalid job details supplied'}, status=400)
-
-@user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
-def save_pgcron_job(request, database):
-    data = json.loads(request.body)
-    try:
-        database.SavePgCronJob(data.get('jobName'), data.get('schedule'), data.get('command'))
-    except Exception as exc:
-        return JsonResponse(data={'data': str(exc)}, status=500)
-
-    return JsonResponse({})
-
-@user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
-def delete_pgcron_job(request, database):
-    data = json.loads(request.body)
-    job_meta = data.get('job_meta', None)
-    if job_meta:
-        try:
-            database.DeletePgCronJob(job_meta['id'])
-            return JsonResponse({"status": "success"})
-
-        except Exception as exc:
-            return JsonResponse(data={'data': str(exc)}, status=500)
-
-    return JsonResponse(data={'data': 'invalid job details supplied'}, status=400)
-
-@user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
-def delete_pgcron_job_logs(request, database):
-    data = json.loads(request.body)
-    job_meta = data.get('job_meta', None)
-    if job_meta:
-        try:
-            database.DeletePgCronJobLogs(job_meta['id'])
-            return JsonResponse({"status": "success"})
-
-        except Exception as exc:
-            return JsonResponse(data={'data': str(exc)}, status=500)
-
-    return JsonResponse(data={'data': 'invalid job details supplied'}, status=400)
