@@ -202,7 +202,7 @@
     </div>
   </div>
   <div class="modal-footer mt-auto justify-content-between w-100">
-    <button v-if="connectionLocal.id" type="button" @click="$emit('connection:delete', this.connectionLocal)" class="btn btn-danger">Delete</button>
+    <ConfirmableButton v-if="connectionLocal.id" defaultText="Delete" confirmText="Confirm Delete?" :callbackFunc="deleteConnection" class="btn btn-danger" />
     <button type="button"
       @click="trySave(this.connectionLocal)"
       :disabled="connectionLocal.locked"
@@ -214,8 +214,12 @@
 
 <script>
 const { required, between, maxLength, helpers } = window.VuelidateValidators
+import ConfirmableButton from './ConfirmableButton.vue'
   export default {
     name: 'ConnectionsModalConnectionForm',
+    components: {
+      ConfirmableButton
+    },
     data() {
       return {
         connectionLocal: {
@@ -486,6 +490,9 @@ const { required, between, maxLength, helpers } = window.VuelidateValidators
         if(this.connectionLocal.tunnel.enabled) {
           document.getElementById('sshSettings').scrollIntoView()
         }
+      },
+      deleteConnection() {
+        this.$emit('connection:delete', this.connectionLocal)
       }
     },
     watch: {
