@@ -46,7 +46,12 @@ function createExtensionModal(node, mode) {
 }
 
 function createPgCronModal(node, mode) {
-  const cronLight = light //exported from light.min.js
+  let cronLight = light //exported from light.min.js
+  // FIXME: imprort cronlight properly
+  // vuejs keep track of installed plugins, but since we reinstantiate app each time
+  // we need to reset this flag in order to make the component work on next modal show
+  light.install.installed = false
+
   const wrap_div = document.getElementById("pgcron-modal-wrap");
 
   wrap_div.innerHTML = `<pgcron-modal :mode=mode :tree-node=treeNode></pgcron-modal>`;
