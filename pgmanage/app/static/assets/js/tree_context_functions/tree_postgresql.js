@@ -4055,7 +4055,12 @@ function getTreePostgresql(p_div) {
                 text: 'Delete',
                 icon: 'fas cm-all fa-xmark',
                 action: function(node) {
-                    deleteJobPostgresql(node)
+                    createMessageModal(
+                        `Are you sure you want to delete job "${node.text}"`,
+                        function() { deleteJobPostgresql(node) },
+                        null,
+                      )
+
                 }
             },
             ]

@@ -110,10 +110,7 @@
         </div>
 
         <div class="modal-footer mt-auto justify-content-between">
-          <button v-if="mode==='Edit'" type="button" class="btn btn-danger mr-2"
-            @click="deleteJob">
-            Delete
-          </button>
+          <ConfirmableButton v-if="mode==='Edit'" :callbackFunc="deleteJob" class="btn btn-danger mr-2" />
           <button type="button" class="btn btn-primary mr-2 ml-auto"
             @click="saveJob">
             Save
@@ -128,9 +125,13 @@
 
 <script>
 const { required, maxLength } = window.VuelidateValidators
+import ConfirmableButton from './ConfirmableButton.vue'
 
 export default {
   name: 'PgCronModal',
+  components: {
+      ConfirmableButton
+  },
   props: {
     mode: String,
     treeNode: Object
