@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
 def get_configuration(request, database):
-    data = json.loads(request.body) if request.body else {}
+    data = request.data
     exclude_read_only = data.get("exclude_read_only")
     grouped = data.get("grouped", True)
     try:
@@ -37,7 +37,7 @@ def get_configuration_categories(request, database):
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
 def save_configuration(request, database):
-    data = json.loads(request.body) if request.body else {}
+    data = request.data
     update_data = data.get("settings")
     commit_comment = data.get("commit_comment")
     new_config = data.get("new_config")
@@ -54,7 +54,7 @@ def save_configuration(request, database):
 
 @user_authenticated
 def get_configuration_history(request):
-    data = json.loads(request.body) if request.body else {}
+    data = request.data
     config_history = ConfigHistory.objects.filter(
         Q(user=request.user)
         & Q(connection=Connection.objects.filter(id=data.get("database_index")).first())

@@ -1,4 +1,3 @@
-import json
 from functools import partial, wraps
 from typing import Any, Callable, Optional
 
@@ -25,12 +24,10 @@ def database_required(p_check_timeout=True, p_open_connection=True):
         def wrap(request, session, *args, **kwargs):
             v_return = {"v_data": "", "v_error": False, "v_error_id": -1}
 
-            if request.content_type == 'application/json':
-                json_object = json.loads(request.body)
-            else:
-                json_object = json.loads(request.POST.get("data", None))
-            v_database_index = json_object["p_database_index"]
-            v_tab_id = json_object["p_tab_id"]
+            data = request.data
+
+            v_database_index = data["p_database_index"]
+            v_tab_id = data["p_tab_id"]
             client = client_manager.get_or_create_client(
                 client_id=request.session.session_key
             )
@@ -78,9 +75,9 @@ def database_required_new(check_timeout=True, open_connection=True):
         @session_required
         @wraps(function)
         def wrap(request, session, *args, **kwargs):
-            json_object = json.loads(request.body) if request.body else {}
-            database_index = json_object.get("database_index")
-            tab_id = json_object.get("tab_id")
+            data = request.data
+            database_index = data.get("database_index")
+            tab_id = data.get("tab_id")
             client = client_manager.get_or_create_client(
                 client_id=request.session.session_key
             )

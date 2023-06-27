@@ -2,7 +2,6 @@ from django.http import HttpResponse
 from django.template import loader
 from django.http import JsonResponse
 from django.core import serializers
-import json
 
 import sys
 
@@ -69,14 +68,12 @@ def build_snippets_object_recursive(p_folders,p_files,p_current_object):
 
 @session_required(use_old_error_format=True, include_session=False)
 def get_node_children(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_sn_id_parent = json_object['p_sn_id_parent']
+    v_sn_id_parent = request.data['p_sn_id_parent']
 
     v_return['v_data'] = {
         'v_list_nodes': [],
@@ -107,14 +104,12 @@ def get_node_children(request):
 
 @session_required(use_old_error_format=True, include_session=False)
 def get_snippet_text(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_st_id = json_object['p_st_id']
+    v_st_id = request.data['p_st_id']
 
     try:
         v_return['v_data'] = SnippetFile.objects.get(id=v_st_id).text
@@ -125,18 +120,15 @@ def get_snippet_text(request):
 
 @session_required(use_old_error_format=True, include_session=False)
 def new_node_snippet(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    
-
-    json_object = json.loads(request.POST.get('data', None))
-    v_sn_id_parent = json_object['p_sn_id_parent']
-    v_mode = json_object['p_mode']
-    v_name = json_object['p_name']
+    data = request.data
+    v_sn_id_parent = data['p_sn_id_parent']
+    v_mode = data['p_mode']
+    v_name = data['p_name']
 
     if v_sn_id_parent:
         v_parent = SnippetFolder.objects.get(id=v_sn_id_parent)
@@ -176,15 +168,14 @@ def new_node_snippet(request):
 
 @session_required(use_old_error_format=True, include_session=False)
 def delete_node_snippet(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_id = json_object['p_id']
-    v_mode = json_object['p_mode']
+    data = request.data
+    v_id = data['p_id']
+    v_mode = data['p_mode']
 
     try:
         if v_mode == 'node':
@@ -207,17 +198,16 @@ def delete_node_snippet(request):
 
 @session_required(use_old_error_format=True, include_session=False)
 def save_snippet_text(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_id = json_object['p_id']
-    v_name = json_object['p_name']
-    v_parent_id = json_object['p_parent']
-    v_text = json_object['p_text']
+    data = request.data
+    v_id = data['p_id']
+    v_name = data['p_name']
+    v_parent_id = data['p_parent']
+    v_text = data['p_text']
 
     if v_parent_id:
         v_parent = SnippetFolder.objects.get(id=v_parent_id)
@@ -262,16 +252,15 @@ def save_snippet_text(request):
 
 @session_required(use_old_error_format=True, include_session=False)
 def rename_node_snippet(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_id = json_object['p_id']
-    v_name = json_object['p_name']
-    v_mode = json_object['p_mode']
+    data = request.data
+    v_id = data['p_id']
+    v_name = data['p_name']
+    v_mode = data['p_mode']
 
     try:
         #node

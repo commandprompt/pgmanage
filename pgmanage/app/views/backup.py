@@ -1,5 +1,4 @@
 import functools
-import json
 import operator
 import os
 from abc import abstractmethod
@@ -311,11 +310,9 @@ def create_backup(request, database):
     (Backup Database(s)/Schema(s)/Table(s))
     """
 
-    data = json.loads(request.body) if request.body else {}
+    backup_type_str = request.data.get("backup_type", "objects")
 
-    backup_type_str = data.get("backup_type", "objects")
-
-    data = data.get("data", {})
+    data = request.data.get("data", {})
 
     backup_file = data.get("fileName")
 
@@ -392,11 +389,9 @@ def create_backup(request, database):
 @database_required_new(check_timeout=True, open_connection=True)
 @user_authenticated
 def preview_command(request, database):
-    data = json.loads(request.body) if request.body else {}
+    backup_type_str = request.data.get("backup_type", "objects")
 
-    backup_type_str = data.get("backup_type", "objects")
-
-    data = data.get("data", {})
+    data = request.data.get("data", {})
 
     backup_file = data.get("fileName")
 

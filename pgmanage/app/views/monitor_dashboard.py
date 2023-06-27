@@ -2,7 +2,6 @@ from django.http import HttpResponse
 from django.template import loader
 from django.http import JsonResponse
 from django.core import serializers
-import json
 
 import sys
 import io
@@ -64,14 +63,12 @@ def _hook_import(name, *args, **kwargs):
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
 def get_monitor_unit_list(request, v_database):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_mode = json_object['p_mode']
+    v_mode = request.data['p_mode']
     v_return['v_data'] = []
     v_data = []
     v_id_list = []
@@ -128,14 +125,12 @@ def get_monitor_unit_list(request, v_database):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def get_monitor_unit_details(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_unit_id = json_object['p_unit_id']
+    v_unit_id = request.data['p_unit_id']
 
     try:
         unit = MonUnits.objects.get(id=v_unit_id)
@@ -151,15 +146,13 @@ def get_monitor_unit_details(request):
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
 def get_monitor_units(request, v_database):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
+    v_database_index = request.data['p_database_index']
+
 
     v_return['v_data'] = []
 
@@ -226,16 +219,15 @@ def get_monitor_units(request, v_database):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def get_monitor_unit_template(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_unit_id = json_object['p_unit_id']
-    v_unit_plugin_name = json_object['p_unit_plugin_name']
+    data = request.data
+    v_unit_id = data['p_unit_id']
+    v_unit_plugin_name = data['p_unit_plugin_name']
 
     if v_unit_plugin_name=='':
 
@@ -270,20 +262,18 @@ def get_monitor_unit_template(request):
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
 def save_monitor_unit(request, v_database):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_unit_id = json_object['p_unit_id']
-    v_unit_name = json_object['p_unit_name']
-    v_unit_type = json_object['p_unit_type']
-    v_unit_interval = json_object['p_unit_interval']
-    v_unit_script_chart = json_object['p_unit_script_chart']
-    v_unit_script_data = json_object['p_unit_script_data']
-    v_database_index = json_object['p_database_index']
+    data = request.data
+    v_unit_id = data['p_unit_id']
+    v_unit_name = data['p_unit_name']
+    v_unit_type = data['p_unit_type']
+    v_unit_interval = data['p_unit_interval']
+    v_unit_script_chart = data['p_unit_script_chart']
+    v_unit_script_data = data['p_unit_script_data']
 
     if v_unit_interval==None:
         v_unit_interval = 30
@@ -326,14 +316,12 @@ def save_monitor_unit(request, v_database):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def delete_monitor_unit(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_unit_id = json_object['p_unit_id']
+    v_unit_id = request.data['p_unit_id']
 
     try:
         MonUnits.objects.get(id=v_unit_id).delete()
@@ -349,14 +337,12 @@ def delete_monitor_unit(request):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def remove_saved_monitor_unit(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_saved_id = json_object['p_saved_id']
+    v_saved_id = request.data['p_saved_id']
     try:
         MonUnitsConnections.objects.get(id=v_saved_id).delete()
 
@@ -370,15 +356,14 @@ def remove_saved_monitor_unit(request):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def update_saved_monitor_unit_interval(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_saved_id = json_object['p_saved_id']
-    v_interval = json_object['p_interval']
+    data = request.data
+    v_saved_id = data['p_saved_id']
+    v_interval = data['p_interval']
 
     try:
         unit = MonUnitsConnections.objects.get(id=v_saved_id)
@@ -396,16 +381,12 @@ def update_saved_monitor_unit_interval(request):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def refresh_monitor_units(request, v_database):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_ids = json_object['p_ids']
+    v_ids = request.data['p_ids']
 
     v_return['v_data'] = []
 
@@ -543,17 +524,15 @@ def refresh_monitor_units(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def test_monitor_script(request, v_database):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_tab_id = json_object['p_tab_id']
-    v_script_chart = json_object['p_script_chart']
-    v_script_data = json_object['p_script_data']
-    v_type = json_object['p_type']
+    data = request.data
+    v_script_chart = data['p_script_chart']
+    v_script_data = data['p_script_data']
+    v_type = data['p_type']
 
 
     v_return['v_data'] = {

@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from django.core import serializers
 from django.shortcuts import redirect
 from pgmanage import settings
-import json
 
 import sys
 
@@ -151,9 +150,9 @@ def sign_in(request):
         v_return['v_data'] = -2
         return JsonResponse(v_return)
 
-    json_object = json.loads(request.POST.get('data', None))
-    username = json_object['p_username']
-    pwd = json_object['p_pwd']
+    data = request.data
+    username = data['p_username']
+    pwd = data['p_pwd']
 
     user = authenticate(username=username, password=pwd)
     if user is not None:

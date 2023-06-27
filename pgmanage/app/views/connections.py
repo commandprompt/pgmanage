@@ -1,12 +1,11 @@
 import io
-import json
 
 import paramiko
 from app.include import OmniDatabase
 from app.models import Connection, Group, GroupConnection, Tab, Technology
 from app.utils.crypto import decrypt, encrypt
-from app.utils.key_manager import key_manager
 from app.utils.decorators import session_required, user_authenticated
+from app.utils.key_manager import key_manager
 from django.db.models import Q
 from django.http import JsonResponse
 from sshtunnel import SSHTunnelForwarder
@@ -17,8 +16,7 @@ from sshtunnel import SSHTunnelForwarder
 def get_connections(request, session):
     response_data = {'data': [], 'status': 'success'}
 
-    request_data = json.loads(request.POST.get('data', '{}'))
-    active_connection_ids = request_data.get('active_connection_ids',[])
+    active_connection_ids = request.data.get('active_connection_ids',[])
 
     tech_list = [tech.name for tech in Technology.objects.all()] #convert to values_list
 
@@ -118,8 +116,7 @@ def get_groups(request):
 def delete_group(request):
     response_data = {'data': '', 'status': 'success'}
 
-    group_object = json.loads(request.body)
-    group_id = group_object['id']
+    group_id = request.data['id']
 
     try:
         group = Group.objects.get(id=group_id)
@@ -143,7 +140,7 @@ def delete_group(request):
 def save_group(request):
     response_data = {'data': '', 'status': 'success'}
 
-    group_object = json.loads(request.body)
+    group_object = request.data
     group_id = group_object.get('id', None)
     group_name = group_object['name']
 
@@ -195,7 +192,7 @@ def save_group(request):
 def test_connection(request):
     response_data = {'data': '', 'status': 'success'}
 
-    conn_object = json.loads(request.body)
+    conn_object = request.data
     conn_id = conn_object['id']
     conn_type = conn_object['technology']
 
@@ -312,7 +309,7 @@ def save_connection(request, session):
     response_data = {'data': '', 'status': 'success'}
     key = key_manager.get(request.user)
 
-    conn_object = json.loads(request.body)
+    conn_object = request.data
     conn_id = conn_object['id']
 
     try:
@@ -438,8 +435,7 @@ def save_connection(request, session):
 def delete_connection(request, session):
     response_data = {'data': '', 'status': 'success'}
 
-    conn_object = json.loads(request.body)
-    conn_id = conn_object['id']
+    conn_id = request.data['id']
 
     try:
         conn = Connection.objects.get(id=conn_id)

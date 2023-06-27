@@ -6,7 +6,6 @@ from django.core import serializers
 from django.shortcuts import redirect
 from datetime import datetime
 from math import ceil
-import json
 import os
 import time
 import threading
@@ -106,8 +105,7 @@ def long_polling(request):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    startup = json_object['p_startup']
+    startup = request.data['p_startup']
 
     client_object = client_manager.get_or_create_client(client_id=request.session.session_key)
 
@@ -156,7 +154,7 @@ def create_request(request, session):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
+    json_object = request.data
     v_code = json_object['v_code']
     v_context_code = json_object['v_context_code']
     v_data = json_object['v_data']

@@ -2,7 +2,6 @@ from django.http import HttpResponse
 from django.template import loader
 from django.http import JsonResponse
 from django.core import serializers
-import json
 
 import sys
 
@@ -58,10 +57,6 @@ def get_tables(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-
     v_list_tables = []
 
     try:
@@ -100,10 +95,7 @@ def get_columns(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     v_list_columns = []
 
@@ -136,10 +128,7 @@ def get_pk(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     v_list_pk = []
 
@@ -168,10 +157,7 @@ def get_pk_columns(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     v_list_pk = []
 
@@ -200,10 +186,7 @@ def get_fks(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     v_list_fk = []
 
@@ -230,17 +213,14 @@ def get_fks(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout=False, p_open_connection=True)
 def get_fks_columns(request, v_database):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_fkey = json_object['p_fkey']
-    v_table = json_object['p_table']
+    data = request.data
+    v_fkey = data['p_fkey']
+    v_table = data['p_table']
 
     v_list_fk = []
 
@@ -273,10 +253,7 @@ def get_uniques(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     v_list_uniques = []
 
@@ -305,11 +282,9 @@ def get_uniques_columns(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_unique = json_object['p_unique']
-    v_table = json_object['p_table']
+    data = request.data
+    v_unique = data['p_unique']
+    v_table = data['p_table']
 
     v_list_uniques = []
 
@@ -340,10 +315,7 @@ def get_indexes(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     v_list_indexes = []
 
@@ -373,11 +345,9 @@ def get_indexes_columns(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_index = json_object['p_index']
-    v_table = json_object['p_table']
+    data = request.data
+    v_index = data['p_index']
+    v_table = data['p_table']
 
     v_list_indexes = []
 
@@ -405,10 +375,6 @@ def get_views(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
 
     v_list_tables = []
 
@@ -438,10 +404,7 @@ def get_views_columns(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     v_list_columns = []
 
@@ -473,10 +436,7 @@ def get_view_definition(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_view = json_object['p_view']
+    v_view = request.data['p_view']
 
     try:
         v_return['v_data'] = v_database.GetViewDefinition(v_view)
@@ -495,10 +455,7 @@ def get_triggers(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     v_list_triggers = []
 
@@ -528,11 +485,9 @@ def template_select(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
-    v_kind = json_object['p_kind']
+    data = request.data
+    v_table = data['p_table']
+    v_kind = data['p_kind']
 
     try:
         v_template = v_database.TemplateSelect(v_table, v_kind).v_text
@@ -557,10 +512,7 @@ def template_insert(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     try:
         v_template = v_database.TemplateInsert(v_table).v_text
@@ -583,10 +535,7 @@ def template_update(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_table = json_object['p_table']
+    v_table = request.data['p_table']
 
     try:
         v_template = v_database.TemplateUpdate(v_table).v_text
@@ -609,10 +558,6 @@ def get_version(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-
     try:
         v_return['v_data'] = {
             'v_version': v_database.GetVersion()
@@ -632,10 +577,7 @@ def get_properties(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
-    v_database_index = json_object['p_database_index']
-    v_tab_id = json_object['p_tab_id']
-    v_data = json_object['p_data']
+    v_data = request.data['p_data']
 
     v_list_properties = []
     v_ddl = ''

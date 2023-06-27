@@ -1,5 +1,3 @@
-import json
-
 from app.file_manager.file_manager import FileManager
 from app.utils.decorators import user_authenticated
 from django.http import HttpResponse, JsonResponse
@@ -9,7 +7,7 @@ from django.http import HttpResponse, JsonResponse
 def create(request):
     file_manager = FileManager(request.user)
 
-    data = json.loads(request.body) if request.body else {}
+    data = request.data
 
     try:
         file_manager.create(data.get("path"), data.get("name"), data.get("type"))
@@ -24,7 +22,7 @@ def create(request):
 def get_directory(request):
     file_manager = FileManager(request.user)
 
-    data = json.loads(request.body) if request.body else {}
+    data = request.data
     try:
         if data.get("parent_dir"):
             files = file_manager.get_parent_directory_content(data["current_path"])
@@ -39,7 +37,7 @@ def get_directory(request):
 def rename(request):
     file_manager = FileManager(request.user)
 
-    data = json.loads(request.body) if request.body else {}
+    data = request.data
 
     try:
         file_manager.rename(data.get("path"), data.get("name"))
@@ -54,10 +52,8 @@ def rename(request):
 def delete(request):
     file_manager = FileManager(request.user)
 
-    data = json.loads(request.body) if request.body else {}
-
     try:
-        file_manager.delete(data.get("path"))
+        file_manager.delete(request.data.get("path"))
         return HttpResponse(status=204)
     except FileNotFoundError as exc:
         return JsonResponse({"data": str(exc)}, status=400)

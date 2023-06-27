@@ -5,7 +5,6 @@ from django.core import serializers
 from django.shortcuts import redirect
 from datetime import datetime
 from math import ceil
-import json
 from os import listdir, makedirs, remove
 from os.path import isfile, join, isdir
 from pgmanage import settings
@@ -204,13 +203,11 @@ load_plugins()
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def list_plugins(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
     plugin_list = []
     plugin_message_list = []
 
@@ -274,13 +271,11 @@ def list_plugins(request):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def get_plugins(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    json_object = json.loads(request.POST.get('data', None))
     plugin_list = []
     for key, plugin in plugins.items():
         if plugin['message']=='' and plugin['js_exists']:
@@ -448,7 +443,6 @@ def handle_uploaded_file(f):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def reload_plugins(request):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
@@ -463,7 +457,6 @@ def reload_plugins(request):
 @user_authenticated
 @session_required(use_old_error_format=True)
 def delete_plugin(request, session):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
@@ -474,9 +467,9 @@ def delete_plugin(request, session):
         v_return['v_data'] = 'You must be superuser to delete a plugin.'
         return JsonResponse(v_return)
 
-    json_object = json.loads(request.POST.get('data', None))
-    p_plugin_name = json_object['p_plugin_name']
-    p_plugin_folder = json_object['p_plugin_folder']
+    data = request.data
+    p_plugin_name = data['p_plugin_name']
+    p_plugin_folder = data['p_plugin_folder']
 
     try:
         plugin = plugins[p_plugin_name]
@@ -509,7 +502,6 @@ def delete_plugin(request, session):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def exec_plugin_function(request, v_database):
-
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
@@ -517,7 +509,7 @@ def exec_plugin_function(request, v_database):
 
     v_session = request.session.get('pgmanage_session')
 
-    json_object = json.loads(request.POST.get('data', None))
+    json_object = request.data
     p_plugin_name = json_object['p_plugin_name']
     p_function_name = json_object['p_function_name']
     if 'p_data' not in json_object or json_object['p_data'] == None:
@@ -530,7 +522,6 @@ def exec_plugin_function(request, v_database):
     p_data['request'] = request
     p_check_database_connection = json_object['p_check_database_connection']
     p_database_index = json_object['p_database_index']
-    p_tab_id = json_object['p_tab_id']
 
     #Check database prompt timeout
     if p_check_database_connection and p_database_index:

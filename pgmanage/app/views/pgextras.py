@@ -1,5 +1,3 @@
-import json
-
 from django.http import JsonResponse
 from app.utils.decorators import database_required_new, user_authenticated
 
@@ -19,7 +17,7 @@ def get_pgcron_jobs(request, v_database):
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
 def get_pgcron_job_details(request, database):
-    data = json.loads(request.body)
+    data = request.data
     job_meta = data.get('job_meta', None)
     if job_meta:
         job = database.GetPgCronJob(job_meta.get('id'))
@@ -36,7 +34,7 @@ def get_pgcron_job_details(request, database):
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
 def get_pgcron_job_logs(request, database):
-    data = json.loads(request.body)
+    data = request.data
     job_meta = data.get('job_meta', None)
     if job_meta:
         logs = database.GetPgCronJobLogs(job_meta.get('id'))
@@ -48,7 +46,7 @@ def get_pgcron_job_logs(request, database):
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
 def save_pgcron_job(request, database):
-    data = json.loads(request.body)
+    data = request.data
     try:
         database.SavePgCronJob(data.get('jobName'), data.get('schedule'), data.get('command'), data.get('inDatabase'))
     except Exception as exc:
@@ -59,7 +57,7 @@ def save_pgcron_job(request, database):
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
 def delete_pgcron_job(request, database):
-    data = json.loads(request.body)
+    data = request.data
     job_meta = data.get('job_meta', None)
     if job_meta:
         try:
@@ -74,7 +72,7 @@ def delete_pgcron_job(request, database):
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
 def delete_pgcron_job_logs(request, database):
-    data = json.loads(request.body)
+    data = request.data
     job_meta = data.get('job_meta', None)
     if job_meta:
         try:

@@ -1,4 +1,3 @@
-import json
 import os
 import random
 import string
@@ -88,16 +87,16 @@ def index(request):
 def save_config_user(request, session):
     response_data = {"data": "", "status": "success"}
 
-    request_data = json.loads(request.body) if request.body else {}
+    data = request.data
 
-    font_size = request_data["font_size"]
-    theme = request_data["theme"]
-    password = request_data["password"]
-    csv_encoding = request_data["csv_encoding"]
-    csv_delimiter = request_data["csv_delimiter"]
-    binary_path = request_data["binary_path"]
-    date_format = request_data["date_format"]
-    pigz_path = request_data["pigz_path"]
+    font_size = data["font_size"]
+    theme = data["theme"]
+    password = data["password"]
+    csv_encoding = data["csv_encoding"]
+    csv_delimiter = data["csv_delimiter"]
+    binary_path = data["binary_path"]
+    date_format = data["date_format"]
+    pigz_path = data["pigz_path"]
 
     session.v_theme_id = theme
     session.v_font_size = font_size
@@ -131,9 +130,9 @@ def shortcuts(request):
     response_data = {"data": "", "status": "success"}
 
     if request.method == "POST":
-        request_data = json.loads(request.body) if request.body else {}
-        shortcut_list = request_data.get("shortcuts")
-        current_os = request_data.get("current_os")
+        data = request.data
+        shortcut_list = data.get("shortcuts")
+        current_os = data.get("current_os")
 
         try:
             # Delete existing user shortcuts
@@ -181,10 +180,10 @@ def shortcuts(request):
 def change_active_database(request, session):
     response_data = {"v_data": {}, "v_error": False, "v_error_id": -1}
 
-    json_object = json.loads(request.POST.get("data", None))
-    tab_id = json_object["p_tab_id"]
-    new_database = json_object["p_database"]
-    conn_id = json_object["p_database_index"]
+    data = request.data
+    tab_id = data["p_tab_id"]
+    new_database = data["p_database"]
+    conn_id = data["p_database_index"]
 
     session.v_tabs_databases[tab_id] = new_database
 
@@ -202,9 +201,9 @@ def change_active_database(request, session):
 def renew_password(request, session):
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
-    json_object = json.loads(request.POST.get("data", None))
-    database_index = json_object["p_database_index"]
-    password = json_object["p_password"]
+    data = request.data
+    database_index = data["p_database_index"]
+    password = data["p_password"]
 
     database_object = session.v_databases[database_index]
     database_object["database"].v_connection.v_password = password
@@ -227,9 +226,9 @@ def renew_password(request, session):
 def draw_graph(request, v_database):
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
-    json_object = json.loads(request.POST.get("data", None))
-    complete = json_object["p_complete"]
-    schema = json_object["p_schema"]
+    data = request.data
+    complete = data["p_complete"]
+    schema = data["p_schema"]
 
     nodes = []
     edges = []
@@ -329,11 +328,11 @@ def start_edit_data(request, v_database):
         "v_error_id": -1,
     }
 
-    json_object = json.loads(request.POST.get("data", None))
-    table = json_object["p_table"]
+    data = request.data
+    table = data["p_table"]
 
     if v_database.v_has_schema:
-        schema = json_object["p_schema"]
+        schema = data["p_schema"]
 
     try:
         if v_database.v_has_schema:
@@ -399,9 +398,9 @@ def start_edit_data(request, v_database):
 def get_completions_table(request, v_database):
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
-    json_object = json.loads(request.POST.get("data", None))
-    table = json_object["p_table"]
-    schema = json_object["p_schema"]
+    data = request.data
+    table = data["p_table"]
+    schema = data["p_schema"]
 
     if v_database.v_has_schema:
         table_name = schema + "." + table
@@ -443,8 +442,7 @@ def get_completions_table(request, v_database):
 def indent_sql(request):
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
-    json_object = json.loads(request.POST.get("data", None))
-    sql = json_object["p_sql"]
+    sql = request.data["p_sql"]
 
     response_data["v_data"] = sqlparse.format(sql, reindent=True)
 
@@ -456,8 +454,7 @@ def indent_sql(request):
 def refresh_monitoring(request, v_database):
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
-    json_object = json.loads(request.POST.get("data", None))
-    sql = json_object["p_query"]
+    sql = request.data["p_query"]
 
     try:
         data = v_database.Query(sql, True, True)
@@ -503,10 +500,10 @@ def get_alias(p_sql, p_pos, p_val):
 def get_autocomplete_results(request, v_database):
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
-    json_object = json.loads(request.POST.get("data", None))
-    sql = json_object["p_sql"]
-    value = json_object["p_value"]
-    pos = json_object["p_pos"]
+    data = request.data
+    sql = data["p_sql"]
+    value = data["p_value"]
+    pos = data["p_pos"]
     num_dots = value.count(".")
 
     result = []
@@ -619,8 +616,8 @@ def master_password(request, session):
 
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
 
-    json_object = json.loads(request.POST.get("data", None))
-    master_pass = json_object["master_password"]
+    data = request.data
+    master_pass = data["master_password"]
 
     master_pass_hash = make_hash(master_pass, request.user)
     user_details = UserDetails.objects.get(user=request.user)
@@ -633,14 +630,14 @@ def master_password(request, session):
         response_data["v_data"] = "Master password is not correct."
         return JsonResponse(response_data)
 
-    if json_object != "" and json_object.get("master_password", "") != "":
+    if data != "" and data.get("master_password", "") != "":
         # store the master pass in the memory
         key_manager.set(request.user, master_pass_hash)
 
         # set the encrypted sample text with the new master pass
         set_masterpass_check_text(user_details, master_pass_hash)
 
-    elif json_object.get("master_password", "") == "":
+    elif data.get("master_password", "") == "":
         response_data["v_error"] = True
         response_data["v_data"] = "Master password cannot be empty."
         return JsonResponse(response_data)
@@ -672,7 +669,7 @@ def reset_master_password(request):
 
 @user_authenticated
 def validate_binary_path(request):
-    data = json.loads(request.body) if request.body else {}
+    data = request.data
 
     binary_path = data.get("binary_path")
 
