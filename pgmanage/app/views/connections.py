@@ -6,24 +6,17 @@ from app.include import OmniDatabase
 from app.models import Connection, Group, GroupConnection, Tab, Technology
 from app.utils.crypto import decrypt, encrypt
 from app.utils.key_manager import key_manager
-from app.utils.decorators import user_authenticated
+from app.utils.decorators import session_required, user_authenticated
 from django.db.models import Q
 from django.http import JsonResponse
 from sshtunnel import SSHTunnelForwarder
 
 
-def session_required(func):
-    def containing_func(request, *args, **kwargs):
-        if not request.session.get('pgmanage_session'):
-            return JsonResponse({'status': 'error', 'error_id': 1 })
-        return func(request, *args, **kwargs)
-    return containing_func
-
 @user_authenticated
-def get_connections(request):
+@session_required
+def get_connections(request, session):
     response_data = {'data': [], 'status': 'success'}
 
-    session = request.session.get("pgmanage_session")
     request_data = json.loads(request.POST.get('data', '{}'))
     active_connection_ids = request_data.get('active_connection_ids',[])
 
@@ -103,7 +96,7 @@ def get_connections(request):
 
 
 @user_authenticated
-@session_required
+@session_required(include_session=False)
 def get_groups(request):
     response_data = {'data': [], 'status': 'success'}
 
@@ -198,13 +191,9 @@ def save_group(request):
 
 
 @user_authenticated
+@session_required(include_session=False)
 def test_connection(request):
     response_data = {'data': '', 'status': 'success'}
-    # Invalid session
-    if not request.session.get('pgmanage_session'):
-        response_data['status'] = 'failed'
-        response_data['data'] = 'invalid session'
-        return JsonResponse(response_data)
 
     conn_object = json.loads(request.body)
     conn_id = conn_object['id']
@@ -318,9 +307,9 @@ def test_connection(request):
 
 
 @user_authenticated
-def save_connection(request):
+@session_required
+def save_connection(request, session):
     response_data = {'data': '', 'status': 'success'}
-    session = request.session.get('pgmanage_session')
     key = key_manager.get(request.user)
 
     conn_object = json.loads(request.body)
@@ -445,9 +434,9 @@ def save_connection(request):
 
 
 @user_authenticated
-def delete_connection(request):
+@session_required
+def delete_connection(request, session):
     response_data = {'data': '', 'status': 'success'}
-    session = request.session.get('pgmanage_session')
 
     conn_object = json.loads(request.body)
     conn_id = conn_object['id']
@@ -473,8 +462,8 @@ def delete_connection(request):
 
 
 @user_authenticated
-def get_existing_tabs(request):
-    session = request.session.get("pgmanage_session")
+@session_required
+def get_existing_tabs(request, session):
 
     existing_tabs = []
     for tab in Tab.objects.filter(user=request.user).order_by("connection"):

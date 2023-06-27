@@ -1,7 +1,6 @@
 import json
 import os
 import random
-import shutil
 import string
 import subprocess
 import sys
@@ -86,10 +85,8 @@ def index(request):
 
 @user_authenticated
 @session_required
-def save_config_user(request):
+def save_config_user(request, session):
     response_data = {"data": "", "status": "success"}
-
-    session = request.session.get("pgmanage_session")
 
     request_data = json.loads(request.body) if request.body else {}
 
@@ -129,7 +126,7 @@ def save_config_user(request):
 
 
 @user_authenticated
-@session_required
+@session_required(include_session=False)
 def shortcuts(request):
     response_data = {"data": "", "status": "success"}
 
@@ -180,16 +177,9 @@ def shortcuts(request):
 
 
 @user_authenticated
-def change_active_database(request):
+@session_required(use_old_error_format=True)
+def change_active_database(request, session):
     response_data = {"v_data": {}, "v_error": False, "v_error_id": -1}
-
-    # Invalid session
-    if not request.session.get("pgmanage_session"):
-        response_data["v_error"] = True
-        response_data["v_error_id"] = 1
-        return JsonResponse(response_data)
-
-    session = request.session.get("pgmanage_session")
 
     json_object = json.loads(request.POST.get("data", None))
     tab_id = json_object["p_tab_id"]
@@ -208,16 +198,9 @@ def change_active_database(request):
 
 
 @user_authenticated
-def renew_password(request):
+@session_required(use_old_error_format=True)
+def renew_password(request, session):
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
-
-    # Invalid session
-    if not request.session.get("pgmanage_session"):
-        response_data["v_error"] = True
-        response_data["v_error_id"] = 1
-        return JsonResponse(response_data)
-
-    session = request.session.get("pgmanage_session")
 
     json_object = json.loads(request.POST.get("data", None))
     database_index = json_object["p_database_index"]
@@ -456,14 +439,9 @@ def get_completions_table(request, v_database):
 
 
 @user_authenticated
+@session_required(use_old_error_format=True, include_session=False)
 def indent_sql(request):
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
-
-    # Invalid session
-    if not request.session.get("pgmanage_session"):
-        response_data["v_error"] = True
-        response_data["v_error_id"] = 1
-        return JsonResponse(response_data)
 
     json_object = json.loads(request.POST.get("data", None))
     sql = json_object["p_sql"]
@@ -632,21 +610,14 @@ def get_autocomplete_results(request, v_database):
 
 
 @user_authenticated
-def master_password(request):
+@session_required(use_old_error_format=True)
+def master_password(request, session):
     """
     Set the master password and store in the memory
     This password will be used to encrypt/decrypt saved server passwords
     """
 
     response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
-
-    session = request.session.get("pgmanage_session")
-
-    # Invalid session
-    if not session:
-        response_data["v_error"] = True
-        response_data["v_error_id"] = 1
-        return JsonResponse(response_data)
 
     json_object = json.loads(request.POST.get("data", None))
     master_pass = json_object["master_password"]

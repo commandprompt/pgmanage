@@ -17,19 +17,15 @@ from app.models.main import *
 from datetime import datetime
 from django.utils.timezone import make_aware
 
+from app.utils.decorators import session_required
+
+
+@session_required(use_old_error_format=True, include_session=False)
 def get_all_snippets(request):
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     v_folders = SnippetFolder.objects.filter(user=request.user)
     v_files = SnippetFile.objects.filter(user=request.user)
@@ -71,20 +67,13 @@ def build_snippets_object_recursive(p_folders,p_files,p_current_object):
             p_current_object['folders'].append(v_folder)
 
 
+@session_required(use_old_error_format=True, include_session=False)
 def get_node_children(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_sn_id_parent = json_object['p_sn_id_parent']
@@ -116,20 +105,13 @@ def get_node_children(request):
 
     return JsonResponse(v_return)
 
+@session_required(use_old_error_format=True, include_session=False)
 def get_snippet_text(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_st_id = json_object['p_st_id']
@@ -141,6 +123,7 @@ def get_snippet_text(request):
 
     return JsonResponse(v_return)
 
+@session_required(use_old_error_format=True, include_session=False)
 def new_node_snippet(request):
 
     v_return = {}
@@ -148,13 +131,7 @@ def new_node_snippet(request):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
+    
 
     json_object = json.loads(request.POST.get('data', None))
     v_sn_id_parent = json_object['p_sn_id_parent']
@@ -196,20 +173,14 @@ def new_node_snippet(request):
 
     return JsonResponse(v_return)
 
+
+@session_required(use_old_error_format=True, include_session=False)
 def delete_node_snippet(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_id = json_object['p_id']
@@ -233,20 +204,14 @@ def delete_node_snippet(request):
 
     return JsonResponse(v_return)
 
+
+@session_required(use_old_error_format=True, include_session=False)
 def save_snippet_text(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_id = json_object['p_id']
@@ -295,20 +260,13 @@ def save_snippet_text(request):
     return JsonResponse(v_return)
 
 
+@session_required(use_old_error_format=True, include_session=False)
 def rename_node_snippet(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_id = json_object['p_id']

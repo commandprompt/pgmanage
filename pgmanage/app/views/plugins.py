@@ -18,7 +18,7 @@ import os
 
 from django import forms
 
-from app.utils.decorators import user_authenticated, database_required
+from app.utils.decorators import user_authenticated, database_required, session_required
 from app.views.monitor_dashboard import monitoring_units
 
 class UploadFileForm(forms.Form):
@@ -202,20 +202,13 @@ load_plugins()
 
 #loading javascript plugins
 @user_authenticated
+@session_required(use_old_error_format=True, include_session=False)
 def list_plugins(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     plugin_list = []
@@ -279,20 +272,13 @@ def list_plugins(request):
 
 #loading javascript plugins
 @user_authenticated
+@session_required(use_old_error_format=True, include_session=False)
 def get_plugins(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     plugin_list = []
@@ -306,7 +292,8 @@ def get_plugins(request):
 
 #upload plugin
 @user_authenticated
-def upload_view(request):
+@session_required(use_old_error_format=True)
+def upload_view(request, session):
     return_object = {
         'v_error': False
     }
@@ -314,9 +301,7 @@ def upload_view(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
 
-            v_session = request.session.get('pgmanage_session')
-
-            if not v_session.v_super_user:
+            if not session.v_super_user:
                 return_object = {
                     'v_error': True,
                     'v_message': 'You must be superuser to upload a plugin.'
@@ -461,20 +446,13 @@ def handle_uploaded_file(f):
 
 #reloading plugins
 @user_authenticated
+@session_required(use_old_error_format=True, include_session=False)
 def reload_plugins(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     load_plugins()
 
@@ -483,21 +461,15 @@ def reload_plugins(request):
     return JsonResponse(v_return)
 
 @user_authenticated
-def delete_plugin(request):
+@session_required(use_old_error_format=True)
+def delete_plugin(request, session):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-    if not v_session.v_super_user:
+    if not session.v_super_user:
         v_return['v_error'] = True
         v_return['v_data'] = 'You must be superuser to delete a plugin.'
         return JsonResponse(v_return)

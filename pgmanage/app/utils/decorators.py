@@ -1,10 +1,13 @@
 import json
+from functools import partial, wraps
+from typing import Any, Callable, Optional
 
 from app.client_manager import client_manager
 from django.http import JsonResponse
 
 
 def user_authenticated(function):
+    @wraps(function)
     def wrap(request, *args, **kwargs):
         # User not authenticated
         if request.user.is_authenticated:
@@ -12,17 +15,15 @@ def user_authenticated(function):
         v_return = {"v_data": "", "v_error": True, "v_error_id": 1}
         return JsonResponse(v_return)
 
-    wrap.__doc__ = function.__doc__
-    wrap.__name__ = function.__name__
     return wrap
 
 
 def database_required(p_check_timeout=True, p_open_connection=True):
     def decorator(function):
-        def wrap(request, *args, **kwargs):
+        @session_required(use_old_error_format=True)
+        @wraps(function)
+        def wrap(request, session, *args, **kwargs):
             v_return = {"v_data": "", "v_error": False, "v_error_id": -1}
-
-            v_session = request.session.get("pgmanage_session")
 
             json_object = json.loads(request.POST.get("data", None))
             v_database_index = json_object["p_database_index"]
@@ -35,7 +36,7 @@ def database_required(p_check_timeout=True, p_open_connection=True):
                 try:
                     if p_check_timeout:
                         # Check database prompt timeout
-                        v_timeout = v_session.DatabaseReachPasswordTimeout(
+                        v_timeout = session.DatabaseReachPasswordTimeout(
                             int(v_database_index)
                         )
                         if v_timeout["timeout"]:
@@ -47,7 +48,7 @@ def database_required(p_check_timeout=True, p_open_connection=True):
                             return JsonResponse(v_return)
 
                     v_database = client.get_main_tab_database(
-                        session=v_session,
+                        session=session,
                         conn_tab_id=v_tab_id,
                         database_index=v_database_index,
                         attempt_to_open_connection=p_open_connection,
@@ -64,8 +65,6 @@ def database_required(p_check_timeout=True, p_open_connection=True):
 
             return function(request, v_database, *args, **kwargs)
 
-        wrap.__doc__ = function.__doc__
-        wrap.__name__ = function.__name__
         return wrap
 
     return decorator
@@ -73,9 +72,9 @@ def database_required(p_check_timeout=True, p_open_connection=True):
 
 def database_required_new(check_timeout=True, open_connection=True):
     def decorator(function):
-        def wrap(request, *args, **kwargs):
-            session = request.session.get("pgmanage_session")
-
+        @session_required
+        @wraps(function)
+        def wrap(request, session, *args, **kwargs):
             json_object = json.loads(request.body) if request.body else {}
             database_index = json_object.get("database_index")
             tab_id = json_object.get("tab_id")
@@ -111,18 +110,16 @@ def database_required_new(check_timeout=True, open_connection=True):
 
             return function(request, database, *args, **kwargs)
 
-        wrap.__doc__ = function.__doc__
-        wrap.__name__ = function.__name__
         return wrap
 
     return decorator
 
 
 def superuser_required(function):
-    def wrap(request, *args, **kwargs):
-        v_session = request.session.get("pgmanage_session")
-
-        if v_session.v_super_user:
+    @session_required(use_old_error_format=True)
+    @wraps(function)
+    def wrap(request, session, *args, **kwargs):
+        if session.v_super_user:
             return function(request, *args, **kwargs)
         v_return = {
             "v_data": "You must be superuser to perform this operation",
@@ -130,7 +127,51 @@ def superuser_required(function):
         }
         return JsonResponse(v_return)
 
-    wrap.__doc__ = function.__doc__
-    wrap.__name__ = function.__name__
-
     return wrap
+
+
+def session_required(
+    func: Optional[Callable[..., Any]] = None,
+    use_old_error_format: bool = False,
+    include_session: bool = True,
+) -> Callable[..., Any]:
+    """
+    Decorator that enforces the presence of a valid session in the request.
+
+    Args:
+        func (callable, optional): The function to be decorated.
+        use_old_error_format (bool, optional): Flag indicating whether to use old error format or not.
+            If True, returns a JsonResponse with old error format when session is invalid.
+            If False, returns a JsonResponse with a "Invalid session" message and status code 401.
+            Defaults to False.
+        include_session (bool, optional): Flag indicating whether to include the session parameter
+            when calling the decorated function. If True, the session parameter will be included.
+            If False, the session parameter will be omitted. Defaults to True.
+
+    Returns:
+        callable: The decorated function or a decorator factory.
+
+    Raises:
+        None
+    """
+
+    if func is None:
+        return partial(
+            session_required,
+            use_old_error_format=use_old_error_format,
+            include_session=include_session,
+        )
+
+    @wraps(func)
+    def containing_func(request, *args, **kwargs):
+        session = request.session.get("pgmanage_session")
+        if not session:
+            if use_old_error_format:
+                return JsonResponse({"v_data": "", "v_error": True, "v_error_id": 1})
+            return JsonResponse({"data": "Invalid session"}, status=401)
+
+        if include_session:
+            return func(request, session, *args, **kwargs)
+        return func(request, *args, **kwargs)
+
+    return containing_func

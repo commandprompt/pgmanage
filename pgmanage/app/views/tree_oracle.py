@@ -23,14 +23,6 @@ def get_tree_info(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
 
@@ -107,14 +99,6 @@ def get_properties(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_data = json_object['p_data']
@@ -148,14 +132,6 @@ def get_tables(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -199,14 +175,6 @@ def get_columns(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_table = json_object['p_table']
@@ -243,14 +211,6 @@ def get_pk(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_table = json_object['p_table']
@@ -282,14 +242,6 @@ def get_pk_columns(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -323,14 +275,6 @@ def get_fks(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -366,14 +310,6 @@ def get_fks_columns(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -412,14 +348,6 @@ def get_uniques(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_table = json_object['p_table']
@@ -451,14 +379,6 @@ def get_uniques_columns(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -493,14 +413,6 @@ def get_indexes(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_table = json_object['p_table']
@@ -533,14 +445,6 @@ def get_indexes_columns(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -575,14 +479,6 @@ def get_tablespaces(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
 
@@ -613,14 +509,6 @@ def get_roles(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -653,14 +541,6 @@ def get_packages(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -695,14 +575,6 @@ def get_functions(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_schema = json_object['p_schema']
@@ -735,14 +607,6 @@ def get_function_fields(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -778,14 +642,6 @@ def get_function_definition(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_function = json_object['p_function']
@@ -808,14 +664,6 @@ def get_procedures(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -849,14 +697,6 @@ def get_procedure_fields(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -892,14 +732,6 @@ def get_procedure_definition(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_function = json_object['p_procedure']
@@ -922,14 +754,6 @@ def get_sequences(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -963,14 +787,6 @@ def get_views(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_schema = json_object['p_schema']
@@ -1003,14 +819,6 @@ def get_views_columns(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -1047,14 +855,6 @@ def get_view_definition(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_view = json_object['p_view']
@@ -1079,14 +879,6 @@ def kill_backend(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_pid            = json_object['p_pid']
@@ -1109,14 +901,6 @@ def template_select(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -1146,14 +930,6 @@ def template_insert(request, v_database):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
-
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
     v_tab_id = json_object['p_tab_id']
@@ -1182,14 +958,6 @@ def template_update(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']

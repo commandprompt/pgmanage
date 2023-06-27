@@ -29,6 +29,7 @@ from django.contrib.auth.models import User
 from app.models.main import *
 
 from app.client_manager import client_manager, Client
+from app.utils.decorators import session_required
 
 import traceback
 
@@ -97,18 +98,13 @@ def client_keep_alive(request):
     {}
     )
 
+@session_required(use_old_error_format=True, include_session=False)
 def long_polling(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
 
     json_object = json.loads(request.POST.get('data', None))
     startup = json_object['p_startup']
@@ -152,21 +148,13 @@ def queue_response(client: Client, p_data):
         pass
     client.release_returning_data_lock()
 
-
-def create_request(request):
+@session_required(use_old_error_format=True)
+def create_request(request, session):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_code = json_object['v_code']
@@ -219,7 +207,7 @@ def create_request(request):
 
         #Check database prompt timeout
         if v_data['v_db_index']!=None:
-            v_timeout = v_session.DatabaseReachPasswordTimeout(v_data['v_db_index'])
+            v_timeout = session.DatabaseReachPasswordTimeout(v_data['v_db_index'])
             if v_timeout['timeout']:
                 v_return['v_code'] = response.PasswordRequired
                 v_return['v_context_code'] = v_context_code
@@ -243,7 +231,7 @@ def create_request(request):
                 start_thread = True
 
                 try:
-                    v_conn_object = v_session.v_databases[v_data['v_ssh_id']]
+                    v_conn_object = session.v_databases[v_data['v_ssh_id']]
 
                     client = paramiko.SSHClient()
                     client.load_system_host_keys()
@@ -277,7 +265,7 @@ def create_request(request):
                     v_data['v_context_code'] = v_context_code
                     v_data['v_tab_object'] = tab_object
                     v_data['v_client_object'] = client_object
-                    v_data['v_session'] = v_session
+                    v_data['session'] = session
                     t = StoppableThread(thread_terminal,v_data)
                     tab_object['thread'] = t
                     tab_object['type'] = 'terminal'
@@ -307,7 +295,7 @@ def create_request(request):
                 )
 
             try:
-                client_object.get_tab_database(session=v_session,
+                client_object.get_tab_database(session=session,
                                                         tab=tab_object,
                                                         conn_tab_id=v_data['v_conn_tab_id'],
                                                         database_index=v_data['v_db_index'],
@@ -325,7 +313,7 @@ def create_request(request):
             v_data['v_context_code'] = v_context_code
             v_data['v_database'] = tab_object['omnidatabase']
             v_data['v_client_object'] = client_object
-            v_data['v_session'] = v_session
+            v_data['session'] = session
             #Query request
             if v_code == requestType.Query:
                 tab_object['tab_db_id'] = v_data['v_tab_db_id']
@@ -393,7 +381,7 @@ def create_request(request):
             #New debugger, create connections
             if v_data['v_state'] == debugState.Starting:
                 try:
-                    v_conn_tab_connection = v_session.v_databases[v_data['v_db_index']]['database']
+                    v_conn_tab_connection = session.v_databases[v_data['v_db_index']]['database']
 
                     v_database_debug = OmniDatabase.Generic.InstantiateDatabase(
                         v_conn_tab_connection.v_db_type,
@@ -795,7 +783,7 @@ def thread_query(self,args):
         if v_sql[-1:]==';':
             v_sql = v_sql[:-1]
 
-        v_session = args['v_session']
+        session = args['session']
         v_database = args['v_database']
 
         log_start_time = datetime.now(timezone.utc)
@@ -807,7 +795,7 @@ def thread_query(self,args):
             if not v_tab_object['tab_db_id'] and not v_tab_object['inserted_tab'] and v_log_query:
                 try:
                     tab_object = Tab(
-                        user=User.objects.get(id=v_session.v_user_id),
+                        user=User.objects.get(id=session.v_user_id),
                         connection=Connection.objects.get(id=v_database.v_conn_id),
                         title=v_tab_title,
                         snippet=v_tab_object['sql_save'],
@@ -847,7 +835,7 @@ def thread_query(self,args):
                 #    f = Spartacus.Utils.DataFileWriter(os.path.join(v_export_dir, v_file_name), v_data1.Columns, 'windows-1252')
                 #else:
                 #    f = Spartacus.Utils.DataFileWriter(os.path.join(v_export_dir, v_file_name), v_data1.Columns)
-                f = Spartacus.Utils.DataFileWriter(os.path.join(v_export_dir, v_file_name), v_data1.Columns,v_session.v_csv_encoding, v_session.v_csv_delimiter, skip_headers=skip_headers)
+                f = Spartacus.Utils.DataFileWriter(os.path.join(v_export_dir, v_file_name), v_data1.Columns,session.v_csv_encoding, session.v_csv_delimiter, skip_headers=skip_headers)
                 f.Open()
                 if v_database.v_connection.v_start:
                     f.Write(v_data1)
@@ -1089,8 +1077,8 @@ def thread_query(self,args):
 
         #Log to history
         if v_mode==0 and v_log_query:
-            LogHistory(v_session.v_user_id,
-                    v_session.v_user_name,
+            LogHistory(session.v_user_id,
+                    session.v_user_name,
                     v_sql,
                     log_start_time,
                     log_end_time,
@@ -1131,7 +1119,7 @@ def thread_console(self,args):
         v_mode           = args['v_mode']
         v_client_object  = args['v_client_object']
 
-        v_session = args['v_session']
+        session = args['session']
         v_database = args['v_database']
 
         #Removing last character if it is a semi-colon
@@ -1275,7 +1263,7 @@ def thread_console(self,args):
         if v_mode == 0:
             #logging to console history
             query_object = ConsoleHistory(
-                user=User.objects.get(id=v_session.v_user_id),
+                user=User.objects.get(id=session.v_user_id),
                 connection=Connection.objects.get(id=v_database.v_conn_id),
                 start_time=datetime.now(timezone.utc),
                 snippet=v_sql.replace("'","''")
@@ -1307,7 +1295,7 @@ def thread_query_edit_data(self,args):
     }
 
     try:
-        v_session = args['v_session']
+        session = args['session']
         v_database = args['v_database']
 
         v_table          = args['v_table']
@@ -1382,7 +1370,7 @@ def thread_save_edit_data(self,args):
     }
 
     try:
-        v_session = args['v_session']
+        session = args['session']
         v_database = args['v_database']
 
         v_table          = args['v_table']

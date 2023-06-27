@@ -26,7 +26,7 @@ from app.models.main import *
 from django.contrib.auth.models import User
 from django.db.models import Q
 
-from app.utils.decorators import user_authenticated, database_required
+from app.utils.decorators import user_authenticated, database_required, session_required
 from app.views.monitoring_units import postgresql as postgresql_units
 from app.views.monitoring_units import mysql as mysql_units
 
@@ -126,20 +126,13 @@ def get_monitor_unit_list(request, v_database):
     return JsonResponse(v_return)
 
 @user_authenticated
+@session_required(use_old_error_format=True, include_session=False)
 def get_monitor_unit_details(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_unit_id = json_object['p_unit_id']
@@ -163,14 +156,6 @@ def get_monitor_units(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -239,6 +224,7 @@ def get_monitor_units(request, v_database):
     return JsonResponse(v_return)
 
 @user_authenticated
+@session_required(use_old_error_format=True, include_session=False)
 def get_monitor_unit_template(request):
 
     v_return = {}
@@ -246,13 +232,6 @@ def get_monitor_unit_template(request):
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
 
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_unit_id = json_object['p_unit_id']
@@ -296,14 +275,6 @@ def save_monitor_unit(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_unit_id = json_object['p_unit_id']
@@ -353,20 +324,13 @@ def save_monitor_unit(request, v_database):
     return JsonResponse(v_return)
 
 @user_authenticated
+@session_required(use_old_error_format=True, include_session=False)
 def delete_monitor_unit(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_unit_id = json_object['p_unit_id']
@@ -383,20 +347,13 @@ def delete_monitor_unit(request):
     return JsonResponse(v_return)
 
 @user_authenticated
+@session_required(use_old_error_format=True, include_session=False)
 def remove_saved_monitor_unit(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_saved_id = json_object['p_saved_id']
@@ -411,20 +368,13 @@ def remove_saved_monitor_unit(request):
     return JsonResponse(v_return)
 
 @user_authenticated
+@session_required(use_old_error_format=True, include_session=False)
 def update_saved_monitor_unit_interval(request):
 
     v_return = {}
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_saved_id = json_object['p_saved_id']
@@ -451,14 +401,6 @@ def refresh_monitor_units(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_database_index = json_object['p_database_index']
@@ -606,14 +548,6 @@ def test_monitor_script(request, v_database):
     v_return['v_data'] = ''
     v_return['v_error'] = False
     v_return['v_error_id'] = -1
-
-    #Invalid session
-    if not request.session.get('pgmanage_session'):
-        v_return['v_error'] = True
-        v_return['v_error_id'] = 1
-        return JsonResponse(v_return)
-
-    v_session = request.session.get('pgmanage_session')
 
     json_object = json.loads(request.POST.get('data', None))
     v_tab_id = json_object['p_tab_id']
