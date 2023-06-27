@@ -2860,7 +2860,7 @@ CREATE MATERIALIZED VIEW {0}.{1} AS
 
     @lock_required
     def GetPgCronJobLogs(self, job_id):
-        return self.v_connection.Query('''select runid, job_pid, database, username, status, return_message, command
+        return self.v_connection.Query('''select runid, job_pid, database, username, status, start_time, end_time, return_message, command
             from cron.job_run_details
             where jobid = {0}
             order by runid desc limit 50'''.format(job_id), True)

@@ -50,8 +50,6 @@ def get_pgcron_job_logs(request, database):
 def save_pgcron_job(request, database):
     data = json.loads(request.body)
     try:
-        # TODO: implement UpdatePgCronJob which uses cron.alter_job()to make update, support database as an argument
-        # TODO: add schedule in database support to job creation
         database.SavePgCronJob(data.get('jobName'), data.get('schedule'), data.get('command'), data.get('inDatabase'))
     except Exception as exc:
         return JsonResponse(data={'data': str(exc)}, status=500)
