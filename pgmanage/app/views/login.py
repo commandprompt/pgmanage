@@ -23,6 +23,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from app.utils.decorators import user_authenticated
 from app.utils.key_manager import key_manager
+from app.utils.response_helpers import create_response_template
 
 import logging
 
@@ -90,11 +91,7 @@ def logout(request):
     return redirect(settings.PATH + '/pgmanage_login')
 
 def check_session_message(request):
-
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     if request.session.get('omnidb_alert_message'):
         v_return['v_data'] = request.session.get('omnidb_alert_message')
@@ -139,10 +136,8 @@ def create_user_session(request, user, user_details):
 
 
 def sign_in(request):
-    v_return = {}
+    v_return = create_response_template()
     v_return['v_data'] = -1
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
 
     valid_token = custom_settings.APP_TOKEN
 

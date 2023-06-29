@@ -2,6 +2,7 @@ from functools import partial, wraps
 from typing import Any, Callable, Optional
 
 from app.client_manager import client_manager
+from app.utils.response_helpers import error_response
 from django.http import JsonResponse
 
 
@@ -11,8 +12,7 @@ def user_authenticated(function):
         # User not authenticated
         if request.user.is_authenticated:
             return function(request, *args, **kwargs)
-        v_return = {"v_data": "", "v_error": True, "v_error_id": 1}
-        return JsonResponse(v_return)
+        return error_response(message="", error_id=1)
 
     return wrap
 
@@ -22,8 +22,6 @@ def database_required(p_check_timeout=True, p_open_connection=True):
         @session_required(use_old_error_format=True)
         @wraps(function)
         def wrap(request, session, *args, **kwargs):
-            v_return = {"v_data": "", "v_error": False, "v_error_id": -1}
-
             data = request.data
 
             v_database_index = data["p_database_index"]
@@ -40,12 +38,9 @@ def database_required(p_check_timeout=True, p_open_connection=True):
                             int(v_database_index)
                         )
                         if v_timeout["timeout"]:
-                            v_return["v_data"] = {
-                                "password_timeout": True,
-                                "message": v_timeout["message"],
-                            }
-                            v_return["v_error"] = True
-                            return JsonResponse(v_return)
+                            return error_response(
+                                message=v_timeout["message"], password_timeout=True
+                            )
 
                     v_database = client.get_main_tab_database(
                         session=session,
@@ -54,12 +49,7 @@ def database_required(p_check_timeout=True, p_open_connection=True):
                         attempt_to_open_connection=p_open_connection,
                     )
                 except Exception as exc:
-                    v_return["v_data"] = {
-                        "password_timeout": False,
-                        "message": str(exc),
-                    }
-                    v_return["v_error"] = True
-                    return JsonResponse(v_return)
+                    return error_response(message=str(exc), password_timeout=False)
             else:
                 v_database = None
 
@@ -121,11 +111,7 @@ def superuser_required(function):
     def wrap(request, session, *args, **kwargs):
         if session.v_super_user:
             return function(request, *args, **kwargs)
-        v_return = {
-            "v_data": "You must be superuser to perform this operation",
-            "v_error": True,
-        }
-        return JsonResponse(v_return)
+        return error_response(message="You must be superuser to perform this operation")
 
     return wrap
 
@@ -167,7 +153,7 @@ def session_required(
         session = request.session.get("pgmanage_session")
         if not session:
             if use_old_error_format:
-                return JsonResponse({"v_data": "", "v_error": True, "v_error_id": 1})
+                return error_response(message="", error_id=1)
             return JsonResponse({"data": "Invalid session"}, status=401)
 
         if include_session:

@@ -16,6 +16,7 @@ from app.utils.master_password import (
     set_masterpass_check_text,
     validate_master_password,
 )
+from app.utils.response_helpers import create_response_template, error_response
 from app.views.connections import session_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -178,7 +179,7 @@ def shortcuts(request):
 @user_authenticated
 @session_required(use_old_error_format=True)
 def change_active_database(request, session):
-    response_data = {"v_data": {}, "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
     tab_id = data["p_tab_id"]
@@ -199,7 +200,7 @@ def change_active_database(request, session):
 @user_authenticated
 @session_required(use_old_error_format=True)
 def renew_password(request, session):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
     database_index = data["p_database_index"]
@@ -224,7 +225,7 @@ def renew_password(request, session):
 @user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def draw_graph(request, v_database):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
     complete = data["p_complete"]
@@ -312,9 +313,7 @@ def draw_graph(request, v_database):
         response_data["v_data"] = {"v_nodes": nodes, "v_edges": edges}
 
     except Exception as exc:
-        response_data["v_data"] = {"password_timeout": True, "message": str(exc)}
-        response_data["v_error"] = True
-        return JsonResponse(response_data)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(response_data)
 
@@ -322,12 +321,8 @@ def draw_graph(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def start_edit_data(request, v_database):
-    response_data = {
-        "v_data": {"v_pk": [], "v_cols": [], "v_ini_orderby": ""},
-        "v_error": False,
-        "v_error_id": -1,
-    }
-
+    response_data = create_response_template()
+    response_data["v_data"] = {"v_pk": [], "v_cols": [], "v_ini_orderby": ""}
     data = request.data
     table = data["p_table"]
 
@@ -387,8 +382,7 @@ def start_edit_data(request, v_database):
             index += 1
 
     except Exception as exc:
-        response_data["v_data"] = {"password_timeout": True, "message": str(exc)}
-        response_data["v_error"] = True
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(response_data)
 
@@ -396,7 +390,7 @@ def start_edit_data(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def get_completions_table(request, v_database):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
     table = data["p_table"]
@@ -414,9 +408,7 @@ def get_completions_table(request, v_database):
             "select x.* from " + table_name + " x where 1 = 0"
         )
     except Exception as exc:
-        response_data["v_data"] = {"password_timeout": True, "message": str(exc)}
-        response_data["v_error"] = True
-        return JsonResponse(response_data)
+        return error_response(message=str(exc), password_timeout=True)
 
     score = 100
 
@@ -440,7 +432,7 @@ def get_completions_table(request, v_database):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def indent_sql(request):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     sql = request.data["p_sql"]
 
@@ -452,7 +444,7 @@ def indent_sql(request):
 @user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def refresh_monitoring(request, v_database):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     sql = request.data["p_query"]
 
@@ -464,8 +456,7 @@ def refresh_monitoring(request, v_database):
             "v_query_info": f"Number of records: {len(data.Rows)}",
         }
     except Exception as exc:
-        response_data["v_data"] = {"password_timeout": True, "message": str(exc)}
-        response_data["v_error"] = True
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(response_data)
 
@@ -498,7 +489,7 @@ def get_alias(p_sql, p_pos, p_val):
 @user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def get_autocomplete_results(request, v_database):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
     sql = data["p_sql"]
@@ -593,9 +584,7 @@ def get_autocomplete_results(request, v_database):
                     result.append(current_group)
 
         except Exception as exc:
-            response_data["v_data"] = {"password_timeout": True, "message": str(exc)}
-            response_data["v_error"] = True
-            return JsonResponse(response_data)
+            return error_response(message=str(exc), password_timeout=True)
 
     response_data["v_data"] = {
         "data": result,
@@ -614,7 +603,7 @@ def master_password(request, session):
     This password will be used to encrypt/decrypt saved server passwords
     """
 
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
     master_pass = data["master_password"]
@@ -626,9 +615,7 @@ def master_password(request, session):
     if user_details.masterpass_check and not validate_master_password(
         user_details, master_pass_hash
     ):
-        response_data["v_error"] = True
-        response_data["v_data"] = "Master password is not correct."
-        return JsonResponse(response_data)
+        return error_response(message="Master password is not correct.")
 
     if data != "" and data.get("master_password", "") != "":
         # store the master pass in the memory
@@ -638,9 +625,7 @@ def master_password(request, session):
         set_masterpass_check_text(user_details, master_pass_hash)
 
     elif data.get("master_password", "") == "":
-        response_data["v_error"] = True
-        response_data["v_data"] = "Master password cannot be empty."
-        return JsonResponse(response_data)
+        return error_response(message="Master password cannot be empty.")
 
     # refreshing database session list with provided master password
     session.RefreshDatabaseList()
@@ -658,7 +643,7 @@ def reset_master_password(request):
     This password will be used to encrypt/decrypt saved server passwords
     """
 
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     user_details = UserDetails.objects.get(user=request.user)
 

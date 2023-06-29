@@ -26,6 +26,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 
 from app.utils.decorators import user_authenticated, database_required, session_required
+from app.utils.response_helpers import create_response_template, error_response
 from app.views.monitoring_units import postgresql as postgresql_units
 from app.views.monitoring_units import mysql as mysql_units
 
@@ -63,10 +64,7 @@ def _hook_import(name, *args, **kwargs):
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
 def get_monitor_unit_list(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_mode = request.data['p_mode']
     v_return['v_data'] = []
@@ -116,19 +114,14 @@ def get_monitor_unit_list(request, v_database):
 
         v_return['v_data'] = {'id_list': v_id_list, 'data': v_data}
     except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc))
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def get_monitor_unit_details(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_unit_id = request.data['p_unit_id']
 
@@ -137,22 +130,16 @@ def get_monitor_unit_details(request):
         v_return['v_data'] = { 'title': unit.title, 'type': unit.type, 'interval': unit.interval, 'script_chart': unit.script_chart, 'script_data': unit.script_data }
 
     except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc))
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
 def get_monitor_units(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_database_index = request.data['p_database_index']
-
 
     v_return['v_data'] = []
 
@@ -219,11 +206,7 @@ def get_monitor_units(request, v_database):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def get_monitor_unit_template(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
-
+    v_return = create_response_template()
 
     data = request.data
     v_unit_id = data['p_unit_id']
@@ -262,10 +245,7 @@ def get_monitor_unit_template(request):
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
 def save_monitor_unit(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_unit_id = data['p_unit_id']
@@ -307,19 +287,14 @@ def save_monitor_unit(request, v_database):
         monitoring_units_database[unit.id] = unit
 
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def delete_monitor_unit(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_unit_id = request.data['p_unit_id']
 
@@ -328,38 +303,28 @@ def delete_monitor_unit(request):
         del monitoring_units_database[v_unit_id]
 
     except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc))
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def remove_saved_monitor_unit(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_saved_id = request.data['p_saved_id']
     try:
         MonUnitsConnections.objects.get(id=v_saved_id).delete()
 
     except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc))
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def update_saved_monitor_unit_interval(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_saved_id = data['p_saved_id']
@@ -369,22 +334,15 @@ def update_saved_monitor_unit_interval(request):
         unit = MonUnitsConnections.objects.get(id=v_saved_id)
         unit.interval = v_interval
         unit.save()
-
-
     except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc))
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def refresh_monitor_units(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_ids = request.data['p_ids']
 
@@ -524,10 +482,7 @@ def refresh_monitor_units(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def test_monitor_script(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_script_chart = data['p_script_chart']

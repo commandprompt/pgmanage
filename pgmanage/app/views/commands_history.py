@@ -2,6 +2,7 @@ from math import ceil
 
 from app.models.main import Connection, ConsoleHistory, QueryHistory
 from app.utils.decorators import user_authenticated
+from app.utils.response_helpers import create_response_template, error_response
 from django.http import JsonResponse
 
 from pgmanage import settings
@@ -9,7 +10,7 @@ from pgmanage import settings
 
 @user_authenticated
 def get_command_list(request):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
 
@@ -39,9 +40,7 @@ def get_command_list(request):
         commands = query[offset : offset + settings.CH_CMDS_PER_PAGE]
 
     except Exception as exc:
-        response_data["v_data"] = str(exc)
-        response_data["v_error"] = True
-        return JsonResponse(response_data)
+        return error_response(message=str(exc))
 
     command_list = []
 
@@ -72,7 +71,7 @@ def get_command_list(request):
 
 @user_authenticated
 def clear_command_list(request):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
 
@@ -96,16 +95,14 @@ def clear_command_list(request):
 
         query.delete()
     except Exception as exc:
-        response_data["v_data"] = str(exc)
-        response_data["v_error"] = True
-        return JsonResponse(response_data)
+        return error_response(message=str(exc))
 
     return JsonResponse(response_data)
 
 
 @user_authenticated
 def get_console_history(request):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
 
@@ -135,9 +132,7 @@ def get_console_history(request):
         commands = query[offset : offset + settings.CH_CMDS_PER_PAGE]
 
     except Exception as exc:
-        response_data["v_data"] = str(exc)
-        response_data["v_error"] = True
-        return JsonResponse(response_data)
+        return error_response(message=str(exc))
 
     command_list = []
 
@@ -157,7 +152,7 @@ def get_console_history(request):
 
 @user_authenticated
 def clear_console_list(request):
-    response_data = {"v_data": "", "v_error": False, "v_error_id": -1}
+    response_data = create_response_template()
 
     data = request.data
 
@@ -181,8 +176,6 @@ def clear_console_list(request):
 
         query.delete()
     except Exception as exc:
-        response_data["v_data"] = str(exc)
-        response_data["v_error"] = True
-        return JsonResponse(response_data)
+        return error_response(message=str(exc))
 
     return JsonResponse(response_data)

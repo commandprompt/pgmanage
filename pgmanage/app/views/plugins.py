@@ -17,8 +17,9 @@ import os
 
 from django import forms
 
-from app.utils.decorators import user_authenticated, database_required, session_required
+from app.utils.decorators import user_authenticated, database_required, session_required, superuser_required
 from app.views.monitor_dashboard import monitoring_units
+from app.utils.response_helpers import create_response_template, error_response
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
@@ -203,10 +204,7 @@ load_plugins()
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def list_plugins(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     plugin_list = []
     plugin_message_list = []
@@ -271,10 +269,7 @@ def list_plugins(request):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def get_plugins(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     plugin_list = []
     for key, plugin in plugins.items():
@@ -443,10 +438,7 @@ def handle_uploaded_file(f):
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def reload_plugins(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     load_plugins()
 
@@ -454,18 +446,11 @@ def reload_plugins(request):
 
     return JsonResponse(v_return)
 
+@superuser_required
 @user_authenticated
-@session_required(use_old_error_format=True)
-def delete_plugin(request, session):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
-
-    if not session.v_super_user:
-        v_return['v_error'] = True
-        v_return['v_data'] = 'You must be superuser to delete a plugin.'
-        return JsonResponse(v_return)
+@session_required(use_old_error_format=True, include_session=False)
+def delete_plugin(request):
+    v_return = create_response_template()
 
     data = request.data
     p_plugin_name = data['p_plugin_name']
@@ -502,10 +487,7 @@ def delete_plugin(request, session):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def exec_plugin_function(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_session = request.session.get('pgmanage_session')
 
@@ -527,16 +509,12 @@ def exec_plugin_function(request, v_database):
     if p_check_database_connection and p_database_index:
         v_timeout = v_session.DatabaseReachPasswordTimeout(int(p_database_index))
         if v_timeout['timeout']:
-            v_return['v_data'] = {'password_timeout': True, 'message': v_timeout['message'] }
-            v_return['v_error'] = True
-            return JsonResponse(v_return)
+            return error_response(message=v_timeout['message'], password_timeout=True)
 
     try:
         func = getattr(plugins[p_plugin_name]['module'], p_function_name)
         v_return['v_data'] = func(v_database,p_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)

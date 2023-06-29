@@ -12,14 +12,12 @@ from app.include.Session import Session
 from datetime import datetime
 
 from app.utils.decorators import database_required, database_required_new, user_authenticated
+from app.utils.response_helpers import create_response_template, error_response
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_tree_info(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     try:
         v_return['v_data'] = {
@@ -154,9 +152,7 @@ def get_tree_info(request, v_database):
             }
         }
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
@@ -179,10 +175,7 @@ def get_database_objects(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_properties(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_data = request.data['p_data']
 
@@ -195,9 +188,7 @@ def get_properties(request, v_database):
             v_list_properties.append([v_property['Property'],v_property['Value']])
         v_ddl = v_database.GetDDL(v_data['p_schema'],v_data['p_table'],v_data['p_object'],v_data['p_type'])
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = {
         'properties': v_list_properties,
@@ -209,10 +200,7 @@ def get_properties(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_tables(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -237,9 +225,7 @@ def get_tables(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -248,10 +234,7 @@ def get_tables(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_columns(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -271,9 +254,7 @@ def get_columns(request, v_database):
             }
             v_list_columns.append(v_column_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_columns
 
@@ -282,10 +263,7 @@ def get_columns(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_pk(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -301,9 +279,7 @@ def get_pk(request, v_database):
             v_pk_data.append(v_pk['oid'])
             v_list_pk.append(v_pk_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_pk
 
@@ -312,10 +288,7 @@ def get_pk(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_pk_columns(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
     
     data = request.data
     v_pkey = data['p_key']
@@ -331,9 +304,7 @@ def get_pk_columns(request, v_database):
             v_pk_data.append(v_pk['column_name'])
             v_list_pk.append(v_pk_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_pk
 
@@ -342,10 +313,7 @@ def get_pk_columns(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_fks(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -364,9 +332,7 @@ def get_fks(request, v_database):
             v_fk_data.append(v_fk['oid'])
             v_list_fk.append(v_fk_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_fk
 
@@ -375,10 +341,7 @@ def get_fks(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_fks_columns(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_fkey = data['p_fkey']
@@ -398,9 +361,7 @@ def get_fks_columns(request, v_database):
             v_fk_data.append(v_fk['r_column_name'])
             v_list_fk.append(v_fk_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_fk
 
@@ -409,10 +370,7 @@ def get_fks_columns(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_uniques(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -428,9 +386,7 @@ def get_uniques(request, v_database):
             v_unique_data.append(v_unique['oid'])
             v_list_uniques.append(v_unique_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_uniques
 
@@ -439,10 +395,7 @@ def get_uniques(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_uniques_columns(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_unique = data['p_unique']
@@ -458,9 +411,7 @@ def get_uniques_columns(request, v_database):
             v_unique_data.append(v_unique['column_name'])
             v_list_uniques.append(v_unique_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_uniques
 
@@ -469,10 +420,7 @@ def get_uniques_columns(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_indexes(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -489,9 +437,7 @@ def get_indexes(request, v_database):
             v_index_data.append(v_index['oid'])
             v_list_indexes.append(v_index_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_indexes
 
@@ -500,10 +446,7 @@ def get_indexes(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_indexes_columns(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_index = data['p_index']
@@ -519,9 +462,7 @@ def get_indexes_columns(request, v_database):
             v_index_data.append(v_index['column_name'])
             v_list_indexes.append(v_index_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_indexes
 
@@ -530,10 +471,7 @@ def get_indexes_columns(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_checks(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -550,9 +488,7 @@ def get_checks(request, v_database):
             v_check_data.append(v_check['oid'])
             v_list_checks.append(v_check_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_checks
 
@@ -561,10 +497,7 @@ def get_checks(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_excludes(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -582,9 +515,7 @@ def get_excludes(request, v_database):
             v_exclude_data.append(v_exclude['oid'])
             v_list_excludes.append(v_exclude_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_excludes
 
@@ -593,10 +524,7 @@ def get_excludes(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_rules(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -612,9 +540,7 @@ def get_rules(request, v_database):
             v_rule_data.append(v_rule['oid'])
             v_list_rules.append(v_rule_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_rules
 
@@ -623,10 +549,7 @@ def get_rules(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_rule_definition(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_rule = data['p_rule']
@@ -636,19 +559,14 @@ def get_rule_definition(request, v_database):
     try:
         v_return['v_data'] = v_database.GetRuleDefinition(v_rule, v_table, v_schema)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_triggers(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -669,9 +587,7 @@ def get_triggers(request, v_database):
             }
             v_list_triggers.append(v_trigger_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_triggers
 
@@ -680,10 +596,7 @@ def get_triggers(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_eventtriggers(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_list_triggers = []
 
@@ -701,9 +614,7 @@ def get_eventtriggers(request, v_database):
             }
             v_list_triggers.append(v_trigger_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_triggers
 
@@ -712,10 +623,7 @@ def get_eventtriggers(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_inheriteds(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -730,9 +638,7 @@ def get_inheriteds(request, v_database):
             v_partition_data.append(v_partition['child_schema'] + '.' + v_partition['child_table'])
             v_list_partitions.append(v_partition_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_partitions
 
@@ -741,10 +647,7 @@ def get_inheriteds(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_partitions(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -759,9 +662,7 @@ def get_partitions(request, v_database):
             v_partition_data.append(v_partition['child_schema'] + '.' + v_partition['child_table'])
             v_list_partitions.append(v_partition_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_partitions
 
@@ -770,10 +671,7 @@ def get_partitions(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_statistics(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -790,9 +688,7 @@ def get_statistics(request, v_database):
             v_statistic_data.append(v_statistic['oid'])
             v_list_statistics.append(v_statistic_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_statistics
 
@@ -801,10 +697,7 @@ def get_statistics(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_statistics_columns(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_statistics = data['p_statistics']
@@ -820,9 +713,7 @@ def get_statistics_columns(request, v_database):
             }
             v_list_columns.append(v_column_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_columns
 
@@ -831,10 +722,7 @@ def get_statistics_columns(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_views(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -851,9 +739,7 @@ def get_views(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -862,10 +748,7 @@ def get_views(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_views_columns(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -883,9 +766,7 @@ def get_views_columns(request, v_database):
             }
             v_list_columns.append(v_column_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_columns
 
@@ -894,10 +775,7 @@ def get_views_columns(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_view_definition(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_view = data['p_view']
@@ -906,19 +784,14 @@ def get_view_definition(request, v_database):
     try:
         v_return['v_data'] = v_database.GetViewDefinition(v_view, v_schema)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_mviews(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -935,9 +808,7 @@ def get_mviews(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -946,10 +817,7 @@ def get_mviews(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_mviews_columns(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -967,9 +835,7 @@ def get_mviews_columns(request, v_database):
             }
             v_list_columns.append(v_column_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_columns
 
@@ -978,10 +844,7 @@ def get_mviews_columns(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_mview_definition(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_view = data['p_view']
@@ -990,9 +853,7 @@ def get_mview_definition(request, v_database):
     try:
         v_return['v_data'] = v_database.GetMaterializedViewDefinition(v_view, v_schema)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
@@ -1016,10 +877,7 @@ def get_schemas(request, database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_databases(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_list_databases = []
 
@@ -1032,9 +890,7 @@ def get_databases(request, v_database):
             }
             v_list_databases.append(v_database_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_databases
 
@@ -1043,10 +899,7 @@ def get_databases(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_tablespaces(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_list_tablespaces = []
 
@@ -1059,9 +912,7 @@ def get_tablespaces(request, v_database):
             }
             v_list_tablespaces.append(v_tablespace_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tablespaces
 
@@ -1088,10 +939,7 @@ def get_roles(request, database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_functions(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1107,9 +955,7 @@ def get_functions(request, v_database):
             }
             v_list_functions.append(v_function_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_functions
 
@@ -1118,10 +964,7 @@ def get_functions(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_function_fields(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_function = data['p_function']
@@ -1138,9 +981,7 @@ def get_function_fields(request, v_database):
             }
             v_list_fields.append(v_field_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_fields
 
@@ -1149,48 +990,35 @@ def get_function_fields(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_function_definition(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_function = request.data['p_function']
 
     try:
         v_return['v_data'] = v_database.GetFunctionDefinition(v_function)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_function_debug(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_function = request.data['p_function']
 
     try:
         v_return['v_data'] = v_database.GetFunctionDebug(v_function)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_procedures(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1206,9 +1034,7 @@ def get_procedures(request, v_database):
             }
             v_list_functions.append(v_function_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_functions
 
@@ -1217,10 +1043,7 @@ def get_procedures(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_procedure_fields(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_function = data['p_procedure']
@@ -1237,9 +1060,7 @@ def get_procedure_fields(request, v_database):
             }
             v_list_fields.append(v_field_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_fields
 
@@ -1248,48 +1069,35 @@ def get_procedure_fields(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_procedure_definition(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_function = request.data['p_procedure']
 
     try:
         v_return['v_data'] = v_database.GetProcedureDefinition(v_function)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_procedure_debug(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_function = request.data['p_procedure']
 
     try:
         v_return['v_data'] = v_database.GetProcedureDebug(v_function)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_triggerfunctions(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1305,9 +1113,7 @@ def get_triggerfunctions(request, v_database):
             }
             v_list_functions.append(v_function_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_functions
 
@@ -1316,29 +1122,21 @@ def get_triggerfunctions(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_triggerfunction_definition(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_function = request.data['p_function']
 
     try:
         v_return['v_data'] = v_database.GetTriggerFunctionDefinition(v_function)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_eventtriggerfunctions(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1354,9 +1152,7 @@ def get_eventtriggerfunctions(request, v_database):
             }
             v_list_functions.append(v_function_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_functions
 
@@ -1365,29 +1161,21 @@ def get_eventtriggerfunctions(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_eventtriggerfunction_definition(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_function = request.data['p_function']
 
     try:
         v_return['v_data'] = v_database.GetEventTriggerFunctionDefinition(v_function)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_aggregates(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1403,9 +1191,7 @@ def get_aggregates(request, v_database):
             }
             v_list_aggregates.append(v_aggregate_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_aggregates
 
@@ -1414,10 +1200,7 @@ def get_aggregates(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_sequences(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1432,9 +1215,7 @@ def get_sequences(request, v_database):
             }
             v_list_sequences.append(v_sequence_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_sequences
 
@@ -1443,10 +1224,7 @@ def get_sequences(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_extensions(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_list_extensions = []
 
@@ -1460,9 +1238,7 @@ def get_extensions(request, v_database):
             }
             v_list_extensions.append(v_extension_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_extensions
 
@@ -1518,10 +1294,7 @@ def save_extension(request, database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_physicalreplicationslots(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_list_repslots = []
 
@@ -1533,9 +1306,7 @@ def get_physicalreplicationslots(request, v_database):
             }
             v_list_repslots.append(v_repslot_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_repslots
 
@@ -1544,10 +1315,7 @@ def get_physicalreplicationslots(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_logicalreplicationslots(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_list_repslots = []
 
@@ -1559,9 +1327,7 @@ def get_logicalreplicationslots(request, v_database):
             }
             v_list_repslots.append(v_repslot_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_repslots
 
@@ -1570,10 +1336,7 @@ def get_logicalreplicationslots(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_publications(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_list_pubs = []
 
@@ -1591,9 +1354,7 @@ def get_publications(request, v_database):
             }
             v_list_pubs.append(v_pub_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_pubs
 
@@ -1602,10 +1363,7 @@ def get_publications(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_publication_tables(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_pub = request.data['p_pub']
 
@@ -1619,9 +1377,7 @@ def get_publication_tables(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -1630,10 +1386,7 @@ def get_publication_tables(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_subscriptions(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_list_subs = []
 
@@ -1649,9 +1402,7 @@ def get_subscriptions(request, v_database):
             }
             v_list_subs.append(v_sub_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_subs
 
@@ -1660,10 +1411,7 @@ def get_subscriptions(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_subscription_tables(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_sub = request.data['p_sub']
 
@@ -1677,9 +1425,7 @@ def get_subscription_tables(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -1688,10 +1434,7 @@ def get_subscription_tables(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_foreign_data_wrappers(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_list_fdws = []
 
@@ -1704,9 +1447,7 @@ def get_foreign_data_wrappers(request, v_database):
             }
             v_list_fdws.append(v_fdw_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_fdws
 
@@ -1715,10 +1456,7 @@ def get_foreign_data_wrappers(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_foreign_servers(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_fdw = request.data['p_fdw']
 
@@ -1736,9 +1474,7 @@ def get_foreign_servers(request, v_database):
             }
             v_list_servers.append(v_server_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_servers
 
@@ -1747,10 +1483,7 @@ def get_foreign_servers(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_user_mappings(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_foreign_server = request.data['p_foreign_server']
 
@@ -1766,9 +1499,7 @@ def get_user_mappings(request, v_database):
             }
             v_list_mappings.append(v_mapping_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_mappings
 
@@ -1777,10 +1508,7 @@ def get_user_mappings(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_foreign_tables(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1796,9 +1524,7 @@ def get_foreign_tables(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -1807,10 +1533,7 @@ def get_foreign_tables(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_foreign_columns(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -1833,9 +1556,7 @@ def get_foreign_columns(request, v_database):
             }
             v_list_columns.append(v_column_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_columns
 
@@ -1845,10 +1566,7 @@ def get_foreign_columns(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_types(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1863,9 +1581,7 @@ def get_types(request, v_database):
             }
             v_list_types.append(v_type_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_types
 
@@ -1875,10 +1591,7 @@ def get_types(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_domains(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1893,9 +1606,7 @@ def get_domains(request, v_database):
             }
             v_list_domains.append(v_domain_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_domains
 
@@ -1904,10 +1615,7 @@ def get_domains(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_inheriteds_parents(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1921,9 +1629,7 @@ def get_inheriteds_parents(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -1932,10 +1638,7 @@ def get_inheriteds_parents(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_inheriteds_children(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -1962,9 +1665,7 @@ def get_inheriteds_children(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -1973,10 +1674,7 @@ def get_inheriteds_children(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_partitions_parents(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_schema = request.data['p_schema']
 
@@ -1990,9 +1688,7 @@ def get_partitions_parents(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -2001,10 +1697,7 @@ def get_partitions_parents(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_partitions_children(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -2031,9 +1724,7 @@ def get_partitions_children(request, v_database):
             }
             v_list_tables.append(v_table_data)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = v_list_tables
 
@@ -2043,29 +1734,21 @@ def get_partitions_children(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def kill_backend(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_pid = request.data['p_pid']
 
     try:
         v_database.Terminate(v_pid)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def template_select(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -2075,9 +1758,7 @@ def template_select(request, v_database):
     try:
         v_template = v_database.TemplateSelect(v_schema, v_table, v_kind).v_text
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = {
         'v_template': v_template
@@ -2088,10 +1769,7 @@ def template_select(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def template_insert(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -2100,9 +1778,7 @@ def template_insert(request, v_database):
     try:
         v_template = v_database.TemplateInsert(v_schema, v_table).v_text
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = {
         'v_template': v_template
@@ -2113,10 +1789,7 @@ def template_insert(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def template_update(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_table = data['p_table']
@@ -2125,9 +1798,7 @@ def template_update(request, v_database):
     try:
         v_template = v_database.TemplateUpdate(v_schema, v_table).v_text
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = {
         'v_template': v_template
@@ -2138,10 +1809,7 @@ def template_update(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def template_select_function(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_function = data['p_function']
@@ -2151,9 +1819,7 @@ def template_select_function(request, v_database):
     try:
         v_template = v_database.TemplateSelectFunction(v_schema, v_function, v_functionid).v_text
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = {
         'v_template': v_template
@@ -2164,10 +1830,7 @@ def template_select_function(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def template_call_procedure(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_procedure = data['p_procedure']
@@ -2177,9 +1840,7 @@ def template_call_procedure(request, v_database):
     try:
         v_template = v_database.TemplateCallProcedure(v_schema, v_procedure, v_procedureid).v_text
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     v_return['v_data'] = {
         'v_template': v_template
@@ -2190,48 +1851,35 @@ def template_call_procedure(request, v_database):
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_version(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     try:
         v_return['v_data'] = {
             'v_version': v_database.GetVersion()
         }
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def change_role_password(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
 
     try:
         v_database.ChangeRolePassword(data['p_role'], data['p_password'])
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc) }
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        return error_response(message=str(exc), password_timeout=True)
 
     return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def get_object_description(request, v_database):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_oid = data['p_oid']

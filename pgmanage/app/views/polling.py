@@ -29,6 +29,7 @@ from app.models.main import *
 
 from app.client_manager import client_manager, Client
 from app.utils.decorators import session_required
+from app.utils.response_helpers import create_response_template
 
 import traceback
 
@@ -99,12 +100,6 @@ def client_keep_alive(request):
 
 @session_required(use_old_error_format=True, include_session=False)
 def long_polling(request):
-
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
-
     startup = request.data['p_startup']
 
     client_object = client_manager.get_or_create_client(client_id=request.session.session_key)
@@ -148,11 +143,7 @@ def queue_response(client: Client, p_data):
 
 @session_required(use_old_error_format=True)
 def create_request(request, session):
-
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     json_object = request.data
     v_code = json_object['v_code']

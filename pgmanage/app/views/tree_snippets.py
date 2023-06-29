@@ -17,14 +17,12 @@ from datetime import datetime
 from django.utils.timezone import make_aware
 
 from app.utils.decorators import session_required
+from app.utils.response_helpers import create_response_template, error_response
 
 
 @session_required(use_old_error_format=True, include_session=False)
 def get_all_snippets(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_folders = SnippetFolder.objects.filter(user=request.user)
     v_files = SnippetFile.objects.filter(user=request.user)
@@ -68,10 +66,7 @@ def build_snippets_object_recursive(p_folders,p_files,p_current_object):
 
 @session_required(use_old_error_format=True, include_session=False)
 def get_node_children(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_sn_id_parent = request.data['p_sn_id_parent']
 
@@ -104,10 +99,7 @@ def get_node_children(request):
 
 @session_required(use_old_error_format=True, include_session=False)
 def get_snippet_text(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     v_st_id = request.data['p_st_id']
 
@@ -120,10 +112,7 @@ def get_snippet_text(request):
 
 @session_required(use_old_error_format=True, include_session=False)
 def new_node_snippet(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_sn_id_parent = data['p_sn_id_parent']
@@ -157,21 +146,13 @@ def new_node_snippet(request):
             )
             file.save()
     except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
-
-        v_return['v_data'] = ''
-
+        return error_response(message=str(exc))
     return JsonResponse(v_return)
 
 
 @session_required(use_old_error_format=True, include_session=False)
 def delete_node_snippet(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_id = data['p_id']
@@ -186,22 +167,13 @@ def delete_node_snippet(request):
             file.delete()
 
     except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
-
-
-        v_return['v_data'] = ''
-
+        return error_response(message=str(exc))
     return JsonResponse(v_return)
 
 
 @session_required(use_old_error_format=True, include_session=False)
 def save_snippet_text(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_id = data['p_id']
@@ -243,19 +215,13 @@ def save_snippet_text(request):
 
 
     except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
-
+        return error_response(message=str(exc))
     return JsonResponse(v_return)
 
 
 @session_required(use_old_error_format=True, include_session=False)
 def rename_node_snippet(request):
-    v_return = {}
-    v_return['v_data'] = ''
-    v_return['v_error'] = False
-    v_return['v_error_id'] = -1
+    v_return = create_response_template()
 
     data = request.data
     v_id = data['p_id']
@@ -278,10 +244,5 @@ def rename_node_snippet(request):
 
 
     except Exception as exc:
-        v_return['v_data'] = str(exc)
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
-
-        v_return['v_data'] = ''
-
+        return error_response(message=str(exc))
     return JsonResponse(v_return)
