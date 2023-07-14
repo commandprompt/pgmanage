@@ -508,6 +508,40 @@ export default {
         cm_view: [
           this.cmRefreshObject,
           {
+            label: "Query Data",
+            icon: "fas cm-all fa-search",
+            onClick: () => {
+              // FIX this to use TemplateSelectMariadb
+              const node = this.getSelectedNode();
+              let table_name;
+              table_name = `${this.getParentNodeDeep(node, 2).title}.${node.title
+                }`;
+
+              v_connTabControl.tag.createQueryTab(node.title);
+
+              v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+                `-- Querying Data\nselect t.*\nfrom ${table_name} t`
+              );
+              v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+              renameTabConfirm(
+                v_connTabControl.selectedTab.tag.tabControl.selectedTab,
+                node.title
+              );
+
+              querySQL(0);
+            },
+          },
+          {
+            label: "Edit View",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              const node = this.getSelectedNode();
+              // Fix this not to use v_connTabControl
+              v_connTabControl.tag.createQueryTab(node.title);
+              this.getViewDefinitionMariadb(node);
+            },
+          },
+          {
             label: "Drop View",
             icon: "fas cm-all fa-times",
             onClick: () => {
@@ -542,6 +576,16 @@ export default {
         cm_function: [
           this.cmRefreshObject,
           {
+            label: "Edit Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              const node = this.getSelectedNode();
+              //Fix this not to use v_connTabControl
+              v_connTabControl.tag.createQueryTab(node.title);
+              this.getFunctionDefinitionMariadb(node);
+            },
+          },
+          {
             label: "Drop Function",
             icon: "fas cm-all fa-times",
             onClick: () => {
@@ -575,6 +619,16 @@ export default {
         ],
         cm_procedure: [
           this.cmRefreshObject,
+          {
+            label: "Edit Procedure",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              const node = this.getSelectedNode();
+              // Fix this not to use v_connTabControl
+              v_connTabControl.tag.createQueryTab(node.title);
+              this.getProcedureDefinitionMariadb(node);
+            },
+          },
           {
             label: "Drop Procedure",
             icon: "fas cm-all fa-times",
@@ -721,27 +775,11 @@ export default {
             type: "database_list",
             contextMenu: "cm_databases",
           });
-          // code from old mariadb, check why they used it
-          // if (v_connTabControl.selectedTab.tag.firstTimeOpen) {
-          //         v_connTabControl.selectedTab.tag.firstTimeOpen = false;
-          //         //v_connTabControl.tag.createMonitorDashboardTab();
-          //         //startMonitorDashboard();
-          //       }
           this.contextMenu.cm_server = [this.cmRefreshObject];
           this.contextMenu.cm_server.push({
             label: "Monitoring",
             icon: "fas cm-all fa-chart-line",
             children: [
-              // Old commentd code, check if works
-              /*{
-                        text: 'Dashboard',
-                        icon: 'fas cm-all fa-chart-line',
-                        action: function(node) {
-                            v_connTabControl.tag.createMonitorDashboardTab();
-                            startMonitorDashboard();
-                        }
-                    }, */
-
               {
                 label: "Process List",
                 icon: "fas cm-all fa-chart-line",
@@ -784,11 +822,6 @@ export default {
               type: "database",
               contextMenu: "cm_database",
             });
-            // need to set node bold somehow
-            // if (v_connTabControl.selectedTab.tag.selectedDatabase == p_return.v_data[i].v_name.replace(/"/g, '')) {
-            //           v_node.setNodeBold();
-            //           v_connTabControl.selectedTab.tag.selectedDatabaseNode = v_node;
-            //         }
           }, null);
         })
         .catch((error) => {
@@ -1256,6 +1289,30 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
+    getViewDefinitionMariadb(node) {
+      axios
+        .post("/get_view_definition_mariadb/", {
+          database_index: this.databaseIndex,
+          tab_id: this.tabId,
+          view: node.title,
+          schema: this.getParentNodeDeep(node, 2).title,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+            resp.data.data
+          );
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+            0,
+            0,
+            true
+          );
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
     getFunctionsMariadb(node) {
       axios
         .post("/get_functions_mariadb/", {
@@ -1324,6 +1381,29 @@ export default {
               );
             }
           }, null);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getFunctionDefinitionMariadb(node) {
+      axios
+        .post("/get_function_definition_mariadb/", {
+          database_index: this.databaseIndex,
+          tab_id: this.tabId,
+          function: node.data.id,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+            resp.data.data
+          );
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+            0,
+            0,
+            true
+          );
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -1402,6 +1482,29 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
+    getProcedureDefinitionMariadb(node) {
+      axios
+        .post("/get_procedure_definition_mariadb/", {
+          database_index: this.databaseIndex,
+          tab_id: this.tabId,
+          procedure: node.data.id,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+            resp.data.data
+          );
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+            0,
+            0,
+            true
+          );
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
     getRolesMariadb(node) {
       axios
         .post("/get_roles_mariadb/", {
@@ -1431,31 +1534,6 @@ export default {
         .catch((error) => {
           this.nodeOpenError(error, node);
         });
-    },
-    nodeOpenError(error_response, node) {
-      if (error_response.response.data?.password_timeout) {
-        showPasswordPrompt(
-          this.database_index,
-          () => {
-            this.refreshNode();
-          },
-          null,
-          error_response.response.data.data
-        );
-      } else {
-        this.removeChildNodes(node);
-
-        this.insertNode(
-          node,
-          "View Detail",
-          {
-            icon: "fas fa-times node-error",
-            type: "error",
-            message: error_response.response.data.data,
-          },
-          true
-        );
-      }
     },
   },
 };

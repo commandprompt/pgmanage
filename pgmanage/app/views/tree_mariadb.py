@@ -4,7 +4,7 @@ from app.utils.decorators import (
     user_authenticated,
 )
 from app.utils.response_helpers import create_response_template, error_response
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 
 
 @user_authenticated
@@ -346,18 +346,17 @@ def get_function_fields(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def get_function_definition(request, v_database):
-    v_return = create_response_template()
-
-    v_function = request.data["p_function"]
+@database_required_new(check_timeout=True, open_connection=True)
+def get_function_definition(request, database):
+    function = request.data["function"]
 
     try:
-        v_return["v_data"] = v_database.GetFunctionDefinition(v_function)
+        function_definition = database.GetFunctionDefinition(function)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse({"data": function_definition})
 
 
 @user_authenticated
@@ -401,18 +400,17 @@ def get_procedure_fields(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def get_procedure_definition(request, v_database):
-    v_return = create_response_template()
-
-    v_function = request.data["p_procedure"]
+@database_required_new(check_timeout=True, open_connection=True)
+def get_procedure_definition(request, database):
+    procedure = request.data["procedure"]
 
     try:
-        v_return["v_data"] = v_database.GetProcedureDefinition(v_function)
+        procedure_definition = database.GetProcedureDefinition(procedure)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse({"data": procedure_definition})
 
 
 @user_authenticated
@@ -480,35 +478,33 @@ def get_views_columns(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def get_view_definition(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout=True, open_connection=True)
+def get_view_definition(request, database):
     data = request.data
-    v_view = data["p_view"]
-    v_schema = data["p_schema"]
+    view = data["view"]
+    schema = data["schema"]
 
     try:
-        v_return["v_data"] = v_database.GetViewDefinition(v_view, v_schema)
+        view_definition = database.GetViewDefinition(view, schema)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse({"data": view_definition})
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def kill_backend(request, v_database):
-    v_return = create_response_template()
-
-    v_pid = request.data["p_pid"]
+@database_required_new(check_timeout=True, open_connection=True)
+def kill_backend(request, database):
+    pid = request.data["pid"]
 
     try:
-        v_data = v_database.Terminate(v_pid)
+        database.Terminate(pid)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return HttpResponse(status=204)
 
 
 @user_authenticated

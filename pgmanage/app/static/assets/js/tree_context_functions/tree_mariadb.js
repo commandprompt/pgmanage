@@ -130,42 +130,6 @@ function getTreeMariadb(p_div) {
                 }
             }*/]
         },
-        'cm_view': {
-            elements: [, {
-                text: 'Query Data',
-                icon: 'fas cm-all fa-search',
-                action: function(node) {
-
-                    var v_table_name = '';
-                    v_table_name = node.parent.parent.text + '.' + node.text;
-
-                    v_connTabControl.tag.createQueryTab(
-                        node.text);
-
-                    v_connTabControl.selectedTab.tag.tabControl
-                        .selectedTab.tag.editor.setValue(
-                            '-- Querying Data\nselect t.*\nfrom ' +
-                            v_table_name + ' t');
-                    v_connTabControl.selectedTab.tag.tabControl
-                        .selectedTab.tag.editor.clearSelection();
-                    renameTabConfirm(v_connTabControl.selectedTab
-                        .tag.tabControl.selectedTab, node.text
-                    );
-
-                    //minimizeEditor();
-
-                    querySQL(0);
-                }
-            }, {
-                text: 'Edit View',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    v_connTabControl.tag.createQueryTab(
-                        node.text);
-                    getViewDefinitionMariadb(node);
-                }
-            },]
-        },
         /*'cm_triggers': {
             elements: [{
                 text: 'Refresh',
@@ -342,17 +306,6 @@ function getTreeMariadb(p_div) {
                 }
             }*/]
         },
-        'cm_function': {
-            elements: [{
-                text: 'Edit Function',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    v_connTabControl.tag.createQueryTab(
-                        node.text);
-                    getFunctionDefinitionMariadb(node);
-                }
-            },]
-        },
         'cm_procedures': {
             elements: [/*, {
                 text: 'Doc: Procedures',
@@ -366,42 +319,35 @@ function getTreeMariadb(p_div) {
                 }
             }*/]
         },
-        'cm_procedure': {
-            elements: [{
-                text: 'Edit Procedure',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    v_connTabControl.tag.createQueryTab(
-                        node.text);
-                    getProcedureDefinitionMariadb(node);
-                }
-            },]
-        },
     };
 
     const div_tree = document.getElementById(p_div);
-    div_tree.innerHTML ='<tree-mariadb :database-index="databaseIndex" :tab-id="tabId"></tree-mariadb>'
+    div_tree.innerHTML =
+      '<tree-mariadb :database-index="databaseIndex" :tab-id="tabId"></tree-mariadb>';
     const app = createApp({
-        components: {
-            "tree-mariadb": Vue.defineAsyncComponent(() =>
-              loadModule(
-                "../static/assets/js/vuejs/components/TreeMariaDB.vue",
-                options
-              )
-            ),
-          },
-        data() {
-            return {
-              databaseIndex: window.v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-              tabId: window.v_connTabControl.selectedTab.id,
-            };
-          },
-    })
-    app.mount(`#${p_div}`)
+      components: {
+        "tree-mariadb": Vue.defineAsyncComponent(() =>
+          loadModule(
+            "../static/assets/js/vuejs/components/TreeMariaDB.vue",
+            options
+          )
+        ),
+      },
+      data() {
+        return {
+          databaseIndex:
+            window.v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+          tabId: window.v_connTabControl.selectedTab.id,
+        };
+      },
+    });
+    app.mount(`#${p_div}`);
 
-    let autocomplete_switch_status = (v_connTabControl.selectedTab.tag.enable_autocomplete !== false) ? ' checked ' : '';
-    v_connTabControl.selectedTab.tag.divDetails.innerHTML =
-        `<i class="fas fa-server mr-1"></i>selected DB: 
+    let autocomplete_switch_status =
+      v_connTabControl.selectedTab.tag.enable_autocomplete !== false
+        ? " checked "
+        : "";
+    v_connTabControl.selectedTab.tag.divDetails.innerHTML = `<i class="fas fa-server mr-1"></i>selected DB: 
         <b>${v_connTabControl.selectedTab.tag.selectedDatabase}</b>
         <div class="omnidb__switch omnidb__switch--sm float-right" data-toggle="tooltip" data-placement="bottom" data-html="true" title="" data-original-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>">
     	    <input type="checkbox" ${autocomplete_switch_status} id="autocomplete_toggler_${v_connTabControl.selectedTab.tag.tab_id}" class="omnidb__switch--input" onchange="toggleConnectionAutocomplete(\'autocomplete_toggler_${v_connTabControl.selectedTab.tag.tab_id}\')">
@@ -621,57 +567,6 @@ function getTreeDetailsMariadb(node) {
 }
 
 
-
-/// <summary>
-/// Retrieving view definition.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getViewDefinitionMariadb(node) {
-
-    execAjax('/get_view_definition_mariadb/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_view": node.text,
-            "p_schema": node.parent.parent.text
-        }),
-        function(p_return) {
-
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .setValue(p_return.v_data);
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .clearSelection();
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .gotoLine(0, 0, true);
-            //v_connTabControl.selectedTab.tag.tabControl.selectedTab.renameTab(node.text);
-            renameTabConfirm(v_connTabControl.selectedTab.tag.tabControl.selectedTab,
-                node.text);
-
-            var v_div_result = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-                .tag.div_result;
-
-            if (v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                .ht != null) {
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht.destroy();
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht = null;
-            }
-
-            v_div_result.innerHTML = '';
-
-            maximizeEditor();
-
-        },
-        function(p_return) {
-            nodeOpenErrorMariadb(p_return, node);
-        },
-        'box',
-        true);
-
-}
-
-
 /*
 /// <summary>
 /// Retrieving Triggers.
@@ -811,54 +706,6 @@ function getPartitionsMariadb(node) {
 
 }*/
 
-/// <summary>
-/// Retrieving function definition.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getFunctionDefinitionMariadb(node) {
-
-    execAjax('/get_function_definition_mariadb/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_function": node.tag.id
-        }),
-        function(p_return) {
-
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .setValue(p_return.v_data);
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .clearSelection();
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .gotoLine(0, 0, true);
-            //v_connTabControl.selectedTab.tag.tabControl.selectedTab.renameTab(node.text);
-            renameTabConfirm(v_connTabControl.selectedTab.tag.tabControl.selectedTab,
-                node.text);
-
-            var v_div_result = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-                .tag.div_result;
-
-            if (v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                .ht != null) {
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht.destroy();
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht = null;
-            }
-
-            v_div_result.innerHTML = '';
-
-            maximizeEditor();
-
-        },
-        function(p_return) {
-            nodeOpenErrorMariadb(p_return, node);
-        },
-        'box',
-        true);
-
-}
-
 
 /// <summary>
 /// Retrieving procedure definition.
@@ -889,54 +736,6 @@ function getFunctionDefinitionMariadb(node) {
         true);
 
 }*/
-
-/// <summary>
-/// Retrieving procedure definition.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getProcedureDefinitionMariadb(node) {
-
-    execAjax('/get_procedure_definition_mariadb/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_procedure": node.tag.id
-        }),
-        function(p_return) {
-
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .setValue(p_return.v_data);
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .clearSelection();
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .gotoLine(0, 0, true);
-            //v_connTabControl.selectedTab.tag.tabControl.selectedTab.renameTab(node.text);
-            renameTabConfirm(v_connTabControl.selectedTab.tag.tabControl.selectedTab,
-                node.text);
-
-            var v_div_result = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-                .tag.div_result;
-
-            if (v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                .ht != null) {
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht.destroy();
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht = null;
-            }
-
-            v_div_result.innerHTML = '';
-
-            maximizeEditor();
-
-        },
-        function(p_return) {
-            nodeOpenErrorMariadb(p_return, node);
-        },
-        'box',
-        true);
-
-}
 
 /*
 /// <summary>
@@ -1131,44 +930,37 @@ function getMajorVersionMariadb(p_version) {
     return tmp.join('.')
 }
 
-function mariadbTerminateBackendConfirm(p_pid) {
-    execAjax('/kill_backend_mariadb/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_pid": p_pid
-        }),
-        function(p_return) {
-
-            refreshMonitoring();
-
-        },
-        function(p_return) {
-            if (p_return.v_data.password_timeout) {
-                showPasswordPrompt(
-                    v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-                    function() {
-                        mariadbTerminateBackendConfirm(p_pid);
-                    },
-                    null,
-                    p_return.v_data.message
-                );
-            } else {
-                showError(p_return.v_data);
-            }
-        },
-        'box',
-        true);
-
+function mariadbTerminateBackendConfirm(pid) {
+  axios
+    .post("/kill_backend_mariadb/", {
+      database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+      tab_id: v_connTabControl.selectedTab.id,
+      pid: pid,
+    })
+    .then((resp) => {
+      refreshMonitoring();
+    })
+    .catch((error) => {
+      if (error.response.data?.password_timeout) {
+        showPasswordPrompt(
+          v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+          function () {
+            mariadbTerminateBackend(pid);
+          },
+          null,
+          error.response.data.data
+        );
+      } else {
+        showError(error.response.data.data);
+      }
+    });
 }
 
 function mariadbTerminateBackend(p_row) {
-
-    showConfirm('Are you sure you want to terminate process ' + p_row[0] + '?',
-        function() {
-
-            mariadbTerminateBackendConfirm(p_row[0]);
-
-        });
-
+  createMessageModal(
+    `Are you sure you want to terminate process ${p_row[0]}?`,
+    function () {
+      mariadbTerminateBackendConfirm(p_row[0]);
+    }
+  );
 }
