@@ -1,667 +1,512 @@
-from django.http import HttpResponse
-from django.template import loader
 from django.http import JsonResponse
-from django.core import serializers
-
-import sys
-
-import app.include.Spartacus as Spartacus
-import app.include.Spartacus.Database as Database
-import app.include.Spartacus.Utils as Utils
-from app.include.Session import Session
-from datetime import datetime
-
-from app.utils.decorators import user_authenticated, database_required
+from app.utils.decorators import (
+    user_authenticated,
+    database_required,
+    database_required_new,
+)
 from app.utils.response_helpers import create_response_template, error_response
 
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_tree_info(request, v_database):
-    v_return = create_response_template()
 
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_tree_info(request, database):
     try:
-        v_return['v_data'] = {
-            'v_mode': 'database',
-            'v_database_return': {
-                'v_database': v_database.GetName(),
-                'version': v_database.GetVersion(),
-                'v_username': v_database.GetUserName(),
-                'superuser': v_database.GetUserSuper(),
-                'express': v_database.GetExpress(),
-                'create_role': v_database.TemplateCreateRole().v_text,
-                'alter_role': v_database.TemplateAlterRole().v_text,
-                'drop_role': v_database.TemplateDropRole().v_text,
-                'create_tablespace': v_database.TemplateCreateTablespace().v_text,
-                'alter_tablespace': v_database.TemplateAlterTablespace().v_text,
-                'drop_tablespace': v_database.TemplateDropTablespace().v_text,
-                'create_sequence': v_database.TemplateCreateSequence().v_text,
-                'alter_sequence': v_database.TemplateAlterSequence().v_text,
-                'drop_sequence': v_database.TemplateDropSequence().v_text,
-                'create_function': v_database.TemplateCreateFunction().v_text,
-                'drop_function': v_database.TemplateDropFunction().v_text,
-                'create_procedure': v_database.TemplateCreateProcedure().v_text,
-                'drop_procedure': v_database.TemplateDropProcedure().v_text,
-                #'create_triggerfunction': v_database.TemplateCreateTriggerFunction().v_text,
-                #'drop_triggerfunction': v_database.TemplateDropTriggerFunction().v_text,
-                'create_view': v_database.TemplateCreateView().v_text,
-                'drop_view': v_database.TemplateDropView().v_text,
-                #'create_mview': v_database.TemplateCreateMaterializedView().v_text,
-                #'refresh_mview': v_database.TemplateRefreshMaterializedView().v_text,
-                #'drop_mview': v_database.TemplateDropMaterializedView().v_text,
-                'create_table': v_database.TemplateCreateTable().v_text,
-                'alter_table': v_database.TemplateAlterTable().v_text,
-                'drop_table': v_database.TemplateDropTable().v_text,
-                'create_column': v_database.TemplateCreateColumn().v_text,
-                'alter_column': v_database.TemplateAlterColumn().v_text,
-                'drop_column': v_database.TemplateDropColumn().v_text,
-                'create_primarykey': v_database.TemplateCreatePrimaryKey().v_text,
-                'drop_primarykey': v_database.TemplateDropPrimaryKey().v_text,
-                'create_unique': v_database.TemplateCreateUnique().v_text,
-                'drop_unique': v_database.TemplateDropUnique().v_text,
-                'create_foreignkey': v_database.TemplateCreateForeignKey().v_text,
-                'drop_foreignkey': v_database.TemplateDropForeignKey().v_text,
-                'create_index': v_database.TemplateCreateIndex().v_text,
-                'alter_index': v_database.TemplateAlterIndex().v_text,
-                'drop_index': v_database.TemplateDropIndex().v_text,
-                #'create_trigger': v_database.TemplateCreateTrigger().v_text,
-                #'create_view_trigger': v_database.TemplateCreateViewTrigger().v_text,
-                #'alter_trigger': v_database.TemplateAlterTrigger().v_text,
-                #'enable_trigger': v_database.TemplateEnableTrigger().v_text,
-                #'disable_trigger': v_database.TemplateDisableTrigger().v_text,
-                #'drop_trigger': v_database.TemplateDropTrigger().v_text,
-                #'create_partition': v_database.TemplateCreatePartition().v_text,
-                #'noinherit_partition': v_database.TemplateNoInheritPartition().v_text,
-                #'drop_partition': v_database.TemplateDropPartition().v_text
-                'delete': v_database.TemplateDelete().v_text,
-            }
+        data = {
+            "database": database.GetName(),
+            "version": database.GetVersion(),
+            "username": database.GetUserName(),
+            "superuser": database.GetUserSuper(),
+            "express": database.GetExpress(),
+            "create_role": database.TemplateCreateRole().v_text,
+            "alter_role": database.TemplateAlterRole().v_text,
+            "drop_role": database.TemplateDropRole().v_text,
+            "create_tablespace": database.TemplateCreateTablespace().v_text,
+            "alter_tablespace": database.TemplateAlterTablespace().v_text,
+            "drop_tablespace": database.TemplateDropTablespace().v_text,
+            "create_sequence": database.TemplateCreateSequence().v_text,
+            "alter_sequence": database.TemplateAlterSequence().v_text,
+            "drop_sequence": database.TemplateDropSequence().v_text,
+            "create_function": database.TemplateCreateFunction().v_text,
+            "drop_function": database.TemplateDropFunction().v_text,
+            "create_procedure": database.TemplateCreateProcedure().v_text,
+            "drop_procedure": database.TemplateDropProcedure().v_text,
+            #'create_triggerfunction': database.TemplateCreateTriggerFunction().v_text,
+            #'drop_triggerfunction': database.TemplateDropTriggerFunction().v_text,
+            "create_view": database.TemplateCreateView().v_text,
+            "drop_view": database.TemplateDropView().v_text,
+            #'create_mview': database.TemplateCreateMaterializedView().v_text,
+            #'refresh_mview': database.TemplateRefreshMaterializedView().v_text,
+            #'drop_mview': database.TemplateDropMaterializedView().v_text,
+            "create_table": database.TemplateCreateTable().v_text,
+            "alter_table": database.TemplateAlterTable().v_text,
+            "drop_table": database.TemplateDropTable().v_text,
+            "create_column": database.TemplateCreateColumn().v_text,
+            "alter_column": database.TemplateAlterColumn().v_text,
+            "drop_column": database.TemplateDropColumn().v_text,
+            "create_primarykey": database.TemplateCreatePrimaryKey().v_text,
+            "drop_primarykey": database.TemplateDropPrimaryKey().v_text,
+            "create_unique": database.TemplateCreateUnique().v_text,
+            "drop_unique": database.TemplateDropUnique().v_text,
+            "create_foreignkey": database.TemplateCreateForeignKey().v_text,
+            "drop_foreignkey": database.TemplateDropForeignKey().v_text,
+            "create_index": database.TemplateCreateIndex().v_text,
+            "alter_index": database.TemplateAlterIndex().v_text,
+            "drop_index": database.TemplateDropIndex().v_text,
+            #'create_trigger': database.TemplateCreateTrigger().v_text,
+            #'create_view_trigger': database.TemplateCreateViewTrigger().v_text,
+            #'alter_trigger': database.TemplateAlterTrigger().v_text,
+            #'enable_trigger': database.TemplateEnableTrigger().v_text,
+            #'disable_trigger': database.TemplateDisableTrigger().v_text,
+            #'drop_trigger': database.TemplateDropTrigger().v_text,
+            #'create_partition': database.TemplateCreatePartition().v_text,
+            #'noinherit_partition': database.TemplateNoInheritPartition().v_text,
+            #'drop_partition': database.TemplateDropPartition().v_text
+            "delete": database.TemplateDelete().v_text,
         }
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse(data=data)
+
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_properties(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout=True, open_connection=True)
+def get_properties(request, database):
+    data = request.data["data"]
 
-    v_data = request.data['p_data']
-
-    v_list_properties = []
-    v_ddl = ''
+    list_properties = []
+    ddl = ""
 
     try:
-        v_properties = v_database.GetProperties(v_data['p_schema'],v_data['p_object'],v_data['p_type'])
-        for v_property in v_properties.Rows:
-            v_list_properties.append([v_property['Property'],v_property['Value']])
-        v_ddl = v_database.GetDDL(v_data['p_schema'],v_data['p_table'],v_data['p_object'],v_data['p_type'])
+        properties = database.GetProperties(
+            data["schema"], data["object"], data["type"]
+        )
+        for property_object in properties.Rows:
+            list_properties.append([property_object["Property"], property_object["Value"]])
+        ddl = database.GetDDL(
+            data["schema"], data["table"], data["object"], data["type"]
+        )
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = {
-        'properties': v_list_properties,
-        'ddl': v_ddl
-    }
+    return JsonResponse(data={"properties": list_properties, "ddl": ddl})
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_tables(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout=True, open_connection=True)
+def get_tables(request, database):
+    try:
+        tables = database.QueryTables()
+        list_tables = [table["table_name"] for table in tables.Rows]
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_schema = request.data['p_schema']
+    return JsonResponse(data=list_tables, safe=False)
 
-    v_list_tables = []
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_columns(request, database):
+    table = request.data["table"]
+
+    list_columns = []
 
     try:
-        v_tables = v_database.QueryTables(False,v_schema)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_name'],
-                'v_has_primary_keys': v_database.v_has_primary_keys,
-                'v_has_foreign_keys': v_database.v_has_foreign_keys,
-                'v_has_uniques': v_database.v_has_uniques,
-                'v_has_indexes': v_database.v_has_indexes,
-                'v_has_checks': v_database.v_has_checks,
-                'v_has_excludes': v_database.v_has_excludes,
-                'v_has_rules': v_database.v_has_rules,
-                'v_has_triggers': v_database.v_has_triggers,
-                'v_has_partitions': v_database.v_has_partitions,
-                'v_has_statistics': v_database.v_has_statistics
+        columns = database.QueryTablesFields(table)
+        for column in columns.Rows:
+            column_data = {
+                "column_name": column["column_name"],
+                "data_type": column["data_type"],
+                "data_length": column["data_length"],
+                "nullable": column["nullable"],
             }
-            v_list_tables.append(v_table_data)
+            list_columns.append(column_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_tables
+    return JsonResponse(data=list_columns, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_columns(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_columns = []
+@database_required_new(check_timeout=True, open_connection=True)
+def get_pk(request, database):
+    table = request.data["table"]
 
     try:
-        v_columns = v_database.QueryTablesFields(v_table,False,v_schema)
-        for v_column in v_columns.Rows:
-            v_column_data = {
-                'v_column_name': v_column['column_name'],
-                'v_data_type': v_column['data_type'],
-                'v_data_length': v_column['data_length'],
-                'v_nullable': v_column['nullable']
+        pks = database.QueryTablesPrimaryKeys(table)
+        list_pk = [pk["constraint_name"] for pk in pks.Rows]
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_pk, safe=False)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_pk_columns(request, database):
+    data = request.data
+    pkey = data["key"]
+    table = data["table"]
+
+    try:
+        pks = database.QueryTablesPrimaryKeysColumns(pkey, table)
+        list_pk = [row["column_name"] for row in pks.Rows]
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_pk, safe=False)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_fks(request, database):
+    table = request.data["table"]
+
+    try:
+        fks = database.QueryTablesForeignKeys(table)
+        list_fk = [fk["constraint_name"] for fk in fks.Rows]
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_fk, safe=False)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_fks_columns(request, database):
+    data = request.data
+    fkey = data["fkey"]
+    table = data["table"]
+
+    try:
+        fks = database.QueryTablesForeignKeysColumns(fkey, table)
+        fk = fks.Rows.pop() if fks.Rows else {}
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=fk)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_uniques(request, database):
+    table = request.data["table"]
+
+    try:
+        uniques = database.QueryTablesUniques(table)
+        list_uniques = [unique["constraint_name"] for unique in uniques.Rows]
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_uniques, safe=False)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_uniques_columns(request, database):
+    data = request.data
+    unique = data["unique"]
+    table = data["table"]
+
+    try:
+        uniques = database.QueryTablesUniquesColumns(unique, table)
+        list_uniques = [unique["column_name"] for unique in uniques.Rows]
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_uniques, safe=False)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_indexes(request, database):
+    table = request.data["table"]
+
+    list_indexes = []
+
+    try:
+        indexes = database.QueryTablesIndexes(table)
+        for index in indexes.Rows:
+            index_data = {
+                "index_name": index["index_name"],
+                "uniqueness": index["uniqueness"],
             }
-            v_list_columns.append(v_column_data)
+            list_indexes.append(index_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_columns
+    return JsonResponse(data=list_indexes, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_pk(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout=True, open_connection=True)
+def get_indexes_columns(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_pk = []
+    index = data["index"]
+    table = data["table"]
 
     try:
-        v_pks = v_database.QueryTablesPrimaryKeys(v_table, False, v_schema)
-        for v_pk in v_pks.Rows:
-            v_pk_data = []
-            v_pk_data.append(v_pk['constraint_name'])
-            v_list_pk.append(v_pk_data)
+        indexes = database.QueryTablesIndexesColumns(index, table)
+        list_indexes = [index["column_name"] for index in indexes.Rows]
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_pk
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_pk_columns(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data
-    v_pkey = data['p_key']
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_pk = []
-
-    try:
-        v_pks = v_database.QueryTablesPrimaryKeysColumns(v_pkey, v_table, False, v_schema)
-        for v_pk in v_pks.Rows:
-            v_pk_data = []
-            v_pk_data.append(v_pk['column_name'])
-            v_list_pk.append(v_pk_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_pk
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_fks(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_fk = []
-
-    try:
-        v_fks = v_database.QueryTablesForeignKeys(v_table, False, v_schema)
-        for v_fk in v_fks.Rows:
-            v_fk_data = []
-            v_fk_data.append(v_fk['constraint_name'])
-            v_fk_data.append(v_fk['r_table_name'])
-            v_fk_data.append(v_fk['delete_rule'])
-            v_fk_data.append(v_fk['update_rule'])
-            v_list_fk.append(v_fk_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_fk
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_fks_columns(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data
-    v_fkey = data['p_fkey']
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_fk = []
-
-    try:
-        v_fks = v_database.QueryTablesForeignKeysColumns(v_fkey, v_table, False, v_schema)
-        for v_fk in v_fks.Rows:
-            v_fk_data = []
-            v_fk_data.append(v_fk['r_table_name'])
-            v_fk_data.append(v_fk['delete_rule'])
-            v_fk_data.append(v_fk['update_rule'])
-            v_fk_data.append(v_fk['column_name'])
-            v_fk_data.append(v_fk['r_column_name'])
-            v_list_fk.append(v_fk_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_fk
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_uniques(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_uniques = []
-
-    try:
-        v_uniques = v_database.QueryTablesUniques(v_table, False, v_schema)
-        for v_unique in v_uniques.Rows:
-            v_unique_data = []
-            v_unique_data.append(v_unique['constraint_name'])
-            v_list_uniques.append(v_unique_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_uniques
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_uniques_columns(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data
-    v_unique = data['p_unique']
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_uniques = []
-
-    try:
-        v_uniques = v_database.QueryTablesUniquesColumns(v_unique, v_table, False, v_schema)
-        for v_unique in v_uniques.Rows:
-            v_unique_data = []
-            v_unique_data.append(v_unique['column_name'])
-            v_list_uniques.append(v_unique_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_uniques
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_indexes(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_indexes = []
-
-    try:
-        v_indexes = v_database.QueryTablesIndexes(v_table, False, v_schema)
-        for v_index in v_indexes.Rows:
-            v_index_data = []
-            v_index_data.append(v_index['index_name'])
-            v_index_data.append(v_index['uniqueness'])
-            v_list_indexes.append(v_index_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_indexes
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_indexes_columns(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data
-    v_index = data['p_index']
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_indexes = []
-
-    try:
-        v_indexes = v_database.QueryTablesIndexesColumns(v_index, v_table, False, v_schema)
-        for v_index in v_indexes.Rows:
-            v_index_data = []
-            v_index_data.append(v_index['column_name'])
-            v_list_indexes.append(v_index_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_indexes
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_tablespaces(request, v_database):
-    v_return = create_response_template()
-
-    v_list_tablespaces = []
-
-    try:
-        v_tablespaces = v_database.QueryTablespaces()
-        for v_tablespace in v_tablespaces.Rows:
-            v_tablespace_data = {
-                'v_name': v_tablespace['tablespace_name']
-            }
-            v_list_tablespaces.append(v_tablespace_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_tablespaces
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_roles(request, v_database):
-    v_return = create_response_template()
-
-    v_list_roles = []
-
-    try:
-        v_roles = v_database.QueryRoles()
-        for v_role in v_roles.Rows:
-            v_role_data = {
-                'v_name': v_role['role_name']
-            }
-            v_list_roles.append(v_role_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_roles
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_indexes, safe=False)
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
+@database_required_new(check_timeout=True, open_connection=True)
+def get_tablespaces(request, database):
+    list_tablespaces = []
+
+    try:
+        tablespaces = database.QueryTablespaces()
+        for tablespace in tablespaces.Rows:
+            tablespace_data = {"name": tablespace["tablespace_name"]}
+            list_tablespaces.append(tablespace_data)
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_tablespaces, safe=False)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_roles(request, database):
+    list_roles = []
+
+    try:
+        roles = database.QueryRoles()
+        for role in roles.Rows:
+            role_data = {"name": role["role_name"]}
+            list_roles.append(role_data)
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_roles, safe=False)
+
+
+@user_authenticated
+@database_required(p_check_timeout=True, p_open_connection=True)
 def get_packages(request, v_database):
     v_return = create_response_template()
 
-    v_schema = request.data['p_schema']
+    v_schema = request.data["p_schema"]
 
     v_list_packages = []
 
     try:
-        v_packages = v_database.QueryPackages(False,v_schema)
+        v_packages = v_database.QueryPackages(False, v_schema)
         for v_package in v_packages.Rows:
-            v_package_data = {
-                'v_name': v_package['name'],
-                'v_id': v_package['id']
-            }
+            v_package_data = {"v_name": v_package["name"], "v_id": v_package["id"]}
             v_package_functions.append(v_package_data)
     except Exception as exc:
         return error_response(message=str(exc), password_timeout=True)
 
-    v_return['v_data'] = v_list_packages 
+    v_return["v_data"] = v_list_packages
 
     return JsonResponse(v_return)
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_functions(request, v_database):
-    v_return = create_response_template()
-
-    v_schema = request.data['p_schema']
-
-    v_list_functions = []
+@database_required_new(check_timeout=True, open_connection=True)
+def get_functions(request, database):
+    list_functions = []
 
     try:
-        v_functions = v_database.QueryFunctions(False,v_schema)
-        for v_function in v_functions.Rows:
-            v_function_data = {
-                'v_name': v_function['name'],
-                'v_id': v_function['id']
-            }
-            v_list_functions.append(v_function_data)
+        functions = database.QueryFunctions()
+        for function in functions.Rows:
+            function_data = {"name": function["name"], "id": function["id"]}
+            list_functions.append(function_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_functions
+    return JsonResponse(data=list_functions, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_function_fields(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data 
-    v_function = data['p_function']
-    v_schema = data['p_schema']
-
-    v_list_fields = []
-
-    try:
-        v_fields = v_database.QueryFunctionFields(v_function,v_schema)
-        for v_field in v_fields.Rows:
-            v_field_data = {
-                'v_name': v_field['name'],
-                'v_type': v_field['type']
-            }
-            v_list_fields.append(v_field_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_fields
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_function_definition(request, v_database):
-    v_return = create_response_template()
-
-    v_function = request.data['p_function']
-
-    try:
-        v_return['v_data'] = v_database.GetFunctionDefinition(v_function)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_procedures(request, v_database):
-    v_return = create_response_template()
-
-    v_schema = request.data['p_schema']
-
-    v_list_functions = []
-
-    try:
-        v_functions = v_database.QueryProcedures(False,v_schema)
-        for v_function in v_functions.Rows:
-            v_function_data = {
-                'v_name': v_function['name'],
-                'v_id': v_function['id']
-            }
-            v_list_functions.append(v_function_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_functions
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_procedure_fields(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout=True, open_connection=True)
+def get_function_fields(request, database):
     data = request.data
-    v_function = data['p_procedure']
-    v_schema = data['p_schema']
+    function = data["function"]
+    schema = data["schema"]
 
-    v_list_fields = []
-
-    try:
-        v_fields = v_database.QueryProcedureFields(v_function,v_schema)
-        for v_field in v_fields.Rows:
-            v_field_data = {
-                'v_name': v_field['name'],
-                'v_type': v_field['type']
-            }
-            v_list_fields.append(v_field_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_fields
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_procedure_definition(request, v_database):
-    v_return = create_response_template()
-
-    v_function = request.data['p_procedure']
+    list_fields = []
 
     try:
-        v_return['v_data'] = v_database.GetProcedureDefinition(v_function)
+        fields = database.QueryFunctionFields(function, schema)
+        for field in fields.Rows:
+            field_data = {"name": field["name"], "type": field["type"]}
+            list_fields.append(field_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_fields, safe=False)
+
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_sequences(request, v_database):
-    v_return = create_response_template()
-
-    v_schema = request.data['p_schema']
-
-    v_list_sequences = []
+@database_required_new(check_timeout=True, open_connection=True)
+def get_function_definition(request, database):
+    function = request.data["function"]
 
     try:
-        v_sequences = v_database.QuerySequences(False,v_schema)
-        for v_sequence in v_sequences.Rows:
-            v_sequence_data = {
-                'v_sequence_name': v_sequence['sequence_name']
-            }
-            v_list_sequences.append(v_sequence_data)
+        function_definition = database.GetFunctionDefinition(function)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_sequences
+    return JsonResponse({"data": function_definition})
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_views(request, v_database):
-    v_return = create_response_template()
-
-    v_schema = request.data['p_schema']
-
-    v_list_tables = []
+@database_required_new(check_timeout=True, open_connection=True)
+def get_procedures(request, database):
+    list_functions = []
 
     try:
-        v_tables = v_database.QueryViews(False,v_schema)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_name'],
-                'v_has_triggers': v_database.v_has_triggers,
-            }
-            v_list_tables.append(v_table_data)
+        functions = database.QueryProcedures()
+        for function in functions.Rows:
+            function_data = {"name": function["name"], "id": function["id"]}
+            list_functions.append(function_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_tables
+    return JsonResponse(data=list_functions, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_views_columns(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout=True, open_connection=True)
+def get_procedure_fields(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    function = data["procedure"]
+    schema = data["schema"]
 
-    v_list_columns = []
+    list_fields = []
 
     try:
-        v_columns = v_database.QueryViewFields(v_table,False,v_schema)
-        for v_column in v_columns.Rows:
-            v_column_data = {
-                'v_column_name': v_column['column_name'],
-                'v_data_type': v_column['data_type'],
-                'v_data_length': v_column['data_length'],
+        fields = database.QueryProcedureFields(function, schema)
+        for field in fields.Rows:
+            field_data = {"name": field["name"], "type": field["type"]}
+            list_fields.append(field_data)
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_fields, safe=False)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_procedure_definition(request, database):
+    function = request.data["procedure"]
+
+    try:
+        procedure_definition = database.GetProcedureDefinition(function)
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse({"data": procedure_definition})
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_sequences(request, database):
+    list_sequences = []
+
+    try:
+        sequences = database.QuerySequences()
+        for sequence in sequences.Rows:
+            sequence_data = {"sequence_name": sequence["sequence_name"]}
+            list_sequences.append(sequence_data)
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_sequences, safe=False)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_views(request, database):
+    list_tables = []
+
+    try:
+        tables = database.QueryViews()
+        for table in tables.Rows:
+            table_data = {
+                "name": table["table_name"],
             }
-            v_list_columns.append(v_column_data)
+            list_tables.append(table_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_columns
+    return JsonResponse(data=list_tables, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_view_definition(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout=True, open_connection=True)
+def get_views_columns(request, database):
+    table = request.data["table"]
 
-    data = request.data
-    v_view = data['p_view']
-    v_schema = data['p_schema']
+    list_columns = []
 
     try:
-        v_return['v_data'] = v_database.GetViewDefinition(v_view, v_schema)
+        columns = database.QueryViewFields(table)
+        for column in columns.Rows:
+            column_data = {
+                "column_name": column["column_name"],
+                "data_type": column["data_type"],
+                "data_length": column["data_length"],
+            }
+            list_columns.append(column_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_columns, safe=False)
+
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
+@database_required_new(check_timeout=True, open_connection=True)
+def get_view_definition(request, database):
+    data = request.data
+    view = data["view"]
+    schema = data["schema"]
+
+    try:
+        view_definition = database.GetViewDefinition(view, schema)
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse({"data": view_definition})
+
+
+@user_authenticated
+@database_required(p_check_timeout=True, p_open_connection=True)
 def kill_backend(request, v_database):
     v_return = create_response_template()
 
-    v_pid = request.data['p_pid']
+    v_pid = request.data["p_pid"]
 
     try:
         v_data = v_database.Terminate(v_pid)
@@ -670,62 +515,59 @@ def kill_backend(request, v_database):
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
+@database_required(p_check_timeout=True, p_open_connection=True)
 def template_select(request, v_database):
     v_return = create_response_template()
 
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    v_table = data["p_table"]
+    v_schema = data["p_schema"]
 
     try:
         v_template = v_database.TemplateSelect(v_schema, v_table).v_text
     except Exception as exc:
         return error_response(message=str(exc), password_timeout=True)
 
-    v_return['v_data'] = {
-        'v_template': v_template
-    }
+    v_return["v_data"] = {"v_template": v_template}
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
+@database_required(p_check_timeout=True, p_open_connection=True)
 def template_insert(request, v_database):
     v_return = create_response_template()
 
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    v_table = data["p_table"]
+    v_schema = data["p_schema"]
 
     try:
         v_template = v_database.TemplateInsert(v_schema, v_table).v_text
     except Exception as exc:
         return error_response(message=str(exc), password_timeout=True)
 
-    v_return['v_data'] = {
-        'v_template': v_template
-    }
+    v_return["v_data"] = {"v_template": v_template}
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
+@database_required(p_check_timeout=True, p_open_connection=True)
 def template_update(request, v_database):
     v_return = create_response_template()
 
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    v_table = data["p_table"]
+    v_schema = data["p_schema"]
 
     try:
         v_template = v_database.TemplateUpdate(v_schema, v_table).v_text
     except Exception as exc:
         return error_response(message=str(exc), password_timeout=True)
 
-    v_return['v_data'] = {
-        'v_template': v_template
-    }
+    v_return["v_data"] = {"v_template": v_template}
 
     return JsonResponse(v_return)
