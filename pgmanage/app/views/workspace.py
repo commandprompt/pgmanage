@@ -177,14 +177,12 @@ def shortcuts(request):
 
 
 @user_authenticated
-@session_required(use_old_error_format=True)
+@session_required
 def change_active_database(request, session):
-    response_data = create_response_template()
-
     data = request.data
-    tab_id = data["p_tab_id"]
-    new_database = data["p_database"]
-    conn_id = data["p_database_index"]
+    tab_id = data["tab_id"]
+    new_database = data["database"]
+    conn_id = data["database_index"]
 
     session.v_tabs_databases[tab_id] = new_database
 
@@ -194,7 +192,7 @@ def change_active_database(request, session):
 
     request.session["pgmanage_session"] = session
 
-    return JsonResponse(response_data)
+    return JsonResponse(data={"data": "database changed"})
 
 
 @user_authenticated

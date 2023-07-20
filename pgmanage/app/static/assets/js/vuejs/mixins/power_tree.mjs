@@ -25,6 +25,15 @@ export default {
         ...axios.defaults.transformRequest,
       ],
     });
+
+    this.api.interceptors.response.use(response => {
+      return response;
+    }, error => {
+      if (error.response.status === 401) {
+        showAlert('User not authenticated, please reload the page.');
+      }
+      return Promise.reject(error);
+    });
   },
   methods: {
     onClickHandler(node, e) {
@@ -140,6 +149,8 @@ export default {
           error_response.response.data.data
         );
       } else {
+
+        // make red toast message instead of this
         this.removeChildNodes(node);
 
         this.insertNode(

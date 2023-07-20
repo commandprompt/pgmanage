@@ -1,176 +1,163 @@
-from django.http import HttpResponse
-from django.template import loader
 from django.http import JsonResponse
-from django.core import serializers
-
-import sys
-
-import app.include.Spartacus as Spartacus
-import app.include.Spartacus.Database as Database
-import app.include.Spartacus.Utils as Utils
-from app.include.Session import Session
-from datetime import datetime
 
 from app.utils.decorators import database_required, database_required_new, user_authenticated
 from app.utils.response_helpers import create_response_template, error_response
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_tree_info(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_tree_info(request, database):
     try:
-        v_return['v_data'] = {
-            'v_mode': 'database',
-            'v_database_return': {
-                'v_database': v_database.GetName(),
-                'version': v_database.GetVersion(),
-                #'superuser': v_database.GetUserSuper(),
-                'create_role': v_database.TemplateCreateRole().v_text,
-                'alter_role': v_database.TemplateAlterRole().v_text,
-                'drop_role': v_database.TemplateDropRole().v_text,
-                'create_tablespace': v_database.TemplateCreateTablespace().v_text,
-                'alter_tablespace': v_database.TemplateAlterTablespace().v_text,
-                'drop_tablespace': v_database.TemplateDropTablespace().v_text,
-                'create_database': v_database.TemplateCreateDatabase().v_text,
-                'alter_database': v_database.TemplateAlterDatabase().v_text,
-                'drop_database': v_database.TemplateDropDatabase().v_text,
-                'create_extension': v_database.TemplateCreateExtension().v_text,
-                'alter_extension': v_database.TemplateAlterExtension().v_text,
-                'drop_extension': v_database.TemplateDropExtension().v_text,
-                'create_schema': v_database.TemplateCreateSchema().v_text,
-                'alter_schema': v_database.TemplateAlterSchema().v_text,
-                'drop_schema': v_database.TemplateDropSchema().v_text,
-                'create_sequence': v_database.TemplateCreateSequence().v_text,
-                'alter_sequence': v_database.TemplateAlterSequence().v_text,
-                'drop_sequence': v_database.TemplateDropSequence().v_text,
-                'create_function': v_database.TemplateCreateFunction().v_text,
-                'alter_function': v_database.TemplateAlterFunction().v_text,
-                'drop_function': v_database.TemplateDropFunction().v_text,
-                'create_procedure': v_database.TemplateCreateProcedure().v_text,
-                'alter_procedure': v_database.TemplateAlterProcedure().v_text,
-                'drop_procedure': v_database.TemplateDropProcedure().v_text,
-                'create_triggerfunction': v_database.TemplateCreateTriggerFunction().v_text,
-                'alter_triggerfunction': v_database.TemplateAlterTriggerFunction().v_text,
-                'drop_triggerfunction': v_database.TemplateDropTriggerFunction().v_text,
-                'create_eventtriggerfunction': v_database.TemplateCreateEventTriggerFunction().v_text,
-                'alter_eventtriggerfunction': v_database.TemplateAlterEventTriggerFunction().v_text,
-                'drop_eventtriggerfunction': v_database.TemplateDropEventTriggerFunction().v_text,
-                'create_aggregate': v_database.TemplateCreateAggregate().v_text,
-                'alter_aggregate': v_database.TemplateAlterAggregate().v_text,
-                'drop_aggregate': v_database.TemplateDropAggregate().v_text,
-                'create_view': v_database.TemplateCreateView().v_text,
-                'alter_view': v_database.TemplateAlterView().v_text,
-                'drop_view': v_database.TemplateDropView().v_text,
-                'create_mview': v_database.TemplateCreateMaterializedView().v_text,
-                'refresh_mview': v_database.TemplateRefreshMaterializedView().v_text,
-                'alter_mview': v_database.TemplateAlterMaterializedView().v_text,
-                'drop_mview': v_database.TemplateDropMaterializedView().v_text,
-                'create_table': v_database.TemplateCreateTable().v_text,
-                'alter_table': v_database.TemplateAlterTable().v_text,
-                'drop_table': v_database.TemplateDropTable().v_text,
-                'create_column': v_database.TemplateCreateColumn().v_text,
-                'alter_column': v_database.TemplateAlterColumn().v_text,
-                'drop_column': v_database.TemplateDropColumn().v_text,
-                'create_primarykey': v_database.TemplateCreatePrimaryKey().v_text,
-                'drop_primarykey': v_database.TemplateDropPrimaryKey().v_text,
-                'create_unique': v_database.TemplateCreateUnique().v_text,
-                'drop_unique': v_database.TemplateDropUnique().v_text,
-                'create_foreignkey': v_database.TemplateCreateForeignKey().v_text,
-                'drop_foreignkey': v_database.TemplateDropForeignKey().v_text,
-                'create_index': v_database.TemplateCreateIndex().v_text,
-                'alter_index': v_database.TemplateAlterIndex().v_text,
-                'cluster_index': v_database.TemplateClusterIndex().v_text,
-                'reindex': v_database.TemplateReindex().v_text,
-                'drop_index': v_database.TemplateDropIndex().v_text,
-                'create_check': v_database.TemplateCreateCheck().v_text,
-                'drop_check': v_database.TemplateDropCheck().v_text,
-                'create_exclude': v_database.TemplateCreateExclude().v_text,
-                'drop_exclude': v_database.TemplateDropExclude().v_text,
-                'create_rule': v_database.TemplateCreateRule().v_text,
-                'alter_rule': v_database.TemplateAlterRule().v_text,
-                'drop_rule': v_database.TemplateDropRule().v_text,
-                'create_trigger': v_database.TemplateCreateTrigger().v_text,
-                'create_view_trigger': v_database.TemplateCreateViewTrigger().v_text,
-                'alter_trigger': v_database.TemplateAlterTrigger().v_text,
-                'enable_trigger': v_database.TemplateEnableTrigger().v_text,
-                'disable_trigger': v_database.TemplateDisableTrigger().v_text,
-                'drop_trigger': v_database.TemplateDropTrigger().v_text,
-                'create_eventtrigger': v_database.TemplateCreateEventTrigger().v_text,
-                'alter_eventtrigger': v_database.TemplateAlterEventTrigger().v_text,
-                'enable_eventtrigger': v_database.TemplateEnableEventTrigger().v_text,
-                'disable_eventtrigger': v_database.TemplateDisableEventTrigger().v_text,
-                'drop_eventtrigger': v_database.TemplateDropEventTrigger().v_text,
-                'create_inherited': v_database.TemplateCreateInherited().v_text,
-                'noinherit_partition': v_database.TemplateNoInheritPartition().v_text,
-                'create_partition': v_database.TemplateCreatePartition().v_text,
-                'detach_partition': v_database.TemplateDetachPartition().v_text,
-                'drop_partition': v_database.TemplateDropPartition().v_text,
-                'vacuum': v_database.TemplateVacuum().v_text,
-                'vacuum_table': v_database.TemplateVacuumTable().v_text,
-                'analyze': v_database.TemplateAnalyze().v_text,
-                'analyze_table': v_database.TemplateAnalyzeTable().v_text,
-                'delete': v_database.TemplateDelete().v_text,
-                'truncate': v_database.TemplateTruncate().v_text,
-                'create_physicalreplicationslot': v_database.TemplateCreatePhysicalReplicationSlot().v_text,
-                'drop_physicalreplicationslot': v_database.TemplateDropPhysicalReplicationSlot().v_text,
-                'create_logicalreplicationslot': v_database.TemplateCreateLogicalReplicationSlot().v_text,
-                'drop_logicalreplicationslot': v_database.TemplateDropLogicalReplicationSlot().v_text,
-                'create_publication': v_database.TemplateCreatePublication().v_text,
-                'alter_publication': v_database.TemplateAlterPublication().v_text,
-                'drop_publication': v_database.TemplateDropPublication().v_text,
-                'add_pubtable': v_database.TemplateAddPublicationTable().v_text,
-                'drop_pubtable': v_database.TemplateDropPublicationTable().v_text,
-                'create_subscription': v_database.TemplateCreateSubscription().v_text,
-                'alter_subscription': v_database.TemplateAlterSubscription().v_text,
-                'drop_subscription': v_database.TemplateDropSubscription().v_text,
-                'create_fdw': v_database.TemplateCreateForeignDataWrapper().v_text,
-                'alter_fdw': v_database.TemplateAlterForeignDataWrapper().v_text,
-                'drop_fdw': v_database.TemplateDropForeignDataWrapper().v_text,
-                'create_foreign_server': v_database.TemplateCreateForeignServer().v_text,
-                'alter_foreign_server': v_database.TemplateAlterForeignServer().v_text,
-                'import_foreign_schema': v_database.TemplateImportForeignSchema().v_text,
-                'drop_foreign_server': v_database.TemplateDropForeignServer().v_text,
-                'create_foreign_table': v_database.TemplateCreateForeignTable().v_text,
-                'alter_foreign_table': v_database.TemplateAlterForeignTable().v_text,
-                'drop_foreign_table': v_database.TemplateDropForeignTable().v_text,
-                'create_foreign_column': v_database.TemplateCreateForeignColumn().v_text,
-                'alter_foreign_column': v_database.TemplateAlterForeignColumn().v_text,
-                'drop_foreign_column': v_database.TemplateDropForeignColumn().v_text,
-                'create_user_mapping': v_database.TemplateCreateUserMapping().v_text,
-                'alter_user_mapping': v_database.TemplateAlterUserMapping().v_text,
-                'drop_user_mapping': v_database.TemplateDropUserMapping().v_text,
-                'create_type': v_database.TemplateCreateType().v_text,
-                'alter_type': v_database.TemplateAlterType().v_text,
-                'drop_type': v_database.TemplateDropType().v_text,
-                'create_domain': v_database.TemplateCreateDomain().v_text,
-                'alter_domain': v_database.TemplateAlterDomain().v_text,
-                'drop_domain': v_database.TemplateDropDomain().v_text,
-                'create_statistics': v_database.TemplateCreateStatistics().v_text,
-                'alter_statistics': v_database.TemplateAlterStatistics().v_text,
-                'drop_statistics': v_database.TemplateDropStatistics().v_text,
+        data = {
+                'database': database.GetName(),
+                'version': database.GetVersion(),
+                #'superuser': database.GetUserSuper(),
+                'create_role': database.TemplateCreateRole().v_text,
+                'alter_role': database.TemplateAlterRole().v_text,
+                'drop_role': database.TemplateDropRole().v_text,
+                'create_tablespace': database.TemplateCreateTablespace().v_text,
+                'alter_tablespace': database.TemplateAlterTablespace().v_text,
+                'drop_tablespace': database.TemplateDropTablespace().v_text,
+                'create_database': database.TemplateCreateDatabase().v_text,
+                'alter_database': database.TemplateAlterDatabase().v_text,
+                'drop_database': database.TemplateDropDatabase().v_text,
+                'create_extension': database.TemplateCreateExtension().v_text,
+                'alter_extension': database.TemplateAlterExtension().v_text,
+                'drop_extension': database.TemplateDropExtension().v_text,
+                'create_schema': database.TemplateCreateSchema().v_text,
+                'alter_schema': database.TemplateAlterSchema().v_text,
+                'drop_schema': database.TemplateDropSchema().v_text,
+                'create_sequence': database.TemplateCreateSequence().v_text,
+                'alter_sequence': database.TemplateAlterSequence().v_text,
+                'drop_sequence': database.TemplateDropSequence().v_text,
+                'create_function': database.TemplateCreateFunction().v_text,
+                'alter_function': database.TemplateAlterFunction().v_text,
+                'drop_function': database.TemplateDropFunction().v_text,
+                'create_procedure': database.TemplateCreateProcedure().v_text,
+                'alter_procedure': database.TemplateAlterProcedure().v_text,
+                'drop_procedure': database.TemplateDropProcedure().v_text,
+                'create_triggerfunction': database.TemplateCreateTriggerFunction().v_text,
+                'alter_triggerfunction': database.TemplateAlterTriggerFunction().v_text,
+                'drop_triggerfunction': database.TemplateDropTriggerFunction().v_text,
+                'create_eventtriggerfunction': database.TemplateCreateEventTriggerFunction().v_text,
+                'alter_eventtriggerfunction': database.TemplateAlterEventTriggerFunction().v_text,
+                'drop_eventtriggerfunction': database.TemplateDropEventTriggerFunction().v_text,
+                'create_aggregate': database.TemplateCreateAggregate().v_text,
+                'alter_aggregate': database.TemplateAlterAggregate().v_text,
+                'drop_aggregate': database.TemplateDropAggregate().v_text,
+                'create_view': database.TemplateCreateView().v_text,
+                'alter_view': database.TemplateAlterView().v_text,
+                'drop_view': database.TemplateDropView().v_text,
+                'create_mview': database.TemplateCreateMaterializedView().v_text,
+                'refresh_mview': database.TemplateRefreshMaterializedView().v_text,
+                'alter_mview': database.TemplateAlterMaterializedView().v_text,
+                'drop_mview': database.TemplateDropMaterializedView().v_text,
+                'create_table': database.TemplateCreateTable().v_text,
+                'alter_table': database.TemplateAlterTable().v_text,
+                'drop_table': database.TemplateDropTable().v_text,
+                'create_column': database.TemplateCreateColumn().v_text,
+                'alter_column': database.TemplateAlterColumn().v_text,
+                'drop_column': database.TemplateDropColumn().v_text,
+                'create_primarykey': database.TemplateCreatePrimaryKey().v_text,
+                'drop_primarykey': database.TemplateDropPrimaryKey().v_text,
+                'create_unique': database.TemplateCreateUnique().v_text,
+                'drop_unique': database.TemplateDropUnique().v_text,
+                'create_foreignkey': database.TemplateCreateForeignKey().v_text,
+                'drop_foreignkey': database.TemplateDropForeignKey().v_text,
+                'create_index': database.TemplateCreateIndex().v_text,
+                'alter_index': database.TemplateAlterIndex().v_text,
+                'cluster_index': database.TemplateClusterIndex().v_text,
+                'reindex': database.TemplateReindex().v_text,
+                'drop_index': database.TemplateDropIndex().v_text,
+                'create_check': database.TemplateCreateCheck().v_text,
+                'drop_check': database.TemplateDropCheck().v_text,
+                'create_exclude': database.TemplateCreateExclude().v_text,
+                'drop_exclude': database.TemplateDropExclude().v_text,
+                'create_rule': database.TemplateCreateRule().v_text,
+                'alter_rule': database.TemplateAlterRule().v_text,
+                'drop_rule': database.TemplateDropRule().v_text,
+                'create_trigger': database.TemplateCreateTrigger().v_text,
+                'create_view_trigger': database.TemplateCreateViewTrigger().v_text,
+                'alter_trigger': database.TemplateAlterTrigger().v_text,
+                'enable_trigger': database.TemplateEnableTrigger().v_text,
+                'disable_trigger': database.TemplateDisableTrigger().v_text,
+                'drop_trigger': database.TemplateDropTrigger().v_text,
+                'create_eventtrigger': database.TemplateCreateEventTrigger().v_text,
+                'alter_eventtrigger': database.TemplateAlterEventTrigger().v_text,
+                'enable_eventtrigger': database.TemplateEnableEventTrigger().v_text,
+                'disable_eventtrigger': database.TemplateDisableEventTrigger().v_text,
+                'drop_eventtrigger': database.TemplateDropEventTrigger().v_text,
+                'create_inherited': database.TemplateCreateInherited().v_text,
+                'noinherit_partition': database.TemplateNoInheritPartition().v_text,
+                'create_partition': database.TemplateCreatePartition().v_text,
+                'detach_partition': database.TemplateDetachPartition().v_text,
+                'drop_partition': database.TemplateDropPartition().v_text,
+                'vacuum': database.TemplateVacuum().v_text,
+                'vacuum_table': database.TemplateVacuumTable().v_text,
+                'analyze': database.TemplateAnalyze().v_text,
+                'analyze_table': database.TemplateAnalyzeTable().v_text,
+                'delete': database.TemplateDelete().v_text,
+                'truncate': database.TemplateTruncate().v_text,
+                'create_physicalreplicationslot': database.TemplateCreatePhysicalReplicationSlot().v_text,
+                'drop_physicalreplicationslot': database.TemplateDropPhysicalReplicationSlot().v_text,
+                'create_logicalreplicationslot': database.TemplateCreateLogicalReplicationSlot().v_text,
+                'drop_logicalreplicationslot': database.TemplateDropLogicalReplicationSlot().v_text,
+                'create_publication': database.TemplateCreatePublication().v_text,
+                'alter_publication': database.TemplateAlterPublication().v_text,
+                'drop_publication': database.TemplateDropPublication().v_text,
+                'add_pubtable': database.TemplateAddPublicationTable().v_text,
+                'drop_pubtable': database.TemplateDropPublicationTable().v_text,
+                'create_subscription': database.TemplateCreateSubscription().v_text,
+                'alter_subscription': database.TemplateAlterSubscription().v_text,
+                'drop_subscription': database.TemplateDropSubscription().v_text,
+                'create_fdw': database.TemplateCreateForeignDataWrapper().v_text,
+                'alter_fdw': database.TemplateAlterForeignDataWrapper().v_text,
+                'drop_fdw': database.TemplateDropForeignDataWrapper().v_text,
+                'create_foreign_server': database.TemplateCreateForeignServer().v_text,
+                'alter_foreign_server': database.TemplateAlterForeignServer().v_text,
+                'import_foreign_schema': database.TemplateImportForeignSchema().v_text,
+                'drop_foreign_server': database.TemplateDropForeignServer().v_text,
+                'create_foreign_table': database.TemplateCreateForeignTable().v_text,
+                'alter_foreign_table': database.TemplateAlterForeignTable().v_text,
+                'drop_foreign_table': database.TemplateDropForeignTable().v_text,
+                'create_foreign_column': database.TemplateCreateForeignColumn().v_text,
+                'alter_foreign_column': database.TemplateAlterForeignColumn().v_text,
+                'drop_foreign_column': database.TemplateDropForeignColumn().v_text,
+                'create_user_mapping': database.TemplateCreateUserMapping().v_text,
+                'alter_user_mapping': database.TemplateAlterUserMapping().v_text,
+                'drop_user_mapping': database.TemplateDropUserMapping().v_text,
+                'create_type': database.TemplateCreateType().v_text,
+                'alter_type': database.TemplateAlterType().v_text,
+                'drop_type': database.TemplateDropType().v_text,
+                'create_domain': database.TemplateCreateDomain().v_text,
+                'alter_domain': database.TemplateAlterDomain().v_text,
+                'drop_domain': database.TemplateDropDomain().v_text,
+                'create_statistics': database.TemplateCreateStatistics().v_text,
+                'alter_statistics': database.TemplateAlterStatistics().v_text,
+                'drop_statistics': database.TemplateDropStatistics().v_text,
             }
-        }
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse(data=data)
+
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_database_objects(request, v_database):
-    response_data = {'data': None, 'status': 'success'}
+@database_required_new(check_timeout = True, open_connection = True)
+def get_database_objects(request, database):
     unsupported_versions = ['1.0', '1.1', '1.2', '1.3']
     version_filter = lambda extension: extension[0] == 'pg_cron' and extension[2] not in unsupported_versions
 
     try:
-        extensions = v_database.QueryExtensions().Rows
+        extensions = database.QueryExtensions().Rows
         has_pg_cron = len(list(filter(version_filter, extensions))) > 0
-        response_data['data'] = {'has_pg_cron': has_pg_cron}
+        data = {'has_pg_cron': has_pg_cron}
     except Exception as exc:
-        response_data['status'] = 'failed'
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(response_data)
+    return JsonResponse(data=data)
+
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
@@ -198,38 +185,25 @@ def get_properties(request, v_database):
     return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_tables(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_tables(request, database):
+    schema = request.data['schema']
 
-    v_schema = request.data['p_schema']
-
-    v_list_tables = []
+    list_tables = []
 
     try:
-        v_tables = v_database.QueryTables(False,v_schema)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_name'],
-                'v_has_primary_keys': v_database.v_has_primary_keys,
-                'v_has_foreign_keys': v_database.v_has_foreign_keys,
-                'v_has_uniques': v_database.v_has_uniques,
-                'v_has_indexes': v_database.v_has_indexes,
-                'v_has_checks': v_database.v_has_checks,
-                'v_has_excludes': v_database.v_has_excludes,
-                'v_has_rules': v_database.v_has_rules,
-                'v_has_triggers': v_database.v_has_triggers,
-                'v_has_partitions': v_database.v_has_partitions,
-                'v_has_statistics': v_database.v_has_statistics,
-                'v_oid': v_table['oid']
+        tables = database.QueryTables(False,schema)
+        for table in tables.Rows:
+            table_data = {
+                'name': table['table_name'],
+                'oid': table['oid']
             }
-            v_list_tables.append(v_table_data)
+            list_tables.append(table_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_tables
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_tables, safe=False)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
@@ -872,29 +846,26 @@ def get_schemas(request, database):
             schemas_list.append(schema_data)
     except Exception as exc:
         return JsonResponse(data={'data': str(exc)}, status=500)
-    return JsonResponse(data={'data': schemas_list})
+    return JsonResponse(data=schemas_list, safe=False)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_databases(request, v_database):
-    v_return = create_response_template()
-
-    v_list_databases = []
+@database_required_new(check_timeout = True, open_connection = True)
+def get_databases(request, database):
+    list_databases = []
 
     try:
-        v_databases = v_database.QueryDatabases()
-        for v_database in v_databases.Rows:
-            v_database_data = {
-                'v_name': v_database['database_name'],
-                'v_oid': v_database['oid']
+        databases = database.QueryDatabases()
+        for database_object in databases.Rows:
+            database_data = {
+                'name': database_object['database_name'],
+                'oid': database_object['oid']
             }
-            v_list_databases.append(v_database_data)
+            list_databases.append(database_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_databases
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_databases, safe=False)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)

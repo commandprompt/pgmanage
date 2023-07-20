@@ -119,18 +119,17 @@ function queueChangeActiveDatabaseThreadSafe(p_data) {
 	}
 }
 
-function changeActiveDatabaseThreadSafe(p_data) {
+function changeActiveDatabaseThreadSafe(data) {
 	v_connTabControl.tag.change_active_database_call_running = true;
-	execAjax('/change_active_database/',
-		JSON.stringify(p_data),
-		function(p_return) {
-			v_connTabControl.tag.change_active_database_call_running = false;
-			if (v_connTabControl.tag.change_active_database_call_list.length>0)
-				changeActiveDatabaseThreadSafe(v_connTabControl.tag.change_active_database_call_list.pop());
-		},
-		null,
-		'box'
-  );
+  axios.post('/change_active_database/', data)
+  .then((resp) => {
+    v_connTabControl.tag.change_active_database_call_running = false;
+    if (v_connTabControl.tag.change_active_database_call_list.length>0)
+      changeActiveDatabaseThreadSafe(v_connTabControl.tag.change_active_database_call_list.pop());
+  })
+  .catch((error) => {
+    console.log(error)
+  })
 }
 
 /// <summary>
@@ -160,9 +159,9 @@ function changeDatabase(p_value) {
   v_connTabControl.selectedTab.tag.selectedTitle = conn_object.alias;
 
   queueChangeActiveDatabaseThreadSafe({
-    p_database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-    p_tab_id: v_connTabControl.selectedTab.id,
-    p_database: v_connTabControl.selectedTab.tag.selectedDatabase,
+    database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+    tab_id: v_connTabControl.selectedTab.id,
+    database: v_connTabControl.selectedTab.tag.selectedDatabase,
   });
 
   if (conn_object.technology == "postgresql") {
