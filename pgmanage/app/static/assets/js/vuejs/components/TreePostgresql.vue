@@ -11,6 +11,10 @@
         <i :class="['icon_tree', node.data.icon]"></i>
       </span>
       <span v-if="node.data.raw_html" v-html="node.title"> </span>
+      <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
+        ">
+        <b>{{ node.title }}</b>
+      </span>
       <span v-else>
         {{ formatTitle(node) }}
       </span>
@@ -52,6 +56,8 @@ export default {
           },
         },
       ],
+      selectedDatabase:
+        window.v_connTabControl.selectedTab.tag.selectedDatabase,
     };
   },
   computed: {
@@ -468,11 +474,9 @@ export default {
       callback_stop
     ) {
       if (
-        node.data != null &&
-        node.data.database != null &&
-        node.data.database !=
-        v_connTabControl.selectedTab.tag.selectedDatabase &&
-        (complete_check || (!complete_check && node.data.type != "database"))
+        !!node.data.database &&
+        node.data.database !== this.selectedDatabase &&
+        (complete_check || (!complete_check && node.data.type !== "database"))
       ) {
         let isAllowed = checkBeforeChangeDatabase(callback_stop);
         if (isAllowed) {
@@ -481,41 +485,21 @@ export default {
               database: node.data.database,
             })
             .then((resp) => {
-              v_connTabControl.selectedTab.tag.divDetails.innerHTML =
-                '<i class="fas fa-server mr-1"></i>selected DB: <b>' +
-                node.data.database +
-                "</b>";
-              // clear node bold
-              //searching new selected database node
-              // iterate over database to check if node.data.database == some node.text from list of databases
-              // if yes, set node bold,
+              v_connTabControl.selectedTab.tag.divDetails.innerHTML = `<i class="fas fa-server mr-1"></i>selected DB: <b>${node.data.database}</b>`;
               const database_nodes = this.$refs.tree.getNode([0, 0]).children;
 
               database_nodes.forEach((el) => {
-                if (node.data.database == el.title) {
-                  // set node bold
+                if (node.data.database === el.title) {
+                  this.selectedDatabase = node.data.database;
                   v_connTabControl.selectedTab.tag.selectedDatabase =
                     node.data.database;
                   v_connTabControl.selectedTab.tag.selectedDatabaseNode = el;
 
                   if (v_connTabControl.selectedTab.tag.selectedTitle != "")
-                    v_connTabControl.selectedTab.tag.tabTitle.innerHTML =
-                      '<img src="' +
-                      v_url_folder +
-                      "/static/assets/images/" +
-                      v_connTabControl.selectedTab.tag.selectedDBMS +
-                      '_medium.png"/> ' +
-                      v_connTabControl.selectedTab.tag.selectedTitle +
-                      " - " +
-                      v_connTabControl.selectedTab.tag.selectedDatabase;
+                    v_connTabControl.selectedTab.tag.tabTitle.innerHTML = `<img src="${v_url_folder}/static/assets/images/${v_connTabControl.selectedTab.tag.selectedDBMS}_medium.png"/>${v_connTabControl.selectedTab.tag.selectedTitle} - ${this.selectedDatabase}`;
                   else
-                    v_connTabControl.selectedTab.tag.tabTitle.innerHTML =
-                      '<img src="' +
-                      v_url_folder +
-                      "/static/assets/images/" +
-                      v_connTabControl.selectedTab.tag.selectedDBMS +
-                      '_medium.png"/> ' +
-                      v_connTabControl.selectedTab.tag.selectedDatabase;
+                    v_connTabControl.selectedTab.tag.tabTitle.innerHTML = `<img src="${v_url_folder}/static/assets/images/${v_connTabControl.selectedTab.tag.selectedDBMS}_medium.png"/>
+                      ${this.selectedDatabase}`;
                 }
               });
               if (callback_continue) callback_continue();
@@ -689,14 +673,6 @@ export default {
               oid: el.oid,
             });
           }, null);
-
-          // FIXME
-          // if (v_connTabControl.selectedTab.tag.selectedDatabase ==
-          //           p_return.v_data[i].v_name.replace(/"/g, '')) {
-          //           v_node.setNodeBold();
-          //           v_connTabControl.selectedTab.tag.selectedDatabaseNode =
-          //               v_node;
-          //       }
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -713,8 +689,7 @@ export default {
               icon: "fas node-all fa-clock",
               type: "job_list",
               contextMenu: "cm_jobs",
-              database:
-                window.v_connTabControl.selectedTab.tag.selectedDatabase,
+              database: this.selectedDatabase,
             });
           }
 
@@ -722,48 +697,48 @@ export default {
             icon: "fas node-all fa-arrow-alt-circle-up node-subscription-list",
             type: "subscription_list",
             contextMenu: "cm_subscriptions",
-            database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Publications", {
             icon: "fas node-all fa-arrow-alt-circle-down node-publication-list",
             type: "publication_list",
             contextMenu: "cm_publications",
-            database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Logical Replication", {
             icon: "fas node-all fa-sitemap node-logrep",
             type: "replication",
-            database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Event Triggers", {
             icon: "fas node-all fa-bolt node-eventtrigger",
             type: "event_trigger_list",
             contextMenu: "cm_event_triggers",
-            database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Foreign Data Wrappers", {
             icon: "fas node-all fa-cube node-fdw-list",
             type: "foreign_data_wrapper_list",
             contextMenu: "cm_foreign_data_wrappers",
-            database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Extensions", {
             icon: "fas node-all fa-cubes node-extension-list",
             type: "extension_list",
             contextMenu: "cm_extensions",
-            database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Schemas", {
             icon: "fas node-all fa-layer-group node-schema-list",
             type: "schema_list",
             contextMenu: "cm_schemas",
-            database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+            database: this.selectedDatabase,
           });
         })
         .catch((error) => {
@@ -785,8 +760,7 @@ export default {
               icon: "fas node-all fa-layer-group node-schema",
               type: "schema",
               contextMenu: "cm_schema",
-              database:
-                window.v_connTabControl.selectedTab.tag.selectedDatabase,
+              database: this.selectedDatabase,
               schema: el.name,
               oid: el.oid,
             });
@@ -803,7 +777,7 @@ export default {
         icon: "fas node-all fa-square node-domain-list",
         type: "domain_list",
         contextMenu: "cm_domains",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -811,7 +785,7 @@ export default {
         icon: "fas node-all fa-square node-type-list",
         type: "type_list",
         contextMenu: "cm_types",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -819,7 +793,7 @@ export default {
         icon: "fas node-all fa-cog node-aggregate-list",
         type: "aggregate_list",
         contextMenu: "cm_aggregates",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -827,7 +801,7 @@ export default {
         icon: "fas node-all fa-cog node-procedure-list",
         type: "procedure_list",
         contextMenu: "cm_procedures",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -835,7 +809,7 @@ export default {
         icon: "fas node-all fa-cog node-etfunction-list",
         type: "event_trigger_function_list",
         contextMenu: "cm_event_trigger_functions",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -843,7 +817,7 @@ export default {
         icon: "fas node-all fa-cog node-tfunction-list",
         type: "trigger_function_list",
         contextMenu: "cm_trigger_functions",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -851,7 +825,7 @@ export default {
         icon: "fas node-all fa-cog node-function-list",
         type: "function_list",
         contextMenu: "cm_functions",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -859,7 +833,7 @@ export default {
         icon: "fas node-all fa-eye node-mview-list",
         type: "mview_list",
         contextMenu: "cm_mviews",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -867,7 +841,7 @@ export default {
         icon: "fas node-all fa-eye node-view-list",
         type: "view_list",
         contextMenu: "cm_views",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -875,7 +849,7 @@ export default {
         icon: "fas node-all fa-sort-numeric-down node-sequence-list",
         type: "sequence_list",
         contextMenu: "cm_sequences",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -883,7 +857,7 @@ export default {
         icon: "fas node-all fa-th node-ftable-list",
         type: "foreign_table_list",
         contextMenu: "cm_foreign_tables",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -891,7 +865,7 @@ export default {
         icon: "fas node-all fa-th node-itable-list",
         type: "inherited_table_list",
         contextMenu: "cm_inherited_tables",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -899,7 +873,7 @@ export default {
         icon: "fas node-all fa-th node-ptable-list",
         type: "partitioned_table_list",
         contextMenu: "cm_partitioned_tables",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
 
@@ -907,7 +881,7 @@ export default {
         icon: "fas node-all fa-th node-table-list",
         type: "table_list",
         contextMenu: "cm_tables",
-        database: window.v_connTabControl.selectedTab.tag.selectedDatabase,
+        database: this.selectedDatabase,
         schema: node.data.schema,
       });
     },
@@ -929,8 +903,7 @@ export default {
               type: "table",
               contextMenu: "cm_table",
               schema: node.data.schema,
-              database:
-                window.v_connTabControl.selectedTab.tag.selectedDatabase,
+              database: this.selectedDatabase,
               oid: el.oid,
             });
           }, null);
