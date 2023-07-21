@@ -184,6 +184,7 @@ def get_properties(request, v_database):
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
 @database_required_new(check_timeout = True, open_connection = True)
 def get_tables(request, database):
@@ -205,141 +206,127 @@ def get_tables(request, database):
 
     return JsonResponse(data=list_tables, safe=False)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_columns(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_columns(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_columns = []
+    list_columns = []
 
     try:
-        v_columns = v_database.QueryTablesFields(v_table,False,v_schema)
-        for v_column in v_columns.Rows:
-            v_column_data = {
-                'v_column_name': v_column['column_name'],
-                'v_data_type': v_column['data_type'],
-                'v_data_length': v_column['data_length'],
-                'v_nullable': v_column['nullable'],
-                'v_position': v_column['position']
+        columns = database.QueryTablesFields(table,False,schema)
+        for column in columns.Rows:
+            column_data = {
+                'column_name': column['column_name'],
+                'data_type': column['data_type'],
+                'data_length': column['data_length'],
+                'nullable': column['nullable'],
+                'position': column['position']
             }
-            v_list_columns.append(v_column_data)
+            list_columns.append(column_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_columns
+    return JsonResponse(data=list_columns, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_pk(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_pk(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_pk = []
+    list_pk = []
 
     try:
-        v_pks = v_database.QueryTablesPrimaryKeys(v_table, False, v_schema)
-        for v_pk in v_pks.Rows:
-            v_pk_data = []
-            v_pk_data.append(v_pk['constraint_name'])
-            v_pk_data.append(v_pk['oid'])
-            v_list_pk.append(v_pk_data)
+        pks = database.QueryTablesPrimaryKeys(table, False, schema)
+        for pk in pks.Rows:
+            pk_data = {
+                "constraint_name": pk['constraint_name'],
+                "oid": pk['oid']
+            }
+            list_pk.append(pk_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_pk
+    return JsonResponse(data=list_pk, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_pk_columns(request, v_database):
-    v_return = create_response_template()
-    
+@database_required_new(check_timeout = True, open_connection = True)
+def get_pk_columns(request, database):
     data = request.data
-    v_pkey = data['p_key']
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_pk = []
+    pkey = data['key']
+    table = data['table']
+    schema = data['schema']
 
     try:
-        v_pks = v_database.QueryTablesPrimaryKeysColumns(v_pkey, v_table, False, v_schema)
-        for v_pk in v_pks.Rows:
-            v_pk_data = []
-            v_pk_data.append(v_pk['column_name'])
-            v_list_pk.append(v_pk_data)
+        pks = database.QueryTablesPrimaryKeysColumns(pkey, table, False, schema)
+        list_pk = [pk['column_name'] for pk in pks.Rows]
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_pk
+    return JsonResponse(data=list_pk, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_fks(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_fks(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_fk = []
+    list_fk = []
 
     try:
-        v_fks = v_database.QueryTablesForeignKeys(v_table, False, v_schema)
-        for v_fk in v_fks.Rows:
-            v_fk_data = []
-            v_fk_data.append(v_fk['constraint_name'])
-            v_fk_data.append(v_fk['r_table_name'])
-            v_fk_data.append(v_fk['delete_rule'])
-            v_fk_data.append(v_fk['update_rule'])
-            v_fk_data.append(v_fk['oid'])
-            v_list_fk.append(v_fk_data)
+        fks = database.QueryTablesForeignKeys(table, False, schema)
+        for fk in fks.Rows:
+            fk_data = {
+                "constraint_name": fk['constraint_name'],
+                "oid": fk['oid']
+            }
+            list_fk.append(fk_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_fk
+    return JsonResponse(data=list_fk, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_fks_columns(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_fks_columns(request, database):
     data = request.data
-    v_fkey = data['p_fkey']
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    fkey = data['fkey']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_fk = []
+    list_fk = []
 
     try:
-        v_fks = v_database.QueryTablesForeignKeysColumns(v_fkey, v_table, False, v_schema)
-        for v_fk in v_fks.Rows:
-            v_fk_data = []
-            v_fk_data.append(v_fk['r_table_name'])
-            v_fk_data.append(v_fk['delete_rule'])
-            v_fk_data.append(v_fk['update_rule'])
-            v_fk_data.append(v_fk['column_name'])
-            v_fk_data.append(v_fk['r_column_name'])
-            v_list_fk.append(v_fk_data)
+        fks = database.QueryTablesForeignKeysColumns(fkey, table, False, schema)
+        for fk in fks.Rows:
+            fk_data = {
+                "r_table_name": fk["r_table_name"],
+                "delete_rule": fk["delete_rule"],
+                "update_rule": fk["update_rule"],
+                "column_name": fk["column_name"],
+                "r_column_name": fk["r_column_name"]
+            }
+            list_fk.append(fk_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_fk
+    return JsonResponse(data=list_fk, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)

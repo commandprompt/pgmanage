@@ -105,7 +105,7 @@ export default {
             icon: "fas cm-all fa-edit",
             onClick: () => {
               //FIXME: rewrite to use vue instance
-              getObjectDescriptionPostgresql(node);
+              getObjectDescriptionPostgresql(this.selectedNode);
             },
           },
           {
@@ -433,6 +433,151 @@ export default {
             ],
           },
         ],
+        cm_columns: [
+          {
+            label: "Create Column",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Column",
+                this.templates.create_column.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+        ],
+        cm_column: [
+          {
+            label: "Alter Column",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Column",
+                this.templates.alter_column
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace(/#column_name#/g, this.selectedNode.title)
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              // FIXME
+              getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Column",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Column",
+                this.templates.drop_column
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace(/#column_name#/g, this.selectedNode.title)
+              );
+            },
+          },
+        ],
+        cm_pks: [
+          this.cmRefreshObject,
+          {
+            label: "Create Primary Key",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Primary Key",
+                this.templates.create_primarykey.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+        ],
+        cm_pk: [
+          this.cmRefreshObject,
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Primary Key",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Primary Key",
+                this.templates.drop_primarykey
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#constraint_name#", this.selectedNode.title)
+              );
+            },
+          },
+        ],
+        cm_fks: [
+          this.cmRefreshObject,
+          {
+            label: "Create Foreign Key",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Foreign Key",
+                this.templates.create_foreignkey.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+        ],
+        cm_fk: [
+          this.cmRefreshObject,
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              //FIXME
+              getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Foreign Key",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Foreign Key",
+                this.templates.drop_foreignkey
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#constraint_name#", this.selectedNode.title)
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -453,6 +598,14 @@ export default {
         this.getTablesPostgresql(node);
       } else if (node.data.type == "table") {
         this.getColumnsPostgresql(node);
+      } else if (node.data.type == "primary_key") {
+        this.getPKPostgresql(node);
+      } else if (node.data.type == "pk") {
+        this.getPKColumnsPostgresql(node);
+      } else if (node.data.type == "foreign_keys") {
+        this.getFKsPostgresql(node);
+      } else if (node.data.type == "foreign_key") {
+        this.getFKsColumnsPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -907,6 +1060,291 @@ export default {
               oid: el.oid,
             });
           }, null);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getColumnsPostgresql(node) {
+      this.api
+        .post("/get_columns_postgresql/", {
+          table: node.title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.insertNode(node, "Statistics", {
+            icon: "fas node-all fa-chart-bar node-statistics",
+            type: "statistics_list",
+            contextMenu: "cm_statistics",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Partitions", {
+            icon: "fas node-all fa-table node-partition",
+            type: "partition_list",
+            contextMenu: "cm_partitions",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Inherited Tables", {
+            icon: "fas node-all fa-table node-inherited",
+            type: "inherited_list",
+            contextMenu: "cm_inheriteds",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Triggers", {
+            icon: "fas node-all fa-bolt node-trigger",
+            type: "trigger_list",
+            contextMenu: "cm_triggers",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Rules", {
+            icon: "fas node-all fa-lightbulb node-rule",
+            type: "rule_list",
+            contextMenu: "cm_rules",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Indexes", {
+            icon: "fas node-all fa-thumbtack node-index",
+            type: "indexes",
+            contextMenu: "cm_indexes",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Excludes", {
+            icon: "fas node-all fa-times-circle node-exclude",
+            type: "exclude_list",
+            contextMenu: "cm_excludes",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Checks", {
+            icon: "fas node-all fa-check-square node-check",
+            type: "check_list",
+            contextMenu: "cm_checks",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Uniques", {
+            icon: "fas node-all fa-key node-unique",
+            type: "uniques",
+            contextMenu: "cm_uniques",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Foreign Keys", {
+            icon: "fas node-all fa-key node-fkey",
+            type: "foreign_keys",
+            contextMenu: "cm_fks",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Primary Key", {
+            icon: "fas node-all fa-key node-pkey",
+            type: "primary_key",
+            contextMenu: "cm_pks",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, `Columns (${resp.data.length})`, {
+            icon: "fas node-all fa-columns node-column",
+            type: "column_list",
+            contextMenu: "cm_columns",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          const columns_node = this.getFirstChildNode(node);
+
+          resp.data.reduceRight((_, el) => {
+            this.insertNode(columns_node, el.column_name, {
+              icon: "fas node-all fa-columns node-column",
+              type: "table_field",
+              contextMenu: "cm_column",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              position: el.position,
+            });
+            const table_field = this.getFirstChildNode(columns_node);
+
+            this.insertNode(
+              table_field,
+              `Nullable: ${el.nullable}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+            this.insertNode(
+              table_field,
+              `Type: ${el.data_type}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          }, null);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getPKPostgresql(node) {
+      this.api
+        .post("/get_pk_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Primary Key (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.constraint_name, {
+              icon: "fas node-all fa-key node-pkey",
+              type: "pk",
+              contextMenu: "cm_pk",
+              oid: el.oid,
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getPKColumnsPostgresql(node) {
+      this.api
+        .post("/get_pk_columns_postgresql/", {
+          key: node.title,
+          table: this.getParentNodeDeep(node, 2).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el,
+              {
+                icon: "fas node-all fa-columns node-column",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getFKsPostgresql(node) {
+      this.api
+        .post("/get_fks_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Foreign Keys (${resp.data.length})`,
+          });
+
+          resp.data.reduceRight((_, el) => {
+            this.insertNode(node, el.constraint_name, {
+              icon: "fas node-all fa-key node-fkey",
+              type: "foreign_key",
+              contextMenu: "cm_fk",
+              oid: el.oid,
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+            });
+          }, null);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getFKsColumnsPostgresql(node) {
+      this.api
+        .post("/get_fks_columns_postgresql/", {
+          fkey: node.title,
+          table: this.getParentNodeDeep(node, 2).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              `${el.column_name} <i class='fas node-all fa-arrow-right'></i> ${el.r_column_name}`,
+              {
+                icon: "fas node-all fa-columns node-column",
+                raw_html: true,
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+            this.insertNode(
+              node,
+              `Update Rule: ${el.update_rule}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+            this.insertNode(
+              node,
+              `Delete Rule: ${el.delete_rule}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+            this.insertNode(
+              node,
+              `Referenced Table: ${el.r_table_name}`,
+              {
+                icon: "fas node-all fa-table node-table",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
