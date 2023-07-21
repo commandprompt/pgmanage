@@ -34,6 +34,8 @@ export default {
       }
       return Promise.reject(error);
     });
+
+    this.$toast = VueToast.useToast();
   },
   methods: {
     onClickHandler(node, e) {
@@ -149,20 +151,11 @@ export default {
           error_response.response.data.data
         );
       } else {
-
-        // make red toast message instead of this
+        //FIXME: add proper ui styling and html
         this.removeChildNodes(node);
-
-        this.insertNode(
-          node,
-          "View Detail",
-          {
-            icon: "fas fa-times node-error",
-            type: "error",
-            message: error_response.response.data.data,
-          },
-          true
-        );
+        this.$toast.error(error_response.response.data.data, {
+          duration: 0
+        })
       }
     },
   },
