@@ -1315,60 +1315,6 @@ function getTreePostgresql(p_div) {
                 }
             }]
         },
-        'cm_uniques': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Create Unique',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Create Unique', node.tree.tag
-                        .create_unique.replace(
-                            '#table_name#', node.tag.schema + '.' + node.parent
-                            .text));
-                }
-            }]
-        },
-        'cm_unique': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Edit Comment',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    getObjectDescriptionPostgresql(node);
-                }
-            }, {
-                text: 'Drop Unique',
-                icon: 'fas cm-all fa-times',
-                action: function(node) {
-                    tabSQLTemplate('Drop Unique', node.tree.tag
-                        .drop_unique.replace('#table_name#',
-                            node.tag.schema + '.' + node.parent.parent
-                            .text).replace(
-                            '#constraint_name#', node.text)
-                    );
-                }
-            }]
-        },
         'cm_indexes': {
             elements: [{
                 text: 'Refresh',
@@ -1448,48 +1394,6 @@ function getTreePostgresql(p_div) {
                         .replace('#index_name#', node.tag.schema + '.' + node.text.replace(
                                 ' (Unique)', '').replace(
                                 ' (Non Unique)', '')));
-                }
-            }]
-        },
-        'cm_checks': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Create Check',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Create Check', node.tree.tag
-                        .create_check.replace(
-                            '#table_name#', node.tag.schema + '.' + node.parent
-                            .text));
-                }
-            }]
-        },
-        'cm_check': {
-            elements: [{
-                text: 'Edit Comment',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    getObjectDescriptionPostgresql(node);
-                }
-            }, {
-                text: 'Drop Check',
-                icon: 'fas cm-all fa-times',
-                action: function(node) {
-                    tabSQLTemplate('Drop Check', node.tree.tag.drop_check
-                        .replace('#table_name#', node.tag.schema +
-                            '.' + node.parent.parent.text).replace(
-                            '#constraint_name#', node.text)
-                    );
                 }
             }]
         },
@@ -4045,11 +3949,7 @@ function getPropertiesPostgresqlConfirm(node) {
 /// <param name="node">Node object.</param>
 function refreshTreePostgresqlConfirm(node) {
   if (node.tag != undefined)
-     if (node.tag.type == 'uniques') {
-        getUniquesPostgresql(node);
-    } else if (node.tag.type == 'unique') {
-        getUniquesColumnsPostgresql(node);
-    } else if (node.tag.type == 'view_list') {
+     if (node.tag.type == 'view_list') {
         getViewsPostgresql(node);
     } else if (node.tag.type == 'view') {
         getViewsColumnsPostgresql(node);
@@ -4077,8 +3977,6 @@ function refreshTreePostgresqlConfirm(node) {
         getRolesPostgresql(node);
     } else if (node.tag.type == 'extension_list') {
         getExtensionsPostgresql(node);
-    } else if (node.tag.type == 'check_list') {
-        getChecksPostgresql(node);
     } else if (node.tag.type == 'exclude_list') {
         getExcludesPostgresql(node);
     } else if (node.tag.type == 'rule_list') {
@@ -5038,116 +4936,6 @@ function getMaterializedViewDefinitionPostgresql(node) {
 }
 
 
-
-/// <summary>
-/// Retrieving Uniques.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getUniquesPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-
-    execAjax('/get_uniques_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_table": node.parent.text,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-
-            node.setText('Uniques (' + p_return.v_data.length + ')');
-
-            if (node.childNodes.length > 0)
-                node.removeChildNodes();
-
-            if (p_return.v_data.length > 0) {
-
-                for (i = 0; i < p_return.v_data.length; i++) {
-
-                    v_node = node.createChildNode(p_return.v_data[i][0],
-                        false,
-                        'fas node-all fa-key node-unique', {
-                            type: 'unique',
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema,
-                            oid: p_return.v_data[i][1]
-                        }, 'cm_unique', null, false);
-
-                    v_node.createChildNode('', false,
-                        'node-spin', {
-                            type: 'unique_field',
-                            schema: node.tag.schema
-                        }, null, null, false);
-
-                }
-
-                node.drawChildNodes();
-
-            }
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false);
-}
-
-/// <summary>
-/// Retrieving Uniques Columns.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getUniquesColumnsPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-
-    execAjax('/get_uniques_columns_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_unique": node.text,
-            "p_table": node.parent.parent.text,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-
-            if (node.childNodes.length > 0)
-                node.removeChildNodes();
-
-            if (p_return.v_data.length > 0) {
-
-                for (i = 0; i < p_return.v_data.length; i++) {
-
-                    node.createChildNode(p_return.v_data[i][0], false,
-                        'fas node-all fa-columns node-column', {
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema
-                        }, null, null, false
-                    );
-
-                }
-
-                node.drawChildNodes();
-
-            }
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false);
-}
-
 /// <summary>
 /// Retrieving Indexes.
 /// </summary>
@@ -5262,65 +5050,6 @@ function getIndexesColumnsPostgresql(node) {
 }
 
 
-/// <summary>
-/// Retrieving Checks.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getChecksPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-
-    execAjax('/get_checks_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_table": node.parent.text,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-
-            node.setText('Checks (' + p_return.v_data.length + ')');
-
-            if (node.childNodes.length > 0)
-                node.removeChildNodes();
-
-            var v_node;
-
-            if (p_return.v_data.length > 0) {
-
-                for (i = 0; i < p_return.v_data.length; i++) {
-
-                    v_node = node.createChildNode(p_return.v_data[i][0],
-                        false, 'fas node-all fa-check-square node-check', {
-                            type: 'check',
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema,
-                            oid: p_return.v_data[i][2]
-                        }, 'cm_check', null, false);
-                    v_node.createChildNode(p_return.v_data[i][1], false,
-                        'fas node-all fa-edit node-check-value', {
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema
-                        },
-                        null, null, false);
-
-                }
-
-                node.drawChildNodes();
-
-            }
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false);
-}
 
 /// <summary>
 /// Retrieving Excludes.

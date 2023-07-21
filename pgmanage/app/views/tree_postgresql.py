@@ -329,54 +329,46 @@ def get_fks_columns(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_uniques(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_uniques(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_uniques = []
+    list_uniques = []
 
     try:
-        v_uniques = v_database.QueryTablesUniques(v_table, False, v_schema)
-        for v_unique in v_uniques.Rows:
-            v_unique_data = []
-            v_unique_data.append(v_unique['constraint_name'])
-            v_unique_data.append(v_unique['oid'])
-            v_list_uniques.append(v_unique_data)
+        uniques = database.QueryTablesUniques(table, False, schema)
+        for unique in uniques.Rows:
+            v_unique_data = {
+                "constraint_name": unique["constraint_name"],
+                "oid": unique["oid"]
+            }
+            list_uniques.append(v_unique_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_uniques
+    return JsonResponse(data=list_uniques, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_uniques_columns(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_uniques_columns(request, database):
     data = request.data
-    v_unique = data['p_unique']
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_uniques = []
+    unique = data['unique']
+    table = data['table']
+    schema = data['schema']
 
     try:
-        v_uniques = v_database.QueryTablesUniquesColumns(v_unique, v_table, False, v_schema)
-        for v_unique in v_uniques.Rows:
-            v_unique_data = []
-            v_unique_data.append(v_unique['column_name'])
-            v_list_uniques.append(v_unique_data)
+        uniques = database.QueryTablesUniquesColumns(unique, table, False, schema)
+        list_uniques = [unique["column_name"] for unique in uniques.Rows]
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_uniques
+    return JsonResponse(data=list_uniques, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
@@ -429,31 +421,31 @@ def get_indexes_columns(request, v_database):
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_checks(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_checks(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_checks = []
+    list_checks = []
 
     try:
-        v_checks = v_database.QueryTablesChecks(v_table,False,v_schema)
-        for v_check in v_checks.Rows:
-            v_check_data = []
-            v_check_data.append(v_check['constraint_name'])
-            v_check_data.append(v_check['constraint_source'])
-            v_check_data.append(v_check['oid'])
-            v_list_checks.append(v_check_data)
+        checks = database.QueryTablesChecks(table,False,schema)
+        for check in checks.Rows:
+            check_data = {
+                "constraint_name": check["constraint_name"],
+                "constraint_source": check["constraint_source"],
+                "oid": check["oid"]
+            }
+            list_checks.append(check_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_checks
+    return JsonResponse(data=list_checks, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)

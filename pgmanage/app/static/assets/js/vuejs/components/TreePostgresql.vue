@@ -578,6 +578,92 @@ export default {
             },
           },
         ],
+        cm_uniques: [
+          this.cmRefreshObject,
+          {
+            label: "Create Unique",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Unique",
+                this.templates.create_unique.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+        ],
+        cm_unique: [
+          this.cmRefreshObject,
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              // FIXME
+              getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Unique",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Unique",
+                this.templates.drop_unique
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#constraint_name#", this.selectedNode.title)
+              );
+            },
+          },
+        ],
+        cm_checks: [
+          this.cmRefreshObject,
+          {
+            label: "Create Check",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Check",
+                this.templates.create_check.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+        ],
+        cm_check: [
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Check",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Check",
+                this.templates.drop_check
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#constraint_name#", this.selectedNode.title)
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -606,6 +692,12 @@ export default {
         this.getFKsPostgresql(node);
       } else if (node.data.type == "foreign_key") {
         this.getFKsColumnsPostgresql(node);
+      } else if (node.data.type == "uniques") {
+        this.getUniquesPostgresql(node);
+      } else if (node.data.type == "unique") {
+        this.getUniquesColumnsPostgresql(node);
+      } else if (node.data.type == "check_list") {
+        this.getChecksPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -1339,6 +1431,102 @@ export default {
               `Referenced Table: ${el.r_table_name}`,
               {
                 icon: "fas node-all fa-table node-table",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getUniquesPostgresql(node) {
+      this.api
+        .post("/get_uniques_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Uniques (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.constraint_name, {
+              icon: "fas node-all fa-key node-unique",
+              type: "unique",
+              contextMenu: "cm_unique",
+              oid: el.oid,
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getUniquesColumnsPostgresql(node) {
+      this.api
+        .post("/get_uniques_columns_postgresql/", {
+          unique: node.title,
+          table: this.getParentNodeDeep(node, 2).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el,
+              {
+                icon: "fas node-all fa-columns node-column",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getChecksPostgresql(node) {
+      this.api
+        .post("/get_checks_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Checks (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.constraint_name, {
+              icon: "fas node-all fa-check-square node-check",
+              type: "check",
+              contextMenu: "cm_check",
+              oid: el.oid,
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+            });
+
+            const check_node = this.getFirstChildNode(node);
+
+            this.insertNode(
+              check_node,
+              el.constraint_source,
+              {
+                icon: "fas node-all fa-edit node-check-value",
                 schema: node.data.schema,
                 database: this.selectedDatabase,
               },
