@@ -1,0 +1,215 @@
+$connectorHeight: 12px;
+$connectorLine: 2px solid darken($lineColor, 10%);
+
+.bg-secondary-light {
+  background-color: rgba($primaryBlue, 0.45) !important;
+}
+
+.plan-container {
+  font-family: $fontFamily;
+  border-radius: $borderRadius;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @include themify() {
+    background-color: themed($pev2Bg) !important;
+    color: themed($color);
+  }
+
+  .nav.nav-pills {
+    .nav-link {
+      @include themify() {
+        color: themed($pev2NavLinkColor);
+      }
+
+      &.active {
+        background: $primaryBlue;
+        color: $white;
+      }
+    }
+  }
+
+  .menu {
+    position: absolute;
+    z-index: 1;
+
+    &-hidden {
+      ul,
+      h3 {
+        display: none;
+      }
+    }
+
+    right: 0;
+  }
+
+  .grab-bing {
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  .text-muted {
+    @include themify() {
+      color: themed($pev2MutedText) !important;
+    }
+  }
+
+  .cursor-help {
+    cursor: help;
+  }
+
+  pre {
+    overflow: initial;
+    border-radius: $borderRadius;
+    margin: $spaceLg;
+    position: relative;
+
+    @include themify() {
+      background-color: themed($pev2CodeBlockBg) !important;
+    }
+
+    code {
+      white-space: pre-wrap;
+      
+      @include themify() {
+        color: themed($color);
+      }
+
+      .hljs-keyword {
+        color: $primaryBlue;
+        font-weight: 600;
+      }
+
+      .hljs-number {
+        color: map-get($severity-colors, 3);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .plan {
+    .btn-close {
+      border-radius: 50%;
+      box-shadow: 0;
+      line-height: 1.5;
+      border: 1px solid $lineColor;
+      background-color: #fff;
+      font-size: $fontSizeSm;   
+    }
+  }
+
+  .plan-stats {
+  font-size: $fontSizeBase;
+
+    .stat-dropdown-container {
+      border: 1px solid $lineColor;
+      padding: $spaceXl;
+      background-color: #fff;
+      position: absolute;
+      box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.3);
+      border-radius: $borderRadius;
+      margin-bottom: $spaceXl;
+      z-index: 6;
+      right: 0;
+      width: 300px;
+      max-height: 70vh;
+      overflow: auto;
+
+      .btn-close {
+        border-radius: 50%;
+        box-shadow: 0;
+        line-height: 1.5;
+        border: 1px solid $lineColor;
+        background-color: #fff;
+        font-size: $fontSizeSm;
+      }
+
+      h3 {
+        font-size: $fontSizeLg;
+        width: 93%;
+        text-align: left;
+        border-bottom: 1px solid $lineColor;
+        padding-bottom: $spaceBase;
+        margin-bottom: $spaceLg;
+      }
+    }
+
+    //'Settings' btn
+    .btn.border-left {
+      color: $primaryBlue !important;
+      border: 0 !important;
+
+      &:focus, &:active {
+        outline: none;
+        box-shadow: none;
+      }
+    }
+  }
+
+  //close btn inside 'Settings' panel
+  button.close {
+    color: darken(#BBC1CB, 15%);
+    text-shadow: unset;
+
+    &:focus, &:active {
+      outline: none;
+      box-shadow: none;
+    }
+  }
+
+  .border {
+    &-top, &-bottom, &-left, &-right {
+      @include themify() {
+        border-color: themed($borderColor) !important;
+      }
+    }
+  }
+}
+
+.no-focus-outline:focus {
+  outline: none;
+}
+
+.more-info[title] {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: $gray;
+  cursor: help;
+}
+
+foreignObject {
+  overflow: visible;
+}
+
+a[href="https://github.com/dalibo/pev2"]{
+  position: relative;
+  display: block;
+  width: 110px;
+
+  &:before{
+    content: "Powered by PEV2";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    line-height: 20px;
+    left: 0;
+    top: 0;
+    text-align: center;
+    
+    @include themify() {
+      color: themed($color);
+      background-color: themed($pev2Bg);
+    }
+  }
+
+  &:hover {
+    &:before {
+      text-decoration: underline;
+    }
+  }
+}
+
+

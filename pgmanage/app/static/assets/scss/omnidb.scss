@@ -1205,16 +1205,6 @@ label.omnidb__switch--label span {
   color: inherit;
 }
 
-/* PEV2 */
-.plan-container {
-  font-family: inherit;
-  pre.small {
-    font-size: 0.9rem;
-  }
-
-}
-
-
 .omnidb__tooltip {
   .arrow {
     top: 10px;
@@ -1780,31 +1770,6 @@ body {
 		fill: transparent;
 	}
 }
-
-a[href="https://github.com/dalibo/pev2"]{
-  position: relative;
-  display: block;
-  width: 100px;
-
-  &:before{
-    content: "Powered by PEV2";
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-    background-color: #F8F9FA;
-    color:#585858;
-    text-align: right;
-  }
-
-  &:hover {
-    &:before {
-      text-decoration: underline;
-    }
-  }
-}
-
 
 @import 'interface-icon';
 @import 'node-icon';

@@ -1,0 +1,18 @@
+* > .copy {
+  display: none;
+}
+
+*:hover > .copy {
+  display: block;
+}
+
+.copy {
+  top: $spaceLg !important;
+  right: $spaceLg !important;
+
+  .btn-outline-secondary.bg-light:hover {
+    color: $bgSurfaceLight !important;
+    background-color: $secondaryGrey !important;
+  }
+}
+

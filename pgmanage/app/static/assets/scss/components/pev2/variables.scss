@@ -1,0 +1,30 @@
+$page-width: 1000px;
+
+$spaceBase: 6px;
+$spaceSm: 3px;
+$spaceLg: 10px;
+$spaceXl: 18px;
+
+$fontSizeBase: 13px;
+$fontSizeXs: round($fontSizeBase * 0.7);
+$fontSizeSm: round($fontSizeBase * 0.9);
+$fontSizeLg: round($fontSizeBase * 1.3);
+$fontSizeXlxl: round($fontSizeBase * 1.7);
+
+$grayLightest: #f7f7f7;
+$grayLight: darken($grayLightest, 10%);
+$gray: darken(#f7f7f7, 30%);
+$grayDarkest: darken($grayLightest, 70%);
+$white: white;
+$blue: #17a2b8;
+
+$lineColor: $grayLight;
+
+$borderRadius: 6px;
+
+$severity-colors: (
+  1: rgba($primaryBlue, 0.5),
+  2: #f59f00,
+  3: #f76707,
+  4: #d6336c,
+) !default;

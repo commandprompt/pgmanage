@@ -1,0 +1,105 @@
+.tippy-popper {
+  .text-muted {
+    color: inherit !important;
+  }
+}
+
+.tippy-box {
+  position: relative;
+  border-radius: $borderRadius;
+  padding: 0.5rem;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: normal;
+  outline: 0;
+  transition-property: transform, visibility;
+
+  @include themify() {
+    background-color: themed($tooltipBg) !important;
+    color: themed($color);
+  }
+
+  & > .tippy-content {
+    position: relative;
+    padding: 5px 9px;
+    z-index: 1;
+  }
+
+  & > .tippy-arrow {
+    width: 16px;
+    height: 16px;
+
+    &:before {
+      content: "";
+      position: absolute;
+      border-color: transparent;
+      border-style: solid;
+    }
+  }
+
+  &[data-placement^=top] {
+    & > .tippy-arrow {
+      bottom: 0;
+
+      &:before {
+        bottom: -7px;
+        left: 0;
+        border-width: 8px 8px 0;
+        transform-origin: center top;
+
+        @include themify() {
+          border-top-color: themed($tooltipBg) !important;
+        }
+      }
+    }
+  }
+
+  &[data-placement^=bottom] {
+    & > .tippy-arrow {
+      top: 0;
+
+      &:before {
+        top: -7px;
+        left: 0;
+        border-width: 0 8px 8px;
+        transform-origin: center bottom;
+
+        @include themify() {
+          border-bottom-color: themed($tooltipBg) !important;
+        }
+      }
+    }
+  }
+
+  &[data-placement^=left] {
+    & > .tippy-arrow {
+      right: 0;
+
+      &:before {
+        border-width: 8px 0 8px 8px;
+        right: -7px;
+        transform-origin: center left;
+        
+        @include themify() {
+          border-left-color: themed($tooltipBg) !important;
+        }
+      }
+    }
+  }
+
+  &[data-placement^=right] {
+    & > .tippy-arrow {
+      left: 0;
+
+      &:before {
+        left: -7px;
+        border-width: 8px 8px 8px 0;
+        transform-origin: center right;
+
+        @include themify() {
+          border-right-color: themed($tooltipBg) !important;
+        }
+      }
+    }
+  }
+}

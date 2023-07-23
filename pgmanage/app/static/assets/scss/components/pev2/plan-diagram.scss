@@ -1,0 +1,103 @@
+.plan-diagram {
+  line-height: 1rem;
+  padding-right: $spaceSm;
+
+  &.plan-diagram-top {
+    max-height: 30%;
+  }
+
+  table {
+    &.highlight {
+      transition: all .1s ease-in;
+      tr:not(.highlight) {
+        opacity: 50%;
+      }
+    }
+
+    tr td:nth-child(3) {
+      width: 50%; // make sure diagram right column takes as much width as possible
+    }
+
+    tr td:nth-child(2) {
+      max-width: 0;
+      width: 60%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    tbody::after {
+      content: '';
+      display: block;
+      height: $spaceLg;
+    }
+    
+    th, td {
+      margin: 0;
+      white-space: nowrap;
+  
+      @include themify() {
+        color: themed($color);
+      }
+  
+      &.node-index,
+      &.node-type,
+      &.subplan {
+        font-size: $fontSizeBase;
+      }
+      &.node-type {
+        font-weight: 500;
+      }
+    }
+  
+    th {
+      font-size: $fontSizeBase;
+    }
+  
+    tr {
+      &.node {
+        cursor: pointer;
+      }
+  
+      &.highlight,
+      &.selected {
+        @include themify() {
+          background-color: themed($pev2TableRowHighlight);
+        }
+      }
+  
+      &.selected {
+        outline: 1px solid $primaryBlue;
+        box-shadow: 0px 0px 9px 6px rgba($primaryBlue, 0.15);
+      }
+    }
+
+    .tree-lines {
+      font-family: 'monospace';
+    }
+  
+    .progress {
+      .bg-secondary {
+        background-color: $primaryBlue !important;
+      }
+      .border-secondary {
+        border-color: $primaryBlue !important;
+      }
+      .border-left {
+        border-left: 1px solid  $primaryBlue !important;
+      }
+    }
+ 
+  }
+
+  .legend ul li {
+    font-size: $fontSizeBase;
+
+    span {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+  }
+}

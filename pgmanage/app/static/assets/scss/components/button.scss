@@ -70,10 +70,10 @@
             color: $secondaryGrey !important; //workaround! to be removed when new stylesheets are implemented
     
             @include themify() {
-                background-color: themed($buttonOutlineSecondaryBg);
+                background-color: themed($buttonOutlineSecondaryBg) !important;
             }
 
-            &:hover {
+            &:hover, &.active {
                 opacity: 1;
                 color: $bgSurfaceLight !important; //workaround! to be removed when new stylesheets are implemented
                 background-color: $secondaryGrey !important; //workaround! to be removed when new stylesheets are implemented

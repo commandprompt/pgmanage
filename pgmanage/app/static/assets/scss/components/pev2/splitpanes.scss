@@ -1,0 +1,154 @@
+.splitpanes {
+  display: flex;
+  width: 100%;
+  height: 100%;
+
+    &--vertical {
+      flex-direction: row;
+
+      .splitpanes__pane {
+          transition: width .2s ease-out;
+      }
+
+      & > .splitpanes__splitter {
+          min-width: 1px;
+          cursor: col-resize;
+      }
+    }
+
+    &--horizontal {
+      flex-direction: column;
+
+      .splitpanes__pane {
+          transition: height .2s ease-out;
+      }
+        
+      & > .splitpanes__splitter {
+          min-height: 1px;
+          cursor: row-resize;
+      }
+    }
+
+    &--dragging * {
+      user-select: none;
+
+      .splitpanes__pane {
+        transition: none;
+      }        
+    }
+
+    &__pane {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    &__splitter {
+      touch-action: none;
+    }
+
+    &.default-theme {
+      .splitpanes__splitter {
+        box-sizing: border-box;
+        position: relative;
+        flex-shrink: 0;
+
+        @include themify() {
+          background-color: themed($splitterBg);
+        }
+    
+        &:before, &:after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transition: background-color .3s;
+
+          @include themify() {
+            background-color: themed($splitterLines);
+          }
+        }
+    
+        &:hover {
+          &:before, &:after {
+            background-color: $white;
+          }
+        }
+    
+        &:first-child {
+          cursor: auto;
+        }
+      }
+    
+      .splitpanes .splitpanes__splitter {
+        z-index: 1;
+      }
+    }
+  }
+  
+  .default-theme {
+    &.splitpanes--vertical > .splitpanes__splitter, 
+    .splitpanes--vertical > .splitpanes__splitter {
+      width: 7px;
+      margin-left: -1px;
+    }
+  
+    &.splitpanes--vertical > .splitpanes__splitter {
+      &:before, &:after {
+        transform: translateY(-50%);
+        width: 1px;
+        height: 30px;
+      }
+    }
+  
+    .splitpanes--vertical > .splitpanes__splitter {
+      &:before, &:after {
+        transform: translateY(-50%);
+        width: 1px;
+        height: 30px;
+      }
+    }
+  
+    &.splitpanes--vertical > .splitpanes__splitter:before, 
+    .splitpanes--vertical > .splitpanes__splitter:before {
+      margin-left: -2px;
+    }
+  
+    &.splitpanes--vertical > .splitpanes__splitter:after,
+     .splitpanes--vertical > .splitpanes__splitter:after {
+      margin-left: 1px;
+    }
+  
+    &.splitpanes--horizontal > .splitpanes__splitter, 
+    .splitpanes--horizontal > .splitpanes__splitter {
+      height: 7px;
+      margin-top: -1px;
+    }
+  
+    &.splitpanes--horizontal > .splitpanes__splitter {
+      &:before, &:after {
+        transform: translate(-50%);
+        width: 30px;
+        height: 1px;
+      }
+    }
+  
+    .splitpanes--horizontal > .splitpanes__splitter {
+      &:before, &:after {
+        transform: translate(-50%);
+        width: 30px;
+        height: 1px;
+      }
+    }
+  
+    &.splitpanes--horizontal > .splitpanes__splitter:before, 
+    .splitpanes--horizontal > .splitpanes__splitter:before {
+      margin-top: -2px;
+    }
+  
+    &.splitpanes--horizontal > .splitpanes__splitter:after, 
+    .splitpanes--horizontal > .splitpanes__splitter:after {
+      margin-top: 1px;
+    }
+  }
+  

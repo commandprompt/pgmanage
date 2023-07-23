@@ -1,0 +1,85 @@
+.plan-container {
+  //general pev2 table styles
+  .table {
+    border-radius: $borderRadius;
+    overflow: hidden;
+
+    &.table-nonfluid {
+      width: auto !important;
+    }
+  
+    &.table-bordered {
+      border: none !important;
+  
+      td,
+      th {
+        border: none !important;
+      }
+    }
+  }
+
+  //tables inside plan-node-body
+  .plan-node-body {
+    .table {
+      background-color: $primaryLight;
+      font-weight: 500;
+      color: $primaryColor !important;
+    
+      .thead-dark th {
+        background-color: $primaryBlue;
+      }
+    
+      .thead-light th {
+        background-color: $bgLight;
+        color: $primaryColor;
+      }
+    
+      a {
+        color: $primaryBlue;
+      }
+    }  
+  }
+
+  //tables inside "Stats" tab
+  .stats {
+    .table {
+      @include themify() {
+        color: themed($color) !important;
+        background-color: themed($pev2StatsTableBg) !important;
+      }
+
+      thead {
+        &:first-of-type {
+          @include themify() {
+            border-bottom: themed($border);
+          }
+        }
+
+        &.thead-light th {
+          @include themify() {
+            color: themed($color) !important;
+            background-color: themed($pev2StatsTableTheadLight) !important;
+          }
+        }
+
+        &.thead-dark th {
+          @include themify() {
+            color: themed($color) !important;
+            background-color: themed($pev2StatsTableTheadDark) !important;
+            border-bottom: themed($border);
+          }
+          .text-white {
+            @include themify() {
+              color: themed($color) !important;
+            }
+          }
+        }
+      }
+  
+      a {
+        color: map-get($severity-colors, 3);
+        font-weight: 600;
+      }
+    }
+  }
+}
