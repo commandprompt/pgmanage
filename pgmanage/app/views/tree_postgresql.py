@@ -596,55 +596,52 @@ def get_partitions(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_statistics(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_statistics(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_statistics = []
+    list_statistics = []
 
     try:
-        v_statistics = v_database.QueryTablesStatistics(v_table, False, v_schema)
-        for v_statistic in v_statistics.Rows:
-            v_statistic_data = []
-            v_statistic_data.append(v_statistic['statistic_name'])
-            v_statistic_data.append(v_statistic['schema_name'])
-            v_statistic_data.append(v_statistic['oid'])
-            v_list_statistics.append(v_statistic_data)
+        statistics = database.QueryTablesStatistics(table, False, schema)
+        for statistic in statistics.Rows:
+            statistic_data = {
+                "statistic_name": statistic["statistic_name"],
+                "schema_name": statistic["schema_name"],
+                "oid": statistic["oid"]
+            }
+            list_statistics.append(statistic_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_statistics
+    return JsonResponse(data=list_statistics, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_statistics_columns(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_statistics_columns(request, database):
     data = request.data
-    v_statistics = data['p_statistics']
-    v_schema = data['p_schema']
+    statistics = data['statistics']
+    schema = data['schema']
 
-    v_list_columns = []
+    list_columns = []
 
     try:
-        v_columns = v_database.QueryStatisticsFields(v_statistics,False,v_schema)
-        for v_column in v_columns.Rows:
-            v_column_data = {
-                'v_column_name': v_column['column_name']
+        columns = database.QueryStatisticsFields(statistics,False,schema)
+        for column in columns.Rows:
+            column_data = {
+                'column_name': column['column_name']
             }
-            v_list_columns.append(v_column_data)
+            list_columns.append(column_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_columns
+    return JsonResponse(data=list_columns, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)

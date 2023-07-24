@@ -1081,6 +1081,72 @@ export default {
             },
           },
         ],
+        cm_statistics: [
+          this.cmRefreshObject,
+          {
+            label: "Create Statistics",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Statistics",
+                this.templates.create_statistics
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                    }`
+                  )
+                  .replace("#schema_name#", this.selectedNode.data.schema)
+              );
+            },
+          },
+          {
+            label: "Doc: Statistics",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/planner-stats.html`
+              );
+            },
+          },
+        ],
+        cm_statistic: [
+          this.cmRefreshObject,
+          {
+            label: "Alter Statistics",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Statistics",
+                this.templates.alter_statistics.replace(
+                  "#statistics_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Statistics",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Statistics",
+                this.templates.drop_statistics.replace(
+                  "#statistics_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -1129,6 +1195,10 @@ export default {
         this.getInheritedsPostgresql(node);
       } else if (node.data.type == "partition_list") {
         this.getPartitionsPostgresql(node);
+      } else if (node.data.type == "statistics_list") {
+        this.getStatisticsPostgresql(node);
+      } else if (node.data.type == "statistic") {
+        this.getStatisticsColumnsPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -2284,6 +2354,61 @@ export default {
                 icon: "fas node-all fa-table node-partition",
                 type: "partition",
                 contextMenu: "cm_partition",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getStatisticsPostgresql(node) {
+      this.api
+        .post("/get_statistics_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Statistics (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, `${el.schema_name}.${el.statistic_name}`, {
+              icon: "fas node-all fa-chart-bar node-statistic",
+              type: "statistic",
+              contextMenu: "cm_statistic",
+              database: this.selectedDatabase,
+              schema: el.schema_name,
+              oid: el.oid,
+              statistics: el.statistic_name,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getStatisticsColumnsPostgresql(node) {
+      this.api
+        .post("/get_statistics_columns_postgresql/", {
+          statistics: node.data.statistics,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.column_name,
+              {
+                icon: "fas node-all fa-columns node-column",
                 schema: node.data.schema,
                 database: this.selectedDatabase,
               },
