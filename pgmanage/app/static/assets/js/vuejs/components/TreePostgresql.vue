@@ -104,8 +104,7 @@ export default {
             label: "Edit Comment",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              //FIXME: rewrite to use vue instance
-              getObjectDescriptionPostgresql(this.selectedNode);
+              this.getObjectDescriptionPostgresql(this.selectedNode);
             },
           },
           {
@@ -211,8 +210,7 @@ export default {
             label: "Edit Comment",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              //FIXME: rewrite to use vue instance
-              getObjectDescriptionPostgresql(this.selectedNode);
+              this.getObjectDescriptionPostgresql(this.selectedNode);
             },
           },
           {
@@ -400,7 +398,7 @@ export default {
                 label: "Edit Comment",
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
-                  getObjectDescriptionPostgresql(this.selectedNode);
+                  this.getObjectDescriptionPostgresql(this.selectedNode);
                 },
               },
               {
@@ -470,8 +468,7 @@ export default {
             label: "Edit Comment",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              // FIXME
-              getObjectDescriptionPostgresql(this.selectedNode);
+              this.getObjectDescriptionPostgresql(this.selectedNode);
             },
           },
           {
@@ -514,7 +511,7 @@ export default {
             label: "Edit Comment",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              getObjectDescriptionPostgresql(this.selectedNode);
+              this.getObjectDescriptionPostgresql(this.selectedNode);
             },
           },
           {
@@ -557,8 +554,7 @@ export default {
             label: "Edit Comment",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              //FIXME
-              getObjectDescriptionPostgresql(this.selectedNode);
+              this.getObjectDescriptionPostgresql(this.selectedNode);
             },
           },
           {
@@ -601,8 +597,7 @@ export default {
             label: "Edit Comment",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              // FIXME
-              getObjectDescriptionPostgresql(this.selectedNode);
+              this.getObjectDescriptionPostgresql(this.selectedNode);
             },
           },
           {
@@ -644,7 +639,7 @@ export default {
             label: "Edit Comment",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              getObjectDescriptionPostgresql(this.selectedNode);
+              this.getObjectDescriptionPostgresql(this.selectedNode);
             },
           },
           {
@@ -667,133 +662,199 @@ export default {
         cm_excludes: [
           this.cmRefreshObject,
           {
-            label: 'Create Exclude',
-            icon: 'fas cm-all fa-edit',
+            label: "Create Exclude",
+            icon: "fas cm-all fa-edit",
             onClick: () => {
-              tabSQLTemplate('Create Exclude', this.templates.create_exclude.replace(
-                            '#table_name#', `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title}`));
-            }
-          }
+              tabSQLTemplate(
+                "Create Exclude",
+                this.templates.create_exclude.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
         ],
         cm_exclude: [
-        {
-                label: 'Edit Comment',
-                icon: 'fas cm-all fa-edit',
-                onClick: () => {
-                    getObjectDescriptionPostgresql(this.selectedNode);
-                }
-            }, {
-                label: 'Drop Exclude',
-                icon: 'fas cm-all fa-times',
-                onClick: () => {
-                    tabSQLTemplate('Drop Exclude', this.templates.drop_exclude
-                        .replace('#table_name#', `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title}`).replace(
-                            '#constraint_name#', this.selectedNode.title)
-                    );
-                }
-            }
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Exclude",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Exclude",
+                this.templates.drop_exclude
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#constraint_name#", this.selectedNode.title)
+              );
+            },
+          },
         ],
         cm_indexes: [
-        this.cmRefreshObject,
-        {
-                label: 'Create Index',
-                icon: 'fas cm-all fa-edit',
-                onClick: () => {
-                    tabSQLTemplate('Create Index', this.templates.create_index.replace(
-                            '#table_name#', `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title}`));
-                }
-            }, {
-                label: 'Doc: Indexes',
-                icon: 'fas cm-all fa-globe-americas',
-                onClick: () => {
-                  this.openWebSite(
-                        `https://www.postgresql.org/docs/${this.getMajorVersion(this.templates.version)}/static/indexes.html`);
-                }
-            }
+          this.cmRefreshObject,
+          {
+            label: "Create Index",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Index",
+                this.templates.create_index.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Indexes",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/indexes.html`
+              );
+            },
+          },
         ],
         cm_index: [
-            this.cmRefreshObject,
-            {
-                label: 'Alter Index',
-                icon: 'fas cm-all fa-edit',
-                onClick: () => {
-                    tabSQLTemplate('Alter Index', this.templates.alter_index.replace('#index_name#',
-                          `${this.selectedNode.data.schema}.${this.selectedNode.title}`
-                           ));
-                }
-            }, {
-                label: 'Reindex',
-                icon: 'fas cm-all fa-edit',
-                onClick: () => {
-                    tabSQLTemplate('Reindex', this.templates.reindex
-                        .replace('#index_name#', `${this.selectedNode.data.schema}.${this.selectedNode.title}`));
-                }
-            }, {
-              label: 'Edit Comment',
-                icon: 'fas cm-all fa-edit',
-                onClick: () => {
-                    getObjectDescriptionPostgresql(this.selectedNode);
-                }
-            }, {
-              label: 'Drop Index',
-                icon: 'fas cm-all fa-times',
-                onClick: () => {
-                    tabSQLTemplate('Drop Index', this.templates.drop_index
-                        .replace('#index_name#', `${this.selectedNode.data.schema}.${this.selectedNode.title}`));
-                }
-            }
+          this.cmRefreshObject,
+          {
+            label: "Alter Index",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Index",
+                this.templates.alter_index.replace(
+                  "#index_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Reindex",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Reindex",
+                this.templates.reindex.replace(
+                  "#index_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Index",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Index",
+                this.templates.drop_index.replace(
+                  "#index_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
         ],
         cm_rules: [
-            this.cmRefreshObject,
-            {
-                label: 'Create Rule',
-                icon: 'fas cm-all fa-edit',
-                onClick: () => {
-                    tabSQLTemplate('Create Rule', this.templates.create_rule.replace('#table_name#',
-                    `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title}`));
-                }
-            }, {
-              label: 'Doc: Rules',
-                icon: 'fas cm-all fa-globe-americas',
-                onClick: () => {
-                    this.openWebSite(
-                        `https://www.postgresql.org/docs/${this.getMajorVersion(this.templates.version)}/static/rules.html`);
-                }
-            }
+          this.cmRefreshObject,
+          {
+            label: "Create Rule",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Rule",
+                this.templates.create_rule.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Rules",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/rules.html`
+              );
+            },
+          },
         ],
         cm_rule: [
-        {
-                label: 'Alter Rule',
-                icon: 'fas cm-all fa-edit',
-                onClick: () => {
-                    tabSQLTemplate('Alter Rule', this.templates.alter_rule
-                        .replace('#table_name#', `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title}`).replace(
-                            '#rule_name#', this.selectedNode.title));
-                }
-            }, {
-              label: 'Edit Rule',
-                icon: 'fas cm-all fa-edit',
-                onClick: () => {
-                    v_connTabControl.tag.createQueryTab(
-                        this.selectedNode.title);
-                    this.getRuleDefinitionPostgresql(this.selectedNode);
-                }
-            }, {
-              label: 'Edit Comment',
-                icon: 'fas cm-all fa-edit',
-                onClick: () => {
-                    getObjectDescriptionPostgresql(this.selectedNode);
-                }
-            }, {
-              label: 'Drop Rule',
-                icon: 'fas cm-all fa-times',
-                onClick: () => {
-                    tabSQLTemplate('Drop Rule', this.templates.drop_rule
-                        .replace('#table_name#', `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title}`).replace(
-                            '#rule_name#', this.selectedNode.title));
-                }
-            }
-        ]
+          {
+            label: "Alter Rule",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Rule",
+                this.templates.alter_rule
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#rule_name#", this.selectedNode.title)
+              );
+            },
+          },
+          {
+            label: "Edit Rule",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              this.getRuleDefinitionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Rule",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Rule",
+                this.templates.drop_rule
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#rule_name#", this.selectedNode.title)
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -828,15 +889,15 @@ export default {
         this.getUniquesColumnsPostgresql(node);
       } else if (node.data.type == "check_list") {
         this.getChecksPostgresql(node);
-      } else if (node.data.type == 'exclude_list') {
+      } else if (node.data.type == "exclude_list") {
         this.getExcludesPostgresql(node);
-      } else if (node.data.type == 'indexes') {
+      } else if (node.data.type == "indexes") {
         this.getIndexesPostgresql(node);
-      } else if (node.data.type == 'index') {
+      } else if (node.data.type == "index") {
         this.getIndexesColumnsPostgresql(node);
-      } else if (node.data.type == 'rule_list') {
+      } else if (node.data.type == "rule_list") {
         this.getRulesPostgresql(node);
-    }
+      }
     },
     refreshTree(node) {
       this.checkCurrentDatabase(
@@ -894,6 +955,48 @@ export default {
       } else {
         callback_continue();
       }
+    },
+    getObjectDescriptionPostgresql(node) {
+      let position;
+      let oid;
+      if (node.data.type === "table_field") {
+        oid = this.getParentNodeDeep(node, 2).data.oid;
+        position = node.data.position;
+      } else if (
+        [
+          "function",
+          "trigger_function",
+          "direct_trigger_function",
+          "event_trigger_function",
+          "direct_event_trigger_function",
+          "procedure",
+        ].includes(node.data.type)
+      ) {
+        oid = node.data.function_oid;
+        position = 0;
+      } else {
+        oid = node.data.oid;
+        position = 0;
+      }
+
+      this.api
+        .post("/get_object_description_postgresql/", {
+          oid: oid,
+          object_type: node.data.type,
+          position: position,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.tag.createQueryTab(`${node.title} Comment`);
+          let editor =
+            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor;
+          editor.setValue(resp.data.data);
+          editor.clearSelection();
+          editor.gotoLine(0, 0, true);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
     },
     getTreeDetailsPostgresql(node) {
       this.api
@@ -1677,59 +1780,71 @@ export default {
         });
     },
     getExcludesPostgresql(node) {
-      this.api.post('/get_excludes_postgresql/', {
-        table: this.getParentNode(node).title,
-        schema: node.data.schema
-      })
-      .then((resp) => {
-        this.removeChildNodes(node)
-
-        this.$refs.tree.updateNode(node.path, {
-          title: `Excludes (${resp.data.length})`
+      this.api
+        .post("/get_excludes_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
         })
+        .then((resp) => {
+          this.removeChildNodes(node);
 
-        this.resp.data.forEach((el) => {
-          this.insertNode(node, el.constraint_name, {
-            icon: 'fas node-all fa-times-circle node-exclude',
-            type: 'exclude',
-            contextMenu: 'cm_exclude',
-            schema: node.data.schema,
-            database: this.selectedDatabase,
-            oid: el.oid
-          })
+          this.$refs.tree.updateNode(node.path, {
+            title: `Excludes (${resp.data.length})`,
+          });
 
-          const exclude_node = this.getFirstChildNode(node)
+          this.resp.data.forEach((el) => {
+            this.insertNode(node, el.constraint_name, {
+              icon: "fas node-all fa-times-circle node-exclude",
+              type: "exclude",
+              contextMenu: "cm_exclude",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
 
-          this.insertNode(exclude_node, `Operators: ${el.operations}`, {
-            icon: "fas node-all fa-ellipsis-h node-bullet",
-            schema: node.data.schema,
-            database: this.selectedDatabase,
-          }, true)
+            const exclude_node = this.getFirstChildNode(node);
 
-          this.insertNode(exclude_node, `Attributes: ${el.attributes}`, {
-            icon: "fas node-all fa-ellipsis-h node-bullet",
-            schema: node.data.schema,
-            database: this.selectedDatabase,
-          }, true)
+            this.insertNode(
+              exclude_node,
+              `Operators: ${el.operations}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+
+            this.insertNode(
+              exclude_node,
+              `Attributes: ${el.attributes}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
         })
-      })
-      .catch((error) => {
+        .catch((error) => {
           this.nodeOpenError(error, node);
         });
     },
     getIndexesPostgresql(node) {
-      this.api.post('/get_indexes_postgresql/', {
-        table: this.getParentNode(node).title,
-        schema: node.data.schema
-      })
-      .then((resp) => {
-        this.removeChildNodes(node)
-
-        this.$refs.tree.updateNode(node.paht, {
-          title: `Indexes (${resp.data.length})`
+      this.api
+        .post("/get_indexes_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
         })
+        .then((resp) => {
+          this.removeChildNodes(node);
 
-        resp.data.forEach((el) => {
+          this.$refs.tree.updateNode(node.paht, {
+            title: `Indexes (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
             this.insertNode(node, el.index_name, {
               icon: "fas node-all fa-thumbtack node-index",
               type: "index",
@@ -1740,22 +1855,22 @@ export default {
               uniqueness: el.uniqueness,
             });
           });
-      })
-      .catch((error) => {
+        })
+        .catch((error) => {
           this.nodeOpenError(error, node);
         });
-
     },
     getIndexesColumnsPostgresql(node) {
-      this.api.post('/get_indexes_columns_postgresql/', {
-        index: node.title,
-        table: this.getParentNodeDeep(node, 2).title,
-        schema: node.data.schema
-      })
-      .then((resp) => {
-        this.removeChildNodes(node)
+      this.api
+        .post("/get_indexes_columns_postgresql/", {
+          index: node.title,
+          table: this.getParentNodeDeep(node, 2).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
 
-        resp.data.forEach((el) => {
+          resp.data.forEach((el) => {
             this.insertNode(
               node,
               el,
@@ -1767,47 +1882,54 @@ export default {
               true
             );
           });
-      })
-      .catch((error) => {
-        this.nodeOpenError(error, node);
-      })
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
     },
     getRulesPostgresql(node) {
-      this.api.post('/get_rules_postgresql/', {
-        table: this.getParentNode(node).title,
-        schema: node.data.schema
-      })
-      .then((resp) => {
-        this.removeChildNodes(node)
-
-        this.$refs.tree.updateNode(node.path, {
-          title: `Rules (${resp.data.length})`
+      this.api
+        .post("/get_rules_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
         })
+        .then((resp) => {
+          this.removeChildNodes(node);
 
-        resp.data.forEach((el) => {
-          this.insertNode(node, el.rule_name, {
-            icon: 'fas node-all fa-lightbulb node-rule',
-            type: 'rule',
-            contextMenu: 'cm_rule',
-            schema: node.data.schema,
-            database: this.selectedDatabase,
-            oid: el.oid
-          }, true)
+          this.$refs.tree.updateNode(node.path, {
+            title: `Rules (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.rule_name,
+              {
+                icon: "fas node-all fa-lightbulb node-rule",
+                type: "rule",
+                contextMenu: "cm_rule",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+                oid: el.oid,
+              },
+              true
+            );
+          });
         })
-      })
-      .catch((error) => {
-        this.nodeOpenError(error, node);
-      })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
     },
     getRuleDefinitionPostgresql(node) {
-      this.api.post('/get_rule_definition_postgresql/', {
-        rule: node.title,
-        table: this.getParentNodeDeep(node, 2).title,
-        schema: node.data.schema
-      })
-      .then((resp) => {
-        // Fix this not to use v_connTabControl
-        v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+      this.api
+        .post("/get_rule_definition_postgresql/", {
+          rule: node.title,
+          table: this.getParentNodeDeep(node, 2).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
             resp.data.data
           );
           v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
@@ -1816,8 +1938,8 @@ export default {
             0,
             true
           );
-      })
-      .catch((error) => {
+        })
+        .catch((error) => {
           this.nodeOpenError(error, node);
         });
     },

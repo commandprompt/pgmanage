@@ -1815,25 +1815,19 @@ def change_role_password(request, v_database):
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_object_description(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_object_description(request, database):
     data = request.data
-    v_oid = data['p_oid']
-    v_type = data['p_type']
-    v_position = data['p_position']
-
-    v_data = ''
+    oid = data['oid']
+    object_type = data['object_type']
+    position = data['position']
 
     try:
-        v_data = v_database.GetObjectDescription(v_type, v_oid, v_position)
+        object_description = database.GetObjectDescription(object_type, oid, position)
     except Exception as exc:
-        v_return['v_data'] = {'password_timeout': True, 'message': str(exc)}
-        v_return['v_error'] = True
-        return JsonResponse(v_return)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_data
-
-    return JsonResponse(v_return)
+    return JsonResponse(data={"data": object_description})

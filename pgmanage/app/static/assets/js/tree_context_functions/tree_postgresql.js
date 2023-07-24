@@ -3415,54 +3415,6 @@ function checkCurrentDatabase(p_node, p_complete_check, p_callback_continue,
         p_callback_continue();
 }
 
-/**
- * Get comment based on node type and oid.
- * {object} p_node - the node which comment will be fetched
- */
-function getObjectDescriptionPostgresql(p_node) {
-    var v_oid = null;
-    var v_type = p_node.tag.type;
-    var v_position = null;
-
-    if (v_type == 'table_field') {
-        v_oid = p_node.parent.parent.tag.oid;
-        v_position = p_node.tag.position;
-    }
-    else if (['function', 'triggerfunction', 'direct_triggerfunction', 'eventtriggerfunction', 'direct_eventtriggerfunction', 'procedure'].indexOf(v_type) != -1) {
-        v_oid = p_node.tag.function_oid;
-        v_position = 0;
-    }
-    else {
-        v_oid = p_node.tag.oid;
-        v_position = 0;
-    }
-
-    execAjax(
-        '/get_object_description_postgresql/',
-        JSON.stringify({
-            'p_database_index': v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            'p_tab_id': v_connTabControl.selectedTab.id,
-            'p_oid': v_oid,
-            'p_type': v_type,
-            'p_position': v_position
-        }),
-        function(p_return) {
-            v_connTabControl.tag.createQueryTab(p_node.text + ' Comment');
-
-            var v_editor = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor;
-            v_editor.setValue(p_return.v_data);
-            v_editor.clearSelection();
-            v_editor.gotoLine(0, 0, true);
-
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.div_result.innerHTML = '';
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, p_node);
-        },
-        'box',
-        true
-    );
-}
 
 /// <summary>
 /// Refreshing tree node.
