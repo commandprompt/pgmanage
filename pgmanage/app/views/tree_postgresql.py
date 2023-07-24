@@ -371,55 +371,46 @@ def get_uniques_columns(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_indexes(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_indexes(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_indexes = []
+    list_indexes = []
 
     try:
-        v_indexes = v_database.QueryTablesIndexes(v_table, False, v_schema)
-        for v_index in v_indexes.Rows:
-            v_index_data = []
-            v_index_data.append(v_index['index_name'])
-            v_index_data.append(v_index['uniqueness'])
-            v_index_data.append(v_index['oid'])
-            v_list_indexes.append(v_index_data)
+        indexes = database.QueryTablesIndexes(table, False, schema)
+        for index in indexes.Rows:
+            index_data = {
+             "index_name": index["index_name"],
+             "uniqueness": index["uniqueness"],
+             "oid": index["oid"]   
+            }
+            list_indexes.append(index_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_indexes
+    return JsonResponse(data=list_indexes, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_indexes_columns(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_indexes_columns(request, database):
     data = request.data
-    v_index = data['p_index']
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_indexes = []
+    index = data['index']
+    table = data['table']
+    schema = data['schema']
 
     try:
-        v_indexes = v_database.QueryTablesIndexesColumns(v_index, v_table, False, v_schema)
-        for v_index in v_indexes.Rows:
-            v_index_data = []
-            v_index_data.append(v_index['column_name'])
-            v_list_indexes.append(v_index_data)
+        indexes = database.QueryTablesIndexesColumns(index, table, False, schema)
+        list_indexes = [index["column_name"] for index in indexes.Rows]
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_indexes
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_indexes, safe=False)
 
 
 @user_authenticated
@@ -448,73 +439,71 @@ def get_checks(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_excludes(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_excludes(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_excludes = []
+    list_excludes = []
 
     try:
-        v_excludes = v_database.QueryTablesExcludes(v_table,False,v_schema)
-        for v_exclude in v_excludes.Rows:
-            v_exclude_data = []
-            v_exclude_data.append(v_exclude['constraint_name'])
-            v_exclude_data.append(v_exclude['attributes'])
-            v_exclude_data.append(v_exclude['operations'])
-            v_exclude_data.append(v_exclude['oid'])
-            v_list_excludes.append(v_exclude_data)
+        excludes = database.QueryTablesExcludes(table,False,schema)
+        for exclude in excludes.Rows:
+            exclude_data = {
+                "constraint_name": exclude["constraint_name"],
+                "attributes": exclude["attributes"],
+                "operations": exclude["operations"],
+                "oid": exclude["oid"]
+            }
+            list_excludes.append(exclude_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_excludes
+    return JsonResponse(data=list_excludes, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_rules(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_rules(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_rules = []
+    list_rules = []
 
     try:
-        v_rules = v_database.QueryTablesRules(v_table,False,v_schema)
-        for v_rule in v_rules.Rows:
-            v_rule_data = []
-            v_rule_data.append(v_rule['rule_name'])
-            v_rule_data.append(v_rule['oid'])
-            v_list_rules.append(v_rule_data)
+        rules = database.QueryTablesRules(table,False,schema)
+        for rule in rules.Rows:
+            rule_data = {
+                "rule_name": rule["rule_name"],
+                "oid": rule["oid"]
+            }
+            list_rules.append(rule_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_rules
+    return JsonResponse(data=list_rules, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_rule_definition(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_rule_definition(request, database):
     data = request.data
-    v_rule = data['p_rule']
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    rule = data['rule']
+    table = data['table']
+    schema = data['schema']
 
     try:
-        v_return['v_data'] = v_database.GetRuleDefinition(v_rule, v_table, v_schema)
+        rule_definition = database.GetRuleDefinition(rule, table, schema)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse(data={"data": rule_definition})
+
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
