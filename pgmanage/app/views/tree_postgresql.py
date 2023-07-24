@@ -506,34 +506,32 @@ def get_rule_definition(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_triggers(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_triggers(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_triggers = []
+    list_triggers = []
 
     try:
-        v_triggers = v_database.QueryTablesTriggers(v_table,False,v_schema)
-        for v_trigger in v_triggers.Rows:
-            v_trigger_data = {
-                'v_name': v_trigger['trigger_name'],
-                'v_enabled': v_trigger['trigger_enabled'],
-                'v_function': v_trigger['trigger_function'],
-                'v_id': v_trigger['id'],
-                'v_function_oid': v_trigger['function_oid'],
-                'v_oid': v_trigger['oid']
+        triggers = database.QueryTablesTriggers(table,False,schema)
+        for trigger in triggers.Rows:
+            trigger_data = {
+                'trigger_name': trigger['trigger_name'],
+                'enabled': trigger['trigger_enabled'],
+                'trigger_function': trigger['trigger_function'],
+                'id': trigger['id'],
+                'function_oid': trigger['function_oid'],
+                'oid': trigger['oid']
             }
-            v_list_triggers.append(v_trigger_data)
+            list_triggers.append(trigger_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_triggers
+    return JsonResponse(data=list_triggers, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
@@ -562,53 +560,40 @@ def get_eventtriggers(request, v_database):
 
     return JsonResponse(v_return)
 
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_inheriteds(request, v_database):
-    v_return = create_response_template()
-
-    data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_partitions = []
-
-    try:
-        v_partitions = v_database.QueryTablesInheriteds(v_table,False,v_schema)
-        for v_partition in v_partitions.Rows:
-            v_partition_data = []
-            v_partition_data.append(v_partition['child_schema'] + '.' + v_partition['child_table'])
-            v_list_partitions.append(v_partition_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_partitions
-
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_partitions(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_inheriteds(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
-
-    v_list_partitions = []
+    table = data['table']
+    schema = data['schema']
 
     try:
-        v_partitions = v_database.QueryTablesPartitions(v_table,False,v_schema)
-        for v_partition in v_partitions.Rows:
-            v_partition_data = []
-            v_partition_data.append(v_partition['child_schema'] + '.' + v_partition['child_table'])
-            v_list_partitions.append(v_partition_data)
+        partitions = database.QueryTablesInheriteds(table,False,schema)
+        list_partitions = [f'{partition["child_schema"]}.{partition["child_table"]}' for partition in partitions.Rows]
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_partitions
+    return JsonResponse(data=list_partitions, safe=False)
 
-    return JsonResponse(v_return)
+
+@user_authenticated
+@database_required_new(check_timeout = True, open_connection = True)
+def get_partitions(request, database):
+    data = request.data
+    table = data['table']
+    schema = data['schema']
+
+    try:
+        partitions = database.QueryTablesPartitions(table,False,schema)
+        list_partitions = [f'{partition["child_schema"]}.{partition["child_table"]}' for partition in partitions.Rows]
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_partitions, safe=False)
+
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)

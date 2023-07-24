@@ -855,6 +855,232 @@ export default {
             },
           },
         ],
+        cm_triggers: [
+          this.cmRefreshObject,
+          {
+            label: "Create Trigger",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Trigger",
+                this.templates.create_trigger.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Triggers",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/trigger-definition.html`
+              );
+            },
+          },
+        ],
+        cm_trigger: [
+          {
+            label: "Alter Trigger",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Trigger",
+                this.templates.alter_trigger
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#trigger_name#", this.selectedNode.title)
+              );
+            },
+          },
+          {
+            label: "Enable Trigger",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Enable Trigger",
+                this.templates.enable_trigger
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#trigger_name#", this.selectedNode.title)
+              );
+            },
+          },
+          {
+            label: "Disable Trigger",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Disable Trigger",
+                this.templates.disable_trigger
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#trigger_name#", this.selectedNode.title)
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Trigger",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Trigger",
+                this.templates.drop_trigger
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#trigger_name#", this.selectedNode.title)
+              );
+            },
+          },
+          {
+            label: "Restore",
+            icon: "fa-solid fa-upload cm-all",
+            onClick: () => {
+              createUtilityTab(this.selectedNode, "Restore");
+            },
+          },
+        ],
+        cm_inheriteds: [
+          this.cmRefreshObject,
+          {
+            label: "Create Inherited",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Inherited",
+                this.templates.create_inherited.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Partitioning",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/ddl-partitioning.html`
+              );
+            },
+          },
+        ],
+        cm_inherited: [
+          {
+            label: "No Inherit Table",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "No Inherit Partition",
+                this.templates.noinherit_partition
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#partition_name#", this.selectedNode.title)
+              );
+            },
+          },
+          {
+            label: "Drop Inherited",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Partition",
+                this.templates.drop_partition.replace(
+                  "#partition_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
+        cm_partitions: [
+          this.cmRefreshObject,
+          {
+            label: "Create Partition",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Partition",
+                this.templates.create_partition.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Partitioning",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/ddl-partitioning.html`
+              );
+            },
+          },
+        ],
+        cm_partition: [
+          {
+            label: "Detach Partition",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Detach Partition",
+                this.templates.detach_partition
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace("#partition_name#", this.selectedNode.title)
+              );
+            },
+          },
+          {
+            label: "Drop Partition",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Partition",
+                this.templates.drop_partition.replace(
+                  "#partition_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -897,6 +1123,12 @@ export default {
         this.getIndexesColumnsPostgresql(node);
       } else if (node.data.type == "rule_list") {
         this.getRulesPostgresql(node);
+      } else if (node.data.type == "trigger_list") {
+        this.getTriggersPostgresql(node);
+      } else if (node.data.type == "inherited_list") {
+        this.getInheritedsPostgresql(node);
+      } else if (node.data.type == "partition_list") {
+        this.getPartitionsPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -1938,6 +2170,126 @@ export default {
             0,
             true
           );
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getTriggersPostgresql(node) {
+      this.api
+        .post("/get_triggers_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Triggers (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.trigger_name, {
+              icon: "fas node-all fa-bolt node-trigger",
+              type: "trigger",
+              contextMenu: "cm_trigger",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
+
+            const trigger_node = this.getFirstChildNode(node);
+
+            this.insertNode(
+              trigger_node,
+              el.trigger_function,
+              {
+                icon: "fas node-all fa-cog node-tfunction",
+                type: "direct_trigger_function",
+                contextMenu: "cm_direct_trigger_function",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+                id: el.id,
+                function_oid: el.function_oid,
+              },
+              true
+            );
+
+            this.insertNode(
+              trigger_node,
+              `Enabled: ${el.enabled}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getInheritedsPostgresql(node) {
+      this.api
+        .post("/get_inheriteds_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Inherited Tables (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el,
+              {
+                icon: "fas node-all fa-table node-inherited",
+                type: "inherit",
+                contextMenu: "cm_inherited",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getPartitionsPostgresql(node) {
+      this.api
+        .post("/get_partitions_postgresql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Partitions (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el,
+              {
+                icon: "fas node-all fa-table node-partition",
+                type: "partition",
+                contextMenu: "cm_partition",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

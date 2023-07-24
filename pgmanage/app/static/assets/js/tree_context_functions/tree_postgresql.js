@@ -1315,39 +1315,6 @@ function getTreePostgresql(p_div) {
                 }
             }]
         },
-        'cm_triggers': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                },
-            }, {
-                text: 'Create Trigger',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Create Trigger', node.tree.tag
-                        .create_trigger.replace(
-                            '#table_name#', node.tag.schema + '.' + node.parent
-                            .text));
-                }
-            }, {
-                text: 'Doc: Triggers',
-                icon: 'fas cm-all fa-globe-americas',
-                action: function(node) {
-                    v_connTabControl.tag.openWebSite(
-                        'Documentation: Triggers',
-                        'https://www.postgresql.org/docs/' +
-                        getMajorVersionPostgresql(node.tree.tag.version) +
-                        '/static/trigger-definition.html');
-                }
-            }]
-        },
         'cm_view_triggers': {
             elements: [{
                 text: 'Refresh',
@@ -1378,61 +1345,6 @@ function getTreePostgresql(p_div) {
                         'https://www.postgresql.org/docs/' +
                         getMajorVersionPostgresql(node.tree.tag.version) +
                         '/static/trigger-definition.html');
-                }
-            }]
-        },
-        'cm_trigger': {
-            elements: [{
-                text: 'Alter Trigger',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Alter Trigger', node.tree.tag
-                        .alter_trigger.replace(
-                            '#table_name#', node.tag.schema + '.' +
-                            node.parent.parent.text).replace(
-                            '#trigger_name#', node.text));
-                }
-            }, {
-                text: 'Enable Trigger',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Enable Trigger', node.tree.tag
-                        .enable_trigger.replace(
-                            '#table_name#', node.tag.schema + '.' +
-                            node.parent.parent.text).replace(
-                            '#trigger_name#', node.text));
-                }
-            }, {
-                text: 'Disable Trigger',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Disable Trigger', node.tree
-                        .tag.disable_trigger.replace(
-                            '#table_name#', node.tag.schema + '.' +
-                            node.parent.parent.text).replace(
-                            '#trigger_name#', node.text));
-                }
-            }, {
-                text: 'Edit Comment',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    getObjectDescriptionPostgresql(node);
-                }
-            }, {
-                text: 'Drop Trigger',
-                icon: 'fas cm-all fa-times',
-                action: function(node) {
-                    tabSQLTemplate('Drop Trigger', node.tree.tag
-                        .drop_trigger.replace(
-                            '#table_name#', node.tag.schema + '.' +
-                            node.parent.parent.text).replace(
-                            '#trigger_name#', node.text));
-                }
-            }, {
-                text: 'Restore',
-                icon: 'fa-solid fa-upload cm-all',
-                action: function(node) {
-                    createUtilityTab(node, 'Restore')
                 }
             }]
         },
@@ -1505,114 +1417,6 @@ function getTreePostgresql(p_div) {
                     tabSQLTemplate('Drop Event Trigger', node.tree.tag
                         .drop_eventtrigger.replace(
                             '#trigger_name#', node.text));
-                }
-            }]
-        },
-        'cm_inheriteds': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Create Inherited',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Create Inherited', node.tree
-                        .tag.create_inherited.replace(
-                            '#table_name#', node.tag.schema + '.' + node.parent
-                            .text));
-                }
-            }, {
-                text: 'Doc: Partitioning',
-                icon: 'fas cm-all fa-globe-americas',
-                action: function(node) {
-                    v_connTabControl.tag.openWebSite(
-                        'Documentation: Partitioning',
-                        'https://www.postgresql.org/docs/' +
-                        getMajorVersionPostgresql(node.tree.tag.version) +
-                        '/static/ddl-partitioning.html');
-                }
-            }]
-        },
-        'cm_inherited': {
-            elements: [{
-                text: 'No Inherit Table',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('No Inherit Partition', node
-                        .tree.tag.noinherit_partition.replace(
-                            '#table_name#', node.tag.schema + '.' +
-                            node.parent.parent.text).replace(
-                            '#partition_name#', node.text));
-                }
-            }, {
-                text: 'Drop Inherited',
-                icon: 'fas cm-all fa-times',
-                action: function(node) {
-                    tabSQLTemplate('Drop Partition', node.tree.tag
-                        .drop_partition.replace(
-                            '#partition_name#', node.text));
-                }
-            }]
-        },
-        'cm_partitions': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Create Partition',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Create Partition', node.tree
-                        .tag.create_partition.replace(
-                            '#table_name#', node.tag.schema + '.' + node.parent
-                            .text));
-                }
-            }, {
-                text: 'Doc: Partitioning',
-                icon: 'fas cm-all fa-globe-americas',
-                action: function(node) {
-                    v_connTabControl.tag.openWebSite(
-                        'Documentation: Partitioning',
-                        'https://www.postgresql.org/docs/' +
-                        getMajorVersionPostgresql(node.tree.tag.version) +
-                        '/static/ddl-partitioning.html');
-                }
-            }]
-        },
-        'cm_partition': {
-            elements: [{
-                text: 'Detach Partition',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Detach Partition', node
-                        .tree.tag.detach_partition.replace(
-                            '#table_name#', node.tag.schema + '.' +
-                            node.parent.parent.text).replace(
-                            '#partition_name#', node.text));
-                }
-            }, {
-                text: 'Drop Partition',
-                icon: 'fas cm-all fa-times',
-                action: function(node) {
-                    tabSQLTemplate('Drop Partition', node.tree.tag
-                        .drop_partition.replace(
-                            '#partition_name#', node.text));
                 }
             }]
         },
@@ -3732,18 +3536,12 @@ function refreshTreePostgresqlConfirm(node) {
         getRolesPostgresql(node);
     } else if (node.tag.type == 'extension_list') {
         getExtensionsPostgresql(node);
-    } else if (node.tag.type == 'trigger_list') {
-        getTriggersPostgresql(node);
     } else if (node.tag.type == 'eventtrigger_list') {
         getEventTriggersPostgresql(node);
     } else if (node.tag.type == 'triggerfunction_list') {
         getTriggerFunctionsPostgresql(node);
     } else if (node.tag.type == 'eventtriggerfunction_list') {
         getEventTriggerFunctionsPostgresql(node);
-    } else if (node.tag.type == 'inherited_list') {
-        getInheritedsPostgresql(node);
-    } else if (node.tag.type == 'partition_list') {
-        getPartitionsPostgresql(node);
     } else if (node.tag.type == 'server') {
         getTreeDetailsPostgresql(node);
     } else if (node.tag.type == 'physicalreplicationslot_list') {
@@ -4686,72 +4484,6 @@ function getMaterializedViewDefinitionPostgresql(node) {
 
 }
 
-/// <summary>
-/// Retrieving Triggers.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getTriggersPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-
-    execAjax('/get_triggers_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_table": node.parent.text,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-
-            node.setText('Triggers (' + p_return.v_data.length + ')');
-
-            if (node.childNodes.length > 0)
-                node.removeChildNodes();
-
-            if (p_return.v_data.length > 0) {
-
-                for (i = 0; i < p_return.v_data.length; i++) {
-
-                    var v_node = node.createChildNode(p_return.v_data[i].v_name,
-                        false, 'fas node-all fa-bolt node-trigger', {
-                            type: 'trigger',
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema,
-                            oid: p_return.v_data[i].v_oid
-                        }, 'cm_trigger', null, true);
-                    v_node.createChildNode('Enabled: ' + p_return.v_data[i]
-                        .v_enabled, false,
-                        'fas node-all fa-ellipsis-h node-bullet', {
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema
-                        }, null, null, false);
-
-                    v_node.createChildNode(p_return.v_data[i].v_function, false,
-                        'fas node-all fa-cog node-tfunction', {
-                            type: 'direct_triggerfunction',
-                            id: p_return.v_data[i].v_id,
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema,
-                            function_oid: p_return.v_data[i].v_function_oid
-                        }, 'cm_direct_triggerfunction', null, true);
-
-                }
-
-                node.drawChildNodes();
-
-            }
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false);
-}
 
 /// <summary>
 /// Retrieving Event Triggers.
@@ -4803,115 +4535,6 @@ function getEventTriggersPostgresql(node) {
                             database: v_connTabControl.selectedTab.tag.selectedDatabase,
                             function_oid: p_return.v_data[i].v_function_oid
                         }, 'cm_direct_eventtriggerfunction', null, true);
-
-                }
-
-                node.drawChildNodes();
-
-            }
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false);
-}
-
-/// <summary>
-/// Retrieving Partitions.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getInheritedsPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-
-    execAjax('/get_inheriteds_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_table": node.parent.text,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-
-            node.setText('Inherited Tables (' + p_return.v_data.length +
-                ')');
-
-            if (node.childNodes.length > 0)
-                node.removeChildNodes();
-
-            var v_node;
-
-            if (p_return.v_data.length > 0) {
-
-                for (i = 0; i < p_return.v_data.length; i++) {
-
-                    v_node = node.createChildNode(p_return.v_data[i][0],
-                        false,
-                        'fas node-all fa-table node-inherited', {
-                            type: 'inherit',
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema
-                        }, 'cm_inherit', null, false);
-
-                }
-
-                node.drawChildNodes();
-
-            }
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false);
-}
-
-/// <summary>
-/// Retrieving Partitions.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getPartitionsPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-
-    execAjax('/get_partitions_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_table": node.parent.text,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-
-            node.setText('Partitions (' + p_return.v_data.length + ')');
-
-            if (node.childNodes.length > 0)
-                node.removeChildNodes();
-
-            var v_node;
-
-            if (p_return.v_data.length > 0) {
-
-                for (i = 0; i < p_return.v_data.length; i++) {
-
-                    v_node = node.createChildNode(p_return.v_data[i][0],
-                        false,
-                        'fas node-all fa-table node-partition', {
-                            type: 'partition',
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema
-                        }, 'cm_partition', null, false);
 
                 }
 
