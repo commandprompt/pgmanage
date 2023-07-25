@@ -1533,123 +1533,83 @@ def get_domains(request, v_database):
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_inheriteds_parents(request, v_database):
-    v_return = create_response_template()
-
-    v_schema = request.data['p_schema']
-
-    v_list_tables = []
+@database_required_new(check_timeout = True, open_connection = True)
+def get_inheriteds_parents(request, database):
+    schema = request.data['schema']
 
     try:
-        v_tables = v_database.QueryTablesInheritedsParents(False,v_schema)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_schema'] + '.' + v_table['table_name']
-            }
-            v_list_tables.append(v_table_data)
+        tables = database.QueryTablesInheritedsParents(False, schema)
+        list_tables = [f'{table["table_schema"]}.{table["table_name"]}' for table in tables.Rows]
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+    
+    return JsonResponse(data=list_tables, safe=False)
 
-    v_return['v_data'] = v_list_tables
-
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_inheriteds_children(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_inheriteds_children(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_tables = []
-
-    try:
-        v_tables = v_database.QueryTablesInheritedsChildren(v_table,v_schema)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_name'],
-                'v_has_primary_keys': v_database.v_has_primary_keys,
-                'v_has_foreign_keys': v_database.v_has_foreign_keys,
-                'v_has_uniques': v_database.v_has_uniques,
-                'v_has_indexes': v_database.v_has_indexes,
-                'v_has_checks': v_database.v_has_checks,
-                'v_has_excludes': v_database.v_has_excludes,
-                'v_has_rules': v_database.v_has_rules,
-                'v_has_triggers': v_database.v_has_triggers,
-                'v_has_partitions': v_database.v_has_partitions,
-                'v_has_statistics': v_database.v_has_statistics,
-                'v_oid': v_table['oid']
-            }
-            v_list_tables.append(v_table_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_tables
-
-    return JsonResponse(v_return)
-
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_partitions_parents(request, v_database):
-    v_return = create_response_template()
-
-    v_schema = request.data['p_schema']
-
-    v_list_tables = []
+    list_tables = []
 
     try:
-        v_tables = v_database.QueryTablesPartitionsParents(False,v_schema)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_schema'] + '.' + v_table['table_name']
+        tables = database.QueryTablesInheritedsChildren(table,schema)
+        for table in tables.Rows:
+            table_data = {
+                'name': table['table_name'],
+                'oid': table['oid']
             }
-            v_list_tables.append(v_table_data)
+            list_tables.append(table_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_tables
+    return JsonResponse(data=list_tables, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_partitions_children(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_partitions_parents(request, database):
+    schema = request.data['schema']
 
+    try:
+        tables = database.QueryTablesPartitionsParents(False,schema)
+        list_tables = [f'{table["table_schema"]}.{table["table_name"]}' for table in tables.Rows]
+    except Exception as exc:
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+
+    return JsonResponse(data=list_tables, safe=False)
+
+
+@user_authenticated
+@database_required_new(check_timeout = True, open_connection = True)
+def get_partitions_children(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_tables = []
+    list_tables = []
 
     try:
-        v_tables = v_database.QueryTablesPartitionsChildren(v_table,v_schema)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_name'],
-                'v_has_primary_keys': v_database.v_has_primary_keys,
-                'v_has_foreign_keys': v_database.v_has_foreign_keys,
-                'v_has_uniques': v_database.v_has_uniques,
-                'v_has_indexes': v_database.v_has_indexes,
-                'v_has_checks': v_database.v_has_checks,
-                'v_has_excludes': v_database.v_has_excludes,
-                'v_has_rules': v_database.v_has_rules,
-                'v_has_triggers': v_database.v_has_triggers,
-                'v_has_partitions': v_database.v_has_partitions,
-                'v_has_statistics': v_database.v_has_statistics,
-                'v_oid': v_table['oid']
+        tables =  database.QueryTablesPartitionsChildren(table,schema)
+        for table in tables.Rows:
+            table_data = {
+                'name': table['table_name'],
+                'oid': table['oid']
             }
-            v_list_tables.append(v_table_data)
+            list_tables.append(table_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_tables
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_tables, safe=False)
 
 
 @user_authenticated

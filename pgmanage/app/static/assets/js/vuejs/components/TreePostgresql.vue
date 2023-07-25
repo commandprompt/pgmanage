@@ -1147,6 +1147,36 @@ export default {
             },
           },
         ],
+        cm_partitioned_tables: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Partitioning",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/ddl-partitioning.html`
+              );
+            },
+          },
+        ],
+        cm_partitioned_parent: [this.cmRefreshObject],
+        cm_inherited_tables: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Inheritance",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/tutorial-inheritance.html`
+              );
+            },
+          },
+        ],
+        cm_inherited_parent: [this.cmRefreshObject],
       };
     },
   },
@@ -1199,6 +1229,14 @@ export default {
         this.getStatisticsPostgresql(node);
       } else if (node.data.type == "statistic") {
         this.getStatisticsColumnsPostgresql(node);
+      } else if (node.data.type == "partitioned_table_list") {
+        this.getPartitionedParentsPostgresql(node);
+      } else if (node.data.type == "partitioned_parent") {
+        this.getPartitionedChildrenPostgresql(node);
+      } else if (node.data.type == "inherited_table_list") {
+        this.getInheritedsParentsPostgresql(node);
+      } else if (node.data.type == "inherited_parent") {
+        this.getInheritedsChildrenPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -2414,6 +2452,114 @@ export default {
               },
               true
             );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getPartitionedParentsPostgresql(node) {
+      this.api
+        .post("/get_partitions_parents_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Partitioned Tables (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el, {
+              icon: "fas node-all fa-layer-group node-ptable",
+              type: "partitioned_parent",
+              contextMenu: "cm_partitioned_parent",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getPartitionedChildrenPostgresql(node) {
+      this.api
+        .post("/get_partitions_children_postgresql/", {
+          schema: node.data.schema,
+          table: node.title,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `${node.title} (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-table node-ptable",
+              type: "table",
+              contextMenu: "cm_table",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getInheritedsParentsPostgresql(node) {
+      this.api
+        .post("/get_inheriteds_parents_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Inheritance Tables (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el, {
+              icon: "fas node-all fa-layer-group node-itable",
+              type: "inherited_parent",
+              contextMenu: "cm_inherited_parent",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getInheritedsChildrenPostgresql(node) {
+      this.api
+        .post("/get_inheriteds_children_postgresql/", {
+          schema: node.data.schema,
+          table: node.title,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `${node.title} (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-table node-itable",
+              type: "table",
+              contextMenu: "cm_table",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
           });
         })
         .catch((error) => {
