@@ -1532,6 +1532,274 @@ export default {
             },
           },
         ],
+        cm_mviews: [
+          this.cmRefreshObject,
+          {
+            label: "Create Mat. View",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Materialized View",
+                this.templates.create_mview.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Mat. Views",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/sql-creatematerializedview.html`
+              );
+            },
+          },
+        ],
+        cm_mview: [
+          this.cmRefreshObject,
+          {
+            label: "Query Data",
+            icon: "fas cm-all fa-search",
+            onClick: () => {
+              TemplateSelectPostgresql(
+                this.selectedNode.data.schema,
+                this.selectedNode.title,
+                "m"
+              );
+            },
+          },
+          {
+            label: "Edit Mat. View",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              this.getMaterializedViewDefinitionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Alter Mat. View",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Materialized View",
+                this.templates.alter_mview.replace(
+                  "#view_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Refresh Mat. View",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Refresh Materialized View",
+                this.templates.refresh_mview.replace(
+                  "#view_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Analyze Mat. View",
+            icon: "fas cm-all fa-search-plus",
+            onClick: () => {
+              tabSQLTemplate(
+                "Analyze Mat. View",
+                this.templates.analyze_table.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Mat. View",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Materialized View",
+                this.templates.drop_mview.replace(
+                  "#view_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+        ],
+        cm_functions: [
+          this.cmRefreshObject,
+          {
+            label: "Create Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Function",
+                this.templates.create_function.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Functions",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/sql-createfunction.html`
+              );
+            },
+          },
+        ],
+        cm_function: [
+          this.cmRefreshObject,
+          {
+            label: "Select Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              TemplateSelectFunctionPostgresql(
+                this.selectedNode.data.schema,
+                this.selectedNode.title,
+                this.selectedNode.data.id
+              );
+            },
+          },
+          {
+            label: "Edit Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              this.getFunctionDefinitionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Alter Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Function",
+                this.templates.alter_function.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+          {
+            label: "Restore",
+            icon: "fa-solid fa-upload cm-all",
+            onClick: () => {
+              createUtilityTab(this.selectedNode, "Restore");
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Function",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Function",
+                this.templates.drop_function.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+        ],
+        cm_trigger_functions: [
+          this.cmRefreshObject,
+          {
+            label: "Create Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Trigger Function",
+                this.templates.create_triggerfunction.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Trigger Functions",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/plpgsql-trigger.html`
+              );
+            },
+          },
+        ],
+        cm_trigger_function: [
+          this.cmRefreshObject,
+          {
+            label: "Edit Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              this.getTriggerFunctionDefinitionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Alter Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Trigger Function",
+                this.templates.alter_triggerfunction.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Trigger Function",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Trigger Function",
+                this.templates.drop_triggerfunction.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -1602,6 +1870,16 @@ export default {
         this.getViewsPostgresql(node);
       } else if (node.data.type == "view") {
         this.getViewsColumnsPostgresql(node);
+      } else if (node.data.type == "mview_list") {
+        this.getMaterializedViewsPostgresql(node);
+      } else if (node.data.type == "mview") {
+        this.getMaterializedViewsColumnsPostgresql(node);
+      } else if (node.data.type == "function_list") {
+        this.getFunctionsPostgresql(node);
+      } else if (node.data.type == "function") {
+        this.getFunctionFieldsPostgresql(node);
+      } else if (node.data.type == "trigger_function_list") {
+        this.getTriggerFunctionsPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -2545,7 +2823,7 @@ export default {
         .then((resp) => {
           this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.paht, {
+          this.$refs.tree.updateNode(node.path, {
             title: `Indexes (${resp.data.length})`,
           });
 
@@ -3196,6 +3474,266 @@ export default {
         .post("/get_view_definition_postgresql/", {
           view: node.title,
           schema: node.data.schema,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+            resp.data.data
+          );
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+            0,
+            0,
+            true
+          );
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getMaterializedViewsPostgresql(node) {
+      this.api
+        .post("/get_mviews_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Materialized Views (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-eye node-mview",
+              type: "mview",
+              contextMenu: "cm_mview",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getMaterializedViewsColumnsPostgresql(node) {
+      this.api
+        .post("/get_mviews_columns_postgresql/", {
+          table: node.title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.insertNode(node, "Statistics", {
+            icon: "fas node-all fa-chart-bar node-statistics",
+            type: "statistics_list",
+            contextMenu: "cm_statistics",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Indexes", {
+            icon: "fas node-all fa-thumbtack node-index",
+            type: "indexes",
+            contextMenu: "cm_indexes",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, `Columns (${resp.data.length})`, {
+            icon: "fas node-all fa-columns node-column",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          const columns_node = this.getFirstChildNode(node);
+
+          resp.data.reduceRight((_, el) => {
+            this.insertNode(columns_node, el.column_name, {
+              icon: "fas node-all fa-columns node-column",
+              type: "table_field",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+            });
+            const table_field = this.getFirstChildNode(columns_node);
+
+            this.insertNode(
+              table_field,
+              `Type: ${el.data_type}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          }, null);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getMaterializedViewDefinitionPostgresql(node) {
+      this.api
+        .post("/get_mview_definition_postgresql/", {
+          view: node.title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+            resp.data.data
+          );
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+            0,
+            0,
+            true
+          );
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getFunctionsPostgresql(node) {
+      this.api
+        .post("/get_functions_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Functions (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-cog node-function",
+              type: "function",
+              contextMenu: "cm_function",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              function_oid: el.function_oid,
+              id: el.id,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getFunctionFieldsPostgresql(node) {
+      this.api
+        .post("/get_function_fields_postgresql/", {
+          function: node.data.id,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          resp.data.reduceRight((_, el) => {
+            if (el.type === "O") {
+              this.insertNode(
+                node,
+                el.name,
+                {
+                  icon: "fas node-all fa-arrow-right node-function-field",
+                  schema: node.data.schema,
+                  database: this.selectedDatabase,
+                },
+                true
+              );
+            } else if (el.type === "I") {
+              this.insertNode(
+                node,
+                el.name,
+                {
+                  icon: "fas node-all fa-arrow-left node-function-field",
+                  schema: node.data.schema,
+                  database: this.selectedDatabase,
+                },
+                true
+              );
+            } else {
+              this.insertNode(
+                node,
+                el.name,
+                {
+                  icon: "fas node-all fa-exchange-alt node-function-field",
+                  schema: node.data.schema,
+                  database: this.selectedDatabase,
+                },
+                true
+              );
+            }
+          }, null);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getFunctionDefinitionPostgresql(node) {
+      this.api
+        .post("/get_function_definition_postgresql/", {
+          function: node.data.id,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+            resp.data.data
+          );
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+            0,
+            0,
+            true
+          );
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getTriggerFunctionsPostgresql(node) {
+      this.api
+        .post("/get_triggerfunctions_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Trigger Functions (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-cog node-tfunction",
+                type: "trigger_function",
+                contextMenu: "cm_trigger_function",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+                function_oid: el.function_oid,
+                id: el.id,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getTriggerFunctionDefinitionPostgresql(node) {
+      this.api
+        .post("/get_triggerfunction_definition_postgresql/", {
+          function: node.data.id,
         })
         .then((resp) => {
           // Fix this not to use v_connTabControl
