@@ -1177,6 +1177,361 @@ export default {
           },
         ],
         cm_inherited_parent: [this.cmRefreshObject],
+        cm_foreign_tables: [
+          this.cmRefreshObject,
+          {
+            label: "Create Foreign Table",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Foreign Table",
+                this.templates.create_foreign_table.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+        ],
+        cm_foreign_table: [
+          this.cmRefreshObject,
+          {
+            label: "Data Actions",
+            icon: "fas cm-all fa-list",
+            children: [
+              {
+                label: "Query Data",
+                icon: "fas cm-all fa-search",
+                onClick: () => {
+                  TemplateSelectPostgresql(
+                    this.selectedNode.data.schema,
+                    this.selectedNode.title,
+                    "f"
+                  );
+                },
+              },
+              {
+                label: "Edit Data",
+                icon: "fas cm-all fa-table",
+                onClick: () => {
+                  v_startEditData(
+                    this.selectedNode.title,
+                    this.selectedNode.data.schema
+                  );
+                },
+              },
+              {
+                label: "Insert Record",
+                icon: "fas cm-all fa-edit",
+                onClick: () => {
+                  TemplateInsertPostgresql(
+                    this.selectedNode.data.schema,
+                    this.selectedNode.title
+                  );
+                },
+              },
+              {
+                label: "Update Records",
+                icon: "fas cm-all fa-edit",
+                onClick: () => {
+                  TemplateUpdatePostgresql(
+                    this.selectedNode.data.schema,
+                    this.selectedNode.title
+                  );
+                },
+              },
+              {
+                label: "Delete Records",
+                icon: "fas cm-all fa-times",
+                onClick: () => {
+                  tabSQLTemplate(
+                    "Delete Records",
+                    this.templates.delete.replace(
+                      "#table_name#",
+                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                    )
+                  );
+                },
+              },
+            ],
+          },
+          {
+            label: "Table Actions",
+            icon: "fas cm-all fa-list",
+            children: [
+              {
+                label: "Analyze Foreign Table",
+                icon: "fas cm-all fa-table",
+                onClick: () => {
+                  tabSQLTemplate(
+                    "Analyze Foreign Table",
+                    this.templates.analyze_table.replace(
+                      "#table_name#",
+                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                    )
+                  );
+                },
+              },
+              {
+                label: "Alter Foreign Table",
+                icon: "fas cm-all fa-edit",
+                onClick: () => {
+                  tabSQLTemplate(
+                    "Alter Foreign Table",
+                    this.templates.alter_foreign_table.replace(
+                      "#table_name#",
+                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                    )
+                  );
+                },
+              },
+              {
+                label: "Edit Comment",
+                icon: "fas cm-all fa-edit",
+                onClick: () => {
+                  this.getObjectDescriptionPostgresql(this.selectedNode);
+                },
+              },
+              {
+                label: "Drop Foreign Table",
+                icon: "fas cm-all fa-times",
+                onClick: () => {
+                  tabSQLTemplate(
+                    "Drop Foreign Table",
+                    this.templates.drop_foreign_table.replace(
+                      "#table_name#",
+                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                    )
+                  );
+                },
+              },
+            ],
+          },
+        ],
+        cm_foreign_columns: [
+          {
+            label: "Create Foreign Column",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Foreign Column",
+                this.templates.create_foreign_column.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+        ],
+        cm_foreign_column: [
+          {
+            label: "Alter Foreign Column",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Foreign Column",
+                this.templates.alter_foreign_column
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace(/#column_name#/g, this.selectedNode.title)
+              );
+            },
+          },
+          {
+            label: "Drop Foreign Column",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Foreign Column",
+                this.templates.drop_foreign_column
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    }`
+                  )
+                  .replace(/#column_name#/g, this.selectedNode.title)
+              );
+            },
+          },
+        ],
+        cm_sequences: [
+          this.cmRefreshObject,
+          {
+            label: "Create Sequence",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Sequence",
+                this.templates.create_sequence.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Sequences",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/sql-createsequence.html`
+              );
+            },
+          },
+        ],
+        cm_sequence: [
+          {
+            label: "Alter Sequence",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Sequence",
+                this.templates.alter_sequence.replace(
+                  "#sequence_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Sequence",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Sequence",
+                this.templates.drop_sequence.replace(
+                  "#sequence_name#",
+                  `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
+                  }`
+                )
+              );
+            },
+          },
+        ],
+        cm_views: [
+          this.cmRefreshObject,
+          {
+            label: "Create View",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create View",
+                this.templates.create_view.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Views",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/sql-createview.html`
+              );
+            },
+          },
+        ],
+        cm_view: [
+          this.cmRefreshObject,
+          {
+            label: "Query Data",
+            icon: "fas cm-all fa-search",
+            onClick: () => {
+              TemplateSelectPostgresql(
+                this.getParentNodeDeep(this.selectedNode, 2).title,
+                this.selectedNode.title,
+                "v"
+              );
+            },
+          },
+          {
+            label: "Edit View",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              //FIXME:  do not use v_connTabControl
+              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              this.getViewDefinitionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Alter View",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter View",
+                this.templates.alter_view.replace(
+                  /#view_name#/g,
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop View",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop View",
+                this.templates.drop_view.replace(
+                  "#view_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+        ],
+        cm_view_triggers: [
+          this.cmRefreshObject,
+          {
+            label: "Create Trigger",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Trigger",
+                this.templates.create_view_trigger.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  }`
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Triggers",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/trigger-definition.html`
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -1237,6 +1592,16 @@ export default {
         this.getInheritedsParentsPostgresql(node);
       } else if (node.data.type == "inherited_parent") {
         this.getInheritedsChildrenPostgresql(node);
+      } else if (node.data.type == "foreign_table_list") {
+        this.getForeignTablesPostgresql(node);
+      } else if (node.data.type == "foreign_table") {
+        this.getForeignColumnsPostgresql(node);
+      } else if (node.data.type == "sequence_list") {
+        this.getSequencesPostgresql(node);
+      } else if (node.data.type == "view_list") {
+        this.getViewsPostgresql(node);
+      } else if (node.data.type == "view") {
+        this.getViewsColumnsPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -2561,6 +2926,288 @@ export default {
               oid: el.oid,
             });
           });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getForeignTablesPostgresql(node) {
+      this.api
+        .post("/get_foreign_tables_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Foreign Tables (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-table node-ftable",
+              type: "foreign_table",
+              contextMenu: "cm_foreign_table",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getForeignColumnsPostgresql(node) {
+      this.api
+        .post("/get_foreign_columns_postgresql/", {
+          table: node.title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.insertNode(node, "Statistics", {
+            icon: "fas node-all fa-chart-bar node-statistics",
+            type: "statistics_list",
+            contextMenu: "cm_statistics",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          if (!!resp.data.length) {
+            this.insertNode(
+              node,
+              resp.data[0].fdw,
+              {
+                icon: "fas node-all fa-cube node-fdw",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+            this.insertNode(
+              node,
+              resp.data[0].server,
+              {
+                icon: "fas node-all fa-server node-server",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+
+            let options = resp.data[0].table_options.split(",");
+            options.forEach((el) => {
+              this.insertNode(
+                node,
+                el,
+                {
+                  icon: "fas node-all fa-ellipsis-h node-bullet",
+                  schema: node.data.schema,
+                  database: this.selectedDatabase,
+                },
+                true
+              );
+            });
+          }
+
+          this.insertNode(node, `Columns (${resp.data.length})`, {
+            icon: "fas node-all fa-columns node-column",
+            type: "foreign_column_list",
+            contextMenu: "cm_foreign_columns",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          const foreign_columns_node = this.getFirstChildNode(node);
+
+          resp.data.reduceRight((_, el) => {
+            this.insertNode(foreign_columns_node, el.column_name, {
+              icon: "fas node-all fa-columns node-column",
+              type: "foreign_table_field",
+              contextMenu: "cm_foreign_column",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+            });
+            const foreign_table_field =
+              this.getFirstChildNode(foreign_columns_node);
+
+            if (!!el.options) {
+              let options = el.options.split(",");
+              options.forEach((option_el) => {
+                this.insertNode(
+                  foreign_table_field,
+                  option_el,
+                  {
+                    icon: "fas node-all fa-ellipsis-h node-bullet",
+                    schema: node.data.schema,
+                    database: this.selectedDatabase,
+                  },
+                  true
+                );
+              });
+            }
+
+            this.insertNode(
+              foreign_table_field,
+              `Nullable: ${el.nullable}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+            this.insertNode(
+              foreign_table_field,
+              `Type: ${el.data_type}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          }, null);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getSequencesPostgresql(node) {
+      this.api
+        .post("/get_sequences_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+          this.$refs.tree.updateNode(node.path, {
+            title: `Sequences (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.sequence_name,
+              {
+                icon: "fas node-all fa-sort-numeric-down node-sequence",
+                type: "sequence",
+                contextMenu: "cm_sequence",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+                oid: el.oid,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getViewsPostgresql(node) {
+      this.api
+        .post("/get_views_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Views (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-eye node-view",
+              type: "view",
+              contextMenu: "cm_view",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getViewsColumnsPostgresql(node) {
+      this.api
+        .post("/get_views_columns_postgresql/", {
+          table: node.title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.insertNode(node, "Triggers", {
+            icon: "fas node-all fa-bolt node-trigger",
+            type: "trigger_list",
+            contextMenu: "cm_view_triggers",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, "Rules", {
+            icon: "fas node-all fa-lightbulb node-rule",
+            type: "rule_list",
+            contextMenu: "cm_rules",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          this.insertNode(node, `Columns (${resp.data.length})`, {
+            icon: "fas node-all fa-columns node-column",
+            schema: node.data.schema,
+            database: this.selectedDatabase,
+          });
+
+          const columns_node = this.getFirstChildNode(node);
+
+          resp.data.reduceRight((_, el) => {
+            this.insertNode(columns_node, el.column_name, {
+              icon: "fas node-all fa-columns node-column",
+              type: "table_field",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+            });
+            const table_field = this.getFirstChildNode(columns_node);
+
+            this.insertNode(
+              table_field,
+              `Type: ${el.data_type}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          }, null);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getViewDefinitionPostgresql(node) {
+      this.api
+        .post("/get_view_definition_postgresql/", {
+          view: node.title,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+            resp.data.data
+          );
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+            0,
+            0,
+            true
+          );
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

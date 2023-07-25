@@ -644,73 +644,66 @@ def get_statistics_columns(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_views(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_views(request, database):
+    schema = request.data['schema']
 
-    v_schema = request.data['p_schema']
-
-    v_list_tables = []
+    list_tables = []
 
     try:
-        v_tables = v_database.QueryViews(False,v_schema)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_name'],
-                'v_has_rules': v_database.v_has_rules,
-                'v_has_triggers': v_database.v_has_triggers,
-                'v_oid': v_table['oid']
+        tables = database.QueryViews(False, schema)
+        for table in tables.Rows:
+            table_data = {
+                'name': table['table_name'],
+                'oid': table['oid']
             }
-            v_list_tables.append(v_table_data)
+            list_tables.append(table_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_tables
+    return JsonResponse(data=list_tables, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_views_columns(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_views_columns(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_columns = []
+    list_columns = []
 
     try:
-        v_columns = v_database.QueryViewFields(v_table,False,v_schema)
-        for v_column in v_columns.Rows:
-            v_column_data = {
-                'v_column_name': v_column['column_name'],
-                'v_data_type': v_column['data_type'],
-                'v_data_length': v_column['data_length'],
+        columns = database.QueryViewFields(table, False, schema)
+        for column in columns.Rows:
+            column_data = {
+                'column_name': column['column_name'],
+                'data_type': column['data_type'],
             }
-            v_list_columns.append(v_column_data)
+            list_columns.append(column_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_columns
+    return JsonResponse(data=list_columns, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_view_definition(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_view_definition(request, database):
     data = request.data
-    v_view = data['p_view']
-    v_schema = data['p_schema']
+    view = data['view']
+    schema = data['schema']
 
     try:
-        v_return['v_data'] = v_database.GetViewDefinition(v_view, v_schema)
+        view_definition = database.GetViewDefinition(view, schema)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse(data={"data": view_definition})
+
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
@@ -1118,29 +1111,28 @@ def get_aggregates(request, v_database):
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_sequences(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_sequences(request, database):
+    schema = request.data['schema']
 
-    v_schema = request.data['p_schema']
-
-    v_list_sequences = []
+    list_sequences = []
 
     try:
-        v_sequences = v_database.QuerySequences(False,v_schema)
-        for v_sequence in v_sequences.Rows:
-            v_sequence_data = {
-                'v_sequence_name': v_sequence['sequence_name'],
-                'v_oid': v_sequence['oid']
+        sequences = database.QuerySequences(False, schema)
+        for sequence in sequences.Rows:
+            sequence_data = {
+                'sequence_name': sequence['sequence_name'],
+                'oid': sequence['oid']
             }
-            v_list_sequences.append(v_sequence_data)
+            list_sequences.append(sequence_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+    
+    return JsonResponse(data=list_sequences, safe=False)
 
-    v_return['v_data'] = v_list_sequences
-
-    return JsonResponse(v_return)
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
@@ -1426,62 +1418,57 @@ def get_user_mappings(request, v_database):
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_foreign_tables(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_foreign_tables(request, database):
+    schema = request.data['schema']
 
-    v_schema = request.data['p_schema']
-
-    v_list_tables = []
+    list_tables = []
 
     try:
-        v_tables = v_database.QueryForeignTables(False,v_schema)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_name'],
-                'v_has_statistics': v_database.v_has_statistics,
-                'v_oid': v_table['oid']
+        tables = database.QueryForeignTables(False, schema)
+        for table in tables.Rows:
+            table_data = {
+                'name': table['table_name'],
+                'oid': table['oid']
             }
-            v_list_tables.append(v_table_data)
+            list_tables.append(table_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_tables
+    return JsonResponse(data=list_tables, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_foreign_columns(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_foreign_columns(request, database):
     data = request.data
-    v_table = data['p_table']
-    v_schema = data['p_schema']
+    table = data['table']
+    schema = data['schema']
 
-    v_list_columns = []
+    list_columns = []
 
     try:
-        v_columns = v_database.QueryForeignTablesFields(v_table,False,v_schema)
-        for v_column in v_columns.Rows:
-            v_column_data = {
-                'v_column_name': v_column['column_name'],
-                'v_data_type': v_column['data_type'],
-                'v_data_length': v_column['data_length'],
-                'v_nullable': v_column['nullable'],
-                'v_options': v_column['attfdwoptions'],
-                'v_tableoptions': v_column['ftoptions'],
-                'v_server': v_column['srvname'],
-                'v_fdw': v_column['fdwname']
+        columns = database.QueryForeignTablesFields(table,False,schema)
+        for column in columns.Rows:
+            column_data = {
+                'column_name': column['column_name'],
+                'data_type': column['data_type'],
+                'data_length': column['data_length'],
+                'nullable': column['nullable'],
+                'options': column['attfdwoptions'],
+                'table_options': column['ftoptions'],
+                'server': column['srvname'],
+                'fdw': column['fdwname']
             }
-            v_list_columns.append(v_column_data)
+            list_columns.append(column_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_columns
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_columns, safe=False)
 
 
 @user_authenticated
