@@ -517,31 +517,27 @@ def get_triggers(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_eventtriggers(request, v_database):
-    v_return = create_response_template()
-
-    v_list_triggers = []
+@database_required_new(check_timeout = True, open_connection = True)
+def get_eventtriggers(request, database):
+    list_triggers = []
 
     try:
-        v_triggers = v_database.QueryEventTriggers()
-        for v_trigger in v_triggers.Rows:
-            v_trigger_data = {
-                'v_name': v_trigger['trigger_name'],
-                'v_enabled': v_trigger['trigger_enabled'],
-                'v_event': v_trigger['event_name'],
-                'v_function': v_trigger['trigger_function'],
-                'v_id': v_trigger['id'],
-                'v_function_oid': v_trigger['function_oid'],
-                'v_oid': v_trigger['oid']
+        triggers = database.QueryEventTriggers()
+        for trigger in triggers.Rows:
+            trigger_data = {
+                'name': trigger['trigger_name'],
+                'enabled': trigger['trigger_enabled'],
+                'event': trigger['event_name'],
+                'function': trigger['trigger_function'],
+                'id': trigger['id'],
+                'function_oid': trigger['function_oid'],
+                'oid': trigger['oid']
             }
-            v_list_triggers.append(v_trigger_data)
+            list_triggers.append(trigger_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
-    v_return['v_data'] = v_list_triggers
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_triggers, safe=False)
 
 
 @user_authenticated
@@ -1181,103 +1177,91 @@ def get_logicalreplicationslots(request, v_database):
 
     return JsonResponse(v_return)
 
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_publications(request, v_database):
-    v_return = create_response_template()
 
-    v_list_pubs = []
+@user_authenticated
+@database_required_new(check_timeout = True, open_connection = True)
+def get_publications(request, database):
+    list_pubs = []
 
     try:
-        v_pubs = v_database.QueryPublications()
-        for v_pub in v_pubs.Rows:
-            v_pub_data = {
-                'v_name': v_pub['pubname'],
-                'v_alltables': v_pub['puballtables'],
-                'v_insert': v_pub['pubinsert'],
-                'v_update': v_pub['pubupdate'],
-                'v_delete': v_pub['pubdelete'],
-                'v_truncate': v_pub['pubtruncate'],
-                'v_oid': v_pub['oid']
+        pubs = database.QueryPublications()
+        for pub in pubs.Rows:
+            pub_data = {
+                'name': pub['pubname'],
+                'alltables': pub['puballtables'],
+                'insert': pub['pubinsert'],
+                'update': pub['pubupdate'],
+                'delete': pub['pubdelete'],
+                'truncate': pub['pubtruncate'],
+                'oid': pub['oid']
             }
-            v_list_pubs.append(v_pub_data)
+            list_pubs.append(pub_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
-    v_return['v_data'] = v_list_pubs
+    return JsonResponse(data=list_pubs, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
+@database_required_new(check_timeout = True, open_connection = True)
 def get_publication_tables(request, v_database):
-    v_return = create_response_template()
+    pub = request.data['pub']
 
-    v_pub = request.data['p_pub']
-
-    v_list_tables = []
+    list_tables = []
 
     try:
-        v_tables = v_database.QueryPublicationTables(v_pub)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_name']
+        tables = v_database.QueryPublicationTables(pub)
+        for table in tables.Rows:
+            table_data = {
+                'name': table['table_name']
             }
-            v_list_tables.append(v_table_data)
+            list_tables.append(table_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
-    v_return['v_data'] = v_list_tables
+    return JsonResponse(data=list_tables, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_subscriptions(request, v_database):
-    v_return = create_response_template()
-
-    v_list_subs = []
+@database_required_new(check_timeout = True, open_connection = True)
+def get_subscriptions(request, database):
+    list_subs = []
 
     try:
-        v_subs = v_database.QuerySubscriptions()
-        for v_sub in v_subs.Rows:
-            v_sub_data = {
-                'v_name': v_sub['subname'],
-                'v_enabled': v_sub['subenabled'],
-                'v_conninfo': v_sub['subconninfo'],
-                'v_publications': v_sub['subpublications'],
-                'v_oid': v_sub['oid']
+        subs = database.QuerySubscriptions()
+        for sub in subs.Rows:
+            sub_data = {
+                'name': sub['subname'],
+                'enabled': sub['subenabled'],
+                'conn_info': sub['subconninfo'],
+                'publications': sub['subpublications'],
+                'oid': sub['oid']
             }
-            v_list_subs.append(v_sub_data)
+            list_subs.append(sub_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
-    v_return['v_data'] = v_list_subs
+    return JsonResponse(data=list_subs, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_subscription_tables(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_subscription_tables(request, database):
+    sub = request.data['sub']
 
-    v_sub = request.data['p_sub']
-
-    v_list_tables = []
+    list_tables = []
 
     try:
-        v_tables = v_database.QuerySubscriptionTables(v_sub)
-        for v_table in v_tables.Rows:
-            v_table_data = {
-                'v_name': v_table['table_name']
+        tables = database.QuerySubscriptionTables(sub)
+        for table in tables.Rows:
+            table_data = {
+                'name': table['table_name']
             }
-            v_list_tables.append(v_table_data)
+            list_tables.append(table_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
-    v_return['v_data'] = v_list_tables
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_tables, safe=False)
 
 
 @user_authenticated

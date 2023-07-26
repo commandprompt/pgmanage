@@ -963,6 +963,50 @@ export default {
             },
           },
         ],
+        cm_direct_trigger_function: [
+          this.cmRefreshObject,
+          {
+            label: "Edit Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              this.getTriggerFunctionDefinitionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Alter Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Trigger Function",
+                this.templates.alter_triggerfunction.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Trigger Function",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Trigger Function",
+                this.templates.drop_triggerfunction.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+        ],
         cm_inheriteds: [
           this.cmRefreshObject,
           {
@@ -2391,6 +2435,287 @@ export default {
             },
           },
         ],
+        cm_event_triggers: [
+          this.cmRefreshObject,
+          {
+            label: "Create Event Trigger",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Event Trigger",
+                this.templates.create_eventtrigger
+              );
+            },
+          },
+          {
+            label: "Doc: Event Triggers",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/event-triggers.html`
+              );
+            },
+          },
+        ],
+        cm_event_trigger: [
+          {
+            label: "Alter Event Trigger",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Trigger",
+                this.templates.alter_eventtrigger.replace(
+                  "#trigger_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Enable Event Trigger",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Enable Event Trigger",
+                this.templates.enable_eventtrigger.replace(
+                  "#trigger_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Disable Event Trigger",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Disable Event Trigger",
+                this.templates.disable_eventtrigger.replace(
+                  "#trigger_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Event Trigger",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Event Trigger",
+                this.templates.drop_eventtrigger.replace(
+                  "#trigger_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
+        cm_direct_event_trigger_function: [
+          {
+            label: "Edit Event Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              this.getEventTriggerFunctionDefinitionPostgresql(
+                this.selectedNode
+              );
+            },
+          },
+          {
+            label: "Alter Event Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Event Trigger Function",
+                this.templates.alter_eventtriggerfunction.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Event Trigger Function",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Event Trigger Function",
+                this.templates.drop_eventtriggerfunction.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+        ],
+        cm_publications: [
+          this.cmRefreshObject,
+          {
+            label: "Create Publication",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Publication",
+                this.templates.create_publication
+              );
+            },
+          },
+          {
+            label: "Doc: Publications",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/logical-replication-publication.html`
+              );
+            },
+          },
+        ],
+        cm_publication: [
+          {
+            label: "Alter Publication",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Publication",
+                this.templates.alter_publication.replace(
+                  "#pub_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Publication",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Publication",
+                this.templates.drop_publication.replace(
+                  "#pub_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
+        cm_pubtables: [
+          this.cmRefreshObject,
+          {
+            label: "Add Table",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Add Table",
+                this.templates.add_pubtable.replace(
+                  "#pub_name#",
+                  this.getParentNode(this.selectedNode).title
+                )
+              );
+            },
+          },
+        ],
+        cm_pubtable: [
+          {
+            label: "Drop Table",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Table",
+                this.templates.drop_pubtable
+                  .replace(
+                    "#pub_name#",
+                    this.getParentNodeDeep(this.selectedNode, 2).title
+                  )
+                  .replace("#table_name#", this.selectedNode.title)
+              );
+            },
+          },
+        ],
+        cm_subscriptions: [
+          this.cmRefreshObject,
+          {
+            label: "Create Subscription",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Subscription",
+                this.templates.create_subscription
+              );
+            },
+          },
+          {
+            label: "Doc: Subscriptions",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/logical-replication-subscription.html`
+              );
+            },
+          },
+        ],
+        cm_subscription: [
+          {
+            label: "Alter Subscription",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Subscription",
+                this.templates.alter_subscription.replace(
+                  "#sub_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Subscription",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Subscription",
+                this.templates.drop_subscription.replace(
+                  "#sub_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -2493,6 +2818,16 @@ export default {
         this.getForeignServersPostgresql(node);
       } else if (node.data.type == "user_mapping_list") {
         this.getUserMappingsPostgresql(node);
+      } else if (node.data.type == "event_trigger_list") {
+        this.getEventTriggersPostgresql(node);
+      } else if (node.data.type == "publication_list") {
+        this.getPublicationsPostgresql(node);
+      } else if (node.data.type == "publication_table_list") {
+        this.getPublicationTablesPostgresql(node);
+      } else if (node.data.type == "subscription_list") {
+        this.getSubscriptionsPostgresql(node);
+      } else if (node.data.type == "subscription_table_list") {
+        this.getSubscriptionTablesPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -2774,24 +3109,24 @@ export default {
               database: this.selectedDatabase,
             });
           }
+          this.insertNode(node, "Logical Replication", {
+            icon: "fas node-all fa-sitemap node-logrep",
+            type: "replication",
+            database: this.selectedDatabase,
+          });
+          const logical_replication_node = this.getFirstChildNode(node);
 
-          this.insertNode(node, "Subscriptions", {
+          this.insertNode(logical_replication_node, "Subscriptions", {
             icon: "fas node-all fa-arrow-alt-circle-up node-subscription-list",
             type: "subscription_list",
             contextMenu: "cm_subscriptions",
             database: this.selectedDatabase,
           });
 
-          this.insertNode(node, "Publications", {
+          this.insertNode(logical_replication_node, "Publications", {
             icon: "fas node-all fa-arrow-alt-circle-down node-publication-list",
             type: "publication_list",
             contextMenu: "cm_publications",
-            database: this.selectedDatabase,
-          });
-
-          this.insertNode(node, "Logical Replication", {
-            icon: "fas node-all fa-sitemap node-logrep",
-            type: "replication",
             database: this.selectedDatabase,
           });
 
@@ -4774,6 +5109,280 @@ export default {
                 true
               );
             });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getEventTriggersPostgresql(node) {
+      this.api
+        .post("/get_eventtriggers_postgresql/")
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Event Triggers (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-bolt node-eventtrigger",
+              type: "event_trigger",
+              contextMenu: "cm_event_trigger",
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
+            const trigger_node = this.getFirstChildNode(node);
+
+            this.insertNode(
+              trigger_node,
+              el.function,
+              {
+                icon: "fas node-all fa-cog node-etfunction",
+                type: "direct_event_trigger_function",
+                contextMenu: "cm_direct_event_trigger_function",
+                id: el.id,
+                function_oid: el.function_oid,
+              },
+              true
+            );
+
+            this.insertNode(
+              trigger_node,
+              `Event: ${el.event}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+
+            this.insertNode(
+              trigger_node,
+              `Enabled: ${el.enabled}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getPublicationsPostgresql(node) {
+      this.api
+        .post("/get_publications_postgresql/")
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Publications (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-arrow-alt-circle-down node-publication",
+              type: "publication",
+              contextMenu: "cm_publication",
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
+            const publication_node = this.getFirstChildNode(node);
+
+            if (el.alltables === "False") {
+              this.insertNode(publication_node, "Tables", {
+                icon: "fas node-all fa-th node-table-list",
+                type: "publication_table_list",
+                contextMenu: "cm_pubtables",
+                database: this.selectedDatabase,
+              });
+            }
+
+            this.insertNode(
+              publication_node,
+              `Truncate: ${el.truncate}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+
+            this.insertNode(
+              publication_node,
+              `Delete: ${el.delete}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+
+            this.insertNode(
+              publication_node,
+              `Update: ${el.update}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+
+            this.insertNode(
+              publication_node,
+              `Insert: ${el.insert}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+
+            this.insertNode(
+              publication_node,
+              `All Tables: ${el.alltables}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getPublicationTablesPostgresql(node) {
+      this.api
+        .post("/get_publication_tables_postgresql/", {
+          pub: this.getParentNode(node).title,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Tables (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-table node-table",
+                type: "pubtable",
+                contextMenu: "cm_pubtable",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getSubscriptionsPostgresql(node) {
+      this.api
+        .post("/get_subscriptions_postgresql/")
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Subscriptions (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-arrow-alt-circle-up node-subscription",
+              type: "subscription",
+              contextMenu: "cm_subscription",
+              database: this.selectedDatabase,
+              oid: el.oid,
+            });
+            const subscription_node = this.getFirstChildNode(node);
+
+            this.insertNode(subscription_node, "Tables", {
+              icon: "fas node-all fa-th node-table-list",
+              type: "subscription_table_list",
+              database: this.selectedDatabase,
+            });
+
+            this.insertNode(subscription_node, "Referenced Publications", {
+              icon: "fas node-all fa-arrow-alt-circle-down node-publication",
+              type: "subpubs",
+              database: this.selectedDatabase,
+            });
+            const referenced_publications =
+              this.getFirstChildNode(subscription_node);
+
+            const publications = el.publications.split(",");
+            publications.forEach((pub_el) => {
+              this.insertNode(
+                referenced_publications,
+                pub_el,
+                {
+                  icon: "fas node-all fa-arrow-alt-circle-down node-publication",
+                  type: "subpub",
+                  database: this.selectedDatabase,
+                },
+                true
+              );
+            });
+
+            this.insertNode(
+              subscription_node,
+              `ConnInfo: ${el.conn_info}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+
+            this.insertNode(
+              subscription_node,
+              `Enabled: ${el.enabled}`,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getSubscriptionTablesPostgresql(node) {
+      this.api
+        .post("/get_subscription_tables_postgresql/", {
+          sub: this.getParentNode(node).title,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Tables (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-table node-table",
+                type: "subtable",
+                database: this.selectedDatabase,
+              },
+              true
+            );
           });
         })
         .catch((error) => {
