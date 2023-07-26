@@ -1452,53 +1452,47 @@ def get_foreign_columns(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_types(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_types(request, database):
+    schema = request.data['schema']
 
-    v_schema = request.data['p_schema']
-
-    v_list_types = []
+    list_types = []
 
     try:
-        v_types = v_database.QueryTypes(False,v_schema)
-        for v_type in v_types.Rows:
-            v_type_data = {
-                'v_type_name': v_type['type_name'],
-                'v_oid': v_type['oid']
+        types = database.QueryTypes(False, schema)
+        for type_object in types.Rows:
+            type_data = {
+                'type_name': type_object['type_name'],
+                'oid': type_object['oid']
             }
-            v_list_types.append(v_type_data)
+            list_types.append(type_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_types
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_types, safe=False)
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_domains(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_domains(request, database):
+    schema = request.data['schema']
 
-    v_schema = request.data['p_schema']
-
-    v_list_domains = []
+    list_domains = []
 
     try:
-        v_domains = v_database.QueryDomains(False,v_schema)
-        for v_domain in v_domains.Rows:
-            v_domain_data = {
-                'v_domain_name': v_domain['domain_name'],
-                'v_oid': v_domain['oid']
+        domains = database.QueryDomains(False, schema)
+        for domain in domains.Rows:
+            domain_data = {
+                'domain_name': domain['domain_name'],
+                'oid': domain['oid']
             }
-            v_list_domains.append(v_domain_data)
+            list_domains.append(domain_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_domains
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_domains, safe=False)
 
 
 @user_authenticated

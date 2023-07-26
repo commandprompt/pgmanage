@@ -2016,6 +2016,130 @@ export default {
             },
           },
         ],
+        cm_types: [
+          this.cmRefreshObject,
+          {
+            label: "Create Type",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Type",
+                this.templates.create_type.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Types",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/sql-createtype.html`
+              );
+            },
+          },
+        ],
+        cm_type: [
+          {
+            label: "Alter Type",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Type",
+                this.templates.alter_type.replace(
+                  "#type_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Type",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Type",
+                this.templates.drop_type.replace(
+                  "#type_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+        ],
+        cm_domains: [
+          this.cmRefreshObject,
+          {
+            label: "Create Domain",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Domain",
+                this.templates.create_domain.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Domains",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/sql-createdomain.html`
+              );
+            },
+          },
+        ],
+        cm_domain: [
+          {
+            label: "Alter Domain",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Domain",
+                this.templates.alter_domain.replace(
+                  "#domain_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Domain",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Domain",
+                this.templates.drop_domain.replace(
+                  "#domain_name#",
+                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -2106,6 +2230,10 @@ export default {
         this.getAggregatesPostgresql(node);
       } else if (node.data.type == "aggregate") {
         this.getFunctionFieldsPostgresql(node);
+      } else if (node.data.type == "type_list") {
+        this.getTypesPostgresql(node);
+      } else if (node.data.type == "domain_list") {
+        this.getDomainsPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -4152,6 +4280,70 @@ export default {
               id: el.id,
               oid: el.oid,
             });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getTypesPostgresql(node) {
+      this.api
+        .post("/get_types_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Types (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.type_name,
+              {
+                icon: "fas node-all fa-square node-type",
+                type: "type",
+                contextMenu: "cm_type",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+                oid: el.oid,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getDomainsPostgresql(node) {
+      this.api
+        .post("/get_domains_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Domains (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.domain_name,
+              {
+                icon: "fas node-all fa-square node-domain",
+                type: "domain",
+                contextMenu: "cm_domain",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+                oid: el.oid,
+              },
+              true
+            );
           });
         })
         .catch((error) => {
