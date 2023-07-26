@@ -918,70 +918,67 @@ def get_function_debug(request, v_database):
 
     return JsonResponse(v_return)
 
+
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_procedures(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_procedures(request, database):
+    schema = request.data['schema']
 
-    v_schema = request.data['p_schema']
-
-    v_list_functions = []
+    list_functions = []
 
     try:
-        v_functions = v_database.QueryProcedures(False,v_schema)
-        for v_function in v_functions.Rows:
-            v_function_data = {
-                'v_name': v_function['name'],
-                'v_id': v_function['id'],
-                'v_function_oid': v_function['function_oid']
+        functions = database.QueryProcedures(False, schema)
+        for function in functions.Rows:
+            function_data = {
+                'name': function['name'],
+                'id': function['id'],
+                'function_oid': function['function_oid']
             }
-            v_list_functions.append(v_function_data)
+            list_functions.append(function_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_functions
+    return JsonResponse(data=list_functions, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_procedure_fields(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout = True, open_connection = True)
+def get_procedure_fields(request, database):
     data = request.data
-    v_function = data['p_procedure']
-    v_schema = data['p_schema']
+    function = data['procedure']
+    schema = data['schema']
 
-    v_list_fields = []
+    list_fields = []
 
     try:
-        v_fields = v_database.QueryProcedureFields(v_function,v_schema)
-        for v_field in v_fields.Rows:
-            v_field_data = {
-                'v_name': v_field['name'],
-                'v_type': v_field['type']
+        fields = database.QueryProcedureFields(function, schema)
+        for field in fields.Rows:
+            field_data = {
+                'name': field['name'],
+                'type': field['type']
             }
-            v_list_fields.append(v_field_data)
+            list_fields.append(field_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_fields
+    return JsonResponse(data=list_fields, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_procedure_definition(request, v_database):
-    v_return = create_response_template()
-
-    v_function = request.data['p_procedure']
+@database_required_new(check_timeout = True, open_connection = True)
+def get_procedure_definition(request, database):
+    function = request.data['procedure']
 
     try:
-        v_return['v_data'] = v_database.GetProcedureDefinition(v_function)
+        procedure_definition = database.GetProcedureDefinition(function)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse(data={"data": procedure_definition})
+
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
@@ -1036,68 +1033,63 @@ def get_triggerfunction_definition(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_eventtriggerfunctions(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_eventtriggerfunctions(request, database):
+    schema = request.data['schema']
 
-    v_schema = request.data['p_schema']
-
-    v_list_functions = []
+    list_functions = []
 
     try:
-        v_functions = v_database.QueryEventTriggerFunctions(False,v_schema)
-        for v_function in v_functions.Rows:
-            v_function_data = {
-                'v_name': v_function['name'],
-                'v_id': v_function['id'],
-                'v_function_oid': v_function['function_oid']
+        functions = database.QueryEventTriggerFunctions(False, schema)
+        for function in functions.Rows:
+            function_data = {
+                'name': function['name'],
+                'id': function['id'],
+                'function_oid': function['function_oid']
             }
-            v_list_functions.append(v_function_data)
+            list_functions.append(function_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    v_return['v_data'] = v_list_functions
+    return JsonResponse(data=list_functions, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_eventtriggerfunction_definition(request, v_database):
-    v_return = create_response_template()
-
-    v_function = request.data['p_function']
+@database_required_new(check_timeout = True, open_connection = True)
+def get_eventtriggerfunction_definition(request, database):
+    function = request.data['function']
 
     try:
-        v_return['v_data'] = v_database.GetEventTriggerFunctionDefinition(v_function)
+        function_definition = database.GetEventTriggerFunctionDefinition(function)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
 
-    return JsonResponse(v_return)
+    return JsonResponse(data={"data": function_definition})
+
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_aggregates(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_aggregates(request, database):
+    schema = request.data['schema']
 
-    v_schema = request.data['p_schema']
-
-    v_list_aggregates = []
+    list_aggregates = []
 
     try:
-        v_aggregates = v_database.QueryAggregates(False,v_schema)
-        for v_aggregate in v_aggregates.Rows:
-            v_aggregate_data = {
-                'v_name': v_aggregate['name'],
-                'v_id': v_aggregate['id'],
-                'v_oid': v_aggregate['oid']
+        aggregates = database.QueryAggregates(False, schema)
+        for aggregate in aggregates.Rows:
+            aggregate_data = {
+                'name': aggregate['name'],
+                'id': aggregate['id'],
+                'oid': aggregate['oid']
             }
-            v_list_aggregates.append(v_aggregate_data)
+            list_aggregates.append(aggregate_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_aggregates
-
-    return JsonResponse(v_return)
+        data = {"password_timeout": True, "data": str(exc)}
+        return JsonResponse(data=data, status=500)
+    
+    return JsonResponse(data=list_aggregates, safe=False)
 
 
 @user_authenticated

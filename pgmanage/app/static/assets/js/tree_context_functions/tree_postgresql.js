@@ -1352,78 +1352,9 @@ function getTreePostgresql(p_div) {
             // }
                 ]
         },
-        'cm_procedures': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Create Procedure',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Create Procedure', node.tree
-                        .tag.create_procedure.replace(
-                            '#schema_name#', node.tag.schema
-                        ));
-                }
-            }, {
-                text: 'Doc: Procedures',
-                icon: 'fas cm-all fa-globe-americas',
-                action: function(node) {
-                    v_connTabControl.tag.openWebSite(
-                        'Documentation: Procedures',
-                        'https://www.postgresql.org/docs/' +
-                        getMajorVersionPostgresql(node.tree.tag.version) +
-                        '/static/sql-createprocedure.html');
-                }
-            }]
-        },
+        
         'cm_procedure': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Call Procedure',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    TemplateCallProcedurePostgresql(node.tag.schema, node.text, node.tag.id);
-                }
-            }, {
-                text: 'Edit Procedure',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    v_connTabControl.tag.createQueryTab(
-                        node.text);
-                    getProcedureDefinitionPostgresql(node);
-                }
-            }, {
-                text: 'Alter Procedure',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate(
-                        'Alter Procedure',
-                        node.tree.tag.alter_procedure.replace(
-                            '#procedure_name#',
-                            node.tag.id
-                        )
-                    );
-                }
-            },
+            elements: [
             //  {
             //     text: 'Debug Procedure',
             //     icon: 'fas cm-all fa-bug',
@@ -1433,22 +1364,7 @@ function getTreePostgresql(p_div) {
             //         setupDebug(node, 'p');
             //     }
             // }
-            , {
-                text: 'Edit Comment',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    getObjectDescriptionPostgresql(node);
-                }
-            }, {
-                text: 'Drop Procedure',
-                icon: 'fas cm-all fa-times',
-                action: function(node) {
-                    tabSQLTemplate('Drop Procedure', node.tree.tag
-                        .drop_procedure.replace(
-                            '#procedure_name#', node.tag.id)
-                    );
-                }
-            }]
+            ]
         },
         'cm_direct_triggerfunction': {
             elements: [{
@@ -1499,87 +1415,6 @@ function getTreePostgresql(p_div) {
                 }
             }]
         },
-        'cm_eventtriggerfunctions': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Create Event Trigger Function',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate('Create Event Trigger Function',
-                        node.tree.tag.create_eventtriggerfunction
-                        .replace('#schema_name#', node.tag.schema));
-                }
-            }, {
-                text: 'Doc: Event Trigger Functions',
-                icon: 'fas cm-all fa-globe-americas',
-                action: function(node) {
-                    v_connTabControl.tag.openWebSite(
-                        'Documentation: Event Trigger Functions',
-                        'https://www.postgresql.org/docs/' +
-                        getMajorVersionPostgresql(node.tree.tag.version) +
-                        '/static/functions-event-triggers.html');
-                }
-            }]
-        },
-        'cm_eventtriggerfunction': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Edit Event Trigger Function',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    v_connTabControl.tag.createQueryTab(
-                        node.text);
-                    getEventTriggerFunctionDefinitionPostgresql(node);
-                }
-            }, {
-                text: 'Alter Event Trigger Function',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate(
-                        'Alter Event Trigger Function',
-                        node.tree.tag.alter_eventtriggerfunction.replace(
-                            '#function_name#',
-                            node.tag.id
-                        )
-                    );
-                }
-            }, {
-                text: 'Edit Comment',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    getObjectDescriptionPostgresql(node);
-                }
-            }, {
-                text: 'Drop Event Trigger Function',
-                icon: 'fas cm-all fa-times',
-                action: function(node) {
-                    tabSQLTemplate('Drop Event Trigger Function',
-                        node.tree.tag.drop_eventtriggerfunction.replace(
-                            '#function_name#', node.tag.id)
-                    );
-                }
-            }]
-        },
         'cm_direct_eventtriggerfunction': {
             elements: [{
                 text: 'Refresh',
@@ -1625,86 +1460,6 @@ function getTreePostgresql(p_div) {
                     tabSQLTemplate('Drop Event Trigger Function',
                         node.tree.tag.drop_eventtriggerfunction.replace(
                             '#function_name#', node.tag.id)
-                    );
-                }
-            }]
-        },
-        'cm_aggregates': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0) {
-                        refreshTreePostgresql(node);
-                    }
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Create Aggregate',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate(
-                        'Create Aggregate',
-                        node.tree.tag.create_aggregate.replace(
-                            '#schema_name#',
-                            node.tag.schema
-                        )
-                    );
-                }
-            }, {
-                text: 'Doc: Aggregates',
-                icon: 'fas cm-all fa-globe-americas',
-                action: function(node) {
-                    v_connTabControl.tag.openWebSite(
-                        'Documentation: Aggregates',
-                        'https://www.postgresql.org/docs/' + getMajorVersionPostgresql(node.tree.tag.version) + '/static/sql-createaggregate.html');
-                }
-            }]
-        },
-        'cm_aggregate': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0) {
-                        refreshTreePostgresql(node);
-                    }
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }, {
-                text: 'Alter Aggregate',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    tabSQLTemplate(
-                        'Alter Aggregate',
-                        node.tree.tag.alter_aggregate.replace(
-                            '#aggregate_name#',
-                            node.tag.id
-                        )
-                    );
-                }
-            }, {
-                text: 'Edit Comment',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    getObjectDescriptionPostgresql(node);
-                }
-            }, {
-                text: 'Drop Aggregate',
-                icon: 'fas cm-all fa-times',
-                action: function(node) {
-                    tabSQLTemplate(
-                        'Drop Aggregate',
-                        node.tree.tag.drop_aggregate.replace(
-                            '#aggregate_name#',
-                            node.tag.id
-                        )
                     );
                 }
             }]
@@ -2735,11 +2490,7 @@ function getPropertiesPostgresqlConfirm(node) {
 /// <param name="node">Node object.</param>
 function refreshTreePostgresqlConfirm(node) {
   if (node.tag != undefined)
-      if (node.tag.type == 'procedure_list') {
-        getProceduresPostgresql(node);
-    } else if (node.tag.type == 'procedure') {
-        getProcedureFieldsPostgresql(node);
-    } else if (node.tag.type == 'tablespace_list') {
+        if (node.tag.type == 'tablespace_list') {
         getTablespacesPostgresql(node);
     } else if (node.tag.type == 'role_list') {
         getRolesPostgresql(node);
@@ -2747,8 +2498,6 @@ function refreshTreePostgresqlConfirm(node) {
         getExtensionsPostgresql(node);
     } else if (node.tag.type == 'eventtrigger_list') {
         getEventTriggersPostgresql(node);
-    } else if (node.tag.type == 'eventtriggerfunction_list') {
-        getEventTriggerFunctionsPostgresql(node);
     } else if (node.tag.type == 'server') {
         getTreeDetailsPostgresql(node);
     } else if (node.tag.type == 'physicalreplicationslot_list') {
@@ -2773,10 +2522,6 @@ function refreshTreePostgresqlConfirm(node) {
         getTypesPostgresql(node);
     } else if (node.tag.type == 'domain_list') {
         getDomainsPostgresql(node);
-    } else if (node.tag.type == 'aggregate_list') {
-        getAggregatesPostgresql(node);
-    } else if (node.tag.type == 'aggregate') {
-        getFunctionFieldsPostgresql(node);
     } else if (node.tag.type == 'job_list') {
         getPgCronJobsPostgresql(node);
     } else {
@@ -3388,123 +3133,6 @@ function getFunctionDefinitionPostgresql(node) {
 }
 
 /// <summary>
-/// Retrieving procedures.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getProceduresPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-
-    execAjax('/get_procedures_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-
-            if (node.childNodes.length > 0)
-                node.removeChildNodes();
-
-            node.setText('Procedures (' + p_return.v_data.length + ')');
-
-            node.tag.num_procedures = p_return.v_data.length;
-
-            for (i = 0; i < p_return.v_data.length; i++) {
-
-                v_node = node.createChildNode(p_return.v_data[i].v_name,
-                    false, 'fas node-all fa-cog node-procedure', {
-                        type: 'procedure',
-                        id: p_return.v_data[i].v_id,
-                        database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                        schema: node.tag.schema,
-                        function_oid: p_return.v_data[i].v_function_oid
-                    }, 'cm_procedure', null, false);
-                v_node.createChildNode('', false,
-                    'node-spin', {
-                        type: 'procedure_field',
-                        schema: node.tag.schema
-                    }, null, null, false);
-
-            }
-            node.drawChildNodes();
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false);
-}
-
-/// <summary>
-/// Retrieving procedure fields.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getProcedureFieldsPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-
-    execAjax('/get_procedure_fields_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_procedure": node.tag.id,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-
-            if (node.childNodes.length > 0)
-                node.removeChildNodes();
-
-            node.tag.num_fields = p_return.v_data.length;
-
-            for (i = 0; i < p_return.v_data.length; i++) {
-
-                if (p_return.v_data[i].v_type == 'O')
-                    v_node = node.createChildNode(p_return.v_data[i].v_name,
-                        false, 'fas node-all fa-arrow-right node-function-field', {
-                            database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                            schema: node.tag.schema
-                        },
-                        null, null, false);
-                else {
-                    if (p_return.v_data[i].v_type == 'I')
-                        v_node = node.createChildNode(p_return.v_data[i].v_name,
-                            false, 'fas node-all fa-arrow-left node-function-field', {
-                                database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                                schema: node.tag.schema
-                            }, null, null, false);
-                    else
-                        v_node = node.createChildNode(p_return.v_data[i].v_name,
-                            false,
-                            'fas node-all fa-exchange-alt node-function-field', {
-                                database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                                schema: node.tag.schema
-                            }, null, null, false);
-                }
-
-            }
-
-            node.drawChildNodes();
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false);
-}
-
-/// <summary>
 /// Retrieving procedure definition.
 /// </summary>
 /// <param name="node">Node object.</param>
@@ -3532,222 +3160,6 @@ function getDebugProcedureDefinitionPostgresql(node) {
         'box',
         true);
 
-}
-
-/// <summary>
-/// Retrieving procedure definition.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getProcedureDefinitionPostgresql(node) {
-
-    execAjax('/get_procedure_definition_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_procedure": node.tag.id
-        }),
-        function(p_return) {
-
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .setValue(p_return.v_data);
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .clearSelection();
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .gotoLine(0, 0, true);
-            //v_connTabControl.selectedTab.tag.tabControl.selectedTab.renameTab(node.text);
-            renameTabConfirm(v_connTabControl.selectedTab.tag.tabControl.selectedTab,
-                node.text);
-
-            var v_div_result = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-                .tag.div_result;
-
-            if (v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                .ht != null) {
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht.destroy();
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht = null;
-            }
-
-            v_div_result.innerHTML = '';
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        true);
-
-}
-
-/// <summary>
-/// Retrieving event trigger functions.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getEventTriggerFunctionsPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-
-    execAjax('/get_eventtriggerfunctions_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-
-            if (node.childNodes.length > 0)
-                node.removeChildNodes();
-
-            node.setText('Event Trigger Functions (' + p_return.v_data.length +
-                ')');
-
-            node.tag.num_tables = p_return.v_data.length;
-
-            for (i = 0; i < p_return.v_data.length; i++) {
-
-                node.createChildNode(p_return.v_data[i].v_name, false,
-                    'fas node-all fa-cog node-etfunction', {
-                        type: 'eventtriggerfunction',
-                        id: p_return.v_data[i].v_id,
-                        database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                        schema: node.tag.schema,
-                        function_oid: p_return.v_data[i].v_function_oid
-                    }, 'cm_eventtriggerfunction', null, false);
-
-            }
-
-            node.drawChildNodes();
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false);
-}
-
-/// <summary>
-/// Retrieving event trigger function definition.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getEventTriggerFunctionDefinitionPostgresql(node) {
-
-    execAjax('/get_eventtriggerfunction_definition_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_function": node.tag.id
-        }),
-        function(p_return) {
-
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .setValue(p_return.v_data);
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .clearSelection();
-            v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
-                .gotoLine(0, 0, true);
-            //v_connTabControl.selectedTab.tag.tabControl.selectedTab.renameTab(node.text);
-            renameTabConfirm(v_connTabControl.selectedTab.tag.tabControl.selectedTab,
-                node.text);
-
-            var v_div_result = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-                .tag.div_result;
-
-            if (v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                .ht != null) {
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht.destroy();
-                v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
-                    .ht = null;
-            }
-
-            v_div_result.innerHTML = '';
-
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        true);
-
-}
-
-/// <summary>
-/// Retrieving aggregates.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getAggregatesPostgresql(node) {
-    node.removeChildNodes();
-
-    node.createChildNode(
-        '',
-        false,
-        'node-spin',
-        null,
-        null
-    );
-
-    execAjax(
-        '/get_aggregates_postgresql/',
-        JSON.stringify({
-            "p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-            "p_tab_id": v_connTabControl.selectedTab.id,
-            "p_schema": node.tag.schema
-        }),
-        function(p_return) {
-            if (node.childNodes.length > 0) {
-                node.removeChildNodes();
-            }
-
-            node.setText('Aggregates (' + p_return.v_data.length + ')');
-            node.tag.num_aggregates = p_return.v_data.length;
-
-            for (i = 0; i < p_return.v_data.length; i++) {
-                v_node = node.createChildNode(
-                    p_return.v_data[i].v_name,
-                    false,
-                    'fas node-all fa-cog node-aggregate',
-                    {
-                        type: 'aggregate',
-                        id: p_return.v_data[i].v_id,
-                        database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                        schema: node.tag.schema,
-                        oid: p_return.v_data[i].v_oid
-                    },
-                    'cm_aggregate',
-                    null,
-                    false
-                );
-
-                v_node.createChildNode(
-                    '',
-                    false,
-                    'node-spin',
-                    {
-                        type: 'aggregate_field',
-                        schema: node.tag.schema
-                    },
-                    null,
-                    null,
-                    false
-                );
-            }
-
-            node.drawChildNodes();
-
-            afterNodeOpenedCallbackPostgreSQL(node);
-        },
-        function(p_return) {
-            nodeOpenErrorPostgresql(p_return, node);
-        },
-        'box',
-        false
-    );
 }
 
 /// <summary>

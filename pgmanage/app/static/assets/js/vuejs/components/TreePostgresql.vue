@@ -1757,7 +1757,6 @@ export default {
           },
         ],
         cm_trigger_function: [
-          this.cmRefreshObject,
           {
             label: "Edit Trigger Function",
             icon: "fas cm-all fa-edit",
@@ -1794,6 +1793,223 @@ export default {
                 "Drop Trigger Function",
                 this.templates.drop_triggerfunction.replace(
                   "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+        ],
+        cm_event_trigger_functions: [
+          this.cmRefreshObject,
+          {
+            label: "Create Event Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Event Trigger Function",
+                this.templates.create_eventtriggerfunction.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Event Trigger Functions",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/functions-event-triggers.html`
+              );
+            },
+          },
+        ],
+        cm_event_trigger_function: [
+          {
+            label: "Edit Event Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              this.getEventTriggerFunctionDefinitionPostgresql(
+                this.selectedNode
+              );
+            },
+          },
+          {
+            label: "Alter Event Trigger Function",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Event Trigger Function",
+                this.templates.alter_eventtriggerfunction.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Event Trigger Function",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Event Trigger Function",
+                this.templates.drop_eventtriggerfunction.replace(
+                  "#function_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+        ],
+        cm_procedures: [
+          this.cmRefreshObject,
+          {
+            label: "Create Procedure",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Procedure",
+                this.templates.create_procedure.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Procedures",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/sql-createprocedure.html`
+              );
+            },
+          },
+        ],
+        cm_procedure: [
+          this.cmRefreshObject,
+          {
+            label: "Call Procedure",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              TemplateCallProcedurePostgresql(
+                this.selectedNode.data.schema,
+                this.selectedNode.title,
+                this.selectedNode.data.id
+              );
+            },
+          },
+          {
+            label: "Edit Procedure",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              this.getProcedureDefinitionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Alter Procedure",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Procedure",
+                this.templates.alter_procedure.replace(
+                  "#procedure_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Procedure",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Procedure",
+                this.templates.drop_procedure.replace(
+                  "#procedure_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+        ],
+        cm_aggregates: [
+          this.cmRefreshObject,
+          {
+            label: "Create Aggregate",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Aggregate",
+                this.templates.create_aggregate.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Aggregates",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/sql-createaggregate.html`
+              );
+            },
+          },
+        ],
+        cm_aggregate: [
+          this.cmRefreshObject,
+          {
+            label: "Alter Aggregate",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Aggregate",
+                this.templates.alter_aggregate.replace(
+                  "#aggregate_name#",
+                  this.selectedNode.data.id
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Aggregate",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Aggregate",
+                this.templates.drop_aggregate.replace(
+                  "#aggregate_name#",
                   this.selectedNode.data.id
                 )
               );
@@ -1880,6 +2096,16 @@ export default {
         this.getFunctionFieldsPostgresql(node);
       } else if (node.data.type == "trigger_function_list") {
         this.getTriggerFunctionsPostgresql(node);
+      } else if (node.data.type == "event_trigger_function_list") {
+        this.getEventTriggerFunctionsPostgresql(node);
+      } else if (node.data.type == "procedure_list") {
+        this.getProceduresPostgresql(node);
+      } else if (node.data.type == "procedure") {
+        this.getProcedureFieldsPostgresql(node);
+      } else if (node.data.type == "aggregate_list") {
+        this.getAggregatesPostgresql(node);
+      } else if (node.data.type == "aggregate") {
+        this.getFunctionFieldsPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -3746,6 +3972,187 @@ export default {
             0,
             true
           );
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getEventTriggerFunctionsPostgresql(node) {
+      this.api
+        .post("/get_eventtriggerfunctions_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Event Trigger Functions (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-cog node-etfunction",
+                type: "event_trigger_function",
+                contextMenu: "cm_event_trigger_function",
+                schema: node.data.schema,
+                database: this.selectedDatabase,
+                id: el.id,
+                function_oid: el.function_oid,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getEventTriggerFunctionDefinitionPostgresql(node) {
+      this.api
+        .post("/get_eventtriggerfunction_definition_postgresql/", {
+          function: node.data.id,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+            resp.data.data
+          );
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+            0,
+            0,
+            true
+          );
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getProceduresPostgresql(node) {
+      this.api
+        .post("/get_procedures_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Procedures (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-cog node-procedure",
+              type: "procedure",
+              contextMenu: "cm_procedure",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              id: el.id,
+              function_oid: el.function_oid,
+            });
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getProcedureFieldsPostgresql(node) {
+      this.api
+        .post("/get_procedure_fields_postgresql/", {
+          procedure: node.data.id,
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          resp.data.reduceRight((_, el) => {
+            if (el.type === "O") {
+              this.insertNode(
+                node,
+                el.name,
+                {
+                  icon: "fas node-all fa-arrow-right node-function-field",
+                  schema: node.data.schema,
+                  database: this.selectedDatabase,
+                },
+                true
+              );
+            } else if (el.type === "I") {
+              this.insertNode(
+                node,
+                el.name,
+                {
+                  icon: "fas node-all fa-arrow-left node-function-field",
+                  schema: node.data.schema,
+                  database: this.selectedDatabase,
+                },
+                true
+              );
+            } else {
+              this.insertNode(
+                node,
+                el.name,
+                {
+                  icon: "fas node-all fa-exchange-alt node-function-field",
+                  schema: node.data.schema,
+                  database: this.selectedDatabase,
+                },
+                true
+              );
+            }
+          }, null);
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getProcedureDefinitionPostgresql(node) {
+      this.api
+        .post("/get_procedure_definition_postgresql/", {
+          procedure: node.data.id,
+        })
+        .then((resp) => {
+          // Fix this not to use v_connTabControl
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.setValue(
+            resp.data.data
+          );
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.clearSelection();
+          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor.gotoLine(
+            0,
+            0,
+            true
+          );
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getAggregatesPostgresql(node) {
+      this.api
+        .post("/get_aggregates_postgresql/", {
+          schema: node.data.schema,
+        })
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Aggregates (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(node, el.name, {
+              icon: "fas node-all fa-cog node-aggregate",
+              type: "aggregate",
+              contextMenu: "cm_aggregate",
+              schema: node.data.schema,
+              database: this.selectedDatabase,
+              id: el.id,
+              oid: el.oid,
+            });
+          });
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
