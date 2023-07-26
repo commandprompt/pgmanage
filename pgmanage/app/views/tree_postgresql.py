@@ -1115,27 +1115,22 @@ def get_sequences(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_extensions(request, v_database):
-    v_return = create_response_template()
-
-    v_list_extensions = []
+@database_required_new(check_timeout = True, open_connection = True)
+def get_extensions(request, database):
+    list_extensions = []
 
     try:
-        v_extensions = v_database.QueryExtensions()
-        for v_extension in v_extensions.Rows:
-            v_extension_data = {
-                'v_name': v_extension['extension_name'],
-                'v_oid': v_extension['oid'],
-                'v_version': v_extension['extversion']
+        extensions = database.QueryExtensions()
+        for extension in extensions.Rows:
+            extension_data = {
+                'name': extension['extension_name'],
+                'oid': extension['oid'],
             }
-            v_list_extensions.append(v_extension_data)
+            list_extensions.append(extension_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
-    v_return['v_data'] = v_list_extensions
-
-    return JsonResponse(v_return)
+    return JsonResponse(data=list_extensions, safe=False)
 
 
 @user_authenticated
@@ -1324,79 +1319,70 @@ def get_subscription_tables(request, v_database):
 
     return JsonResponse(v_return)
 
-@user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_foreign_data_wrappers(request, v_database):
-    v_return = create_response_template()
-
-    v_list_fdws = []
-
-    try:
-        v_fdws = v_database.QueryForeignDataWrappers()
-        for v_fdw in v_fdws.Rows:
-            v_fdw_data = {
-                'v_name': v_fdw['fdwname'],
-                'v_oid': v_fdw['oid']
-            }
-            v_list_fdws.append(v_fdw_data)
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return['v_data'] = v_list_fdws
-
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_foreign_servers(request, v_database):
-    v_return = create_response_template()
-
-    v_fdw = request.data['p_fdw']
-
-    v_list_servers = []
+@database_required_new(check_timeout = True, open_connection = True)
+def get_foreign_data_wrappers(request, database):
+    list_fdws = []
 
     try:
-        v_servers = v_database.QueryForeignServers(v_fdw)
-        for v_server in v_servers.Rows:
-            v_server_data = {
-                'v_name': v_server['srvname'],
-                'v_type': v_server['srvtype'],
-                'v_version': v_server['srvversion'],
-                'v_options': v_server['srvoptions'],
-                'v_oid': v_server['oid']
+        fdws = database.QueryForeignDataWrappers()
+        for fdw in fdws.Rows:
+            fdw_data = {
+                'name': fdw['fdwname'],
+                'oid': fdw['oid']
             }
-            v_list_servers.append(v_server_data)
+            list_fdws.append(fdw_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
-    v_return['v_data'] = v_list_servers
+    return JsonResponse(data=list_fdws, safe=False)
 
-    return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def get_user_mappings(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout = True, open_connection = True)
+def get_foreign_servers(request, database):
+    fdw = request.data['fdw']
 
-    v_foreign_server = request.data['p_foreign_server']
-
-    v_list_mappings = []
+    list_servers = []
 
     try:
-        v_mappings = v_database.QueryUserMappings(v_foreign_server)
-        for v_mapping in v_mappings.Rows:
-            v_mapping_data = {
-                'v_name': v_mapping['rolname'],
-                'v_options': v_mapping['umoptions'],
-                'v_foreign_server': v_foreign_server
+        servers = database.QueryForeignServers(fdw)
+        for server in servers.Rows:
+            server_data = {
+                'name': server['srvname'],
+                'type': server['srvtype'],
+                'version': server['srvversion'],
+                'options': server['srvoptions'],
+                'oid': server['oid']
             }
-            v_list_mappings.append(v_mapping_data)
+            list_servers.append(server_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
-    v_return['v_data'] = v_list_mappings
+    return JsonResponse(data=list_servers, safe=False)
 
-    return JsonResponse(v_return)
+
+@user_authenticated
+@database_required_new(check_timeout = True, open_connection = True)
+def get_user_mappings(request, database):
+    foreign_server = request.data['foreign_server']
+
+    list_mappings = []
+
+    try:
+        mappings = database.QueryUserMappings(foreign_server)
+        for mapping in mappings.Rows:
+            mapping_data = {
+                'name': mapping['rolname'],
+                'options': mapping['umoptions'],
+                'foreign_server': foreign_server
+            }
+            list_mappings.append(mapping_data)
+    except Exception as exc:
+        return JsonResponse(data={'data': str(exc)}, status=400)
+
+    return JsonResponse(data=list_mappings, safe=False)
 
 
 @user_authenticated
