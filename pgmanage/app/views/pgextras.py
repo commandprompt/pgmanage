@@ -3,16 +3,14 @@ from app.utils.decorators import database_required_new, user_authenticated
 
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
-def get_pgcron_jobs(request, v_database):
-
-    response_data = {'data': None, 'status': 'success'}
+def get_pgcron_jobs(request, database):
     try:
-        job_rows = v_database.QueryPgCronJobs().Rows
-        response_data['data'] = {'jobs': [{"id": int(job[0]), "name":job[1]} for job in job_rows]}
+        job_rows = database.QueryPgCronJobs().Rows
+        data = {'jobs': [{"id": int(job[0]), "name":job[1]} for job in job_rows]}
     except Exception as exc:
-        response_data['status'] = 'failed'
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
-    return JsonResponse(response_data)
+    return JsonResponse(data=data)
 
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)

@@ -1005,7 +1005,6 @@ function getTreePostgresql(p_div) {
     var context_menu = {
         'cm_database': {
             elements: [
-
             /*, {
                 text: 'Advanced Object Search',
                 icon: 'fas cm-all fa-search',
@@ -1044,64 +1043,6 @@ function getTreePostgresql(p_div) {
             //         setupDebug(node, 'p');
             //     }
             // }
-            ]
-        },
-        'cm_refresh': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            }]
-        },
-        'cm_jobs': {
-            elements: [{
-                text: 'Refresh',
-                icon: 'fas cm-all fa-sync-alt',
-                action: function(node) {
-                    if (node.childNodes == 0)
-                        refreshTreePostgresql(node);
-                    else {
-                        node.collapseNode();
-                        node.expandNode();
-                    }
-                }
-            },
-            {
-                text: 'New Job',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    createPgCronModal(node, 'Create')
-                }
-            },
-            ]
-        },
-        'cm_job': {
-            elements: [{
-                text: 'View/Edit',
-                icon: 'fas cm-all fa-edit',
-                action: function(node) {
-                    createPgCronModal(node, 'Edit')
-                }
-            },
-            {
-                text: 'Delete',
-                icon: 'fas cm-all fa-xmark',
-                action: function(node) {
-                    createMessageModal(
-                        `Are you sure you want to delete job "${node.text}"`,
-                        function() { deleteJobPostgresql(node) },
-                        null,
-                      )
-
-                }
-            },
             ]
         },
     };
@@ -1146,22 +1087,6 @@ function getTreePostgresql(p_div) {
             </label>
 		</div>`;
 
-    // tree.nodeAfterOpenEvent = function(node) {
-    //     refreshTreePostgresql(node);
-    //     // Adjusting scroll position of tree
-    //     try {
-    //       let v_first_child_toggle = node.elementUl.childNodes[0].childNodes[0].childNodes[0].childNodes[0];
-    //       let pos_x = v_first_child_toggle.offsetLeft - 24;
-    //       let pos_y = v_first_child_toggle.offsetTop - 64;
-    //       v_connTabControl.selectedTab.tag.divTree.scrollTo({left: pos_x,
-    //                                                          top: pos_y,
-    //                                                          behavior: 'smooth'});
-    //     }
-    //     catch(e) {
-
-    //     }
-    // }
-
     // tree.clickNodeEvent = function(node) {
     //   if (v_connTabControl.selectedTab.tag.treeTabsVisible) {
     //     getPropertiesPostgresql(node);
@@ -1185,19 +1110,6 @@ function getTreePostgresql(p_div) {
     //     }
     //     checkCurrentDatabase(node, false, v_customCallback);
     // }
-
-    // var node_server = tree.createNode('PostgreSQL', false,
-    //     'node-postgresql', null, {
-    //         type: 'server'
-    //     }, 'cm_server');
-    // node_server.createChildNode('', true, 'node-spin',
-    //     null, null);
-    // tree.drawTree();
-    // setTimeout(function() {
-    //     if (v_connTabControl.selectedTab.tag.selectedDBMS=='postgresql')
-    //         tree.expandNode(node_server)
-    // }, 200)
-
 }
 
 function checkCurrentDatabase(p_node, p_complete_check, p_callback_continue,
@@ -1549,18 +1461,6 @@ function getPropertiesPostgresqlConfirm(node) {
     }
 }
 
-/// <summary>
-/// Refreshing tree node confirm.
-/// </summary>
-/// <param name="node">Node object.</param>
-function refreshTreePostgresqlConfirm(node) {
-  if (node.tag != undefined)
-     if (node.tag.type == 'job_list') {
-        getPgCronJobsPostgresql(node);
-    } else {
-      afterNodeOpenedCallbackPostgreSQL(node);
-    }
-}
 
 function afterNodeOpenedCallbackPostgreSQL(node) {
   //Hooks
@@ -1628,63 +1528,6 @@ function getDebugProcedureDefinitionPostgresql(node) {
         'box',
         true);
 
-}
-
-/// <summary>
-/// Retrieving pg_cron jobs.
-/// </summary>
-/// <param name="node">Node object.</param>
-function getPgCronJobsPostgresql(node) {
-
-    node.removeChildNodes();
-    node.createChildNode('', false, 'node-spin', null,
-        null);
-    axios.post('/get_pgcron_jobs/', {
-        database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-        tab_id: v_connTabControl.selectedTab.id
-    }).then((resp) => {
-        if (node.childNodes.length > 0)
-        node.removeChildNodes();
-
-        let jobs = resp.data.data.jobs;
-        node.tag.num_jobs = jobs.length;
-
-        jobs.forEach(function(job) {
-            node.createChildNode(job.name,
-                false,
-                'fas node-all fa-clock', {
-                    database: v_connTabControl.selectedTab.tag.selectedDatabase,
-                    job_meta: job
-                }, 'cm_job', null, false);
-        })
-
-        node.drawChildNodes();
-
-        afterNodeOpenedCallbackPostgreSQL(node);
-    }).catch((error) => {
-        nodeOpenErrorPostgresqlNew(error, node)
-    })
-}
-
-/// <summary>
-/// Unschedule pg_cron job.
-/// </summary>
-/// <param name="node">Node object.</param>
-function deleteJobPostgresql(node) {
-
-    axios.post('/delete_pgcron_job/', {
-        database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-        tab_id: v_connTabControl.selectedTab.id,
-        job_meta: node.tag.job_meta
-    })
-    .then((resp) => {
-        node.removeNode()
-
-        afterNodeOpenedCallbackPostgreSQL(node);
-    })
-    .catch((error) => {
-        nodeOpenErrorPostgresqlNew(error, node)
-    })
 }
 
 /// <summary>

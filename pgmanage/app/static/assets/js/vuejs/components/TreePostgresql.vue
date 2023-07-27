@@ -2956,8 +2956,43 @@ export default {
             },
           },
         ],
+        cm_jobs: [
+          this.cmRefreshObject,
+          {
+            label: "New Job",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              createPgCronModal(this.selectedNode, "Create");
+            },
+          },
+        ],
+        cm_job: [
+          {
+            label: "View/Edit",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              createPgCronModal(this.selectedNode, "Edit");
+            },
+          },
+          {
+            label: "Delete",
+            icon: "fas cm-all fa-xmark",
+            onClick: () => {
+              createMessageModal(
+                `Are you sure you want to delete job "${this.selectedNode.title}"`,
+                () => {
+                  this.deleteJobPostgresql(this.selectedNode);
+                },
+                null
+              );
+            },
+          },
+        ],
       };
     },
+  },
+  mounted() {
+    this.doubleClickNode(this.$refs.tree.getFirstNode());
   },
   methods: {
     refreshTreePostgresqlConfirm(node) {
@@ -3076,6 +3111,8 @@ export default {
         this.getPhysicalReplicationSlotsPostgresql(node);
       } else if (node.data.type == "logical_replication_slot_list") {
         this.getLogicalReplicationSlotsPostgresql(node);
+      } else if (node.data.type == "job_list") {
+        this.getPgCronJobsPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -5739,6 +5776,45 @@ export default {
               true
             );
           });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getPgCronJobsPostgresql(node) {
+      this.api
+        .post("/get_pgcron_jobs/")
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          let jobs = resp.data.jobs;
+
+          jobs.forEach((job) => {
+            this.insertNode(
+              node,
+              job.name,
+              {
+                icon: "fas node-all fa-clock",
+                contextMenu: "cm_job",
+                job_meta: job,
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    deleteJobPostgresql(node) {
+      this.api
+        .post("/delete_pgcron_job/", {
+          job_meta: node.data.job_meta,
+        })
+        .then((resp) => {
+          //FIXME add proper node removing
+          // node.removeNode()
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
