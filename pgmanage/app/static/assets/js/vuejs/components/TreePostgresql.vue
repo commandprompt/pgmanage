@@ -3172,6 +3172,93 @@ export default {
         callback_continue();
       }
     },
+    getProperties(node) {
+      this.checkCurrentDatabase(node, false, () => {
+        this.getPropertiesConfirm(node);
+      });
+    },
+    getPropertiesConfirm(node) {
+      let schema = node.data.schema ? node.data.schema : null;
+      let table = null;
+      let object = node.title;
+      let handledTypes = [
+        "role",
+        "tablespace",
+        "database",
+        "extension",
+        "schema",
+        "event_trigger",
+        "foreign_server",
+        "foreign_data_wrapper",
+        "publication",
+        "subscription",
+        "table",
+        "sequence",
+        "view",
+        "mview",
+        "foreign_table",
+        "type",
+        "domain",
+        "table_field",
+        "pk",
+        "foreign_key",
+        "unique",
+        "check",
+        "exclude",
+        "rule",
+        "trigger",
+        "index",
+        "function",
+        "procedure",
+        "trigger_function",
+        "direct_trigger_function",
+        "event_trigger_function",
+        "aggregate",
+        "direct_event_trigger_function",
+        "user_mapping",
+        "statistic",
+      ];
+
+      switch (node.data.type) {
+        case "table_field":
+        case "pk":
+        case "foreign_key":
+        case "unique":
+        case "check":
+        case "exclude":
+        case "rule":
+        case "trigger":
+        case "index":
+          table = this.getParentNodeDeep(node, 2).title;
+          break;
+        case "function":
+        case "procedure":
+        case "trigger_function":
+        case "direct_trigger_function":
+        case "event_trigger_function":
+        case "aggregate":
+        case "direct_event_trigger_function":
+          object = node.data.id;
+          break;
+        case "user_mapping":
+          schema = node.data.foreign_server;
+          break;
+        case "statistic":
+          object = node.data.statistics;
+          break;
+      }
+
+      if (handledTypes.includes(node.data.type)) {
+        getPropertiesNew("/get_properties_postgresql/", {
+          schema: schema,
+          table: table,
+          object: object,
+          type: node.data.type,
+        });
+      } else {
+        clearProperties();
+      }
+    },
     getObjectDescriptionPostgresql(node) {
       let position;
       let oid;

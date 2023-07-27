@@ -165,30 +165,28 @@ def get_database_objects(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def get_properties(request, v_database):
-    v_return = create_response_template()
+@database_required_new(check_timeout=True, open_connection=True)
+def get_properties(request, database):
+    data = request.data["data"]
 
-    v_data = request.data["p_data"]
-
-    v_list_properties = []
-    v_ddl = ""
+    list_properties = []
+    ddl = ""
 
     try:
-        v_properties = v_database.GetProperties(
-            v_data["p_schema"], v_data["p_table"], v_data["p_object"], v_data["p_type"]
+        properties = database.GetProperties(
+            data["schema"], data["table"], data["object"], data["type"]
         )
-        for v_property in v_properties.Rows:
-            v_list_properties.append([v_property["Property"], v_property["Value"]])
-        v_ddl = v_database.GetDDL(
-            v_data["p_schema"], v_data["p_table"], v_data["p_object"], v_data["p_type"]
+        for property_object in properties.Rows:
+            list_properties.append(
+                [property_object["Property"], property_object["Value"]]
+            )
+        ddl = database.GetDDL(
+            data["schema"], data["table"], data["object"], data["type"]
         )
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
-    v_return["v_data"] = {"properties": v_list_properties, "ddl": v_ddl}
-
-    return JsonResponse(v_return)
+    return JsonResponse(data={"properties": list_properties, "ddl": ddl})
 
 
 @user_authenticated

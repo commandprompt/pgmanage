@@ -8274,7 +8274,6 @@ FROM #table_name#
                        (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
                        c.relnatts as "Number of Attributes",
                        c.relchecks as "Number of Checks",
-                       c.relhasoids as "Has OIDs",
                        c.relhasrules as "Has Rules",
                        c.relhastriggers as "Has Triggers",
                        c.relhassubclass as "Has Subclass",
@@ -8603,15 +8602,15 @@ FROM #table_name#
                 return self.GetPropertiesProcedure(p_object).Transpose('Property', 'Value')
             elif p_type == 'trigger':
                 return self.GetPropertiesTrigger(p_schema, p_table, p_object).Transpose('Property', 'Value')
-            elif p_type == 'eventtrigger':
+            elif p_type == 'event_trigger':
                 return self.GetPropertiesEventTrigger(p_object).Transpose('Property', 'Value')
-            elif p_type == 'triggerfunction':
+            elif p_type == 'trigger_function':
                 return self.GetPropertiesFunction(p_object).Transpose('Property', 'Value')
-            elif p_type == 'direct_triggerfunction':
+            elif p_type == 'direct_trigger_function':
                 return self.GetPropertiesFunction(p_object).Transpose('Property', 'Value')
-            elif p_type == 'eventtriggerfunction':
+            elif p_type == 'event_trigger_function':
                 return self.GetPropertiesFunction(p_object).Transpose('Property', 'Value')
-            elif p_type == 'direct_eventtriggerfunction':
+            elif p_type == 'direct_event_trigger_function':
                 return self.GetPropertiesFunction(p_object).Transpose('Property', 'Value')
             elif p_type == 'aggregate':
                 return self.GetPropertiesAggregate(p_object).Transpose('Property', 'Value')
@@ -8633,7 +8632,7 @@ FROM #table_name#
                 return self.GetPropertiesUserMapping(p_schema, p_object).Transpose('Property', 'Value')
             elif p_type == 'foreign_server':
                 return self.GetPropertiesForeignServer(p_object).Transpose('Property', 'Value')
-            elif p_type == 'fdw':
+            elif p_type == 'foreign_data_wrapper':
                 return self.GetPropertiesForeignDataWrapper(p_object).Transpose('Property', 'Value')
             elif p_type == 'type':
                 return self.GetPropertiesType(p_schema, p_object).Transpose('Property', 'Value')
@@ -13470,15 +13469,15 @@ FROM #table_name#
             return self.GetDDLProcedure(p_object)
         elif p_type == 'trigger':
             return self.GetDDLTrigger(p_object, p_table, p_schema)
-        elif p_type == 'eventtrigger':
+        elif p_type == 'event_trigger':
             return self.GetDDLEventTrigger(p_object)
-        elif p_type == 'triggerfunction':
+        elif p_type == 'trigger_function':
             return self.GetDDLFunction(p_object)
-        elif p_type == 'direct_triggerfunction':
+        elif p_type == 'direct_trigger_function':
             return self.GetDDLFunction(p_object)
-        elif p_type == 'eventtriggerfunction':
+        elif p_type == 'event_trigger_function':
             return self.GetDDLFunction(p_object)
-        elif p_type == 'direct_eventtriggerfunction':
+        elif p_type == 'direct_event_trigger_function':
             return self.GetDDLFunction(p_object)
         elif p_type == 'pk':
             return self.GetDDLConstraint(p_schema, p_table, p_object)
@@ -13498,7 +13497,7 @@ FROM #table_name#
             return self.GetDDLUserMapping(p_schema, p_object)
         elif p_type == 'foreign_server':
             return self.GetDDLForeignServer(p_object)
-        elif p_type == 'fdw':
+        elif p_type == 'foreign_data_wrapper':
             return self.GetDDLForeignDataWrapper(p_object)
         elif p_type == 'type':
             return self.GetDDLType(p_schema, p_object)
@@ -14147,15 +14146,15 @@ FROM #table_name#
             return self.GetObjectDescriptionDomain(p_oid)
         elif p_type == 'extension':
             return self.GetObjectDescriptionExtension(p_oid)
-        elif p_type == 'eventtrigger':
+        elif p_type == 'event_trigger':
             return self.GetObjectDescriptionEventTrigger(p_oid)
-        elif p_type == 'fdw':
+        elif p_type == 'foreign_data_wrapper':
             return self.GetObjectDescriptionForeignDataWrapper(p_oid)
         elif p_type == 'foreign_server':
             return self.GetObjectDescriptionForeignServer(p_oid)
         elif p_type == 'foreign_table':
             return self.GetObjectDescriptionForeignTable(p_oid)
-        elif p_type in ['function', 'triggerfunction', 'direct_triggerfunction', 'eventtriggerfunction', 'direct_eventtriggerfunction']:
+        elif p_type in ['function', 'trigger_function', 'direct_trigger_function', 'event_trigger_function', 'direct_event_trigger_function']:
             return self.GetObjectDescriptionFunction(p_oid)
         elif p_type == 'index':
             return self.GetObjectDescriptionIndex(p_oid)
