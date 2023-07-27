@@ -4,7 +4,7 @@ from app.utils.decorators import (
     user_authenticated,
 )
 from app.utils.response_helpers import create_response_template, error_response
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 
 
 @user_authenticated
@@ -765,26 +765,21 @@ def get_databases(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
+@database_required_new(check_timeout=True, open_connection=True)
 def get_tablespaces(request, v_database):
-    v_return = create_response_template()
-
-    v_list_tablespaces = []
+    list_tablespaces = []
 
     try:
-        v_tablespaces = v_database.QueryTablespaces()
-        for v_tablespace in v_tablespaces.Rows:
-            v_tablespace_data = {
-                "v_name": v_tablespace["tablespace_name"],
-                "v_oid": v_tablespace["oid"],
+        tablespaces = v_database.QueryTablespaces()
+        for tablespace in tablespaces.Rows:
+            tablespace_data = {
+                "name": tablespace["tablespace_name"],
+                "oid": tablespace["oid"],
             }
-            v_list_tablespaces.append(v_tablespace_data)
+            list_tablespaces.append(tablespace_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return["v_data"] = v_list_tablespaces
-
-    return JsonResponse(v_return)
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data=list_tablespaces, safe=False)
 
 
 @user_authenticated
@@ -1115,48 +1110,38 @@ def save_extension(request, database):
     try:
         database.Execute(data.get("query"))
     except Exception as exc:
-        return JsonResponse({"data": str(exc)}, status=500)
+        return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse({"status": "success"})
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def get_physicalreplicationslots(request, v_database):
-    v_return = create_response_template()
-
-    v_list_repslots = []
+@database_required_new(check_timeout=True, open_connection=True)
+def get_physicalreplicationslots(request, database):
+    list_repslots = []
 
     try:
-        v_repslots = v_database.QueryPhysicalReplicationSlots()
-        for v_repslot in v_repslots.Rows:
-            v_repslot_data = {"v_name": v_repslot["slot_name"]}
-            v_list_repslots.append(v_repslot_data)
+        repslots = database.QueryPhysicalReplicationSlots()
+        for repslot in repslots.Rows:
+            repslot_data = {"name": repslot["slot_name"]}
+            list_repslots.append(repslot_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return["v_data"] = v_list_repslots
-
-    return JsonResponse(v_return)
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data=list_repslots, safe=False)
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def get_logicalreplicationslots(request, v_database):
-    v_return = create_response_template()
-
-    v_list_repslots = []
+@database_required_new(check_timeout=True, open_connection=True)
+def get_logicalreplicationslots(request, database):
+    list_repslots = []
 
     try:
-        v_repslots = v_database.QueryLogicalReplicationSlots()
-        for v_repslot in v_repslots.Rows:
-            v_repslot_data = {"v_name": v_repslot["slot_name"]}
-            v_list_repslots.append(v_repslot_data)
+        repslots = database.QueryLogicalReplicationSlots()
+        for repslot in repslots.Rows:
+            repslot_data = {"name": repslot["slot_name"]}
+            list_repslots.append(repslot_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    v_return["v_data"] = v_list_repslots
-
-    return JsonResponse(v_return)
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data=list_repslots, safe=False)
 
 
 @user_authenticated
@@ -1462,18 +1447,16 @@ def get_partitions_children(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def kill_backend(request, v_database):
-    v_return = create_response_template()
-
-    v_pid = request.data["p_pid"]
+@database_required_new(check_timeout=True, open_connection=True)
+def kill_backend(request, database):
+    pid = request.data["pid"]
 
     try:
-        v_database.Terminate(v_pid)
+        database.Terminate(pid)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
-    return JsonResponse(v_return)
+    return HttpResponse(status=204)
 
 
 @user_authenticated
@@ -1592,18 +1575,16 @@ def get_version(request, v_database):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def change_role_password(request, v_database):
-    v_return = create_response_template()
-
+@database_required_new(check_timeout=True, open_connection=True)
+def change_role_password(request, database):
     data = request.data
 
     try:
-        v_database.ChangeRolePassword(data["p_role"], data["p_password"])
+        database.ChangeRolePassword(data["role"], data["password"])
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
-    return JsonResponse(v_return)
+    return JsonResponse({"status": "success"})
 
 
 @user_authenticated

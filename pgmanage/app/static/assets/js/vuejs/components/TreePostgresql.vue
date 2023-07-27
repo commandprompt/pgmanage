@@ -2716,6 +2716,246 @@ export default {
             },
           },
         ],
+        cm_tablespaces: [
+          this.cmRefreshObject,
+          {
+            label: "Create Tablespace",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Tablespace",
+                this.templates.create_tablespace
+              );
+            },
+          },
+          {
+            label: "Doc: Tablespaces",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/manage-ag-tablespaces.html`
+              );
+            },
+          },
+        ],
+        cm_tablespace: [
+          {
+            label: "Alter Tablespace",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Tablespace",
+                this.templates.alter_tablespace.replace(
+                  "#tablespace_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Tablespace",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Tablespace",
+                this.templates.drop_tablespace.replace(
+                  "#tablespace_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
+        cm_roles: [
+          this.cmRefreshObject,
+          {
+            label: "Create Role",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate("Create Role", this.templates.create_role);
+            },
+          },
+          {
+            label: "Doc: Roles",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/user-manag.html`
+              );
+            },
+          },
+        ],
+        cm_role: [
+          {
+            label: "Change Password",
+            icon: "fas cm-all fa-key",
+            onClick: () => {
+              //FIXME: rewrite this properly
+              let html_text = `<div class="form-row">
+                            <div class="col-md-12 mb-3">
+                                <label for="change_pwd_role">Password</label>
+                                <input type="password" id="change_pwd_role" class="form-control" placeholder="password" />
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="change_pwd_role_confirm">Password confirmation</label>
+                                <input type="password" id="change_pwd_role_confirm" class="form-control" placeholder="password confirmation" />
+                            </div>
+                        </div>`;
+
+              showConfirm(html_text, () => {
+                let password = document.getElementById("change_pwd_role").value;
+                let password_confirm = document.getElementById(
+                  "change_pwd_role_confirm"
+                ).value;
+
+                if (password == "") {
+                  this.$toast.error("Password is empty.");
+                  return;
+                } else if (password_confirm == "") {
+                  this.$toast.error("Password confirmation is empty.");
+                  return;
+                } else if (password != password_confirm) {
+                  this.$toast.error("Passwords do not match.");
+                  return;
+                }
+
+                this.api
+                  .post("/change_role_password_postgresql/", {
+                    role: this.selectedNode.title,
+                    password: password,
+                  })
+                  .then((resp) => {
+                    this.$toast.success("Password changed successfully.");
+                  })
+                  .catch((error) => {
+                    this.nodeOpenError(error, this.selectedNode);
+                  });
+              });
+            },
+          },
+          {
+            label: "Alter Role",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Role",
+                this.templates.alter_role.replace(
+                  "#role_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Edit Comment",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },
+          {
+            label: "Drop Role",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Role",
+                this.templates.drop_role.replace(
+                  "#role_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
+        cm_physical_replication_slots: [
+          this.cmRefreshObject,
+          {
+            label: "Create Slot",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Physical Replication Slot",
+                this.templates.create_physicalreplicationslot
+              );
+            },
+          },
+          {
+            label: "Doc: Replication Slots",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/warm-standby.html#streaming-replication-slots`
+              );
+            },
+          },
+        ],
+        cm_physical_replication_slot: [
+          {
+            label: "Drop Slot",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Physical Replication Slot",
+                this.templates.drop_physicalreplicationslot.replace(
+                  "#slot_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
+        cm_logical_replication_slots: [
+          this.cmRefreshObject,
+          {
+            label: "Create Slot",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Logical Replication Slot",
+                this.templates.create_logicalreplicationslot
+              );
+            },
+          },
+          {
+            label: "Doc: Replication Slots",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/static/logicaldecoding-explanation.html#logicaldecoding-replication-slots`
+              );
+            },
+          },
+        ],
+        cm_logical_replication_slot: [
+          {
+            label: "Drop Slot",
+            icon: "fas cm-all fa-times",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Logical Replication Slot",
+                this.templates.drop_logicalreplicationslot.replace(
+                  "#slot_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -2828,6 +3068,14 @@ export default {
         this.getSubscriptionsPostgresql(node);
       } else if (node.data.type == "subscription_table_list") {
         this.getSubscriptionTablesPostgresql(node);
+      } else if (node.data.type == "tablespace_list") {
+        this.getTablespacesPostgresql(node);
+      } else if (node.data.type == "role_list") {
+        this.getRolesPostgresql(node);
+      } else if (node.data.type == "physical_replication_slot_list") {
+        this.getPhysicalReplicationSlotsPostgresql(node);
+      } else if (node.data.type == "logical_replication_slot_list") {
+        this.getLogicalReplicationSlotsPostgresql(node);
       }
     },
     refreshTree(node) {
@@ -3058,7 +3306,7 @@ export default {
           this.insertNode(node, "Tablespaces", {
             icon: "fas node-all fa-folder-open node-tablespace-list",
             type: "tablespace_list",
-            contextMenu: "cm_tablespace_list",
+            contextMenu: "cm_tablespaces",
           });
 
           this.insertNode(node, "Databases", {
@@ -5379,6 +5627,113 @@ export default {
               {
                 icon: "fas node-all fa-table node-table",
                 type: "subtable",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getTablespacesPostgresql(node) {
+      this.api
+        .post("/get_tablespaces_postgresql/")
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Tablespaces (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-folder node-tablespace",
+                type: "tablespace",
+                contextMenu: "cm_tablespace",
+                oid: el.oid,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getRolesPostgresql(node) {
+      this.api.post("/get_roles_postgresql/").then((resp) => {
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Roles (${resp.data.data.length})`,
+        });
+
+        resp.data.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-user node-user",
+              type: "role",
+              contextMenu: "cm_role",
+              oid: el.oid,
+            },
+            true
+          );
+        }, null);
+      });
+    },
+    getPhysicalReplicationSlotsPostgresql(node) {
+      this.api
+        .post("/get_physicalreplicationslots_postgresql/")
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Physical Replication Slots (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-sitemap node-repslot",
+                type: "physical_replication_slot",
+                contextMenu: "cm_physical_replication_slot",
+                database: this.selectedDatabase,
+              },
+              true
+            );
+          });
+        })
+        .catch((error) => {
+          this.nodeOpenError(error, node);
+        });
+    },
+    getLogicalReplicationSlotsPostgresql(node) {
+      this.api
+        .post("/get_logicalreplicationslots_postgresql/")
+        .then((resp) => {
+          this.removeChildNodes(node);
+
+          this.$refs.tree.updateNode(node.path, {
+            title: `Logical Replication Slots (${resp.data.length})`,
+          });
+
+          resp.data.forEach((el) => {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-sitemap node-repslot",
+                type: "logical_replication_slot",
+                contextMenu: "cm_logical_replication_slot",
                 database: this.selectedDatabase,
               },
               true
