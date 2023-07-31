@@ -14,3 +14,5 @@ const useConnectionsStore = Pinia.defineStore({
 });
 
 const connectionsStore = useConnectionsStore();
+
+const emitter = mitt()

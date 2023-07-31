@@ -5900,8 +5900,7 @@ export default {
           job_meta: node.data.job_meta,
         })
         .then((resp) => {
-          //FIXME add proper node removing
-          // node.removeNode()
+          this.removeNode(node)
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

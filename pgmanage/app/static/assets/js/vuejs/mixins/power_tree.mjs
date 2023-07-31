@@ -1,4 +1,9 @@
 export default {
+  data() {
+    return {
+      emitter: emitter
+    }
+  },
   computed: {
     cmRefreshObject() {
       return {
@@ -36,6 +41,14 @@ export default {
     });
 
     this.$toast = VueToast.useToast();
+
+    this.emitter.on('refreshNode', (e) => {
+      this.refreshTree(e.node);
+    })
+
+    this.emitter.on('removeNode', (e) => {
+      this.removeNode(e.node)
+    })
   },
   methods: {
     onClickHandler(node, e) {
@@ -139,6 +152,9 @@ export default {
         return `${node.title} (${node.data.uniqueness})`;
       }
       return node.title;
+    },
+    removeNode(node) {
+      this.$refs.tree.remove([node.path])
     },
     nodeOpenError(error_response, node) {
       if (error_response.response.data?.password_timeout) {

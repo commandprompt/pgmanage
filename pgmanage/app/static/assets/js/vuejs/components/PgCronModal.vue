@@ -252,11 +252,11 @@ export default {
 
     getDatabases() {
       axios.post('/get_databases_postgresql/', {
-        p_database_index: this.databaseIndex,
-        p_tab_id: this.tabId,
+        database_index: this.databaseIndex,
+        tab_id: this.tabId,
       })
         .then((resp) => {
-          this.databases = resp.data.v_data.map((x) => x.v_name)
+          this.databases = resp.data.map((x) => x.name)
         })
         .catch((error) => {
             console.log(error)
@@ -267,7 +267,7 @@ export default {
       axios.post('/get_pgcron_job_details/', {
         database_index: this.databaseIndex,
         tab_id: this.tabId,
-        job_meta: this.treeNode.tag.job_meta
+        job_meta: this.treeNode.data.job_meta
       })
         .then((resp) => {
           this.jobId = resp.data.jobid
@@ -303,7 +303,7 @@ export default {
       axios.post('/get_pgcron_job_logs/', {
         database_index: this.databaseIndex,
         tab_id: this.tabId,
-        job_meta: this.treeNode.tag.job_meta
+        job_meta: this.treeNode.data.job_meta
       })
         .then((resp) => {
           this.jobLogs = resp.data.logs
@@ -343,7 +343,7 @@ export default {
       axios.post('/delete_pgcron_job_logs/', {
         database_index: this.databaseIndex,
         tab_id: this.tabId,
-        job_meta: this.treeNode.tag.job_meta
+        job_meta: this.treeNode.data.job_meta
       })
         .then((resp) => {
           this.setupJobStatisticsTab()
@@ -367,7 +367,7 @@ export default {
             inDatabase: this.inDatabase
           })
             .then((resp) => {
-              refreshTreePostgresql(this.treeNode)
+              emitter.emit('refreshNode', {"node": this.treeNode})
               $('#pgCronModal').modal('hide')
             })
             .catch((error) => {
@@ -395,10 +395,10 @@ export default {
       axios.post('/delete_pgcron_job/', {
         database_index: this.databaseIndex,
         tab_id: this.tabId,
-        job_meta: this.treeNode.tag.job_meta
+        job_meta: this.treeNode.data.job_meta
       })
         .then((resp) => {
-          this.treeNode.removeNode()
+          emitter.emit('removeNode', {"node": this.treeNode})
           $('#pgCronModal').modal('hide')
         })
         .catch((error) => {
