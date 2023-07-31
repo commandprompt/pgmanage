@@ -56,8 +56,6 @@ export default {
           },
         },
       ],
-      selectedDatabase:
-        window.v_connTabControl.selectedTab.tag.selectedDatabase,
     };
   },
   computed: {
@@ -3478,13 +3476,11 @@ export default {
               icon: "fas node-all fa-clock",
               type: "job_list",
               contextMenu: "cm_jobs",
-              database: this.selectedDatabase,
             });
           }
           this.insertNode(node, "Logical Replication", {
             icon: "fas node-all fa-sitemap node-logrep",
             type: "replication",
-            database: this.selectedDatabase,
           });
           const logical_replication_node = this.getFirstChildNode(node);
 
@@ -3492,42 +3488,36 @@ export default {
             icon: "fas node-all fa-arrow-alt-circle-up node-subscription-list",
             type: "subscription_list",
             contextMenu: "cm_subscriptions",
-            database: this.selectedDatabase,
           });
 
           this.insertNode(logical_replication_node, "Publications", {
             icon: "fas node-all fa-arrow-alt-circle-down node-publication-list",
             type: "publication_list",
             contextMenu: "cm_publications",
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Event Triggers", {
             icon: "fas node-all fa-bolt node-eventtrigger",
             type: "event_trigger_list",
             contextMenu: "cm_event_triggers",
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Foreign Data Wrappers", {
             icon: "fas node-all fa-cube node-fdw-list",
             type: "foreign_data_wrapper_list",
             contextMenu: "cm_foreign_data_wrappers",
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Extensions", {
             icon: "fas node-all fa-cubes node-extension-list",
             type: "extension_list",
             contextMenu: "cm_extensions",
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Schemas", {
             icon: "fas node-all fa-layer-group node-schema-list",
             type: "schema_list",
             contextMenu: "cm_schemas",
-            database: this.selectedDatabase,
           });
         })
         .catch((error) => {
@@ -3549,7 +3539,7 @@ export default {
               icon: "fas node-all fa-layer-group node-schema",
               type: "schema",
               contextMenu: "cm_schema",
-              database: this.selectedDatabase,
+
               schema: el.name,
               oid: el.oid,
             });
@@ -3566,7 +3556,7 @@ export default {
         icon: "fas node-all fa-square node-domain-list",
         type: "domain_list",
         contextMenu: "cm_domains",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3574,7 +3564,7 @@ export default {
         icon: "fas node-all fa-square node-type-list",
         type: "type_list",
         contextMenu: "cm_types",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3582,7 +3572,7 @@ export default {
         icon: "fas node-all fa-cog node-aggregate-list",
         type: "aggregate_list",
         contextMenu: "cm_aggregates",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3590,7 +3580,7 @@ export default {
         icon: "fas node-all fa-cog node-procedure-list",
         type: "procedure_list",
         contextMenu: "cm_procedures",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3598,7 +3588,7 @@ export default {
         icon: "fas node-all fa-cog node-etfunction-list",
         type: "event_trigger_function_list",
         contextMenu: "cm_event_trigger_functions",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3606,7 +3596,7 @@ export default {
         icon: "fas node-all fa-cog node-tfunction-list",
         type: "trigger_function_list",
         contextMenu: "cm_trigger_functions",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3614,7 +3604,7 @@ export default {
         icon: "fas node-all fa-cog node-function-list",
         type: "function_list",
         contextMenu: "cm_functions",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3622,7 +3612,7 @@ export default {
         icon: "fas node-all fa-eye node-mview-list",
         type: "mview_list",
         contextMenu: "cm_mviews",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3630,7 +3620,7 @@ export default {
         icon: "fas node-all fa-eye node-view-list",
         type: "view_list",
         contextMenu: "cm_views",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3638,7 +3628,7 @@ export default {
         icon: "fas node-all fa-sort-numeric-down node-sequence-list",
         type: "sequence_list",
         contextMenu: "cm_sequences",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3646,7 +3636,7 @@ export default {
         icon: "fas node-all fa-th node-ftable-list",
         type: "foreign_table_list",
         contextMenu: "cm_foreign_tables",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3654,7 +3644,7 @@ export default {
         icon: "fas node-all fa-th node-itable-list",
         type: "inherited_table_list",
         contextMenu: "cm_inherited_tables",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3662,7 +3652,7 @@ export default {
         icon: "fas node-all fa-th node-ptable-list",
         type: "partitioned_table_list",
         contextMenu: "cm_partitioned_tables",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
 
@@ -3670,7 +3660,7 @@ export default {
         icon: "fas node-all fa-th node-table-list",
         type: "table_list",
         contextMenu: "cm_tables",
-        database: this.selectedDatabase,
+
         schema: node.data.schema,
       });
     },
@@ -3692,7 +3682,7 @@ export default {
               type: "table",
               contextMenu: "cm_table",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
           }, null);
@@ -3715,7 +3705,6 @@ export default {
             type: "statistics_list",
             contextMenu: "cm_statistics",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Partitions", {
@@ -3723,7 +3712,6 @@ export default {
             type: "partition_list",
             contextMenu: "cm_partitions",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Inherited Tables", {
@@ -3731,7 +3719,6 @@ export default {
             type: "inherited_list",
             contextMenu: "cm_inheriteds",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Triggers", {
@@ -3739,7 +3726,6 @@ export default {
             type: "trigger_list",
             contextMenu: "cm_triggers",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Rules", {
@@ -3747,7 +3733,6 @@ export default {
             type: "rule_list",
             contextMenu: "cm_rules",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Indexes", {
@@ -3755,7 +3740,6 @@ export default {
             type: "indexes",
             contextMenu: "cm_indexes",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Excludes", {
@@ -3763,7 +3747,6 @@ export default {
             type: "exclude_list",
             contextMenu: "cm_excludes",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Checks", {
@@ -3771,7 +3754,6 @@ export default {
             type: "check_list",
             contextMenu: "cm_checks",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Uniques", {
@@ -3779,7 +3761,6 @@ export default {
             type: "uniques",
             contextMenu: "cm_uniques",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Foreign Keys", {
@@ -3787,7 +3768,6 @@ export default {
             type: "foreign_keys",
             contextMenu: "cm_fks",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Primary Key", {
@@ -3795,7 +3775,6 @@ export default {
             type: "primary_key",
             contextMenu: "cm_pks",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, `Columns (${resp.data.length})`, {
@@ -3803,7 +3782,6 @@ export default {
             type: "column_list",
             contextMenu: "cm_columns",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           const columns_node = this.getFirstChildNode(node);
@@ -3814,7 +3792,7 @@ export default {
               type: "table_field",
               contextMenu: "cm_column",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               position: el.position,
             });
             const table_field = this.getFirstChildNode(columns_node);
@@ -3825,7 +3803,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -3835,7 +3812,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -3865,7 +3841,6 @@ export default {
               contextMenu: "cm_pk",
               oid: el.oid,
               schema: node.data.schema,
-              database: this.selectedDatabase,
             });
           });
         })
@@ -3890,7 +3865,6 @@ export default {
               {
                 icon: "fas node-all fa-columns node-column",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -3920,7 +3894,6 @@ export default {
               contextMenu: "cm_fk",
               oid: el.oid,
               schema: node.data.schema,
-              database: this.selectedDatabase,
             });
           }, null);
         })
@@ -3946,7 +3919,6 @@ export default {
                 icon: "fas node-all fa-columns node-column",
                 raw_html: true,
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -3956,7 +3928,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -3966,7 +3937,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -3976,7 +3946,6 @@ export default {
               {
                 icon: "fas node-all fa-table node-table",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4006,7 +3975,6 @@ export default {
               contextMenu: "cm_unique",
               oid: el.oid,
               schema: node.data.schema,
-              database: this.selectedDatabase,
             });
           });
         })
@@ -4031,7 +3999,6 @@ export default {
               {
                 icon: "fas node-all fa-columns node-column",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4061,7 +4028,6 @@ export default {
               contextMenu: "cm_check",
               oid: el.oid,
               schema: node.data.schema,
-              database: this.selectedDatabase,
             });
 
             const check_node = this.getFirstChildNode(node);
@@ -4072,7 +4038,6 @@ export default {
               {
                 icon: "fas node-all fa-edit node-check-value",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4101,7 +4066,7 @@ export default {
               type: "exclude",
               contextMenu: "cm_exclude",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
 
@@ -4113,7 +4078,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4124,7 +4088,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4153,7 +4116,7 @@ export default {
               type: "index",
               contextMenu: "cm_index",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               oid: el.oid,
               uniqueness: el.uniqueness,
             });
@@ -4180,7 +4143,6 @@ export default {
               {
                 icon: "fas node-all fa-columns node-column",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4212,7 +4174,7 @@ export default {
                 type: "rule",
                 contextMenu: "cm_rule",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
+
                 oid: el.oid,
               },
               true
@@ -4265,7 +4227,7 @@ export default {
               type: "trigger",
               contextMenu: "cm_trigger",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
 
@@ -4279,7 +4241,7 @@ export default {
                 type: "direct_trigger_function",
                 contextMenu: "cm_direct_trigger_function",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
+
                 id: el.id,
                 function_oid: el.function_oid,
               },
@@ -4292,7 +4254,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4324,7 +4285,6 @@ export default {
                 type: "inherit",
                 contextMenu: "cm_inherited",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4356,7 +4316,6 @@ export default {
                 type: "partition",
                 contextMenu: "cm_partition",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4384,7 +4343,7 @@ export default {
               icon: "fas node-all fa-chart-bar node-statistic",
               type: "statistic",
               contextMenu: "cm_statistic",
-              database: this.selectedDatabase,
+
               schema: el.schema_name,
               oid: el.oid,
               statistics: el.statistic_name,
@@ -4411,7 +4370,6 @@ export default {
               {
                 icon: "fas node-all fa-columns node-column",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4439,7 +4397,6 @@ export default {
               type: "partitioned_parent",
               contextMenu: "cm_partitioned_parent",
               schema: node.data.schema,
-              database: this.selectedDatabase,
             });
           });
         })
@@ -4466,7 +4423,7 @@ export default {
               type: "table",
               contextMenu: "cm_table",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
           });
@@ -4493,7 +4450,6 @@ export default {
               type: "inherited_parent",
               contextMenu: "cm_inherited_parent",
               schema: node.data.schema,
-              database: this.selectedDatabase,
             });
           });
         })
@@ -4520,7 +4476,7 @@ export default {
               type: "table",
               contextMenu: "cm_table",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
           });
@@ -4547,7 +4503,7 @@ export default {
               type: "foreign_table",
               contextMenu: "cm_foreign_table",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
           });
@@ -4570,7 +4526,6 @@ export default {
             type: "statistics_list",
             contextMenu: "cm_statistics",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           if (!!resp.data.length) {
@@ -4580,7 +4535,6 @@ export default {
               {
                 icon: "fas node-all fa-cube node-fdw",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4590,7 +4544,6 @@ export default {
               {
                 icon: "fas node-all fa-server node-server",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4603,7 +4556,6 @@ export default {
                 {
                   icon: "fas node-all fa-ellipsis-h node-bullet",
                   schema: node.data.schema,
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -4615,7 +4567,6 @@ export default {
             type: "foreign_column_list",
             contextMenu: "cm_foreign_columns",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           const foreign_columns_node = this.getFirstChildNode(node);
@@ -4626,7 +4577,6 @@ export default {
               type: "foreign_table_field",
               contextMenu: "cm_foreign_column",
               schema: node.data.schema,
-              database: this.selectedDatabase,
             });
             const foreign_table_field =
               this.getFirstChildNode(foreign_columns_node);
@@ -4640,7 +4590,6 @@ export default {
                   {
                     icon: "fas node-all fa-ellipsis-h node-bullet",
                     schema: node.data.schema,
-                    database: this.selectedDatabase,
                   },
                   true
                 );
@@ -4653,7 +4602,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4663,7 +4611,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4693,7 +4640,7 @@ export default {
                 type: "sequence",
                 contextMenu: "cm_sequence",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
+
                 oid: el.oid,
               },
               true
@@ -4722,7 +4669,7 @@ export default {
               type: "view",
               contextMenu: "cm_view",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
           });
@@ -4745,7 +4692,6 @@ export default {
             type: "trigger_list",
             contextMenu: "cm_view_triggers",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Rules", {
@@ -4753,13 +4699,11 @@ export default {
             type: "rule_list",
             contextMenu: "cm_rules",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, `Columns (${resp.data.length})`, {
             icon: "fas node-all fa-columns node-column",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           const columns_node = this.getFirstChildNode(node);
@@ -4769,7 +4713,6 @@ export default {
               icon: "fas node-all fa-columns node-column",
               type: "table_field",
               schema: node.data.schema,
-              database: this.selectedDatabase,
             });
             const table_field = this.getFirstChildNode(columns_node);
 
@@ -4779,7 +4722,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4829,7 +4771,7 @@ export default {
               type: "mview",
               contextMenu: "cm_mview",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
           });
@@ -4852,7 +4794,6 @@ export default {
             type: "statistics_list",
             contextMenu: "cm_statistics",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, "Indexes", {
@@ -4860,13 +4801,11 @@ export default {
             type: "indexes",
             contextMenu: "cm_indexes",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           this.insertNode(node, `Columns (${resp.data.length})`, {
             icon: "fas node-all fa-columns node-column",
             schema: node.data.schema,
-            database: this.selectedDatabase,
           });
 
           const columns_node = this.getFirstChildNode(node);
@@ -4876,7 +4815,6 @@ export default {
               icon: "fas node-all fa-columns node-column",
               type: "table_field",
               schema: node.data.schema,
-              database: this.selectedDatabase,
             });
             const table_field = this.getFirstChildNode(columns_node);
 
@@ -4886,7 +4824,6 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -4936,7 +4873,7 @@ export default {
               type: "function",
               contextMenu: "cm_function",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               function_oid: el.function_oid,
               id: el.id,
             });
@@ -4963,7 +4900,6 @@ export default {
                 {
                   icon: "fas node-all fa-arrow-right node-function-field",
                   schema: node.data.schema,
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -4974,7 +4910,6 @@ export default {
                 {
                   icon: "fas node-all fa-arrow-left node-function-field",
                   schema: node.data.schema,
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -4985,7 +4920,6 @@ export default {
                 {
                   icon: "fas node-all fa-exchange-alt node-function-field",
                   schema: node.data.schema,
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -5038,7 +4972,7 @@ export default {
                 type: "trigger_function",
                 contextMenu: "cm_trigger_function",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
+
                 function_oid: el.function_oid,
                 id: el.id,
               },
@@ -5092,7 +5026,7 @@ export default {
                 type: "event_trigger_function",
                 contextMenu: "cm_event_trigger_function",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
+
                 id: el.id,
                 function_oid: el.function_oid,
               },
@@ -5143,7 +5077,7 @@ export default {
               type: "procedure",
               contextMenu: "cm_procedure",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               id: el.id,
               function_oid: el.function_oid,
             });
@@ -5170,7 +5104,6 @@ export default {
                 {
                   icon: "fas node-all fa-arrow-right node-function-field",
                   schema: node.data.schema,
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -5181,7 +5114,6 @@ export default {
                 {
                   icon: "fas node-all fa-arrow-left node-function-field",
                   schema: node.data.schema,
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -5192,7 +5124,6 @@ export default {
                 {
                   icon: "fas node-all fa-exchange-alt node-function-field",
                   schema: node.data.schema,
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -5242,7 +5173,7 @@ export default {
               type: "aggregate",
               contextMenu: "cm_aggregate",
               schema: node.data.schema,
-              database: this.selectedDatabase,
+
               id: el.id,
               oid: el.oid,
             });
@@ -5273,7 +5204,7 @@ export default {
                 type: "type",
                 contextMenu: "cm_type",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
+
                 oid: el.oid,
               },
               true
@@ -5305,7 +5236,7 @@ export default {
                 type: "domain",
                 contextMenu: "cm_domain",
                 schema: node.data.schema,
-                database: this.selectedDatabase,
+
                 oid: el.oid,
               },
               true
@@ -5334,7 +5265,7 @@ export default {
                 icon: "fas node-all fa-cubes node-extension",
                 type: "extension",
                 contextMenu: "cm_extension",
-                database: this.selectedDatabase,
+
                 oid: el.oid,
               },
               true
@@ -5360,7 +5291,7 @@ export default {
               icon: "fas node-all fa-cube node-fdw",
               type: "foreign_data_wrapper",
               contextMenu: "cm_foreign_data_wrapper",
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
 
@@ -5370,7 +5301,6 @@ export default {
               icon: "fas node-all fa-server node-server",
               type: "foreign_server_list",
               contextMenu: "cm_foreign_servers",
-              database: this.selectedDatabase,
             });
           });
         })
@@ -5395,7 +5325,7 @@ export default {
               icon: "fas node-all fa-server node-server",
               type: "foreign_server",
               contextMenu: "cm_foreign_server",
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
             const foreign_server_node = this.getFirstChildNode(node);
@@ -5404,7 +5334,6 @@ export default {
               icon: "fas node-all fa-user-friends node-user",
               type: "user_mapping_list",
               contextMenu: "cm_user_mappings",
-              database: this.selectedDatabase,
             });
 
             let options = el.options.split(",");
@@ -5414,7 +5343,6 @@ export default {
                 option_el,
                 {
                   icon: "fas node-all fa-ellipsis-h node-bullet",
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -5425,7 +5353,6 @@ export default {
               `Version: ${el.version}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5435,7 +5362,6 @@ export default {
               `Type: ${el.type}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5462,7 +5388,7 @@ export default {
               icon: "fas node-all fa-user-friends node-user",
               type: "user_mapping",
               contextMenu: "cm_user_mapping",
-              database: this.selectedDatabase,
+
               foreign_server: el.foreign_server,
             });
 
@@ -5476,7 +5402,6 @@ export default {
                 option_el,
                 {
                   icon: "fas node-all fa-ellipsis-h node-bullet",
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -5502,7 +5427,7 @@ export default {
               icon: "fas node-all fa-bolt node-eventtrigger",
               type: "event_trigger",
               contextMenu: "cm_event_trigger",
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
             const trigger_node = this.getFirstChildNode(node);
@@ -5525,7 +5450,6 @@ export default {
               `Event: ${el.event}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5535,7 +5459,6 @@ export default {
               `Enabled: ${el.enabled}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5560,7 +5483,7 @@ export default {
               icon: "fas node-all fa-arrow-alt-circle-down node-publication",
               type: "publication",
               contextMenu: "cm_publication",
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
             const publication_node = this.getFirstChildNode(node);
@@ -5570,7 +5493,6 @@ export default {
                 icon: "fas node-all fa-th node-table-list",
                 type: "publication_table_list",
                 contextMenu: "cm_pubtables",
-                database: this.selectedDatabase,
               });
             }
 
@@ -5579,7 +5501,6 @@ export default {
               `Truncate: ${el.truncate}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5589,7 +5510,6 @@ export default {
               `Delete: ${el.delete}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5599,7 +5519,6 @@ export default {
               `Update: ${el.update}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5609,7 +5528,6 @@ export default {
               `Insert: ${el.insert}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5619,7 +5537,6 @@ export default {
               `All Tables: ${el.alltables}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5649,7 +5566,6 @@ export default {
                 icon: "fas node-all fa-table node-table",
                 type: "pubtable",
                 contextMenu: "cm_pubtable",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5674,7 +5590,7 @@ export default {
               icon: "fas node-all fa-arrow-alt-circle-up node-subscription",
               type: "subscription",
               contextMenu: "cm_subscription",
-              database: this.selectedDatabase,
+
               oid: el.oid,
             });
             const subscription_node = this.getFirstChildNode(node);
@@ -5682,13 +5598,11 @@ export default {
             this.insertNode(subscription_node, "Tables", {
               icon: "fas node-all fa-th node-table-list",
               type: "subscription_table_list",
-              database: this.selectedDatabase,
             });
 
             this.insertNode(subscription_node, "Referenced Publications", {
               icon: "fas node-all fa-arrow-alt-circle-down node-publication",
               type: "subpubs",
-              database: this.selectedDatabase,
             });
             const referenced_publications =
               this.getFirstChildNode(subscription_node);
@@ -5701,7 +5615,6 @@ export default {
                 {
                   icon: "fas node-all fa-arrow-alt-circle-down node-publication",
                   type: "subpub",
-                  database: this.selectedDatabase,
                 },
                 true
               );
@@ -5712,7 +5625,6 @@ export default {
               `ConnInfo: ${el.conn_info}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5722,7 +5634,6 @@ export default {
               `Enabled: ${el.enabled}`,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5751,7 +5662,6 @@ export default {
               {
                 icon: "fas node-all fa-table node-table",
                 type: "subtable",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5830,7 +5740,6 @@ export default {
                 icon: "fas node-all fa-sitemap node-repslot",
                 type: "physical_replication_slot",
                 contextMenu: "cm_physical_replication_slot",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5858,7 +5767,6 @@ export default {
                 icon: "fas node-all fa-sitemap node-repslot",
                 type: "logical_replication_slot",
                 contextMenu: "cm_logical_replication_slot",
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5884,7 +5792,6 @@ export default {
                 icon: "fas node-all fa-clock",
                 contextMenu: "cm_job",
                 job_meta: job,
-                database: this.selectedDatabase,
               },
               true
             );
@@ -5900,7 +5807,7 @@ export default {
           job_meta: node.data.job_meta,
         })
         .then((resp) => {
-          this.removeNode(node)
+          this.removeNode(node);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

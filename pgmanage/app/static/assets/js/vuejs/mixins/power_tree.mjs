@@ -1,7 +1,8 @@
 export default {
   data() {
     return {
-      emitter: emitter
+      emitter: emitter,
+      selectedDatabase: window.v_connTabControl.selectedTab.tag.selectedDatabase,
     }
   },
   computed: {
@@ -108,7 +109,9 @@ export default {
           isLeaf: isLeaf,
           isExpanded: false,
           isDraggable: false,
-          data: data,
+          data: {
+            database: this.selectedDatabase, ...data
+          }
         }
       );
     },
