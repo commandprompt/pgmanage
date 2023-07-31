@@ -946,48 +946,49 @@ function checkTabStatus(v_tab) {
 /// <summary>
 /// Indent SQL.
 /// </summary>
-function indentSQL(p_mode = false) {
-  var v_tab_tag = null;
-	var v_editor = null;
-  let v_mode = p_mode;
+function indentSQL(mode = false) {
+  var tab_tag = null;
+	let editor = null;
 
-  if (v_mode=='snippet') {
-    v_tab_tag = v_connTabControl.snippet_tag.tabControl.selectedTab.tag;
-    v_editor = v_tab_tag.editor;
+  let format = window.sqlFormatter.format
+
+  let dialect = v_connTabControl.selectedTab.tag.selectedDBMS
+  let format_options = {
+    tabWidth: 2,
+    keywordCase: 'upper',
+    //sql-formatter uses 'plsql' for oracle sql flavor
+    // otherwise - our db technology names match perfectly
+    language: dialect === 'oracle' ? 'plsql' : dialect,
+    linesBetweenQueries: 1,
+  }
+
+  if (mode=='snippet') {
+    tab_tag = v_connTabControl.snippet_tag.tabControl.selectedTab.tag;
+    editor = tab_tag.editor;
   }
   else {
     if (v_connTabControl.selectedTab.tag.tabControl) {
-      v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-      v_mode = v_tab_tag.mode;
+      tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+      mode = tab_tag.mode;
 
-      if (v_mode=='query') {
-        v_editor = v_tab_tag.editor;
+      if (mode=='query') {
+        editor = tab_tag.editor;
       }
-    	else if (v_mode=='console') {
-        v_editor = v_tab_tag.editor_input;
+    	else if (mode=='console') {
+        editor = tab_tag.editor_input;
       }
     }
   }
 
-  if (v_mode) {
-    var v_sql_value = v_editor.getValue();
+  if (mode) {
+    let editor_value = editor.getValue();
+    let formatted = format(editor_value, format_options)
+    if(formatted.length) {
+      editor.setValue(formatted)
+      editor.clearSelection();
+      editor.gotoLine(0, 0, true);
+    }
 
-  	if (v_sql_value.trim()=='') {
-  		showAlert('Please provide a string.');
-  	}
-  	else {
-  		execAjax('/indent_sql/',
-  				JSON.stringify({"p_sql": v_sql_value}),
-  				function(p_return) {
-
-  					v_editor.setValue(p_return.v_data);
-  					v_editor.clearSelection();
-  					v_editor.gotoLine(0, 0, true);
-
-  				},
-  				null,
-  				'box');
-  	}
   }
 }
 

@@ -430,18 +430,6 @@ def get_completions_table(request, v_database):
 
 
 @user_authenticated
-@session_required(use_old_error_format=True, include_session=False)
-def indent_sql(request):
-    response_data = create_response_template()
-
-    sql = request.data["p_sql"]
-
-    response_data["v_data"] = sqlparse.format(sql, reindent=True)
-
-    return JsonResponse(response_data)
-
-
-@user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def refresh_monitoring(request, v_database):
     response_data = create_response_template()

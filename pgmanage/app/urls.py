@@ -50,7 +50,6 @@ base_urlpatterns = [
     re_path(r'^draw_graph/', views.workspace.draw_graph, name='draw_graph'),
     re_path(r'^start_edit_data/', views.workspace.start_edit_data, name='start_edit_data'),
     re_path(r'^get_completions_table/', views.workspace.get_completions_table, name='get_completions_table'),
-    re_path(r'^indent_sql/', views.workspace.indent_sql, name='indent_sql'),
     re_path(r'^refresh_monitoring/', views.workspace.refresh_monitoring, name='refresh_monitoring'),
     re_path(r'^get_autocomplete_results/', views.workspace.get_autocomplete_results, name='get_autocomplete_results'),
     re_path(r'^delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),
