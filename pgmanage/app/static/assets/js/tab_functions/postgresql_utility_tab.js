@@ -2,7 +2,7 @@ let createUtilityTab = function (node, utility, backup_type = "objects") {
   // Removing last tab of the inner tab list
   v_connTabControl.selectedTab.tag.tabControl.removeLastTab();
   let utility_title =
-    backup_type === "objects" ? `(${node.tag.type}:${node.text})` : backup_type;
+    backup_type === "objects" ? `(${node.data.type}:${node.title})` : backup_type;
   let tab_name = `${utility} ${utility_title}`;
   let mode = utility.toLowerCase();
 

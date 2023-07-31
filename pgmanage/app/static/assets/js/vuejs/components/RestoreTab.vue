@@ -276,7 +276,7 @@ export default {
     return {
       roleNames: [],
       restoreOptionsDefault: {
-        database: this.treeNode.tag.database,
+        database: this.treeNode.data.database,
         type: this.restoreType,
         table: "",
         schema: "",
@@ -345,14 +345,14 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      if (this.treeNode.tag.type === 'schema') {
-        this.restoreOptionsDefault.schema = this.treeNode.text
-      } else if (this.treeNode.tag.type === 'table') {
-        this.restoreOptionsDefault.table = `${this.treeNode.tag.schema}.${this.treeNode.text}`
-      } else if (this.treeNode.tag.type === 'trigger') {
-        this.restoreOptionsDefault.trigger = `${this.treeNode.tag.schema}.${this.treeNode.text}`
-      } else if (this.treeNode.tag.type === 'function') {
-        this.restoreOptionsDefault.function = `${this.treeNode.tag.id}`
+      if (this.treeNode.data.type === 'schema') {
+        this.restoreOptionsDefault.schema = this.treeNode.title
+      } else if (this.treeNode.data.type === 'table') {
+        this.restoreOptionsDefault.table = `${this.treeNode.data.schema}.${this.treeNode.title}`
+      } else if (this.treeNode.data.type === 'trigger') {
+        this.restoreOptionsDefault.trigger = `${this.treeNode.data.schema}.${this.treeNode.title}`
+      } else if (this.treeNode.data.type === 'function') {
+        this.restoreOptionsDefault.function = `${this.treeNode.data.id}`
       }
       this.restoreOptions = { ...this.restoreOptionsDefault }
       this.getRoleNames()

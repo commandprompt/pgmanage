@@ -343,7 +343,7 @@ export default {
         'WIN1257', 'WIN1258', 'WIN866', 'WIN874'
       ],
       backupOptionsDefault: {
-        database: this.treeNode.tag.database,
+        database: this.treeNode.data.database,
         tables: [],
         schemas: [],
         role: "",
@@ -425,10 +425,10 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      if (this.treeNode.tag.type === 'schema') {
-        this.backupOptionsDefault.schemas.push(this.treeNode.text)
-      } else if (this.treeNode.tag.type === 'table') {
-        this.backupOptionsDefault.tables.push(`${this.treeNode.tag.schema}.${this.treeNode.text}`)
+      if (this.treeNode.data.type === 'schema') {
+        this.backupOptionsDefault.schemas.push(this.treeNode.title)
+      } else if (this.treeNode.data.type === 'table') {
+        this.backupOptionsDefault.tables.push(`${this.treeNode.data.schema}.${this.treeNode.title}`)
       }
       this.backupOptions = { ...this.backupOptionsDefault }
       this.getRoleNames()

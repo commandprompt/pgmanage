@@ -190,7 +190,7 @@ export default {
             label: "Restore",
             icon: "fa-solid fa-upload cm-all",
             onClick: () => {
-              createUtilityTab(node, "Restore");
+              createUtilityTab(this.selectedNode, "Restore");
             },
           },
           {
