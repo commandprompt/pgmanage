@@ -539,9 +539,9 @@ function consoleReturnRender(p_message,p_context) {
 		let status_name = status[1];
 
 		if (mode.includes(status[0])) {
-			let main_node = v_connTabControl.selectedTab.tag.tree.childNodes[0];
+			let root_node = v_connTabControl.selectedTab.tag.tree.getRootNode();
 			if (!!status_name)
-				refreshTreeNode(main_node, status_name);
+				refreshTreeNode(root_node, status_name);
 		}
 	}
 }

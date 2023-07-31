@@ -539,9 +539,9 @@ function querySQLReturnRender(p_message,p_context) {
 				let status = p_message.v_data.v_status?.split(" ");
 				let status_name = status[1];
 				if (mode.includes(status[0])) {
-					let main_node = v_connTabControl.selectedTab.tag.tree.childNodes[0];
+					let root_node = v_connTabControl.selectedTab.tag.tree.getRootNode();
 					if (!!status_name)
-						refreshTreeNode(main_node, status_name);
+						refreshTreeNode(root_node, status_name);
 				}
 			}
 		}
@@ -557,41 +557,23 @@ function querySQLReturnRender(p_message,p_context) {
 // recursive function to find parent node list of queried type and refresh it
 function refreshTreeNode(node, type_name) {	
 	let selected_database = v_connTabControl.selectedTab.tag.selectedDatabase;
-	let selected_dbms = v_connTabControl.selectedTab.tag.selectedDBMS;
 	// get inner nodes
 	function getInnerNode(node, type_name) {
-		if (!!node.childNodes.length) {
-			for (let i = 0; i < node.childNodes.length; i++) {
-				if (node.tag.type === `${type_name.toLowerCase()}_list`) {
-					switch(selected_dbms) {
-						case "postgresql":
-							refreshTreePostgresql(node);
-							break
-						case "oracle":
-							refreshTreeOracle(node);
-							break
-						case "mysql":
-							refreshTreeMysql(node);
-							break
-						case "mariadb":
-							refreshTreeMariadb(node);
-							break
-						case "sqlite":
-							refreshTreeSqlite(node);
-					}
-					break
+		if (!!node.children.length) {
+			for (let i = 0; i < node.children.length; i++) {
+				if (node.data.type === `${type_name.toLowerCase()}_list`) {
+					v_connTabControl.selectedTab.tag.tree.refreshTree(node)
 				}
+				let childNode = node.children[i];
 
-				let childNode = node.childNodes[i];
-
-				if (childNode.tag?.database === selected_database) {
+				if (childNode.data?.database === selected_database) {
 					getInnerNode(childNode, type_name);
 				}
 			}
 		}
 	}
 
-	for (let i = 0; i < node.childNodes.length; i++ ) {
-		getInnerNode(node.childNodes[i], type_name);
+	for (let i = 0; i < node.children.length; i++ ) {
+		getInnerNode(node.children[i], type_name);
 	}
 }

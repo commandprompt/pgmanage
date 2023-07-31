@@ -50,6 +50,9 @@ export default {
     this.emitter.on('removeNode', (e) => {
       this.removeNode(e.node)
     })
+
+    // Temporary solution, use Pinia store later
+    v_connTabControl.selectedTab.tag.tree = this
   },
   methods: {
     onClickHandler(node, e) {
@@ -177,5 +180,8 @@ export default {
         })
       }
     },
+    getRootNode() {
+      return this.$refs.tree.getFirstNode()
+    }
   },
 };
