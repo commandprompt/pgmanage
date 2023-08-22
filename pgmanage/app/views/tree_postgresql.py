@@ -155,9 +155,13 @@ def get_database_objects(request, database):
     )
 
     try:
+        current_schema = "public"
+        schema = database.QueryCurrentSchema().Rows
+        if schema:
+            [current_schema] = schema[0]
         extensions = database.QueryExtensions().Rows
         has_pg_cron = len(list(filter(version_filter, extensions))) > 0
-        data = {"has_pg_cron": has_pg_cron}
+        data = {"has_pg_cron": has_pg_cron, "current_schema": current_schema}
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

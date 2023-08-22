@@ -677,6 +677,21 @@ export default {
       };
     },
   },
+  mounted() {
+    this.$nextTick(() => {
+      this.doubleClickNode(this.getRootNode())
+      setTimeout(() => {
+        let databaseNode = this.$refs.tree.getNode([0, 0])
+        if (databaseNode)
+          this.doubleClickNode(databaseNode)
+      }, 100)
+      setTimeout(() => {
+        let tablesNode = this.$refs.tree.getNode([0, 0, 0])
+        if (tablesNode)
+          this.doubleClickNode(tablesNode)
+      }, 100)
+    })
+  },
   methods: {
     refreshTree(node) {
       if (node.children.length == 0) this.insertSpinnerNode(node);

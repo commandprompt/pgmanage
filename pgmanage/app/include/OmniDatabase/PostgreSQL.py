@@ -966,6 +966,10 @@ class PostgreSQL:
         ''', True)
 
     @lock_required
+    def QueryCurrentSchema(self):
+        return self.v_connection.Query('Select current_schema();', True)
+    
+    @lock_required
     def QueryTables(self, p_all_schemas=False, p_schema=None):
         v_filter = ''
         if not p_all_schemas:

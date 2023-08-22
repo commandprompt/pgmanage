@@ -621,6 +621,27 @@ export default {
       };
     },
   },
+  mounted() {
+    this.$nextTick(() => {
+      this.doubleClickNode(this.getRootNode())
+      setTimeout(() => {
+        const databasesNode = this.$refs.tree.getNode([0, 0])
+        if (databasesNode)
+          this.doubleClickNode(databasesNode)
+      }, 100)
+      setTimeout(() => {
+        const databasesNode = this.$refs.tree.getNode([0, 0])
+        databasesNode.children.forEach((childNode) => {
+          if (childNode.title === this.selectedDatabase) {
+            this.doubleClickNode(childNode)
+            this.$nextTick(() => {
+              this.doubleClickNode(this.$refs.tree.getNode([...childNode.path, 0]))
+            })
+          }
+        })
+      }, 200)
+    })
+  },
   methods: {
     refreshTree(node) {
       if (node.children.length == 0) this.insertSpinnerNode(node);

@@ -1158,7 +1158,7 @@ def thread_console(self,args):
 
                         v_database.v_connection.ClearNotices()
                         v_database.v_connection.v_start=True
-                        v_data1 = v_database.v_connection.Special(sql);
+                        v_data1 = v_database.v_connection.Special(sql)
 
                         v_notices = v_database.v_connection.GetNotices()
                         v_notices_text = ''

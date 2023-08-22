@@ -73,6 +73,7 @@ export default {
           },
         },
       ],
+      currentSchema: 'public'
     };
   },
   computed: {
@@ -2995,12 +2996,38 @@ export default {
     },
   },
   mounted() {
-    this.doubleClickNode(this.$refs.tree.getFirstNode())
-    emitter.on(`schemaChanged_${this.id}`, ({schema_name, database_name}) => {
+    this.doubleClickNode(this.getRootNode())
+    this.$nextTick(() => {
+      const processNode = (node) => {
+        if (["database_list", "schema_list"].includes(node.data.type)) {
+          this.doubleClickNode(node)
+        } else if (node.data.type === 'database' && node.title === this.selectedDatabase) {
+          this.doubleClickNode(node)
+        } else if (node.data.type === 'schema' && node.title === this.currentSchema) {
+          this.doubleClickNode(node)
+        } else if (node.data.type === 'table_list') {
+          this.doubleClickNode(node)
+          return
+        }
+
+        setTimeout(() => {
+          const nodeElement = this.$refs.tree.getNode(node.path)
+          nodeElement.children.forEach((childNode) => {
+            processNode(childNode)
+          })
+        }, 200)
+      }
+      setTimeout(() => {
+        this.getRootNode().children.forEach((node) => {
+          processNode(node)
+        })
+      }, 200)
+    })
+    emitter.on(`schemaChanged_${this.id}`, ({ schema_name, database_name }) => {
       const tree = this.$refs.tree
-      let db_node = tree.getNextNode([0], (node)  => { return node.data.type === 'database' && node.data.database === database_name })
-      let schema_node = tree.getNextNode(db_node.path, (node)  => { return node.data.type === 'schema' && node.data.schema === schema_name })
-      let tables_node = tree.getNextNode(schema_node.path, (node)  => { return node.data.type === 'table_list' })
+      let db_node = tree.getNextNode([0], (node) => { return node.data.type === 'database' && node.data.database === database_name })
+      let schema_node = tree.getNextNode(db_node.path, (node) => { return node.data.type === 'schema' && node.data.schema === schema_name })
+      let tables_node = tree.getNextNode(schema_node.path, (node) => { return node.data.type === 'table_list' })
       // this is to handle cases when tables_node is absent because schema_node is not expanded and therefore empty
       this.refreshTree(tables_node || schema_node)
     })
@@ -3485,6 +3512,8 @@ export default {
         .post("/get_database_objects_postgresql/")
         .then((resp) => {
           this.removeChildNodes(node);
+
+          this.currentSchema = resp.data.current_schema
 
           if (resp.data.has_pg_cron) {
             this.insertNode(node, "Jobs", {
