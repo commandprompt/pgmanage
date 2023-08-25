@@ -1,30 +1,5 @@
-/*
-This file is part of OmniDB.
-OmniDB is open-source software, distributed "AS IS" under the MIT license in the hope that it will be useful.
+import axios from 'axios'
 
-The MIT License (MIT)
-
-Portions Copyright (c) 2015-2020, The OmniDB Team
-Portions Copyright (c) 2017-2020, 2ndQuadrant Limited
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
 import { terminalReturn } from "./terminal";
 import { querySQLReturn, cancelSQLTab, querySQL, v_queryResponseCodes } from "./query";
 import { consoleReturn, cancelConsoleTab, consoleSQL } from "./console";
@@ -34,8 +9,7 @@ import { showPasswordPrompt } from "./passwords";
 import { getCookie, csrfSafeMethod, execAjax } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
 
-var v_client_id;
-var v_polling_ajax = null;
+var v_polling_ajax = null; // this is a retval of execAjax
 
 
 var v_context_object = {
@@ -43,24 +17,19 @@ var v_context_object = {
   'contextList': []
 }
 
-var v_polling_started = false;
-
-/// <summary>
-/// Startup function.
-/// </summary>
+// heartbeat to prevent db session back-end termination
 $(function () {
-
   setInterval(function() {
-    execAjax('/client_keep_alive/',
-  			JSON.stringify({}),
-  			function(p_return) {
-  			},
-  			null,
-  			'box',
-        false);
-
-  },60000);
+    axios.get(`${app_base_path}/client_keep_alive/`).then((resp) => {}).catch((error) => {})
+  }, 60000);
 });
+
+// notify back-end about session termination
+$(window).on('beforeunload', () => {
+  const data = new FormData();
+  data.append('csrfmiddlewaretoken', getCookie('pgmanage_csrftoken'))
+  navigator.sendBeacon(`${app_base_path}/clear_client/`, data)
+})
 
 function call_polling(p_startup) {
   v_polling_ajax = execAjax('/long_polling/',
@@ -85,33 +54,6 @@ function call_polling(p_startup) {
     null,
     function() {
     });
-}
-
-$(window).on('beforeunload', function() {
-  clear_client().then(function() {});
-});
-
-async function clear_client() {
-  // Setting the token.
- 	var csrftoken = getCookie('pgmanage_csrftoken');
-	// Requesting data with ajax.
- 	const v_ajax_call = await $.ajax({
- 		url: v_url_folder + '/clear_client',
- 		data: null,
- 		type: "get",
- 		dataType: "json",
- 		beforeSend: function(xhr, settings) {
- 			if(!csrfSafeMethod(settings.type) && !this.crossDomain) {
- 				xhr.setRequestHeader("X-CSRFToken", csrftoken);
- 			}
- 		},
- 		success: function(p_return) {
- 		},
- 		error: function(msg) {
- 		}
- 	});
-
-  return v_ajax_call;
 }
 
 function polling_response(p_message) {
@@ -354,10 +296,6 @@ function createRequest(p_messageCode, p_messageData, p_context) {
         v_data: p_messageData
       }),
 			function(p_return) {
-        /*if (!v_polling_started) {
-          v_polling_started=true;
-          call_polling(true);
-        }*/
 			},
 			null,
 			'box',

@@ -62,6 +62,7 @@ def check_session(request):
 def index(request):
     context = {
         'pgmanage_short_version': settings.PGMANAGE_SHORT_VERSION,
+        # FIXME: rename this to base_path
         'url_folder': settings.PATH,
         'csrf_cookie_name': settings.CSRF_COOKIE_NAME
     }

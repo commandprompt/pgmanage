@@ -534,7 +534,8 @@
     var v_user_login = v_user_name;
     var v_version = '{{ pgmanage_version }}';
     var v_short_version = '{{ pgmanage_short_version }}';
-    var v_url_folder = '{{ url_folder }}';
+    var v_url_folder = '{{ url_folder }}'; //left for compatibility reasons, use app_base_path instead
+    var app_base_path = '{{ url_folder }}'
   	var v_connections_data;
   	var gv_desktopMode = ('{{ desktop_mode }}' === 'True');
   	var v_tab_token = '{{ tab_token }}';

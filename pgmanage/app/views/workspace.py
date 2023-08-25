@@ -64,7 +64,7 @@ def index(request):
         "tab_token": "".join(
             random.choice(string.ascii_lowercase + string.digits) for i in range(20)
         ),
-        "url_folder": settings.PATH,
+        "url_folder": settings.PATH, # FIXME: rename this to base_path
         "csrf_cookie_name": settings.CSRF_COOKIE_NAME,
         "master_key": "new"
         if not bool(user_details.masterpass_check)
