@@ -9,8 +9,7 @@ import { showPasswordPrompt } from "./passwords";
 import { getCookie, csrfSafeMethod, execAjax } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
 
-var v_polling_ajax = null; // this is a retval of execAjax
-
+let polling_busy = null;
 
 var v_context_object = {
   'contextCode': 0,
@@ -20,7 +19,7 @@ var v_context_object = {
 // heartbeat to prevent db session back-end termination
 $(function () {
   setInterval(function() {
-    axios.get(`${app_base_path}/client_keep_alive/`).then((resp) => {}).catch((error) => {})
+    axios.get(`${app_base_path}/client_keep_alive/`)
   }, 60000);
 });
 
@@ -31,29 +30,22 @@ $(window).on('beforeunload', () => {
   navigator.sendBeacon(`${app_base_path}/clear_client/`, data)
 })
 
-function call_polling(p_startup) {
-  v_polling_ajax = execAjax('/long_polling/',
-			JSON.stringify({
-        'p_startup': p_startup
-      }),
-			function(p_return) {
-        for (var i=0; i<p_return.returning_rows.length; i++) {
-          try {
-            polling_response(p_return.returning_rows[i]);
-          }
-          catch(err) {
-
-          }
+function call_polling(startup) {
+    polling_busy = true
+    axios.post(
+      `${app_base_path}/long_polling/`,
+      {p_startup: startup}
+    ).then((resp) => {
+      polling_busy = false
+      resp.data.returning_rows.forEach(chunk => {
+        try {
+          polling_response(chunk)
+        } catch(err) {
+          console.log(err)
         }
-        call_polling(false);
-
-			},
-			null,
-			'box',
-      false,
-    null,
-    function() {
-    });
+      });
+      call_polling(false)
+    })
 }
 
 function polling_response(p_message) {
@@ -283,10 +275,12 @@ function createRequest(p_messageCode, p_messageData, p_context) {
 		}
 	}
 
-  if (v_polling_ajax == null)
-    call_polling(true);
-  else if (v_polling_ajax.readyState == 0 || v_polling_ajax.readyState == 4) {
-    call_polling(false);
+  // synchronize call_polling requests, do not run new one when there is a request in progress
+  console.log(polling_busy)
+  if (polling_busy === null)
+    call_polling(true)
+  else if (polling_busy === false) {
+    call_polling(false)
   }
 
   execAjax('/create_request/',
