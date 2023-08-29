@@ -39,6 +39,7 @@
     "moment": "^2.29.4",
     "pev2": "^1.8.0",
     "pinia": "^2.1.6",
+    "short-unique-id": "^4.4.4",
     "sql-formatter": "^12.2.4",
     "vue": "^3.2.45",
     "vue-toast-notification": "^3.1.1",

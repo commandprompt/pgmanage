@@ -1,4 +1,5 @@
 import axios from 'axios'
+import ShortUniqueId from 'short-unique-id';
 
 import { terminalReturn } from "./terminal";
 import { querySQLReturn, cancelSQLTab, querySQL, v_queryResponseCodes } from "./query";
@@ -6,17 +7,15 @@ import { consoleReturn, cancelConsoleTab, consoleSQL } from "./console";
 import { queryEditDataReturn, saveEditDataReturn, cancelEditDataTab } from "./tree_context_functions/edit_data";
 import { debugResponse } from "./debug";
 import { showPasswordPrompt } from "./passwords";
-import { getCookie, csrfSafeMethod, execAjax } from './ajax_control'
+import { getCookie } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
 
+const uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4})
+
 let polling_busy = null;
+let request_map = new Map()
 
-var v_context_object = {
-  'contextCode': 0,
-  'contextList': []
-}
-
-// heartbeat to prevent db session back-end termination
+// send heartbeat to prevent db session from being terminated by back-end
 $(function () {
   setInterval(function() {
     axios.get(`${app_base_path}/client_keep_alive/`)
@@ -48,25 +47,20 @@ function call_polling(startup) {
     })
 }
 
-function polling_response(p_message) {
-  var v_message = p_message;
+function polling_response(message) {
 
-  var p_context_code = null;
-  var p_context = null;
+  let context_code = null;
+  let context = null;
 
-  if (v_message.v_context_code!=0 && v_message.v_context_code!=null) {
-
-    for (var i=0; i<v_context_object.contextList.length; i++) {
-
-      if (v_context_object.contextList[i].code == v_message.v_context_code) {
-        p_context = v_context_object.contextList[i].context;
-        p_context_code = v_context_object.contextList[i].code;
-        break;
-      }
+  if(message.v_context_code) {
+    let entry = request_map.get(message.v_context_code)
+    if(entry) {
+      context_code = entry.code
+      context = entry.context
     }
   }
 
-  switch(v_message.v_code) {
+  switch(message.v_code) {
     case parseInt(v_queryResponseCodes.Pong): {
       websocketPong();
       break;
@@ -80,85 +74,85 @@ function polling_response(p_message) {
       break;
     }
     case parseInt(v_queryResponseCodes.PasswordRequired): {
-      if (p_context) {
-        SetAcked(p_context);
-        QueryPasswordRequired(p_context,v_message.v_data);
+      if (context) {
+        SetAcked(context);
+        QueryPasswordRequired(context, message.v_data);
         break;
       }
     }
     case parseInt(v_queryResponseCodes.QueryAck): {
-      if (p_context) {
-        SetAcked(p_context);
+      if (context) {
+        SetAcked(context);
         break;
       }
     }
     case parseInt(v_queryResponseCodes.QueryResult): {
-      if (p_context) {
-        SetAcked(p_context);
-        if (!v_message.v_error || v_message.v_data.v_chunks) {
-          p_context.tab_tag.tempData = p_context.tab_tag.tempData.concat(v_message.v_data.v_data);
+      if (context) {
+        SetAcked(context);
+        if (!message.v_error || message.v_data.v_chunks) {
+          context.tab_tag.tempData = context.tab_tag.tempData.concat(message.v_data.v_data);
         }
-        if (!v_message.v_data.v_chunks || v_message.v_data.v_last_block || v_message.v_error) {
-          v_message.v_data.v_data = [];
-          if(p_context.simple && p_context.callback!=null) { //used by schema editor only, dont run any legacy rendering for simple requests
-            p_context.callback(p_message)
+        if (!message.v_data.v_chunks || message.v_data.v_last_block || message.v_error) {
+          message.v_data.v_data = [];
+          if(context.simple && context.callback!=null) { //used by schema editor only, dont run any legacy rendering for simple requests
+            context.callback(p_message)
           } else {
-            querySQLReturn(v_message,p_context);
+            querySQLReturn(message, context);
           }
 
           //Remove context
-          removeContext(p_context_code);
+          removeContext(context_code);
         }
 
       }
       break;
     }
     case parseInt(v_queryResponseCodes.ConsoleResult): {
-      if (p_context) {
-        p_context.tab_tag.tempData = p_context.tab_tag.tempData += v_message.v_data.v_data;
-        if (v_message.v_data.v_last_block || v_message.v_error) {
-          v_message.v_data.v_data = [];
-          consoleReturn(v_message,p_context);
+      if (context) {
+        context.tab_tag.tempData = context.tab_tag.tempData += message.v_data.v_data;
+        if (message.v_data.v_last_block || message.v_error) {
+          message.v_data.v_data = [];
+          consoleReturn(message, context);
           //Remove context
-          removeContext(p_context_code);
+          removeContext(context_code);
         }
       }
       break;
     }
     case parseInt(v_queryResponseCodes.TerminalResult): {
-      if (p_context) {
-        terminalReturn(v_message,p_context);
+      if (context) {
+        terminalReturn(message, context);
       }
       break;
     }
     case parseInt(v_queryResponseCodes.QueryEditDataResult): {
-      if (p_context) {
-        SetAcked(p_context);
-        queryEditDataReturn(v_message,p_context);
-        removeContext(p_context_code);
+      if (context) {
+        SetAcked(context);
+        queryEditDataReturn(message, context);
+        removeContext(context_code);
       }
       break;
     }
     case parseInt(v_queryResponseCodes.SaveEditDataResult): {
-      if (p_context) {
-        saveEditDataReturn(v_message,p_context);
-        removeContext(p_context_code);
+      if (context) {
+        saveEditDataReturn(message, context);
+        removeContext(context_code);
       }
       break;
     }
     case parseInt(v_queryResponseCodes.DebugResponse): {
-      if (p_context) {
-        SetAcked(p_context);
-        debugResponse(p_message, p_context);
-        if (p_message.v_data.v_remove_context) {
-          removeContext(p_context_code);
+      if (context) {
+        SetAcked(context);
+        debugResponse(message, context);
+        if (message.v_data.v_remove_context) {
+          removeContext(context_code);
         }
       }
       break;
     }
     case parseInt(v_queryResponseCodes.RemoveContext): {
-      if (p_context) {
-        removeContext(p_context_code);
+      if (context) {
+        removeContext(context_code);
       }
       break;
     }
@@ -166,11 +160,10 @@ function polling_response(p_message) {
       break;
     }
     case parseInt(v_queryResponseCodes.AdvancedObjectSearchResult): {
-      if (p_context) {
-        SetAcked(p_context);
-        advancedObjectSearchReturn(v_message, p_context);
-        //Remove context
-        removeContext(p_context_code);
+      if (context) {
+        SetAcked(context);
+        advancedObjectSearchReturn(message, context);
+        removeContext(context_code);
       }
       break;
     }
@@ -231,74 +224,60 @@ function QueryPasswordRequired(p_context, p_message) {
 	}
 }
 
-function createContext(p_context) {
-	v_context_object.contextCode += 1;
-	let v_context_code = v_context_object.contextCode;
-	p_context.v_context_code = v_context_code;
-	var v_context = {
-		code: v_context_code,
-		context: p_context
-	}
-	v_context_object.contextList.push(v_context);
-	return v_context;
+function createContext(context) {
+  let context_code = uid.seq()
+  if(context.code) {
+    context_code = context.code
+  } else {
+    context.code = context_code
+  }
+
+  request_map.set(context_code, context)
+
+	return context;
 }
 
-function removeContext(p_context_code) {
-	for (var i=0; i<v_context_object.contextList.length; i++) {
-		if (v_context_object.contextList[i].code == p_context_code) {
-			v_context_object.contextList.splice(i,1);
-			break;
-		}
-	}
+function removeContext(context_code) {
+  request_map.delete(context_code)
 }
 
-function createRequest(p_messageCode, p_messageData, p_context) {
-
-  var v_context_code = 0;
-
-	//Configuring context
-	if (p_context!=null) {
-
-		//Context code is passed
-		if (p_context === parseInt(p_context, 10)) {
-			v_context_code = p_context;
+function createRequest(message_code, message_data, context) {
+  let context_code = undefined;
+	if (context != null) {
+		// Context code is passed
+    // context is sometimes a number, usually it is an object... duh
+		if (context === parseInt(context, 10)) {
+			context_code = context;
 		}
 		else {
-			v_context_object.contextCode += 1;
-			v_context_code = v_context_object.contextCode;
-			p_context.v_context_code = v_context_code;
-			var v_context = {
-				code: v_context_code,
-				context: p_context
-			}
-			v_context_object.contextList.push(v_context);
+      var ctx = {
+        code: context_code,
+        context: context
+      }
+      createContext(ctx)
 		}
 	}
 
   // synchronize call_polling requests, do not run new one when there is a request in progress
-  console.log(polling_busy)
   if (polling_busy === null)
     call_polling(true)
   else if (polling_busy === false) {
     call_polling(false)
   }
 
-  execAjax('/create_request/',
-			JSON.stringify({
-        v_code: p_messageCode,
-        v_context_code: v_context_code,
-        v_data: p_messageData
-      }),
-			function(p_return) {
-			},
-			null,
-			'box',
-      false);
+  axios.post(
+    `${app_base_path}/create_request/`,
+    {
+      v_code: message_code,
+      v_context_code: ctx.code,
+      v_data: message_data
+    }
+  )
 }
 
-function SetAcked(p_context) {
-	if (p_context)
-		p_context.acked = true;
+function SetAcked(context) {
+	if (context)
+		context.acked = true;
 }
 
 export { createContext, createRequest, SetAcked, removeContext }
