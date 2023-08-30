@@ -70,7 +70,7 @@ function polling_response(message) {
       break;
     }
     case parseInt(v_queryResponseCodes.MessageException): {
-      showToast("error", p_message.v_data);
+      showToast("error", message.v_data);
       break;
     }
     case parseInt(v_queryResponseCodes.PasswordRequired): {
@@ -95,7 +95,7 @@ function polling_response(message) {
         if (!message.v_data.v_chunks || message.v_data.v_last_block || message.v_error) {
           message.v_data.v_data = [];
           if(context.simple && context.callback!=null) { //used by schema editor only, dont run any legacy rendering for simple requests
-            context.callback(p_message)
+            context.callback(message)
           } else {
             querySQLReturn(message, context);
           }
@@ -250,7 +250,7 @@ function createRequest(message_code, message_data, context) {
 			context_code = context;
 		}
 		else {
-      var ctx = {
+      let ctx = {
         code: context_code,
         context: context
       }
