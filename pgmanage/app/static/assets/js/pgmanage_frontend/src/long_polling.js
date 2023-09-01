@@ -255,6 +255,7 @@ function createRequest(message_code, message_data, context) {
         context: context
       }
       createContext(ctx)
+      context_code = ctx.code
 		}
 	}
 
@@ -269,7 +270,7 @@ function createRequest(message_code, message_data, context) {
     `${app_base_path}/create_request/`,
     {
       v_code: message_code,
-      v_context_code: ctx.code,
+      v_context_code: context_code || 0,
       v_data: message_data
     }
   )
