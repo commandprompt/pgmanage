@@ -159,6 +159,10 @@ export default {
       this.autocomplete = checked;
     });
 
+    emitter.on(`${this.tabId}_resize`, () => {
+      this.onResize()
+    })
+
     emitter.on(`${this.tabId}_console_return`, ({data, context}) => {
       if (!this.idleState) {
         //TODO: move current connection tab and current tab to global state

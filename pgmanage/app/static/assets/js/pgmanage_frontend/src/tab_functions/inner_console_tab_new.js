@@ -73,6 +73,7 @@ let createConsoleTabFunctionNew = function() {
     tab_check_span : tab_check_span,
     tabControl: v_connTabControl.selectedTab.tag.tabControl,
     connTab: v_connTabControl.selectedTab,
+    vueComponent: true,
     consoleHistory: {
       modal: document.getElementById('modal_console_history_' + tab.id),
       div: document.getElementById('console_history_div_' + tab.id),

@@ -879,7 +879,11 @@ function refreshHeights(p_all) {
       var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
 
       if (v_tab_tag.mode=='console' || v_tab_tag.mode=='debug' || v_tab_tag.mode=='edit' || v_tab_tag.mode=='graph' || v_tab_tag.mode=='monitor_dashboard' || v_tab_tag.mode=='monitor_grid' || v_tab_tag.mode=='monitor_unit' || v_tab_tag.mode=='query' || v_tab_tag.mode=='website' || v_tab_tag.mode=='website_outer') {
-        v_tab_tag.resize();
+        if (v_tab_tag.vueComponent) {
+          emitter.emit(`${v_tab_tag.tab_id}_resize`)
+        } else {
+          v_tab_tag.resize();
+        }
       }
       // else if (v_tab_tag.mode=='query_history') {
       //   v_tab_tag.div_result.style.height = window.innerHeight - $(v_tab_tag.div_result).offset().top - (1.75)*v_font_size + 'px';
