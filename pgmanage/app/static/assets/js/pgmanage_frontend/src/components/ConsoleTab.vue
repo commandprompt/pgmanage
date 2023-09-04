@@ -86,7 +86,6 @@
 <script>
 import {
   consoleSQL,
-  clearConsole,
   showConsoleHistory,
   cancelConsole
 } from "../console";
@@ -366,7 +365,10 @@ export default {
     setTabStatus(code) {
 
     },
-    clearConsole,
+    clearConsole() {
+      this.terminal.write('\x1b[H\x1b[2J');
+      this.terminal.write(this.consoleHelp)
+    },
     showConsoleHistory,
     cancelConsole,
     indentSQL,
