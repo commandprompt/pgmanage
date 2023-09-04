@@ -39,6 +39,7 @@ import { v_createGraphTabFunction } from './tab_functions/inner_graph_tab'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import { createDebuggerTabFunction } from './tab_functions/inner_debugger_tab'
 import { showConfirm } from './notification_control'
+import { createConsoleTabFunctionNew } from './tab_functions/inner_console_tab_new'
 
 function initCreateTabFunctions() {
 
@@ -420,7 +421,9 @@ function initCreateTabFunctions() {
 
   // Functions to create tabs inside a connection tab
 	v_connTabControl.tag.createQueryTab = v_createQueryTabFunction;
-  v_connTabControl.tag.createConsoleTab = v_createConsoleTabFunction;
+  v_connTabControl.tag.createConsoleTabNew = createConsoleTabFunctionNew;
+	v_connTabControl.tag.createConsoleTab = v_createConsoleTabFunction;
+
 //   v_connTabControl.tag.createWebsiteTab = v_createWebsiteTabFunction;
   v_connTabControl.tag.createNewMonitorUnitTab = v_createNewMonitorUnitTabFunction;
   v_connTabControl.tag.createMonitorDashboardTab = v_createMonitorDashboardTabFunction;

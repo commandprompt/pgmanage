@@ -9,6 +9,7 @@ import { debugResponse } from "./debug";
 import { showPasswordPrompt } from "./passwords";
 import { getCookie } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
+import { emitter } from './emitter';
 
 const uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4})
 
@@ -112,9 +113,14 @@ function polling_response(message) {
         context.tab_tag.tempData = context.tab_tag.tempData += message.v_data.v_data;
         if (message.v_data.v_last_block || message.v_error) {
           message.v_data.v_data = [];
-          consoleReturn(message, context);
-          //Remove context
-          removeContext(context_code);
+          if (context.new) {
+            //send event on console Component with return data
+            emitter.emit(`${context.tab_tag.tab_id}_console_return`, {data: message, context: context})
+          } else {
+            consoleReturn(message, context);
+            //Remove context
+            removeContext(context_code);
+          }
         }
       }
       break;

@@ -51,6 +51,7 @@ import axios from 'axios'
 import { showAlert, showConfirm } from './notification_control'
 import cytoscape from 'cytoscape';
 import spread from 'cytoscape-spread'
+import { emitter } from './emitter'
 
 let v_start_height;
 /// <summary>
@@ -1183,12 +1184,19 @@ function showMenuNewTab(e) {
 			}
 		},
 		{
-			label: 'Console Tab',
+			label: 'Console Tab Old',
 			icon: 'fas cm-all fa-terminal',
 			onClick: function() {
 				v_connTabControl.tag.createConsoleTab();
 			}
-		}
+		},
+    {
+			label: 'Console Tab New',
+			icon: 'fas cm-all fa-terminal',
+			onClick: function() {
+				v_connTabControl.tag.createConsoleTabNew();
+			}
+		},
 	];
 
 	if (v_connTabControl.selectedTab.tag.selectedDBMS=='postgresql' ||
@@ -1394,6 +1402,7 @@ function uiCopyTextToClipboard(p_value) {
 function toggleConnectionAutocomplete(p_toggler_id) {
   let checked = document.getElementById(p_toggler_id).checked;
   v_connTabControl.selectedTab.tag.enable_autocomplete = (checked);
+  emitter.emit(`${v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_autocomplete`, checked)
 }
 
 export {
@@ -1418,5 +1427,6 @@ export {
   resizeVertical,
   resizeSnippetHorizontal,
   toggleConnectionAutocomplete,
-  toggleTreeContainer
+  toggleTreeContainer,
+  uiCopyTextToClipboard
 };

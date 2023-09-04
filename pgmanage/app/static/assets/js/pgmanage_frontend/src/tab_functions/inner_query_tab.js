@@ -55,6 +55,7 @@ import {
 import { showCommandList } from "../command_history";
 import { createTabControl } from "../tabs";
 import ace from 'ace-builds'
+import { snippetsStore } from "../stores/snippets";
 
 var v_createQueryTabFunction = function(p_table, p_tab_db_id, tab_db_name=null) {
   // Removing last tab of the inner tab list.
@@ -331,16 +332,16 @@ var v_createQueryTabFunction = function(p_table, p_tab_db_id, tab_db_name=null) 
       {
         label: 'Save as snippet',
         icon: 'fas cm-all fa-save',
-        children: buildSnippetContextMenuObjects('save', v_connTabControl.tag.globalSnippets, v_editor)
+        children: buildSnippetContextMenuObjects('save', snippetsStore, v_editor)
       }
     ];
 
-    if (v_connTabControl.tag.globalSnippets.files.length != 0 || v_connTabControl.tag.globalSnippets.folders.length != 0)
+    if (snippetsStore.files.length != 0 || snippetsStore.folders.length != 0)
       option_list.push(
         {
           label: 'Use snippet',
           icon: 'fas cm-all fa-file-code',
-          children: buildSnippetContextMenuObjects('load', v_connTabControl.tag.globalSnippets, v_editor)
+          children: buildSnippetContextMenuObjects('load', snippetsStore, v_editor)
         }
       )
       ContextMenu.showContextMenu({

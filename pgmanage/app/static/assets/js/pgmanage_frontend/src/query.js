@@ -359,10 +359,12 @@ function querySQLReturnRender(p_message,p_context) {
 
 	//Show commit/rollback buttons if transaction is open
 	if (v_data.v_con_status==3 || v_data.v_con_status==4) {
+		//TODO: send event on consoleTab to show these buttons
 		p_context.tab_tag.bt_commit.style.display = '';
 		p_context.tab_tag.bt_rollback.style.display = '';
 	}
 	else {
+		//TODO: send event on consoleTab to hide these buttons
 		p_context.tab_tag.bt_commit.style.display = 'none';
 		p_context.tab_tag.bt_rollback.style.display = 'none';
 	}

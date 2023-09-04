@@ -31,10 +31,15 @@ import TreeSnippets from '../components/TreeSnippets.vue'
 import ContextMenu from '@imengyu/vue3-context-menu';
 import axios from 'axios';
 import { showConfirm, showToast } from '../notification_control';
+import { snippetsStore } from '../stores/snippets';
 
 function getAllSnippets() {
   axios.get("/get_all_snippets/").then((resp) => {
     v_connTabControl.tag.globalSnippets = resp.data;
+    snippetsStore.$patch({
+      files: resp.data.files,
+      folders: resp.data.folders
+    })
   })
   .catch((error) => {
     console.log(error)
@@ -90,7 +95,7 @@ function saveSnippetText(event) {
       minWidth: 230,
       items: buildSnippetContextMenuObjects(
         "save",
-        v_connTabControl.tag.globalSnippets,
+        snippetsStore,
         v_connTabControl.snippet_tag.tabControl.selectedTab.tag.editor,
         callback
       )
