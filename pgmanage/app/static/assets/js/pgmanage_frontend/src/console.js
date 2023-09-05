@@ -32,6 +32,7 @@ import { blueHtmlRenderer, whiteHtmlRenderer } from "./renderers";
 import { execAjax } from "./ajax_control";
 import { showConfirm, showToast } from "./notification_control";
 import moment from "moment";
+import { emitter } from "./emitter";
 
 /// <summary>
 /// Console state
@@ -290,10 +291,15 @@ function consoleHistoryLastPage() {
 }
 
 function consoleHistoryOpenCmd(p_index) {
-	var v_command = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.grid.getDataAtRow(p_index)[1];
-	v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor_input.setValue(v_command);
-	v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor_input.clearSelection();
-	v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor_input.gotoLine(0, 0, true);
+	let command = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.grid.getDataAtRow(p_index)[1];
+	let selected_tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab
+	if (selected_tab.tag.vueComponent) {
+		emitter.emit(`${selected_tab.id}_copy_to_editor`, command)
+	} else {
+		v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor_input.setValue(command);
+		v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor_input.clearSelection();
+		v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor_input.gotoLine(0, 0, true);
+	}
 	closeConsoleHistory();
 }
 

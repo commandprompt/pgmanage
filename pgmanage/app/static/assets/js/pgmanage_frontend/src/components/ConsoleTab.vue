@@ -179,6 +179,12 @@ export default {
         }
       }
     })
+
+    emitter.on(`${this.tabId}_copy_to_editor`, (command) => {
+      this.editor.setValue(command)
+      this.editor.clearSelection()
+      this.editor.gotoLine(0, 0, true)
+    })
   },
   unmounted() {
     emitter.all.delete(`${this.tabId}_autocomplete`);
