@@ -31,12 +31,25 @@
           </div>
 
           <div class="dbms_object postgresql_object omnidb__tab-status">
-            <i :id="`query_tab_status_${tabId}`" title="Not connected"
-              class="fas fa-dot-circle tab-status tab-status-closed dbms_object postgresql_object omnidb__tab-status__icon">
+            <i :id="`query_tab_status_${tabId}`" :title="statusTitle"
+              :class="[statusClass, 'dbms_object', 'postgresql_object']">
+              <div v-if="connStatus === 1 || connStatus === 2" style="
+                  position: absolute;
+                  width: 15px;
+                  height: 15px;
+                  overflow: visible;
+                  left: 0px;
+                  top: 0px;
+                  display: block;
+                ">
+                <span :class="circleWavesClass">
+                  <span v-for="n in 4" :key="n"></span>
+                </span>
+              </div>
             </i>
-            <span :id="`query_tab_status_text_${tabId}`" title="Not connected"
+            <span :id="`query_tab_status_text_${tabId}`" :title="statusTitle"
               class="tab-status-text query_info dbms_object postgresql_object ml-1">
-              Not connected
+              {{ statusText }}
             </span>
           </div>
 
@@ -84,11 +97,7 @@
 </template>
 
 <script>
-import {
-  consoleSQL,
-  showConsoleHistory,
-  cancelConsole
-} from "../console";
+import { consoleSQL, showConsoleHistory, cancelConsole } from "../console";
 import { indentSQL, uiCopyTextToClipboard } from "../workspace";
 import { querySQL } from "../query";
 import ace from "ace-builds";
@@ -140,8 +149,9 @@ export default {
       autocommit: true,
       fetchMoreData: false,
       openedTransaction: false,
-      data: '',
-      context: '',
+      data: "",
+      context: "",
+      connStatus: 0,
     };
   },
   computed: {
@@ -150,6 +160,38 @@ export default {
     },
     idleState() {
       return this.consoleState === consoleState.Idle;
+    },
+    statusText() {
+      const statusMap = {
+        0: "Not Connected",
+        1: "Idle",
+        2: "Running",
+        3: "Idle in transaction",
+        4: "Idle in transaction (aborted)",
+      };
+      return statusMap[this.connStatus] || "";
+    },
+    statusTitle() {
+      return this.statusText;
+    },
+    statusClass() {
+      const baseClass = "fas fa-dot-circle tab-status";
+      const statusClassMap = {
+        0: "tab-status-closed",
+        1: "tab-status-idle position-relative",
+        2: "tab-status-running position-relative",
+        3: "tab-status-idle_in_transaction",
+        4: "tab-status-idle_in_transaction_aborted",
+      };
+
+      return `${baseClass} ${statusClassMap[this.connStatus] || ""}`;
+    },
+    circleWavesClass() {
+      return {
+        "omnis__circle-waves": this.connStatus === 1 || this.connStatus === 2,
+        "omnis__circle-waves--idle": this.connStatus === 1,
+        "omnis__circle-waves--running": this.connStatus === 2,
+      };
     },
   },
   mounted() {
@@ -160,38 +202,41 @@ export default {
     });
 
     emitter.on(`${this.tabId}_resize`, () => {
-      this.onResize()
-    })
+      this.onResize();
+    });
 
-    emitter.on(`${this.tabId}_console_return`, ({data, context}) => {
+    emitter.on(`${this.tabId}_console_return`, ({ data, context }) => {
       if (!this.idleState) {
         //TODO: move current connection tab and current tab to global state
-        if (this.tabId === context.tab_tag.tabControl.selectedTab.id && this.connId === context.tab_tag.connTab.tag.connTabControl.selectedTab.id) {
-          this.consoleReturnRender(data, context)
+        if (
+          this.tabId === context.tab_tag.tabControl.selectedTab.id &&
+          this.connId ===
+          context.tab_tag.connTab.tag.connTabControl.selectedTab.id
+        ) {
+          this.consoleReturnRender(data, context);
         } else {
-          this.consoleState = consoleState.Ready
-          this.data = data
-          this.context = context
+          this.consoleState = consoleState.Ready;
+          this.data = data;
+          this.context = context;
 
           //FIXME: change into event emitting later
-          context.tab_tag.tab_loading_span.style.visibility = 'hidden';
-			    context.tab_tag.tab_check_span.style.display = '';
+          context.tab_tag.tab_loading_span.style.visibility = "hidden";
+          context.tab_tag.tab_check_span.style.display = "";
         }
       }
-    })
+    });
 
     emitter.on(`${this.tabId}_copy_to_editor`, (command) => {
-      this.editor.setValue(command)
-      this.editor.clearSelection()
-      this.editor.gotoLine(0, 0, true)
-    })
+      this.editor.setValue(command);
+      this.editor.clearSelection();
+      this.editor.gotoLine(0, 0, true);
+    });
 
     emitter.on(`${this.tabId}_check_console_status`, () => {
-      debugger
       if (this.consoleState === consoleState.Ready) {
-        this.consoleReturnRender(this.data, this.context)
+        this.consoleReturnRender(this.data, this.context);
       }
-    })
+    });
   },
   unmounted() {
     emitter.all.delete(`${this.tabId}_autocomplete`);
@@ -295,10 +340,9 @@ export default {
     },
     consoleSQL(check_command = true, mode = 0) {
       const command = this.editor.getValue().trim();
-      let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
+      let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
 
       if (!check_command || command === "\\") {
-
         if (!this.idleState) {
           showToast("info", "Tab with activity in progres.");
         } else {
@@ -306,7 +350,6 @@ export default {
           if (command === "" && mode === 0) {
             showToast("info", "Please provide a string.");
           } else {
-
             this.editor.setValue("");
             this.editor.clearSelection();
             this.lastCommand = command;
@@ -332,7 +375,7 @@ export default {
               last_command: this.lastCommand,
               check_command: check_command,
               mode: mode,
-              new: true
+              new: true,
             };
 
             createRequest(v_queryRequestCodes.Console, message_data, context);
@@ -340,53 +383,51 @@ export default {
             this.consoleState = consoleState.Executing;
 
             //FIXME: change into event emitting later
-            tab_tag.tab_loading_span.style.visibility = 'visible';
-            tab_tag.tab_check_span.style.display = 'none';
+            tab_tag.tab_loading_span.style.visibility = "visible";
+            tab_tag.tab_check_span.style.display = "none";
             //
             // check this as well
             // probably move this inside this component
             // setTabStatus(tab_tag, 2);
+            this.connStatus = 2;
           }
         }
       }
     },
     consoleReturnRender(data, context) {
-      this.consoleState = consoleState.Idle
+      this.consoleState = consoleState.Idle;
 
       // setTabStatus(p_context.tab_tag,p_message.v_data.v_con_status);
-      this.editor.setReadOnly(false)
+      this.connStatus = data.v_data.v_con_status;
+      this.editor.setReadOnly(false);
 
-      this.terminal.write(context.tab_tag.tempData)
+      this.terminal.write(context.tab_tag.tempData);
 
       //FIXME: change into event emitting later
-      context.tab_tag.tab_loading_span.style.visibility = 'hidden'
-      context.tab_tag.tab_check_span.style.display = 'none'
+      context.tab_tag.tab_loading_span.style.visibility = "hidden";
+      context.tab_tag.tab_check_span.style.display = "none";
 
       if (data.v_data.v_show_fetch_button) {
-        this.fetchMoreData = true
+        this.fetchMoreData = true;
       } else {
-        this.fetchMoreData = false
+        this.fetchMoreData = false;
       }
 
       if (!data.v_error) {
-        let mode = ['CREATE', 'DROP', 'ALTER'];
+        let mode = ["CREATE", "DROP", "ALTER"];
         let status = data.v_data.v_status.split(" ");
         let status_name = status[1];
 
         if (mode.includes(status[0])) {
           //FIXME: replace this with event emitting on tree instance
           let root_node = v_connTabControl.selectedTab.tag.tree.getRootNode();
-          if (!!status_name)
-            refreshTreeNode(root_node, status_name);
+          if (!!status_name) refreshTreeNode(root_node, status_name);
         }
       }
     },
-    setTabStatus(code) {
-
-    },
     clearConsole() {
-      this.terminal.write('\x1b[H\x1b[2J');
-      this.terminal.write(this.consoleHelp)
+      this.terminal.write("\x1b[H\x1b[2J");
+      this.terminal.write(this.consoleHelp);
     },
     showConsoleHistory,
     cancelConsole,
