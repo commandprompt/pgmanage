@@ -7,7 +7,7 @@
     <pane>
       <div class="row mb-1">
         <div class="tab_actions omnidb__tab-actions col-12">
-          <button class="btn btn-sm btn-primary omnidb__tab-actions__btn" title="Run" @click="sendConsoleSQL(false)">
+          <button class="btn btn-sm btn-primary omnidb__tab-actions__btn" title="Run" @click="consoleSQL(false)">
             <i class="fas fa-play fa-light"></i>
           </button>
 
@@ -185,6 +185,13 @@ export default {
       this.editor.clearSelection()
       this.editor.gotoLine(0, 0, true)
     })
+
+    emitter.on(`${this.tabId}_check_console_status`, () => {
+      debugger
+      if (this.consoleState === consoleState.Ready) {
+        this.consoleReturnRender(this.data, this.context)
+      }
+    })
   },
   unmounted() {
     emitter.all.delete(`${this.tabId}_autocomplete`);
@@ -286,7 +293,7 @@ export default {
       this.fitAddon.fit();
       this.editor.resize();
     },
-    sendConsoleSQL(check_command = true, mode = 0) {
+    consoleSQL(check_command = true, mode = 0) {
       const command = this.editor.getValue().trim();
       let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag
 
@@ -357,6 +364,8 @@ export default {
 
       if (data.v_data.v_show_fetch_button) {
         this.fetchMoreData = true
+      } else {
+        this.fetchMoreData = false
       }
 
       if (!data.v_error) {

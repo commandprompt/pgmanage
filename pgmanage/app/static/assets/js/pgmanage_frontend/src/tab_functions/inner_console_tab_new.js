@@ -3,6 +3,7 @@ import { beforeCloseTab } from "../create_tab_functions";
 import { v_current_terminal_theme } from "../header_actions";
 import { createApp } from "vue";
 import ConsoleTab from "../components/ConsoleTab.vue";
+import { emitter } from "../emitter";
 
 let createConsoleTabFunctionNew = function() {
 
@@ -15,7 +16,10 @@ let createConsoleTabFunctionNew = function() {
     p_icon: '<i class="fas fa-terminal icon-tab-title"></i>',
     p_name: '<span> Console</span><span id="tab_loading" style="visibility:hidden;"><i class="tab-icon node-spin"></i></span><i title="" id="tab_check" style="display: none;" class="fas fa-check-circle tab-icon icon-check"></i></span>',
     p_selectFunction: function() {
-
+      if (this.tag != null) {
+        emitter.emit(`${this.id}_resize`)
+        emitter.emit(`${this.id}_check_console_status`)
+      }
     },
     p_closeFunction: function(e, tab) {
       let current_tab = tab;
