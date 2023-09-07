@@ -33,7 +33,7 @@
           <div class="dbms_object postgresql_object omnidb__tab-status">
             <i :id="`query_tab_status_${tabId}`" :title="statusTitle"
               :class="[statusClass, 'dbms_object', 'postgresql_object']">
-              <div v-if="connStatus === 1 || connStatus === 2" style="
+              <div v-if="tabStatus === 1 || tabStatus === 2" style="
                   position: absolute;
                   width: 15px;
                   height: 15px;
@@ -125,6 +125,14 @@ const consoleState = {
   Ready: 2,
 };
 
+const tabStatusMap = {
+  NOT_CONNECTED: 0,
+  IDLE: 1,
+  RUNNING: 2,
+  IDLE_IN_TRANSACTION: 3,
+  IDLE_IN_TRANSACTION_ABORTED: 4,
+};
+
 export default {
   name: "ConsoleTab",
   components: {
@@ -151,7 +159,7 @@ export default {
       openedTransaction: false,
       data: "",
       context: "",
-      connStatus: 0,
+      tabStatus: tabStatusMap.NOT_CONNECTED,
     };
   },
   computed: {
@@ -169,7 +177,7 @@ export default {
         3: "Idle in transaction",
         4: "Idle in transaction (aborted)",
       };
-      return statusMap[this.connStatus] || "";
+      return statusMap[this.tabStatus] || "";
     },
     statusTitle() {
       return this.statusText;
@@ -184,13 +192,15 @@ export default {
         4: "tab-status-idle_in_transaction_aborted",
       };
 
-      return `${baseClass} ${statusClassMap[this.connStatus] || ""}`;
+      return `${baseClass} ${statusClassMap[this.tabStatus] || ""}`;
     },
     circleWavesClass() {
       return {
-        "omnis__circle-waves": this.connStatus === 1 || this.connStatus === 2,
-        "omnis__circle-waves--idle": this.connStatus === 1,
-        "omnis__circle-waves--running": this.connStatus === 2,
+        "omnis__circle-waves":
+          this.tabStatus === tabStatusMap.IDLE ||
+          this.tabStatus === tabStatusMap.RUNNING,
+        "omnis__circle-waves--idle": this.tabStatus === tabStatusMap.IDLE,
+        "omnis__circle-waves--running": this.tabStatus === tabStatusMap.RUNNING,
       };
     },
   },
@@ -341,6 +351,7 @@ export default {
     consoleSQL(check_command = true, mode = 0) {
       const command = this.editor.getValue().trim();
       let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+      tab_tag.tempData = "";
 
       if (!check_command || command === "\\") {
         if (!this.idleState) {
@@ -385,11 +396,8 @@ export default {
             //FIXME: change into event emitting later
             tab_tag.tab_loading_span.style.visibility = "visible";
             tab_tag.tab_check_span.style.display = "none";
-            //
-            // check this as well
-            // probably move this inside this component
-            // setTabStatus(tab_tag, 2);
-            this.connStatus = 2;
+
+            this.tabStatus = tabStatusMap.RUNNING;
           }
         }
       }
@@ -397,8 +405,7 @@ export default {
     consoleReturnRender(data, context) {
       this.consoleState = consoleState.Idle;
 
-      // setTabStatus(p_context.tab_tag,p_message.v_data.v_con_status);
-      this.connStatus = data.v_data.v_con_status;
+      this.tabStatus = data.v_data.v_con_status;
       this.editor.setReadOnly(false);
 
       this.terminal.write(context.tab_tag.tempData);
@@ -407,11 +414,7 @@ export default {
       context.tab_tag.tab_loading_span.style.visibility = "hidden";
       context.tab_tag.tab_check_span.style.display = "none";
 
-      if (data.v_data.v_show_fetch_button) {
-        this.fetchMoreData = true;
-      } else {
-        this.fetchMoreData = false;
-      }
+      this.fetchMoreData = data.v_data.v_show_fetch_button;
 
       if (!data.v_error) {
         let mode = ["CREATE", "DROP", "ALTER"];
