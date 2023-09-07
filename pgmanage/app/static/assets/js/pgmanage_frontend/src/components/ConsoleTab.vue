@@ -85,7 +85,7 @@
             Cancel
           </button>
 
-          <div :id="`div_query_info_${tabId}`" class="omnidb__query-info"></div>
+          <div :id="`div_query_info_${tabId}`" class="omnidb__query-info" v-html="queryInfo"></div>
         </div>
       </div>
       <div ref="editor" :id="`txt_input_${tabId}`" class="omnidb__console__text-input" style="height: 100%"
@@ -160,6 +160,8 @@ export default {
       data: "",
       context: "",
       tabStatus: tabStatusMap.NOT_CONNECTED,
+      queryDuration: "",
+      queryStartTime: "",
     };
   },
   computed: {
@@ -202,6 +204,17 @@ export default {
         "omnis__circle-waves--idle": this.tabStatus === tabStatusMap.IDLE,
         "omnis__circle-waves--running": this.tabStatus === tabStatusMap.RUNNING,
       };
+    },
+    queryInfo() {
+      let start_time_html = `<b>Start time</b>: ${this.queryStartTime}`;
+      let duration_html = `<b>Duration</b>: ${this.queryDuration}`;
+      if (this.queryDuration && this.queryStartTime) {
+        return `${start_time_html} ${duration_html}`;
+      } else if (this.queryStartTime) {
+        return start_time_html;
+      } else {
+        return "";
+      }
     },
   },
   mounted() {
@@ -352,6 +365,7 @@ export default {
       const command = this.editor.getValue().trim();
       let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
       tab_tag.tempData = "";
+      this.queryDuration = "";
 
       if (!check_command || command === "\\") {
         if (!this.idleState) {
@@ -376,12 +390,12 @@ export default {
 
             this.editor.setReadOnly(true);
 
-            let start_datetime = moment().format();
+            this.queryStartTime = moment().format();
 
             let context = {
               tab_tag: tab_tag,
               database_index: this.databaseIndex,
-              start_datetime: start_datetime,
+              start_datetime: this.queryStartTime,
               acked: false,
               last_command: this.lastCommand,
               check_command: check_command,
@@ -415,6 +429,7 @@ export default {
       context.tab_tag.tab_check_span.style.display = "none";
 
       this.fetchMoreData = data.v_data.v_show_fetch_button;
+      this.queryDuration = data.v_data.v_duration;
 
       if (!data.v_error) {
         let mode = ["CREATE", "DROP", "ALTER"];
