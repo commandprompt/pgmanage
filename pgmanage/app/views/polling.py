@@ -1196,7 +1196,8 @@ def thread_console(self,args):
             v_response['v_data'] = {
                 'v_data' : v_data_return,
                 'v_last_block': True,
-                'v_duration': v_duration
+                'v_duration': v_duration,
+                'v_con_status': v_database.v_connection.GetConStatus(),
             }
 
             #send data in chunks to avoid blocking the websocket server
