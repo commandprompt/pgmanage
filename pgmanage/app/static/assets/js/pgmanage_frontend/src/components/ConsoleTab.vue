@@ -1,10 +1,10 @@
 <template>
   <splitpanes class="default-theme" horizontal style="height: calc(100vh - 60px)" @resized="onResize">
-    <pane>
+    <pane size="80">
       <div ref="console" :id="`txt_console_${tabId}`" class="omnidb__txt-console" style="height: 100%"></div>
     </pane>
 
-    <pane>
+    <pane size="20">
       <div class="row mb-1">
         <div class="tab_actions omnidb__tab-actions col-12">
           <button class="btn btn-sm btn-primary omnidb__tab-actions__btn" title="Run" @click="consoleSQL(false)">
@@ -260,6 +260,10 @@ export default {
         this.consoleReturnRender(this.data, this.context);
       }
     });
+
+    setTimeout(() => {
+      this.onResize();
+    }, 200);
   },
   unmounted() {
     emitter.all.delete(`${this.tabId}_autocomplete`);
