@@ -115,13 +115,12 @@ function polling_response(message) {
           message.v_data.v_data = [];
           if (context.new && context.callback!=null) {
             context.callback(message, context)
-
-            removeContext(context_code);
           } else {
             consoleReturn(message, context);
-            //Remove context
-            removeContext(context_code);
           }
+
+          //Remove context
+          removeContext(context_code);
         }
       }
       break;

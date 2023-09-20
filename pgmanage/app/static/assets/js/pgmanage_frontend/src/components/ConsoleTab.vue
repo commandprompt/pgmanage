@@ -86,10 +86,13 @@
           </button>
 
           <div :id="`div_query_info_${tabId}`" class="omnidb__query-info">
-            <span v-if="queryStartTime" class="mr-2">
+            <span v-if="cancelled">
+              <b>Cancelled</b>
+            </span>
+            <span v-else-if="queryStartTime" class="mr-2">
               <b>Start time:</b> {{ queryStartTime }}
             </span>
-            <span v-if="queryDuration">
+            <span v-else-if="queryDuration">
               <b>Duration:</b> {{ queryDuration }}
             </span>
           </div>
@@ -104,7 +107,7 @@
 </template>
 
 <script>
-import { consoleSQL, showConsoleHistory, cancelConsole } from "../console";
+import { consoleSQL, showConsoleHistory } from "../console";
 import { indentSQL, uiCopyTextToClipboard } from "../workspace";
 import { querySQL } from "../query";
 import ace from "ace-builds";
@@ -124,7 +127,7 @@ import { showToast } from "../notification_control";
 import ConsoleHistoryModal from "./ConsoleHistoryModal.vue";
 import moment from "moment";
 import { v_queryRequestCodes, refreshTreeNode } from "../query";
-import { createRequest } from "../long_polling";
+import { createRequest, removeContext, SetAcked } from "../long_polling";
 import { format } from "sql-formatter";
 
 const consoleState = {
@@ -179,6 +182,7 @@ export default {
         language: this.dialect === "oracle" ? "plsql" : this.dialect,
         linesBetweenQueries: 1,
       },
+      cancelled: false,
     };
   },
   computed: {
@@ -355,6 +359,7 @@ export default {
       let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
       tab_tag.tempData = "";
       this.queryDuration = "";
+      this.cancelled = false;
 
       if (!check_command || command === "\\") {
         if (!this.idleState) {
@@ -392,6 +397,8 @@ export default {
               new: true,
               callback: this.consoleReturn.bind(this),
             };
+
+            context.tab_tag.context = context;
 
             createRequest(v_queryRequestCodes.Console, message_data, context);
 
@@ -466,8 +473,26 @@ export default {
         this.editor.gotoLine(0, 0, true);
       }
     },
+    cancelConsole() {
+      let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+      let message_data = { tab_id: this.tabId, conn_tab_id: this.connId };
+
+      createRequest(v_queryRequestCodes.CancelThread, message_data, null);
+
+      this.cancelConsoleTab(tab_tag);
+    },
+    cancelConsoleTab(tab_tag) {
+      this.editor.setReadOnly(false);
+
+      this.consoleState = consoleState.Idle;
+      this.tabStatus = tabStatusMap.NOT_CONNECTED;
+
+      this.cancelled = true;
+
+      removeContext(tab_tag.context.v_context_code);
+      SetAcked(tab_tag.context);
+    },
     showConsoleHistory,
-    cancelConsole,
     querySQL,
   },
 };
