@@ -47,6 +47,7 @@ let createConsoleTabFunctionNew = function () {
                                   :terminal-theme="terminalTheme"
                                   :console-help="consoleHelp"
                                   :database-index="databaseIndex"
+                                  :dialect="dialect"
                                   >
                                 </console-tab>`;
   const app = createApp({
@@ -62,6 +63,7 @@ let createConsoleTabFunctionNew = function () {
         terminalTheme: v_current_terminal_theme,
         consoleHelp: v_connTabControl.selectedTab.tag.consoleHelp,
         databaseIndex: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+        dialect: v_connTabControl.selectedTab.tag.selectedDBMS
       };
     },
   });

@@ -118,6 +118,7 @@ import ConsoleHistoryModal from "./ConsoleHistoryModal.vue";
 import moment from "moment";
 import { v_queryRequestCodes, refreshTreeNode } from "../query";
 import { createRequest } from "../long_polling";
+import { format } from "sql-formatter";
 
 const consoleState = {
   Idle: 0,
@@ -148,6 +149,7 @@ export default {
     terminalTheme: Object,
     consoleHelp: String,
     databaseIndex: Number,
+    dialect: String,
   },
   data() {
     return {
@@ -162,6 +164,14 @@ export default {
       tabStatus: tabStatusMap.NOT_CONNECTED,
       queryDuration: "",
       queryStartTime: "",
+      formatOptions: {
+        tabWidth: 2,
+        keywordCase: "upper",
+        //sql-formatter uses 'plsql' for oracle sql flavor
+        // otherwise - our db technology names match perfectly
+        language: this.dialect === "oracle" ? "plsql" : this.dialect,
+        linesBetweenQueries: 1,
+      },
     };
   },
   computed: {
@@ -384,7 +394,7 @@ export default {
               check_command: check_command,
               mode: mode,
               new: true,
-              callback: this.consoleReturn.bind(this)
+              callback: this.consoleReturn.bind(this),
             };
 
             createRequest(v_queryRequestCodes.Console, message_data, context);
@@ -400,7 +410,7 @@ export default {
         }
       }
     },
-    consoleReturn(data, context){
+    consoleReturn(data, context) {
       if (!this.idleState) {
         //TODO: move current connection tab and current tab to global state
         if (
@@ -451,11 +461,18 @@ export default {
       this.terminal.write("\x1b[H\x1b[2J");
       this.terminal.write(this.consoleHelp);
     },
+    indentSQL() {
+      let editor_value = this.editor.getValue();
+      let formatted = format(editor_value, this.formatOptions);
+      if (formatted.length) {
+        this.editor.setValue(formatted);
+        this.editor.clearSelection();
+        this.editor.gotoLine(0, 0, true);
+      }
+    },
     showConsoleHistory,
     cancelConsole,
-    indentSQL,
     querySQL,
-    autocomplete_start,
   },
 };
 </script>
