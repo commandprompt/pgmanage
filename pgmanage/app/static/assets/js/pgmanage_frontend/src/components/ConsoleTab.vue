@@ -228,27 +228,6 @@ export default {
       this.onResize();
     });
 
-    emitter.on(`${this.tabId}_console_return`, ({ data, context }) => {
-      if (!this.idleState) {
-        //TODO: move current connection tab and current tab to global state
-        if (
-          this.tabId === context.tab_tag.tabControl.selectedTab.id &&
-          this.connId ===
-          context.tab_tag.connTab.tag.connTabControl.selectedTab.id
-        ) {
-          this.consoleReturnRender(data, context);
-        } else {
-          this.consoleState = consoleState.Ready;
-          this.data = data;
-          this.context = context;
-
-          //FIXME: change into event emitting later
-          context.tab_tag.tab_loading_span.style.visibility = "hidden";
-          context.tab_tag.tab_check_span.style.display = "";
-        }
-      }
-    });
-
     emitter.on(`${this.tabId}_copy_to_editor`, (command) => {
       this.editor.setValue(command);
       this.editor.clearSelection();
@@ -405,6 +384,7 @@ export default {
               check_command: check_command,
               mode: mode,
               new: true,
+              callback: this.consoleReturn.bind(this)
             };
 
             createRequest(v_queryRequestCodes.Console, message_data, context);
@@ -417,6 +397,26 @@ export default {
 
             this.tabStatus = tabStatusMap.RUNNING;
           }
+        }
+      }
+    },
+    consoleReturn(data, context){
+      if (!this.idleState) {
+        //TODO: move current connection tab and current tab to global state
+        if (
+          this.tabId === context.tab_tag.tabControl.selectedTab.id &&
+          this.connId ===
+          context.tab_tag.connTab.tag.connTabControl.selectedTab.id
+        ) {
+          this.consoleReturnRender(data, context);
+        } else {
+          this.consoleState = consoleState.Ready;
+          this.data = data;
+          this.context = context;
+
+          //FIXME: change into event emitting later
+          context.tab_tag.tab_loading_span.style.visibility = "hidden";
+          context.tab_tag.tab_check_span.style.display = "";
         }
       }
     },

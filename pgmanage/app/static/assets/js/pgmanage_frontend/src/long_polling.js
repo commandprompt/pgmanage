@@ -113,9 +113,10 @@ function polling_response(message) {
         context.tab_tag.tempData = context.tab_tag.tempData += message.v_data.v_data;
         if (message.v_data.v_last_block || message.v_error) {
           message.v_data.v_data = [];
-          if (context.new) {
-            //send event on console Component with return data
-            emitter.emit(`${context.tab_tag.tab_id}_console_return`, {data: message, context: context})
+          if (context.new && context.callback!=null) {
+            context.callback(message, context)
+
+            removeContext(context_code);
           } else {
             consoleReturn(message, context);
             //Remove context
