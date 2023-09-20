@@ -85,7 +85,14 @@
             Cancel
           </button>
 
-          <div :id="`div_query_info_${tabId}`" class="omnidb__query-info" v-html="queryInfo"></div>
+          <div :id="`div_query_info_${tabId}`" class="omnidb__query-info">
+            <span v-if="queryStartTime" class="mr-2">
+              <b>Start time:</b> {{ queryStartTime }}
+            </span>
+            <span v-if="queryDuration">
+              <b>Duration:</b> {{ queryDuration }}
+            </span>
+          </div>
         </div>
       </div>
       <div ref="editor" :id="`txt_input_${tabId}`" class="omnidb__console__text-input" style="height: 100%"
@@ -214,17 +221,6 @@ export default {
         "omnis__circle-waves--idle": this.tabStatus === tabStatusMap.IDLE,
         "omnis__circle-waves--running": this.tabStatus === tabStatusMap.RUNNING,
       };
-    },
-    queryInfo() {
-      let start_time_html = `<b>Start time</b>: ${this.queryStartTime}`;
-      let duration_html = `<b>Duration</b>: ${this.queryDuration}`;
-      if (this.queryDuration && this.queryStartTime) {
-        return `${start_time_html} ${duration_html}`;
-      } else if (this.queryStartTime) {
-        return start_time_html;
-      } else {
-        return "";
-      }
     },
   },
   mounted() {
