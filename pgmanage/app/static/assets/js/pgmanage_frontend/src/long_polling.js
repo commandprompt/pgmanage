@@ -113,8 +113,8 @@ function polling_response(message) {
         context.tab_tag.tempData = context.tab_tag.tempData += message.v_data.v_data;
         if (message.v_data.v_last_block || message.v_error) {
           message.v_data.v_data = [];
-          if (context.new && context.callback!=null) {
-            context.callback(message, context)
+          if (context.new && context.sqlCallback!=null) {
+            context.sqlCallback(message, context)
           } else {
             consoleReturn(message, context);
           }
@@ -216,14 +216,10 @@ function QueryPasswordRequired(p_context, p_message) {
 		showPasswordPrompt(
 			p_context.database_index,
 			function() {
-				cancelConsoleTab(p_context.tab_tag);
-				p_context.tab_tag.editor_input.setValue(p_context.tab_tag.last_command);
-        p_context.tab_tag.editor_input.clearSelection();
-				consoleSQL(p_context.check_command,
-									 p_context.mode);
+        p_context.passwordSuccessCallback(p_context)
 			},
 			function() {
-				cancelConsoleTab(p_context.tab_tag);
+        p_context.passwordFailCalback(p_context.tab_tag)
 			},
 			p_message
 		);

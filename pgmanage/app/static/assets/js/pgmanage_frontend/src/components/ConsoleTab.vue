@@ -89,11 +89,12 @@
             <span v-if="cancelled">
               <b>Cancelled</b>
             </span>
-            <span v-else-if="queryStartTime" class="mr-2">
+            <span v-else-if="queryStartTime && queryDuration" class="mr-2">
               <b>Start time:</b> {{ queryStartTime }}
-            </span>
-            <span v-else-if="queryDuration">
               <b>Duration:</b> {{ queryDuration }}
+            </span>
+            <span v-else-if="queryStartTime">
+              <b>Start time:</b> {{ queryStartTime }}
             </span>
           </div>
         </div>
@@ -395,7 +396,9 @@ export default {
               check_command: check_command,
               mode: mode,
               new: true,
-              callback: this.consoleReturn.bind(this),
+              sqlCallback: this.consoleReturn.bind(this),
+              passwordSuccessCallback: this.passwordSuccessCallback.bind(this),
+              passwordFailCalback: this.cancelConsoleTab.bind(this),
             };
 
             context.tab_tag.context = context;
@@ -491,6 +494,15 @@ export default {
 
       removeContext(tab_tag.context.v_context_code);
       SetAcked(tab_tag.context);
+    },
+    passwordSuccessCallback(context) {
+      this.cancelConsoleTab(context.tab_tag);
+
+      this.editor.setValue(this.lastCommand);
+      this.editor.clearSelection();
+
+			this.consoleSQL(context.check_command,
+									 context.mode);
     },
     showConsoleHistory,
     querySQL,
