@@ -25,10 +25,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { consoleSQL } from "./console";
 import { whiteHtmlRenderer, whiteRightHtmlRenderer } from "./renderers";
 import { Range } from "ace-builds";
 import { execAjax } from "./ajax_control";
+import { emitter } from "./emitter";
 
 var v_autocomplete_object;
 
@@ -1076,7 +1076,7 @@ function autocomplete_update_editor_cursor(p_editor, p_event) {
   // Enter
   if (p_event.keyCode === 13) {
     if (v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode=='console') {
-      consoleSQL();
+      emitter.emit(`${v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_run_console`)
     }
   }
 }

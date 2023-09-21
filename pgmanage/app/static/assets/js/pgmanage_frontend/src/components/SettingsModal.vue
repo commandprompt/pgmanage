@@ -183,6 +183,7 @@ import ace from 'ace-builds'
 import axios from 'axios'
 import { showAlert, showToast } from '../notification_control'
 import moment from 'moment'
+import { emitter } from '../emitter'
 
 export default {
   name: 'SettingsModal',
@@ -266,7 +267,7 @@ export default {
           if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'query')
             window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.bt_start.click();
           else if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'console')
-            consoleSQL(false);
+            emitter.emit(`${window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_run_console`, false)
           else if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'edit')
             queryEditData();
         }

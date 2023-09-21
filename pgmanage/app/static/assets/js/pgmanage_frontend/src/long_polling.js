@@ -3,13 +3,12 @@ import ShortUniqueId from 'short-unique-id';
 
 import { terminalReturn } from "./terminal";
 import { querySQLReturn, cancelSQLTab, querySQL, v_queryResponseCodes } from "./query";
-import { consoleReturn, cancelConsoleTab, consoleSQL } from "./console";
+import { consoleReturn} from "./console";
 import { queryEditDataReturn, saveEditDataReturn, cancelEditDataTab } from "./tree_context_functions/edit_data";
 import { debugResponse } from "./debug";
 import { showPasswordPrompt } from "./passwords";
 import { getCookie } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
-import { emitter } from './emitter';
 
 const uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4})
 

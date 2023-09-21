@@ -90,8 +90,8 @@
               <b>Cancelled</b>
             </span>
             <span v-else-if="queryStartTime && queryDuration" class="mr-2">
-              <b>Start time:</b> {{ queryStartTime }}
-              <b>Duration:</b> {{ queryDuration }}
+              <b>Start time:</b> {{ queryStartTime }} <b>Duration:</b>
+              {{ queryDuration }}
             </span>
             <span v-else-if="queryStartTime">
               <b>Start time:</b> {{ queryStartTime }}
@@ -251,6 +251,10 @@ export default {
       }
     });
 
+    emitter.on(`${this.tabId}_run_console`, (check_command) => {
+      this.consoleSQL(check_command);
+    });
+
     setTimeout(() => {
       this.onResize();
     }, 200);
@@ -362,7 +366,7 @@ export default {
       this.queryDuration = "";
       this.cancelled = false;
 
-      if (!check_command || command === "\\") {
+      if (!check_command || command[0] === "\\") {
         if (!this.idleState) {
           showToast("info", "Tab with activity in progres.");
         } else {
@@ -418,7 +422,6 @@ export default {
     },
     consoleReturn(data, context) {
       if (!this.idleState) {
-        //TODO: move current connection tab and current tab to global state
         if (
           this.tabId === context.tab_tag.tabControl.selectedTab.id &&
           this.connId ===
@@ -501,8 +504,7 @@ export default {
       this.editor.setValue(this.lastCommand);
       this.editor.clearSelection();
 
-			this.consoleSQL(context.check_command,
-									 context.mode);
+      this.consoleSQL(context.check_command, context.mode);
     },
     showConsoleHistory,
     querySQL,
