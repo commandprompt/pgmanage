@@ -26,7 +26,7 @@
 import { emitter } from '../emitter'
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
-import { checkBeforeChangeDatabase, drawGraph } from "../workspace";
+import { checkBeforeChangeDatabase } from "../workspace";
 import {
   tabSQLTemplate,
   TemplateSelectPostgresql,
@@ -174,26 +174,11 @@ export default {
         ],
         cm_schema: [
           {
-            label: "Render Graph",
+            label: "ER Diagram",
             icon: "fab cm-all fa-hubspot",
-            children: [
-              {
-                label: "Simple Graph",
-                icon: "fab cm-all fa-hubspot",
-                onClick: () => {
-                  v_connTabControl.tag.createGraphTab(this.selectedNode.title);
-                  drawGraph(false, this.selectedNode.title);
-                },
-              },
-              {
-                label: "Complete Graph",
-                icon: "fab cm-all fa-hubspot",
-                onClick: () => {
-                  v_connTabControl.tag.createGraphTab(this.selectedNode.title);
-                  drawGraph(true, this.selectedNode.title);
-                },
-              },
-            ],
+            onClick: () => {
+              v_connTabControl.tag.createERDTab(this.selectedNode.data.schema);
+            },
           },
           {
             label: "Backup",

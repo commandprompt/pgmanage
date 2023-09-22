@@ -36,6 +36,7 @@ import { v_createMonitorDashboardTabFunction, v_createNewMonitorUnitTabFunction 
 import { createOuterTerminalTabFunction } from './tab_functions/outer_terminal_tab'
 import { createWelcomeTabFunction } from './tab_functions/outer_welcome_tab'
 import { v_createGraphTabFunction } from './tab_functions/inner_graph_tab'
+import { createERDTabFunction } from './tab_functions/erd_tab'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import { createDebuggerTabFunction } from './tab_functions/inner_debugger_tab'
 import { showConfirm } from './notification_control'
@@ -432,6 +433,7 @@ function initCreateTabFunctions() {
   };
 	v_connTabControl.tag.createEditDataTab = createEditDataTabFunction;
   v_connTabControl.tag.createGraphTab = v_createGraphTabFunction;
+  v_connTabControl.tag.createERDTab = createERDTabFunction;
   v_connTabControl.tag.createMonitoringTab = v_createMonitoringTabFunction;
   v_connTabControl.tag.createDebuggerTab = createDebuggerTabFunction;
   v_connTabControl.tag.createOuterTerminalTab = createOuterTerminalTabFunction;

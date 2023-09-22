@@ -189,7 +189,7 @@ class SQLite:
         return v_return
 
     @lock_required
-    def QueryTables(self):
+    def QueryTables(self, *kwargs):
         return self.v_connection.Query('''
             select name as table_name
 		    from sqlite_master
@@ -197,7 +197,7 @@ class SQLite:
         ''', True)
 
     @lock_required
-    def QueryTablesFields(self, p_table=None):
+    def QueryTablesFields(self, p_table=None, *kwargs):
         v_table_columns_all = Spartacus.Database.DataTable()
         v_table_columns_all.Columns = [
             'column_name',
@@ -260,7 +260,7 @@ class SQLite:
         return v_table_columns_all
 
     @lock_required
-    def QueryTablesForeignKeys(self, p_table=None):
+    def QueryTablesForeignKeys(self, p_table=None, *kwargs):
         v_fks_all = Spartacus.Database.DataTable()
         v_fks_all.Columns = [
             'r_table_name',
@@ -278,7 +278,12 @@ class SQLite:
             v_tables.Columns.append('table_name')
             v_tables.Rows.append(OrderedDict(zip(v_tables.Columns, [p_table])))
         else:
-            v_tables = self.QueryTables()
+            v_tables = self.v_connection.Query('''
+                select name as table_name
+                from sqlite_master
+                where type = 'table'
+                ''', True)
+
         for v_table in v_tables.Rows:
             v_fks_tmp = self.v_connection.Query("pragma foreign_key_list('{0}')".format(v_table['table_name']), True)
             v_fks = Spartacus.Database.DataTable()
@@ -309,9 +314,8 @@ class SQLite:
         return v_fks_all
 
     @lock_required
-    def QueryTablesForeignKeysColumns(self, p_fkey, p_table=None):
+    def QueryTablesForeignKeysColumns(self, p_fkey, p_table=None, *kwargs):
         v_fk = Spartacus.Database.DataTable()
-
         v_fk.Columns = [
             'r_table_name',
             'table_name',
@@ -324,16 +328,34 @@ class SQLite:
             'r_table_schema'
         ]
 
-        v_fks_tmp = self.v_connection.Query("pragma foreign_key_list('{0}')".format(p_table), True)
+        if p_table:
+            q = "select {0} as name, select * from pragma_foreign_key_list('{0}')".format(p_table)
+        else:
+            q = '''SELECT
+                    m.name,
+                    p.*
+                    FROM
+                        sqlite_master m
+                        JOIN pragma_foreign_key_list(m.name) p ON m.name != p."table"
+                    WHERE m.type = 'table'
+                    ORDER BY m.name
+                '''
 
+        if type(p_fkey) == list:
+            fkeys = p_fkey
+        else:
+            fkeys = [p_fkey]
+
+        v_fks_tmp = self.v_connection.Query(q, True)
         for v_row_tmp in v_fks_tmp.Rows:
-            if (p_table + '_fk_' + str(v_row_tmp['id'])) == p_fkey:
+            constraint_name = v_row_tmp['name'] + '_fk_' + str(v_row_tmp['id'])
+            if constraint_name in fkeys:
                 v_row = []
                 v_row.append(v_row_tmp['table'])
-                v_row.append(p_table)
+                v_row.append(v_row_tmp['name'])
                 v_row.append(v_row_tmp['to'])
                 v_row.append(v_row_tmp['from'])
-                v_row.append(p_table + '_fk_' + str(v_row_tmp['id']))
+                v_row.append(constraint_name)
                 v_row.append(v_row_tmp['on_update'])
                 v_row.append(v_row_tmp['on_delete'])
                 v_row.append('')

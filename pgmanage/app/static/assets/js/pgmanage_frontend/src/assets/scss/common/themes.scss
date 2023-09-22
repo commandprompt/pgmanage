@@ -40,6 +40,7 @@ $pev2StatsTableTheadDark: 'pev2StatsTableTheadDark';
 $pev2CodeBlockBg: 'pev2CodeBlockBg';
 $schemaEditorColumnBg: 'schemaEditorColumnBg';
 $primaryBlueWhiteSwitching: 'primaryBlueWhiteSwitching';
+$erdCardWrapBg: 'erdCardWrapBg';
 
 $themes: (
     light: (
@@ -81,6 +82,7 @@ $themes: (
         pev2CodeBlockBg: #CCDFF6,
         schemaEditorColumnBg: rgba($primaryBlue, 0.15),
         primaryBlueWhiteSwitching: $primaryBlue,
+        erdCardWrapBg: $bgLightSecondary,
     ),
     dark: (
         borderColor: $borderColorDark,
@@ -121,6 +123,7 @@ $themes: (
         pev2CodeBlockBg: lighten($primaryDark, 2.5%),
         schemaEditorColumnBg: rgba($primaryBlue, 0.15),
         primaryBlueWhiteSwitching: $white,
+        erdCardWrapBg: $bgDarkSecondary,
     ),
 );
 

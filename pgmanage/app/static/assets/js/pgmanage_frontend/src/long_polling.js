@@ -245,18 +245,17 @@ function removeContext(context_code) {
 function createRequest(message_code, message_data, context) {
   let context_code = undefined;
 	if (context != null) {
-		// Context code is passed
-    // context is sometimes a number, usually it is an object... duh
-		if (context === parseInt(context, 10)) {
-			context_code = context;
-		}
-		else {
+		if (typeof(context) === 'object') {
       let ctx = {
         code: context_code,
         context: context
       }
       createContext(ctx)
       context_code = ctx.code
+		}
+    // if context code is passed do not create a new context
+		else {
+			context_code = context;
 		}
 	}
 

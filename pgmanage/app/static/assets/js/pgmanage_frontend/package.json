@@ -29,7 +29,7 @@
     "chart.js": "^2.7.2",
     "chartjs-plugin-annotation": "^0.5.7",
     "cytoscape": "^3.26.0",
-    "cytoscape-spread": "^3.0.0",
+    "cytoscape-node-html-label": "^1.2.2",
     "daterangepicker": "^3.1.0",
     "events": "^3.3.0",
     "jaro-winkler": "^0.2.8",

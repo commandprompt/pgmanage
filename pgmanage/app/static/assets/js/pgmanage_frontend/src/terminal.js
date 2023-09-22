@@ -49,8 +49,10 @@ function clearTerminal() {
 function startTerminal(p_conn_id) {
   var v_tag = v_connTabControl.selectedTab.tag;
   var v_context = {
-    tab_tag: v_tag,
-    acked: false
+	context: {
+		tab_tag: v_tag,
+		acked: false
+	}
   }
   v_tag.context = createContext(v_context);
 	v_tag.editor_console.focus();

@@ -21,7 +21,7 @@
 <script>
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
-import { drawGraph, renameTabConfirm } from "../workspace";
+import { renameTabConfirm } from "../workspace";
 import {
   TemplateUpdateOracle,
   TemplateInsertOracle,
@@ -70,26 +70,11 @@ export default {
         cm_server: [this.cmRefreshObject],
         cm_database: [
           {
-            label: "Render Graph",
+            label: "ER Diagram",
             icon: "fab cm-all fa-hubspot",
-            children: [
-              {
-                label: "Simple Graph",
-                icon: "fab cm-all fa-hubspot",
-                onClick: () => {
-                  v_connTabControl.tag.createGraphTab(this.selectedNode.title);
-                  drawGraph(false, this.templates.username);
-                },
-              },
-              {
-                label: "Complete Graph",
-                icon: "fab cm-all fa-hubspot",
-                onClick: () => {
-                  v_connTabControl.tag.createGraphTab(this.selectedNode.title);
-                  drawGraph(true, this.templates.username);
-                },
-              },
-            ],
+            onClick: () => {
+              v_connTabControl.tag.createERDTab(this.templates.username);
+            },
           },
         ],
         cm_tables: [

@@ -9,7 +9,7 @@ import sqlparse
 from app.client_manager import client_manager
 from app.models.main import Connection, Shortcut, UserDetails
 from app.utils.crypto import make_hash
-from app.utils.decorators import database_required, user_authenticated
+from app.utils.decorators import database_required, database_required_new, user_authenticated
 from app.utils.key_manager import key_manager
 from app.utils.master_password import (
     reset_master_pass,
@@ -221,94 +221,74 @@ def renew_password(request, session):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def draw_graph(request, v_database):
+@database_required_new(check_timeout=True, open_connection=True)
+def draw_graph(request, database):
     response_data = create_response_template()
-
-    data = request.data
-    complete = data["p_complete"]
-    schema = data["p_schema"]
-
-    nodes = []
-    edges = []
+    schema = request.data.get("schema", '')
+    edge_dict = {}
+    node_dict = {}
 
     try:
-        tables = v_database.QueryTables(False, schema)
+        tables = database.QueryTables(False, schema)
+
         for table in tables.Rows:
             node_data = {
                 "id": table["table_name"],
                 "label": table["table_name"],
                 "group": 1,
+                "columns": []
             }
 
-            if complete:
-                node_data["label"] += "\n"
-                columns = v_database.QueryTablesFields(
-                    table["table_name"], False, schema
-                )
-                for column in columns.Rows:
-                    node_data["label"] += (
-                        column["column_name"] + " : " + column["data_type"] + "\n"
-                    )
+            table_columns = database.QueryTablesFields(
+                table["table_name"], False, schema
+            ).Rows
 
-            nodes.append(node_data)
+            node_data['columns'] = list(({
+                'name': c['column_name'],
+                'type': c['data_type'],
+                'cgid': None,
+                'is_pk': False,
+                'is_fk': False,
+                } for c in table_columns))
 
-        data = v_database.QueryTablesForeignKeys(None, False, schema)
+            node_dict[table["table_name"]] = node_data
 
-        curr_constraint = ""
-        curr_from = ""
-        curr_to = ""
-        curr_to_schema = ""
+        q_fks = database.QueryTablesForeignKeys(None, False, schema)
 
-        for fk in data.Rows:
-            if curr_constraint != "" and curr_constraint != fk["constraint_name"]:
-                edge = {
-                    "from": curr_from,
-                    "to": curr_to,
+        for fk in q_fks.Rows:
+            if fk["r_table_schema"] == schema:
+                edge_dict[fk["constraint_name"]] = {
+                    "from": fk["table_name"],
+                    "to": fk["r_table_name"],
+                    "from_col": None,
+                    "to_col": None,
                     "label": "",
                     "arrows": "to",
+                    "cgid": None
                 }
 
-                # FK referencing other schema, create a new node if it isn't in v_nodes list.
-                if v_database.v_schema != curr_to_schema:
-                    found = False
-                    for k in range(len(nodes) - 1, 0):
-                        if nodes[k]["label"] == curr_to:
-                            found = True
-                            break
+        q_fkcols = database.QueryTablesForeignKeysColumns(list(edge_dict.keys()), None, False, schema)
+        for fkcol in q_fkcols.Rows:
+            cgid = fkcol['constraint_name']
+            edge = edge_dict[fkcol['constraint_name']]
+            edge['from_col'] = fkcol['column_name']
+            edge['to_col'] = fkcol['r_column_name']
+            edge['cgid'] = cgid
+            table = node_dict[fkcol['table_name']]
+            r_table = node_dict[fkcol['r_table_name']]
+            for col in table['columns']:
+                if col['name'] == fkcol['column_name']:
+                    col['is_fk'] = True
+                    col['cgid'] = cgid
 
-                    if not found:
-                        node = {"id": curr_to, "label": curr_to, "group": 0}
-                        nodes.append(node)
+            for col in r_table['columns']:
+                if col['name'] == fkcol['r_column_name']:
+                    # FIXME: this is incomplete, seting PK based on FK constraints is not enough
+                    # there may be unreferenced PKs which will be missed
+                    col['is_pk'] = True
+                    col['cgid'] = f"{fkcol['r_table_name']}-{fkcol['r_column_name']}"
 
-                edges.append(edge)
-                curr_constraint = ""
-
-            curr_from = fk["table_name"]
-            curr_to = fk["r_table_name"]
-            curr_constraint = fk["constraint_name"]
-            curr_to_schema = fk["r_table_schema"]
-
-        if curr_constraint != "":
-            edge = {"from": curr_from, "to": curr_to, "label": "", "arrows": "to"}
-
-            edges.append(edge)
-
-            # FK referencing other schema, create a new node if it isn't in v_nodes list.
-            if v_database.v_schema != curr_to_schema:
-                found = False
-
-                for k in range(len(nodes) - 1, 0):
-                    if nodes[k]["label"] == curr_to:
-                        found = True
-                        break
-
-                if not found:
-                    node = {"id": curr_to, "label": curr_to, "group": 0}
-
-                    nodes.append(node)
-
-        response_data["v_data"] = {"v_nodes": nodes, "v_edges": edges}
+        response_data["v_data"] = {"nodes": list(node_dict.values()), "edges": list(edge_dict.values())}
 
     except Exception as exc:
         return error_response(message=str(exc), password_timeout=True)

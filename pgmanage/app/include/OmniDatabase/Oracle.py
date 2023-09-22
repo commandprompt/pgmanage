@@ -380,7 +380,16 @@ class Oracle:
         else:
             if p_table:
                 v_filter = "and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{0}' ".format(p_table)
-        v_filter = v_filter + "and (case when upper(replace(constraint_info.constraint_name, ' ', '')) <> constraint_info.constraint_name then '"' || constraint_info.constraint_name || '"' else constraint_info.constraint_name end) = '{0}' ".format(p_fkey)
+
+        if type(p_fkey) == list:
+            fkeys = p_fkey
+        else:
+            fkeys = [p_fkey]
+
+        fkey_list = ', '.join(list(f'\'{str(e)}\'' for e in fkeys))
+
+        if fkey_list:
+            v_filter = v_filter + "and (case when upper(replace(constraint_info.constraint_name, ' ', '')) <> constraint_info.constraint_name then '"' || constraint_info.constraint_name || '"' else constraint_info.constraint_name end) in ({0}) ".format(fkey_list)
         return self.v_connection.Query('''
             select (case when upper(replace(constraint_info.constraint_name, ' ', '')) <> constraint_info.constraint_name then '"' || constraint_info.constraint_name || '"' else constraint_info.constraint_name end) as "constraint_name",
                    (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) as "table_name",

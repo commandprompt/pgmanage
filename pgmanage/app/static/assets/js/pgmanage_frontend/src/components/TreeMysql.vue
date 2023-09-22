@@ -27,7 +27,7 @@ import {
   TemplateInsertMysql,
   TemplateUpdateMysql,
 } from "../tree_context_functions/tree_mysql";
-import { drawGraph, renameTabConfirm } from "../workspace";
+import { renameTabConfirm } from "../workspace";
 import { querySQL } from "../query";
 import { v_startEditData } from "../tree_context_functions/edit_data";
 import { getProperties, clearProperties } from "../properties";
@@ -80,26 +80,11 @@ export default {
         ],
         cm_database: [
           {
-            label: "Render Graph",
+            label: "ER Diagram",
             icon: "fab cm-all fa-hubspot",
-            children: [
-              {
-                label: "Simple Graph",
-                icon: "fab cm-all fa-hubspot",
-                onClick: () => {
-                  v_connTabControl.tag.createGraphTab(this.selectedNode.title);
-                  drawGraph(false, this.selectedNode.title);
-                },
-              },
-              {
-                label: "Complete Graph",
-                icon: "fab cm-all fa-hubspot",
-                onClick: () => {
-                  v_connTabControl.tag.createGraphTab(this.selectedNode.title);
-                  drawGraph(true, this.selectedNode.title);
-                },
-              },
-            ],
+            onClick: () => {
+              v_connTabControl.tag.createERDTab(this.selectedNode.data.database);
+            },
           },
           {
             label: "Alter Database",

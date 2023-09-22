@@ -68,6 +68,13 @@ export default {
       return {
         cm_server: [this.cmRefreshObject],
         cm_tables: [
+          {
+            label: "ER Diagram",
+            icon: "fab cm-all fa-hubspot",
+            onClick: () => {
+              v_connTabControl.tag.createERDTab();
+            },
+          },
           this.cmRefreshObject,
           {
             label: "Create Table",

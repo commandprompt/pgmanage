@@ -21,6 +21,7 @@ $theme-map: null; //important! do not delete this
 @import './components/pev2/pev2';
 @import './components/schema-editor';
 @import './components/vue-power-tree';
+@import './components/erd-card';
 
 body {
     font-family: $fontFamily;
