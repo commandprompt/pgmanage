@@ -321,9 +321,12 @@ export default {
       shortcut_cancel_query: function () {
 
         if (window.v_connTabControl.selectedTab.tag.mode == 'connection') {
-          if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'query' || window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'console')
+          if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'query')
             if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.bt_cancel.style.display != 'none')
               window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.bt_cancel.click();
+          else if(window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'console') {
+            emitter.emit(`${window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_cancel_query`)
+          }
         }
       },
       shortcut_indent: function () {

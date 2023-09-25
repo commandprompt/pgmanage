@@ -229,29 +229,7 @@ export default {
   mounted() {
     this.setupEditor();
     this.setupTerminal();
-    emitter.on(`${this.tabId}_autocomplete`, (checked) => {
-      this.autocomplete = checked;
-    });
-
-    emitter.on(`${this.tabId}_resize`, () => {
-      this.onResize();
-    });
-
-    emitter.on(`${this.tabId}_copy_to_editor`, (command) => {
-      this.editor.setValue(command);
-      this.editor.clearSelection();
-      this.editor.gotoLine(0, 0, true);
-    });
-
-    emitter.on(`${this.tabId}_check_console_status`, () => {
-      if (this.consoleState === consoleState.Ready) {
-        this.consoleReturnRender(this.data, this.context);
-      }
-    });
-
-    emitter.on(`${this.tabId}_run_console`, (check_command) => {
-      this.consoleSQL(check_command);
-    });
+    this.setupEvents();
 
     settingsStore.$subscribe((mutation, state) => {
       this.editor.setTheme(`ace/theme/${state.editorTheme}`);
@@ -265,7 +243,7 @@ export default {
     }, 200);
   },
   unmounted() {
-    emitter.all.delete(`${this.tabId}_autocomplete`);
+    this.clearEvents();
   },
   methods: {
     setupEditor() {
@@ -306,6 +284,43 @@ export default {
 
       this.terminal.loadAddon(this.fitAddon);
       this.fitAddon.fit();
+    },
+    setupEvents() {
+      emitter.on(`${this.tabId}_autocomplete`, (checked) => {
+        this.autocomplete = checked;
+      });
+
+      emitter.on(`${this.tabId}_resize`, () => {
+        this.onResize();
+      });
+
+      emitter.on(`${this.tabId}_copy_to_editor`, (command) => {
+        this.editor.setValue(command);
+        this.editor.clearSelection();
+        this.editor.gotoLine(0, 0, true);
+      });
+
+      emitter.on(`${this.tabId}_check_console_status`, () => {
+        if (this.consoleState === consoleState.Ready) {
+          this.consoleReturnRender(this.data, this.context);
+        }
+      });
+
+      emitter.on(`${this.tabId}_run_console`, (check_command) => {
+        this.consoleSQL(check_command);
+      });
+
+      emitter.on(`${this.tabId}_cancel_query`, () => {
+        this.cancelConsole();
+      });
+    },
+    clearEvents() {
+      emitter.all.delete(`${this.tabId}_autocomplete`);
+      emitter.all.delete(`${this.tabId}_resize`)
+      emitter.all.delete(`${this.tabId}_copy_to_editor`)
+      emitter.all.delete(`${this.tabId}_check_console_status`)
+      emitter.all.delete(`${this.tabId}_run_console`)
+      emitter.all.delete(`${this.tabId}_cancel_query`)
     },
     autocompleteKeyDown(event) {
       if (this.autocomplete) {
