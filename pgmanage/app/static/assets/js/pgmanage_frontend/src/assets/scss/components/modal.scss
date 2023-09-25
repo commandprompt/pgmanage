@@ -184,33 +184,33 @@ $modalPadding: 24px;
                                 background-color: $secondaryGrey;
 
                                 &-mariadb {
-                                    mask-image: url("../../images/db_icons/mariadb.svg");
-                                    -webkit-mask-image: url("../../images/db_icons/mariadb.svg");
+                                    mask-image: url("../images/db_icons/mariadb.svg");
+                                    -webkit-mask-image: url("../images/db_icons/mariadb.svg");
                                 }
 
                                 &-mysql {
-                                    mask-image: url("../../images/db_icons/mysql.svg");
-                                    -webkit-mask-image: url("../../images/db_icons/mysql.svg");
+                                    mask-image: url("../images/db_icons/mysql.svg");
+                                    -webkit-mask-image: url("../images/db_icons/mysql.svg");
                                 }
 
                                 &-oracle {
-                                    mask-image: url("../../images/db_icons/oracle.svg");
-                                    -webkit-mask-image: url("../../images/db_icons/oracle.svg");
+                                    mask-image: url("../images/db_icons/oracle.svg");
+                                    -webkit-mask-image: url("../images/db_icons/oracle.svg");
                                 }
 
                                 &-postgresql {
-                                    mask-image: url("../../images/db_icons/postgresql.svg");
-                                    -webkit-mask-image: url("../../images/db_icons/postgresql.svg");
+                                    mask-image: url("../images/db_icons/postgresql.svg");
+                                    -webkit-mask-image: url("../images/db_icons/postgresql.svg");
                                 }
 
                                 &-sqlite {
                                     mask-image: url("../../images/db_icons/sqlite.svg");
-                                    -webkit-mask-image: url("../../images/db_icons/sqlite.svg");
+                                    -webkit-mask-image: url("../images/db_icons/sqlite.svg");
                                 }
 
                                 &-terminal {
-                                    mask-image: url("../../images/db_icons/terminal.svg");
-                                    -webkit-mask-image: url("../../images/db_icons/terminal.svg");
+                                    mask-image: url("../images/db_icons/terminal.svg");
+                                    -webkit-mask-image: url("../images/db_icons/terminal.svg");
                                 }
                             }
                         }

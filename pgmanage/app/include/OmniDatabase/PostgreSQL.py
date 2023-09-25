@@ -1121,10 +1121,6 @@ class PostgreSQL:
             CASE
                 WHEN character_maximum_length is not null  and udt_name != 'text'
                 THEN CONCAT(udt_name, concat('(', concat(character_maximum_length::varchar(255), ')')))
-                WHEN numeric_precision is not null
-                    THEN CONCAT(udt_name, concat('(', concat(numeric_precision::varchar(255),',',numeric_scale::varchar(255), ')')))
-                WHEN datetime_precision is not null AND udt_name != 'date' THEN
-                CONCAT(udt_name, concat('(', concat(datetime_precision::varchar(255), ')')))
                 ELSE udt_name
             END as data_type
             FROM information_schema.columns
