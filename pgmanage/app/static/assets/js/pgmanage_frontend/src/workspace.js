@@ -729,12 +729,11 @@ function refreshHeights(p_all) {
     if (v_connTabControl.selectedTab.tag.tabControl != null && v_connTabControl.selectedTab.tag.tabControl.selectedTab) {
       var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
 
-      if (v_tab_tag.mode=='console' || v_tab_tag.mode=='debug' || v_tab_tag.mode=='edit' || v_tab_tag.mode=='graph' || v_tab_tag.mode=='monitor_dashboard' || v_tab_tag.mode=='monitor_grid' || v_tab_tag.mode=='monitor_unit' || v_tab_tag.mode=='query' || v_tab_tag.mode=='website' || v_tab_tag.mode=='website_outer') {
-        if (v_tab_tag.vueComponent) {
-          emitter.emit(`${v_tab_tag.tab_id}_resize`)
-        } else {
+      if (v_tab_tag.mode=='debug' || v_tab_tag.mode=='edit' || v_tab_tag.mode=='graph' || v_tab_tag.mode=='monitor_dashboard' || v_tab_tag.mode=='monitor_grid' || v_tab_tag.mode=='monitor_unit' || v_tab_tag.mode=='query' || v_tab_tag.mode=='website' || v_tab_tag.mode=='website_outer') {
           v_tab_tag.resize();
-        }
+      }
+      else if (v_tab_tag.mode === 'console') {
+        emitter.emit(`${v_tab_tag.tab_id}_resize`)
       }
       // else if (v_tab_tag.mode=='query_history') {
       //   v_tab_tag.div_result.style.height = window.innerHeight - $(v_tab_tag.div_result).offset().top - (1.75)*v_font_size + 'px';
@@ -1039,17 +1038,10 @@ function showMenuNewTab(e) {
 			}
 		},
 		{
-			label: 'Console Tab Old',
+			label: 'Console Tab',
 			icon: 'fas cm-all fa-terminal',
 			onClick: function() {
 				v_connTabControl.tag.createConsoleTab();
-			}
-		},
-    {
-			label: 'Console Tab New',
-			icon: 'fas cm-all fa-terminal',
-			onClick: function() {
-				v_connTabControl.tag.createConsoleTabNew();
 			}
 		},
 	];
