@@ -286,7 +286,7 @@ export default {
       this.fitAddon.fit();
     },
     setupEvents() {
-      emitter.on(`${this.tabId}_autocomplete`, (checked) => {
+      emitter.on(`${this.tabId}_toggle_autocomplete`, (checked) => {
         this.autocomplete = checked;
       });
 
@@ -315,16 +315,22 @@ export default {
       });
 
       emitter.on(`${this.tabId}_indent_sql`, () => {
-        this.indentSQL()
-      })
+        this.indentSQL();
+      });
+
+      emitter.on(`${this.tabId}_show_autocomplete_results`, (event) => {
+        this.autocompleteStart(event, true);
+      });
     },
     clearEvents() {
       emitter.all.delete(`${this.tabId}_autocomplete`);
-      emitter.all.delete(`${this.tabId}_resize`)
-      emitter.all.delete(`${this.tabId}_copy_to_editor`)
-      emitter.all.delete(`${this.tabId}_check_console_status`)
-      emitter.all.delete(`${this.tabId}_run_console`)
-      emitter.all.delete(`${this.tabId}_cancel_query`)
+      emitter.all.delete(`${this.tabId}_resize`);
+      emitter.all.delete(`${this.tabId}_copy_to_editor`);
+      emitter.all.delete(`${this.tabId}_check_console_status`);
+      emitter.all.delete(`${this.tabId}_run_console`);
+      emitter.all.delete(`${this.tabId}_cancel_query`);
+      emitter.all.delete(`${this.tabId}_indent_sql`);
+      emitter.all.delete(`${this.tabId}_show_autocomplete_results`);
     },
     autocompleteKeyDown(event) {
       if (this.autocomplete) {
@@ -333,9 +339,9 @@ export default {
         autocomplete_update_editor_cursor(this.editor, event);
       }
     },
-    autocompleteStart(event) {
+    autocompleteStart(event, force = null) {
       if (this.autocomplete) {
-        autocomplete_start(this.editor, 1, event);
+        autocomplete_start(this.editor, 1, event, force);
       }
     },
     contextMenu(event) {

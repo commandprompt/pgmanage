@@ -392,17 +392,14 @@ export default {
       },
       shortcut_autocomplete: function (e) {
         if (window.v_connTabControl.selectedTab.tag.mode == 'connection') {
-          if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'query' || window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'console') {
-            let editor = null;
-            if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'query') {
+          if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'query') {
+              let editor = null;
               editor = window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor
               autocomplete_start(editor, 0, e, true);
             }
             else if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'console') {
-              editor = window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor_input
-              autocomplete_start(editor, 1, e, true);
+              emitter.emit(`${window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_show_autocomplete_results`, e)
             }
-          }
         }
       }
     }
