@@ -115,7 +115,7 @@
         const defaultCol = {
           dataType: 'integer',
           name: colName,
-          defaultValue: 0,
+          defaultValue: null,
           nullable: false,
           isPK: false,
           comment:null,

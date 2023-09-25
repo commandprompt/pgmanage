@@ -6,9 +6,10 @@ import { createApp } from "vue";
 let createSchemaEditorTab = function (node, mode, dialect) {
     // Removing last tab of the inner tab list
   v_connTabControl.selectedTab.tag.tabControl.removeLastTab();
-
+  let table_name = node.title.replace(/^"(.*)"$/, '$1')
+  let tab_title = mode === 'alter' ? `Alter: ${table_name}` : 'New Table'
   let tab = v_connTabControl.selectedTab.tag.tabControl.createTab({
-    p_name: '<span>Schema Editor</span>',
+    p_name: tab_title,
     p_closeFunction: function(e, tab) {
         let current_tab = tab;
         beforeCloseTab(e,
@@ -46,7 +47,7 @@ let createSchemaEditorTab = function (node, mode, dialect) {
       tab_id: v_connTabControl.selectedTab.id,
       mode: mode,
       schema: node.data.schema,
-      table: mode === 'alter' ? node.title.replace(/^"(.*)"$/, '$1') : null,
+      table: mode === 'alter' ? table_name : null,
       tree_node: node,
       tree: window.v_connTabControl.selectedTab.tag.tree
     })

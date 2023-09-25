@@ -92,7 +92,7 @@ export default {
         customTypes: [],
         localTable: {},
         initialTable: {
-          tableName: 'newTable',
+          tableName: 'new_table',
           schema: '',
           columns: [{
             dataType: 'autoincrement',
@@ -292,7 +292,7 @@ export default {
     },
     applyChanges() {
       let message_data = {
-				v_sql_cmd : this.generatedSQL,
+				v_sql_cmd : this.editor.getValue(), //use formatted SQL from the editor instead of single-line returned by generatedSQL
 				v_sql_save : false,
 				v_cmd_type: null,
 				v_db_index: this.database_index,
@@ -314,7 +314,7 @@ export default {
 				mode: 0,
 				callback: this.handleResponse.bind(this),
 				acked: false,
-				query: this.generatedSQL,
+				query: this.editor.getValue(),
 				log_query: false,
 				save_query: null,
         simple: true //a hacky way to prevent long polling handler from running legacy rentering routines
@@ -326,14 +326,18 @@ export default {
       if(response.v_error == true) {
         showToast("error", response.v_data.message)
       } else {
-        // TODO: clear local tabledefs to prevent multiple sql submissions
         let msg = response.v_data.v_status === "CREATE TABLE" ? `Table "${this.localTable.tableName}" created` : `Table "${this.localTable.tableName}" updated`
         showToast("success", msg)
 
         emitter.emit(`schemaChanged_${this.tree.id}`, { database_name: this.database_name, schema_name: this.localTable.schema })
-        // load table changes into UI
-        if(this.mode === 'alter')
+        // ALTER: load table changes into UI
+        if(this.mode === 'alter') {
           this.loadTableDefinition()
+        } else {
+          // CREATE:reset the editor
+          this.initialTable.schema = this.$props.schema
+          this.localTable = {...this.initialTable}
+        }
       }
       this.queryIsRunning = false
     },
