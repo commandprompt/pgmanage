@@ -1,6 +1,5 @@
 import { removeTab, showMenuNewTab, adjustQueryTabObjects } from "../workspace";
 import { beforeCloseTab } from "../create_tab_functions";
-import { v_current_terminal_theme } from "../header_actions";
 import { createApp } from "vue";
 import ConsoleTab from "../components/ConsoleTab.vue";
 import { emitter } from "../emitter";
@@ -42,9 +41,6 @@ let createConsoleTabFunctionNew = function () {
   tab.elementDiv.innerHTML = `<console-tab 
                                   :conn-id="connId"
                                   :tab-id="tabId" 
-                                  :editor-theme="editorTheme" 
-                                  :font-size="fontSize"
-                                  :terminal-theme="terminalTheme"
                                   :console-help="consoleHelp"
                                   :database-index="databaseIndex"
                                   :dialect="dialect"
@@ -58,9 +54,6 @@ let createConsoleTabFunctionNew = function () {
       return {
         connId: v_connTabControl.selectedTab.id,
         tabId: tab.id,
-        editorTheme: window.v_editor_theme,
-        fontSize: window.v_font_size,
-        terminalTheme: v_current_terminal_theme,
         consoleHelp: v_connTabControl.selectedTab.tag.consoleHelp,
         databaseIndex: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
         dialect: v_connTabControl.selectedTab.tag.selectedDBMS

@@ -29,6 +29,7 @@ SOFTWARE.
 import { listUsers } from './users'
 import ace from 'ace-builds'
 import { showConfirm } from './notification_control';
+import { settingsStore } from './stores/settings';
 
 /// <summary>
 /// Opens OmniDB about window.
@@ -49,23 +50,6 @@ var v_light_terminal_theme = {
 	selection: '#00000030'
 }
 */
-var v_light_terminal_theme = {
-	background: '#e8eff8',
-	brightBlue: '#006de2',
-	brightGreen: '#4b9800',
-	foreground: '#454545',
-	cursor: '#454545',
-	cursorAccent: '#454545',
-	selection: '#00000030'
-}
-
-var v_dark_terminal_theme = {
-	background: '#1D273B',
-	selection: '#1560AD',
-	foreground: '#F8FAFD',
-}
-
-var v_current_terminal_theme;
 
 /// <summary>
 /// Startup function.
@@ -102,23 +86,13 @@ $(function() {
 	//setting font size of body
 	document.getElementsByTagName('html')[0].style['font-size'] = v_font_size + 'px';
 
-	if (v_theme=='light') {
-		v_current_terminal_theme = v_light_terminal_theme;
-		document.body.classList.remove('pgmanage-theme--dark', 'omnidb--theme-dark',);
-		document.body.classList.add('pgmanage-theme--light', 'omnidb--theme-light');
-	}
-	else {
-		v_current_terminal_theme = v_dark_terminal_theme;
-		document.body.classList.remove('pgmanage-theme--light', 'omnidb--theme-light');
-		document.body.classList.add('pgmanage-theme--dark', 'omnidb--theme-dark');
-	}
 });
 
 function adjustChartTheme(p_chart) {
 	var v_chart_font_color = '#666666';
 	var v_chart_grid_color = "rgba(0, 0, 0, 0.1)";
 
-	if (v_theme=='light') {
+	if (settingsStore.theme=='light') {
 		v_chart_font_color = '#666666';
 		v_chart_grid_color = "rgba(0, 0, 0, 0.1)";
 	}
@@ -145,7 +119,7 @@ function adjustChartTheme(p_chart) {
 function adjustGraphTheme(p_graph) {
 	var v_font_color = '#666666';
 
-	if (v_theme=='light') {
+	if (settingsStore.theme=='light') {
 		v_font_color = '#666666';
 	}
 	else {
@@ -162,29 +136,7 @@ function adjustGraphTheme(p_graph) {
 	}
 }
 
-function changeTheme(p_option) {
-	// var v_fileref = document.getElementById("ss_theme");
-
-	if (p_option=='dark') {
-		// v_fileref.setAttribute("href", v_url_folder + '/static/OmniDB_app/new/css/themes/dark.css');
-		v_theme = 'dark';
-		v_editor_theme = 'omnidb_dark';
-		v_current_terminal_theme = v_dark_terminal_theme;
-		// document.body.classList.remove('omnidb--theme-light');
-		// document.body.classList.add('omnidb--theme-dark');
-		document.body.classList.remove('pgmanage-theme--light', 'omnidb--theme-light');
-		document.body.classList.add('pgmanage-theme--dark', 'omnidb--theme-dark');
-	}
-	else {
-		// v_fileref.setAttribute("href", v_url_folder + '/static/OmniDB_app/new/css/themes/light.css');
-		v_theme = 'light';
-		v_editor_theme = 'omnidb';
-		v_current_terminal_theme = v_light_terminal_theme;
-		// document.body.classList.remove('omnidb--theme-dark');
-		// document.body.classList.add('omnidb--theme-light');
-		document.body.classList.remove('pgmanage-theme--dark', 'omnidb--theme-dark',);
-		document.body.classList.add('pgmanage-theme--light', 'omnidb--theme-light');
-	}
+function changeTheme() {
 	// Updating theme of all consoles.
 	try {
 		for (let i = 0; i < v_connTabControl.tabList.length; i++) {
@@ -194,11 +146,11 @@ function changeTheme(p_option) {
 					if (v_outer_tab.tag.tabControl.tabList) {
 						for (let j = 0; j < v_outer_tab.tag.tabControl.tabList.length; j++) {
 							var v_inner_tab_tag = v_outer_tab.tag.tabControl.tabList[j].tag;
-							if (v_inner_tab_tag.editor) {
-								v_inner_tab_tag.editor.setTheme("ace/theme/" + v_editor_theme);
+							if (v_inner_tab_tag?.editor) {
+								v_inner_tab_tag.editor.setTheme(`ace/theme/${settingsStore.editorTheme}`);
 							}
-							else if (v_inner_tab_tag.editor_console) {
-								v_inner_tab_tag.editor_console.options.theme = v_current_terminal_theme
+							else if (v_inner_tab_tag?.editor_console) {
+								v_inner_tab_tag.editor_console.options.theme = settingsStore.terminalTheme
 							}
 						}
 					}
@@ -214,7 +166,7 @@ function changeTheme(p_option) {
 	var els = document.getElementsByClassName("ace_editor");
 
 	Array.prototype.forEach.call(els, function(el) {
-			ace.edit(el).setTheme("ace/theme/" + v_editor_theme);
+			ace.edit(el).setTheme(`ace/theme/${settingsStore.editorTheme}`);
 	});
 
 	Chart.helpers.each(Chart.instances, function(instance){
@@ -226,7 +178,7 @@ function changeTheme(p_option) {
 		var v_tab = v_connTabControl.tabList[i];
 		if (v_tab.tag!=null) {
 			if (v_tab.tag.mode=='outer_terminal') {
-				v_tab.tag.editor_console.options.theme = v_current_terminal_theme
+				v_tab.tag.editor_console.options.theme = settingsStore.terminalTheme
 			}
 		}
 	}
@@ -465,6 +417,5 @@ export {
   adjustChartTheme,
   adjustGraphTheme,
   changeTheme,
-  cellDataModal,
-  v_current_terminal_theme,
+  cellDataModal
 };

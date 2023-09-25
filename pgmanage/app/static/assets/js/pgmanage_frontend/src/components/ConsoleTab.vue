@@ -130,6 +130,7 @@ import moment from "moment";
 import { v_queryRequestCodes, refreshTreeNode } from "../query";
 import { createRequest, removeContext, SetAcked } from "../long_polling";
 import { format } from "sql-formatter";
+import { settingsStore } from "../stores/settings";
 
 const consoleState = {
   Idle: 0,
@@ -155,9 +156,6 @@ export default {
   props: {
     connId: String,
     tabId: String,
-    editorTheme: String,
-    fontSize: Number,
-    terminalTheme: Object,
     consoleHelp: String,
     databaseIndex: Number,
     dialect: String,
@@ -255,6 +253,13 @@ export default {
       this.consoleSQL(check_command);
     });
 
+    settingsStore.$subscribe((mutation, state) => {
+      this.editor.setTheme(`ace/theme/${state.editorTheme}`);
+      this.editor.setFontSize(state.fontSize);
+      this.terminal.options.theme = state.terminalTheme;
+      this.terminal.options.fontSize = state.fontSize;
+    });
+
     setTimeout(() => {
       this.onResize();
     }, 200);
@@ -267,9 +272,9 @@ export default {
       //TODO: move into mixin
       this.editor = ace.edit(this.$refs.editor);
       this.editor.$blockScrolling = Infinity;
-      this.editor.setTheme(`ace/theme/${this.editorTheme}`);
+      this.editor.setTheme(`ace/theme/${settingsStore.editorTheme}`);
       this.editor.session.setMode("ace/mode/sql");
-      this.editor.setFontSize(this.fontSize);
+      this.editor.setFontSize(settingsStore.fontSize);
 
       // Remove shortcuts from ace in order to avoid conflict with pgmanage shortcuts
       this.editor.commands.bindKey("ctrl-space", null);
@@ -288,8 +293,8 @@ export default {
     },
     setupTerminal() {
       this.terminal = new Terminal({
-        fontSize: this.fontSize,
-        theme: this.terminalTheme,
+        fontSize: settingsStore.fontSize,
+        theme: settingsStore.terminalTheme,
         fontFamily: "Monospace",
         rendererType: "dom", //FIXME: investigate in detail, for no use dom renderer because in nwjs we had some text rendering bugs on light theme
       });

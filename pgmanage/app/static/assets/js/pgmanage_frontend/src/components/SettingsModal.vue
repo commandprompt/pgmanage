@@ -48,9 +48,9 @@
             <div class="tab-pane fade" id="settings_options" role="tabpanel" aria-labelledby="settings_options-tab">
               <div class="form-row">
                 <div class="form-group col-6">
-                  <label for="sel_editor_theme" class="font-weight-bold mb-2">Theme</label>
-                  <select id="sel_editor_theme" class="form-control" @change="changeEditorTheme"
-                    v-model="selectedEditorTheme">
+                  <label for="sel_theme" class="font-weight-bold mb-2">Theme</label>
+                  <select id="sel_theme" class="form-control" @change="changeTheme"
+                    v-model="theme">
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
                   </select>
@@ -58,7 +58,7 @@
                 <div class="form-group col-6">
                   <label for="sel_interface_font_size" class="font-weight-bold mb-2">Font Size</label>
                   <select id="sel_interface_font_size" class="form-control" @change="changeInterfaceFontSize"
-                    v-model="selectedFontSize">
+                    v-model="fontSize">
                     <option v-for="font_size in fontSizeOptions" :key="font_size" :value="font_size">{{ font_size }}
                     </option>
                   </select>
@@ -174,7 +174,6 @@
 import { refreshHeights } from '../workspace'
 import { getExplain } from '../tree_context_functions/tree_postgresql'
 import { terminalRun } from '../terminal'
-import { consoleSQL } from '../console'
 import { autocomplete_start } from '../autocomplete'
 import { queryEditData } from '../tree_context_functions/edit_data'
 import { default_shortcuts } from '../shortcuts'
@@ -184,6 +183,23 @@ import axios from 'axios'
 import { showAlert, showToast } from '../notification_control'
 import moment from 'moment'
 import { emitter } from '../emitter'
+import { settingsStore } from '../stores/settings'
+
+const light_terminal_theme = {
+      background: '#e8eff8',
+      brightBlue: '#006de2',
+      brightGreen: '#4b9800',
+      foreground: '#454545',
+      cursor: '#454545',
+      cursorAccent: '#454545',
+      selection: '#00000030'
+    }
+
+const dark_terminal_theme = {
+      background: '#1D273B',
+      selection: '#1560AD',
+      foreground: '#F8FAFD',
+    }
 
 export default {
   name: 'SettingsModal',
@@ -197,8 +213,6 @@ export default {
         actions: null
       },
       shortcutList: [],
-      selectedFontSize: window.v_font_size,
-      selectedEditorTheme: window.v_theme,
       selectedCSVEncoding: window.v_csv_encoding,
       selectedDateFormat: window.date_format,
       csvDelimiter: window.v_csv_delimiter,
@@ -247,7 +261,23 @@ export default {
     },
     isWindowsOS() {
       return navigator.userAgent.indexOf("Win") != -1
-    }
+    },
+    fontSize: {
+      get() {
+        return settingsStore.fontSize;
+      },
+      set(value) {
+        settingsStore.setFontSize(value);
+      },
+    },
+    theme: {
+      get() {
+        return settingsStore.theme
+      },
+      set(value) {
+        settingsStore.setTheme(value);
+      },
+    },
   },
   created() {
     this.getShortcuts();
@@ -406,6 +436,8 @@ export default {
 
       });
     })
+
+    this.applyThemes()
   },
   methods: {
     getShortcuts() {
@@ -491,10 +523,10 @@ export default {
       document.body.addEventListener('keydown', this.keyBoardShortcuts);
     },
     changeInterfaceFontSize() {
-      document.getElementsByTagName('html')[0].style['font-size'] = `${this.selectedFontSize}px`;
+      document.getElementsByTagName('html')[0].style['font-size'] = `${this.fontSize}px`;
       $('.ace_editor').each(function (index) {
         let editor = ace.edit(this);
-        editor.setFontSize(`${this.selectedFontSize}px`);
+        editor.setFontSize(`${this.fontSize}px`);
       });
       let outer_tab_list = window.v_connTabControl.tabList;
       for (let i = 0; i < outer_tab_list.length; i++) {
@@ -507,7 +539,7 @@ export default {
               let inner_tab_tag = outer_tab_tag_inner_tab_list[j].tag;
               if (inner_tab_tag) {
                 if (inner_tab_tag.editor_console) {
-                  inner_tab_tag.editor_console.options.fontSize = Number(this.selectedFontSize);
+                  inner_tab_tag.editor_console.options.fontSize = Number(this.fontSize);
                 }
               }
             }
@@ -517,8 +549,25 @@ export default {
 
       refreshHeights();
     },
-    changeEditorTheme() {
-      changeTheme(this.selectedEditorTheme);
+    changeTheme() {
+      this.applyThemes();
+      changeTheme();
+    },
+    applyThemes() {
+      if (this.theme === 'dark') {
+        settingsStore.setEditorTheme('omnidb_dark')
+        settingsStore.setTerminalTheme(dark_terminal_theme)
+
+        document.body.classList.remove('pgmanage-theme--light', 'omnidb--theme-light');
+		    document.body.classList.add('pgmanage-theme--dark', 'omnidb--theme-dark');
+
+      } else {
+        settingsStore.setEditorTheme('omnidb')
+        settingsStore.setTerminalTheme(light_terminal_theme)
+
+        document.body.classList.remove('pgmanage-theme--dark', 'omnidb--theme-dark',);
+		    document.body.classList.add('pgmanage-theme--light', 'omnidb--theme-light');
+      }
     },
     buildButtonText(shortcut_object, button = null) {
       let text = '';
@@ -542,8 +591,8 @@ export default {
         showToast("error", "New Password and Confirm New Password fields must be longer than 8.")
       else {
         axios.post('/save_config_user/', {
-          "font_size": this.selectedFontSize,
-          "theme": this.selectedEditorTheme,
+          "font_size": this.fontSize,
+          "theme": this.theme,
           "password": this.password,
           "csv_encoding": this.selectedCSVEncoding,
           "csv_delimiter": this.csvDelimiter,

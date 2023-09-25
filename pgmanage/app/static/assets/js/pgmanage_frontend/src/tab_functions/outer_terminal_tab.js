@@ -29,7 +29,7 @@ import { refreshHeights } from "../workspace";
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { startTerminal, terminalKey, terminalContextMenu } from "../terminal";
-import { v_current_terminal_theme } from "../header_actions";
+import { settingsStore } from "../stores/settings";
 
 let createOuterTerminalTabFunction = function(p_conn_id = -1, p_alias = 'Terminal', p_details = false) {
 
@@ -87,8 +87,8 @@ let createOuterTerminalTabFunction = function(p_conn_id = -1, p_alias = 'Termina
 
   var term_div = document.getElementById('txt_console_' + v_tab.id);
   var term = new Terminal({
-        fontSize: v_font_size,
-        theme: v_current_terminal_theme,
+        fontSize: settingsStore.fontSize,
+        theme: settingsStore.terminalTheme,
         fontFamily: 'Monospace',
         rendererType: 'dom' //FIXME: investigate in detail, for no use dom renderer because in nwjs we had some text rendering bugs on light theme
   });

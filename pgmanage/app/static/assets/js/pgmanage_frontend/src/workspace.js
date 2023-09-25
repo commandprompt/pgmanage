@@ -58,6 +58,7 @@ let v_start_height;
 /// Startup function.
 /// </summary>
 $(function () {
+  settingsModalInit()
 
   // Instantiating outer tab component.
   v_connTabControl = createTabControl({
@@ -140,7 +141,6 @@ $(function () {
   $('[data-toggle="tooltip"]').tooltip({animation:true});
 
   connectionsModalInit()
-  settingsModalInit()
 });
 
 function queueChangeActiveDatabaseThreadSafe(p_data) {

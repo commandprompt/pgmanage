@@ -51,8 +51,8 @@ import {
   autocomplete_update_editor_cursor,
   autocomplete_start,
 } from "../autocomplete";
-import { v_current_terminal_theme } from "../header_actions";
 import ace from 'ace-builds'
+import { settingsStore } from "../stores/settings";
 
 var v_createConsoleTabFunction = function() {
 
@@ -284,7 +284,7 @@ var v_createConsoleTabFunction = function() {
 
   var v_editor2 = new Terminal({
         fontSize: v_font_size,
-        theme: v_current_terminal_theme,
+        theme: settingsStore.terminalTheme,
         fontFamily: 'Monospace',
         rendererType: 'dom' //FIXME: investigate in detail, for no use dom renderer because in nwjs we had some text rendering bugs on light theme
   });
