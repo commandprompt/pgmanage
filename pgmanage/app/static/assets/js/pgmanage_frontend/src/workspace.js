@@ -1257,7 +1257,7 @@ function uiCopyTextToClipboard(p_value) {
 function toggleConnectionAutocomplete(p_toggler_id) {
   let checked = document.getElementById(p_toggler_id).checked;
   v_connTabControl.selectedTab.tag.enable_autocomplete = (checked);
-  emitter.emit(`${v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_autocomplete`, checked)
+  emitter.emit(`${v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_toggle_autocomplete`, checked)
 }
 
 export {

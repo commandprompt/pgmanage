@@ -132,6 +132,10 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
                   var v_message_data = { tab_id: v_tab.tag.tab_id, tab_db_id: null , conn_tab_id: p_tab.id};
                   if (v_tab.tag.mode=='query')
                     v_message_data.tab_db_id = v_tab.tag.tab_db_id;
+
+                  if (v_tab.tag.mode === 'console' && !!v_tab.app) {
+                    v_tab.app.unmount()
+                  }
                   v_tabs_to_remove.push(v_message_data);
                 }
                 else if (v_tab.tag.mode=='monitor_dashboard') {
