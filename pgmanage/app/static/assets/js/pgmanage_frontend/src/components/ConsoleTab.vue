@@ -313,6 +313,10 @@ export default {
       emitter.on(`${this.tabId}_cancel_query`, () => {
         this.cancelConsole();
       });
+
+      emitter.on(`${this.tabId}_indent_sql`, () => {
+        this.indentSQL()
+      })
     },
     clearEvents() {
       emitter.all.delete(`${this.tabId}_autocomplete`);

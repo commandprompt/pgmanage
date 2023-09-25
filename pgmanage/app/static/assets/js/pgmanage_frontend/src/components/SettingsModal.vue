@@ -332,8 +332,11 @@ export default {
       shortcut_indent: function () {
 
         if (window.v_connTabControl.selectedTab.tag.mode == 'connection') {
-          if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'query' || window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'console')
+          if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'query')
             window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.bt_indent.click();
+          else if ( window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'console') {
+            emitter.emit(`${window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_indent_sql`)
+          }
         }
 
       },
