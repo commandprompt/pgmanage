@@ -1,7 +1,7 @@
 <template>
-  <splitpanes class="default-theme" horizontal style="height: calc(100vh - 60px)" @resized="onResize">
+  <splitpanes class="default-theme console-body" horizontal @resized="onResize">
     <pane size="80">
-      <div ref="console" :id="`txt_console_${tabId}`" class="omnidb__txt-console" style="height: 100%"></div>
+      <div ref="console" :id="`txt_console_${tabId}`" class="omnidb__txt-console h-100"></div>
     </pane>
 
     <pane size="20">
@@ -33,15 +33,7 @@
           <div class="dbms_object postgresql_object omnidb__tab-status">
             <i :id="`query_tab_status_${tabId}`" :title="statusTitle"
               :class="[statusClass, 'dbms_object', 'postgresql_object']">
-              <div v-if="tabStatus === 1 || tabStatus === 2" style="
-                  position: absolute;
-                  width: 15px;
-                  height: 15px;
-                  overflow: visible;
-                  left: 0px;
-                  top: 0px;
-                  display: block;
-                ">
+              <div v-if="tabStatus === 1 || tabStatus === 2" class="tab-status-indicator">
                 <span :class="circleWavesClass">
                   <span v-for="n in 4" :key="n"></span>
                 </span>
@@ -59,24 +51,24 @@
           </button>
 
           <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary omnidb__tab-actions__btn"
-            title="Fetch All" style="margin-left: 5px" @click="consoleSQL(false, 2)">
+            title="Fetch All" @click="consoleSQL(false, 2)">
             Fetch all
           </button>
 
           <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary omnidb__tab-actions__btn"
-            title="Skip Fetch" style="margin-left: 5px" @click="consoleSQL(false, 3)">
+            title="Skip Fetch" @click="consoleSQL(false, 3)">
             Skip Fetch
           </button>
 
           <button v-if="openedTransaction && !executingState"
             class="dbms_object dbms_object_hidden postgresql_object btn btn-sm btn-primary omnidb__tab-actions__btn"
-            title="Run" style="margin-left: 5px" @click="querySQL(3)">
+            title="Run" @click="querySQL(3)">
             Commit
           </button>
 
           <button v-if="openedTransaction && !executingState"
             class="dbms_object dbms_object_hidden postgresql_object btn btn-sm btn-secondary omnidb__tab-actions__btn"
-            title="Run" style="margin-left: 5px" @click="querySQL(4)">
+            title="Run" @click="querySQL(4)">
             Rollback
           </button>
 
@@ -99,8 +91,8 @@
           </div>
         </div>
       </div>
-      <div ref="editor" :id="`txt_input_${tabId}`" class="omnidb__console__text-input" style="height: 100%"
-        @keyup="autocompleteStart" @keydown="autocompleteKeyDown" @contextmenu.stop.prevent="contextMenu"></div>
+      <div ref="editor" :id="`txt_input_${tabId}`" class="omnidb__console__text-input h-100" @keyup="autocompleteStart"
+        @keydown="autocompleteKeyDown" @contextmenu.stop.prevent="contextMenu"></div>
     </pane>
   </splitpanes>
 
@@ -541,3 +533,19 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.tab-status-indicator {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  overflow: visible;
+  left: 0px;
+  top: 0px;
+  display: block;
+}
+
+.console-body {
+  height: calc(100vh - 60px);
+}
+</style>
