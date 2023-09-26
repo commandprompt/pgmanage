@@ -108,9 +108,7 @@ function polling_response(message) {
     }
     case parseInt(v_queryResponseCodes.ConsoleResult): {
       if (context) {
-        context.tab_tag.tempData = context.tab_tag.tempData += message.v_data.v_data;
         if (message.v_data.v_last_block || message.v_error) {
-          message.v_data.v_data = [];
           context.callback(message, context)
           
           //Remove context

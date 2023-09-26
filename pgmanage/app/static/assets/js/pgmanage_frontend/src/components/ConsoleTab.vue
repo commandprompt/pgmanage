@@ -192,8 +192,8 @@ export default {
     statusClass() {
       const statusClassMap = {
         0: "tab-status-closed",
-        1: "tab-status-idle",
-        2: "tab-status-running",
+        1: "tab-status-idle position-relative",
+        2: "tab-status-running position-relative",
         3: "tab-status-idle_in_transaction",
         4: "tab-status-idle_in_transaction_aborted",
       };
@@ -379,7 +379,6 @@ export default {
     consoleSQL(check_command = true, mode = 0) {
       const command = this.editor.getValue().trim();
       let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-      tab_tag.tempData = "";
       this.queryDuration = "";
       this.cancelled = false;
 
@@ -463,7 +462,7 @@ export default {
       this.tabStatus = data.v_data.v_con_status;
       this.editor.setReadOnly(false);
 
-      this.terminal.write(context.tab_tag.tempData);
+      this.terminal.write(data.v_data.v_data);
 
       //FIXME: change into event emitting later
       context.tab_tag.tab_loading_span.style.visibility = "hidden";
