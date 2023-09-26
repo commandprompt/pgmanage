@@ -132,6 +132,10 @@
           this.selected = this.filteredOptions[0];
         }
         this.$emit('filter', this.searchFilter);
+      },
+      modelValue() {
+        console.log('changed', this.modelValue)
+        this.searchFilter = this.modelValue
       }
     }
   };

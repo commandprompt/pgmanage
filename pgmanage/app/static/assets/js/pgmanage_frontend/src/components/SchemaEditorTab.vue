@@ -168,7 +168,7 @@ export default {
               defaultValue: col.default_value,
               nullable: col.nullable,
               isPK: col.is_primary,
-              comment: null, //TBD
+              comment: col.comment,
             }
           })
           this.initialTable.columns = coldefs
@@ -201,6 +201,7 @@ export default {
           'nullableChanges': [],
           'defaults': [],
           'renames': [],
+          'comments': []
         }
 
         let originalColumns = this.initialTable.columns
@@ -212,6 +213,7 @@ export default {
           if(column.nullable !== originalColumns[idx].nullable) changes.nullableChanges.push(column)
           if(column.defaultValue !== originalColumns[idx].defaultValue) changes.defaults.push(column)
           if(column.name !== originalColumns[idx].name) changes.renames.push({'oldName': originalColumns[idx].name, 'newName': column.name})
+          if(column.comment !== originalColumns[idx].comment) changes.comments.push(column)
         })
 
         // we use initial table name here since localTable.tableName may be changed
@@ -253,11 +255,16 @@ export default {
             coldef.nullable ? table.setNullable(coldef.name) : table.dropNullable(coldef.name)
           })
 
+          // FIXME: commenting generates drop default - how to avoid this?
+          changes.comments.forEach((coldef) => {
+            //table.specificType(coldef.name, coldef.dataType).comment('test').alter({alterNullable : false, alterType: false})
+            // table.raw(`comment on column "${tabledef.schema}"."${table._tableName}"."${coldef.name}" is '${coldef.comment}'`)
+          })
+
           changes.renames.forEach((rename) => {
             table.renameColumn(rename.oldName, rename.newName)
           })
         })
-
         // handle table rename last
         if(this.initialTable.tableName !== this.localTable.tableName) {
           knexOperations.renameTable(this.initialTable.tableName, this.localTable.tableName)
@@ -265,6 +272,7 @@ export default {
         this.generatedSQL = knexOperations.toQuery()
 
       } else {
+        // mode==create
         this.generatedSQL = k.createTable(tabledef.tableName, function (table) {
           tabledef.columns.forEach((coldef) => {
             // use Knex's magic to create a proper auto-incrementing column in database-agnostic way
@@ -354,7 +362,7 @@ export default {
       return this.mode !== 'alter' && this.dialectData.hasSchema
     },
     commentable() {
-      return this.mode !== 'alter' && this.dialectData.hasComments
+      return this.dialectData.hasComments
     },
     getMode() {
       return this.mode

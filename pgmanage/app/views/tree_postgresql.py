@@ -256,7 +256,8 @@ def get_table_definition(request, v_database):
                 'data_type': col['data_type'],
                 'default_value': col['column_default'],
                 'nullable': col['is_nullable'] != 'NO',
-                'is_primary': col['column_name'] in pk_column_names
+                'is_primary': col['column_name'] in pk_column_names,
+                'comment': col['comment']
             }
             columns.append(column_data)
     except Exception as exc:

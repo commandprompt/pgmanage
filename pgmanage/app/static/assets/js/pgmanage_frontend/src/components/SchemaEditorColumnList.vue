@@ -54,9 +54,9 @@
           </div>
 
           <div v-if="commentable" class="col-3">
-            <input v-model="column.comment" class="form-control mb-0"
+            <input :disabled="this.mode == 'alter'" v-model="column.comment" class="form-control mb-0"
             type="text"
-            placeholder="column comment.." />
+            :placeholder="this.mode == 'alter' ? '' : 'column comment...'" />
           </div>
 
           <div :class="['col d-flex mr-2', this.movable(column) ? 'justify-content-between': 'justify-content-end']">

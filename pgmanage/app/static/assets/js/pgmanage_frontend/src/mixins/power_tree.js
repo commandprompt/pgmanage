@@ -93,14 +93,16 @@ export default {
     onContextMenu(node, e) {
       this.$refs.tree.select(node.path);
       e.preventDefault();
-      ContextMenu.showContextMenu({
-        theme: "pgmanage",
-        x: e.x,
-        y: e.y,
-        zIndex: 1000,
-        minWidth: 230,
-        items: this.contextMenu[node.data.contextMenu],
-      });
+      if (!!node.data.contextMenu) {
+        ContextMenu.showContextMenu({
+          theme: "pgmanage",
+          x: e.x,
+          y: e.y,
+          zIndex: 1000,
+          minWidth: 230,
+          items: this.contextMenu[node.data.contextMenu],
+        });
+      }
     },
     removeChildNodes(node) {
       this.$refs.tree.updateNode(node.path, { children: [] });

@@ -1122,8 +1122,9 @@ class PostgreSQL:
                 WHEN character_maximum_length is not null  and udt_name != 'text'
                 THEN CONCAT(udt_name, concat('(', concat(character_maximum_length::varchar(255), ')')))
                 ELSE udt_name
-            END as data_type
-            FROM information_schema.columns
+            END as data_type,
+            pg_catalog.col_description(format('%s.%s',isc.table_schema,isc.table_name)::regclass::oid,isc.ordinal_position) as comment
+            FROM information_schema.columns isc
             WHERE table_schema = '{0}' AND table_name = '{1}'
             ORDER BY ordinal_position
         '''.format(in_schema, table), True)
