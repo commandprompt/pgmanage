@@ -100,8 +100,8 @@
 </template>
 
 <script>
-import { consoleSQL, showConsoleHistory } from "../console";
-import { indentSQL, uiCopyTextToClipboard } from "../workspace";
+import { showConsoleHistory } from "../console";
+import { uiCopyTextToClipboard } from "../workspace";
 import { querySQL } from "../query";
 import ace from "ace-builds";
 import { Terminal } from "xterm";
@@ -422,7 +422,7 @@ export default {
               check_command: check_command,
               mode: mode,
               new: true,
-              sqlCallback: this.consoleReturn.bind(this),
+              callback: this.consoleReturn.bind(this),
               passwordSuccessCallback: this.passwordSuccessCallback.bind(this),
               passwordFailCalback: this.cancelConsoleTab.bind(this),
             };

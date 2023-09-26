@@ -3,7 +3,6 @@ import ShortUniqueId from 'short-unique-id';
 
 import { terminalReturn } from "./terminal";
 import { querySQLReturn, cancelSQLTab, querySQL, v_queryResponseCodes } from "./query";
-import { consoleReturn} from "./console";
 import { queryEditDataReturn, saveEditDataReturn, cancelEditDataTab } from "./tree_context_functions/edit_data";
 import { debugResponse } from "./debug";
 import { showPasswordPrompt } from "./passwords";
@@ -112,12 +111,8 @@ function polling_response(message) {
         context.tab_tag.tempData = context.tab_tag.tempData += message.v_data.v_data;
         if (message.v_data.v_last_block || message.v_error) {
           message.v_data.v_data = [];
-          if (context.new && context.sqlCallback!=null) {
-            context.sqlCallback(message, context)
-          } else {
-            consoleReturn(message, context);
-          }
-
+          context.callback(message, context)
+          
           //Remove context
           removeContext(context_code);
         }

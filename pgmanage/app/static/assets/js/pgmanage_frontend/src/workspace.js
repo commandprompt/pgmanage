@@ -42,7 +42,6 @@ import ContextMenu from '@imengyu/vue3-context-menu'
 import { createRequest } from './long_polling'
 import { v_queryRequestCodes, checkQueryStatus } from './query'
 import { checkDebugStatus } from './debug'
-import { checkConsoleStatus } from './console'
 import { checkEditDataStatus } from './tree_context_functions/edit_data'
 import { startMonitorDashboard } from './monitoring'
 import { createTabControl } from './tabs'
@@ -806,7 +805,6 @@ function refreshTreeHeight() {
 }
 
 function checkTabStatus(v_tab) {
-
 	if (v_tab.tag.tabControl.selectedTab.tag.mode=='query')
 		checkQueryStatus(v_tab.tag.tabControl.selectedTab);
 	else if (v_tab.tag.tabControl.selectedTab.tag.mode=='edit')
@@ -814,8 +812,7 @@ function checkTabStatus(v_tab) {
 	else if (v_tab.tag.tabControl.selectedTab.tag.mode=='debug')
 		checkDebugStatus(v_tab.tag.tabControl.selectedTab);
 	else if (v_tab.tag.tabControl.selectedTab.tag.mode=='console')
-		checkConsoleStatus(v_tab.tag.tabControl.selectedTab);
-
+    emitter.emit(`${v_tab.tag.tabControl.selectedTab.id}_check_console_status`);
 }
 
 /// <summary>
