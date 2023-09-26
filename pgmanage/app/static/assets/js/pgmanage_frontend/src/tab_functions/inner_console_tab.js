@@ -1,4 +1,4 @@
-import { removeTab, showMenuNewTab, adjustQueryTabObjects } from "../workspace";
+import { removeTab, showMenuNewTab } from "../workspace";
 import { beforeCloseTab } from "../create_tab_functions";
 import { createApp } from "vue";
 import ConsoleTab from "../components/ConsoleTab.vue";
@@ -107,8 +107,6 @@ let createConsoleTabFunction = function () {
   add_tab.tag = {
     mode: "add",
   };
-
-  adjustQueryTabObjects(false);
 
   // Sets a render refresh for the grid on the consoleHistory.modal after the modal is fully loaded
   $(

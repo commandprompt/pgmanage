@@ -6,78 +6,74 @@
 
     <pane size="20">
       <div class="row mb-1">
-        <div class="tab_actions omnidb__tab-actions col-12">
-          <button class="btn btn-sm btn-primary omnidb__tab-actions__btn" title="Run" @click="consoleSQL(false)">
+        <div class="tab-actions col-12">
+          <button class="btn btn-sm btn-primary" title="Run" @click="consoleSQL(false)">
             <i class="fas fa-play fa-light"></i>
           </button>
 
-          <button class="btn btn-sm btn-secondary omnidb__tab-actions__btn" title="Indent SQL" @click="indentSQL()">
+          <button class="btn btn-sm btn-secondary" title="Indent SQL" @click="indentSQL()">
             <i class="fas fa-indent fa-ligth"></i>
           </button>
 
-          <button class="btn btn-sm btn-secondary omnidb__tab-actions__btn" title="Clear Console" @click="clearConsole()">
+          <button class="btn btn-sm btn-secondary" title="Clear Console" @click="clearConsole()">
             <i class="fas fa-broom fa-ligth"></i>
           </button>
 
-          <button class="btn btn-sm btn-secondary omnidb__tab-actions__btn" title="Command History"
-            @click="showConsoleHistory()">
+          <button class="btn btn-sm btn-secondary" title="Command History" @click="showConsoleHistory()">
             <i class="fas fa-clock-rotate-left fa-light"></i>
           </button>
 
-          <div class="dbms_object postgresql_object omnidb__form-check form-check form-check-inline">
-            <input :id="`check_autocommit_${tabId}`" class="form-check-input" type="checkbox" v-model="autocommit" />
-            <label class="form-check-label dbms_object postgresql_object custom_checkbox query_info"
-              :for="`check_autocommit_${tabId}`">Autocommit</label>
-          </div>
+          <template v-if="postgresqlDialect">
+            <div class="omnidb__form-check form-check form-check-inline">
+              <input :id="`check_autocommit_${tabId}`" class="form-check-input" type="checkbox" v-model="autocommit" />
+              <label class="form-check-label" :for="`check_autocommit_${tabId}`">Autocommit</label>
+            </div>
 
-          <div class="dbms_object postgresql_object omnidb__tab-status">
-            <i :id="`query_tab_status_${tabId}`" :title="statusTitle"
-              :class="[statusClass, 'dbms_object', 'postgresql_object']">
-              <div v-if="tabStatus === 1 || tabStatus === 2" class="tab-status-indicator">
-                <span :class="circleWavesClass">
-                  <span v-for="n in 4" :key="n"></span>
-                </span>
-              </div>
-            </i>
-            <span :id="`query_tab_status_text_${tabId}`" :title="statusTitle"
-              class="tab-status-text query_info dbms_object postgresql_object ml-1">
-              {{ statusText }}
-            </span>
-          </div>
+            <div class="mr-2">
+              <i :id="`query_tab_status_${tabId}`" :title="statusText"
+                :class="['fas fa-dot-circle tab-status', statusClass]">
+                <div v-if="tabStatus === 1 || tabStatus === 2" class="tab-status-indicator">
+                  <span :class="circleWavesClass">
+                    <span v-for="n in 4" :key="n"></span>
+                  </span>
+                </div>
+              </i>
+              <span :id="`query_tab_status_text_${tabId}`" :title="statusText" class="ml-1">
+                {{ statusText }}
+              </span>
+            </div>
+          </template>
 
-          <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary omnidb__tab-actions__btn"
-            title="Fetch More" @click="consoleSQL(false, 1)">
+          <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Fetch More"
+            @click="consoleSQL(false, 1)">
             Fetch more
           </button>
 
-          <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary omnidb__tab-actions__btn"
-            title="Fetch All" @click="consoleSQL(false, 2)">
+          <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Fetch All"
+            @click="consoleSQL(false, 2)">
             Fetch all
           </button>
 
-          <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary omnidb__tab-actions__btn"
-            title="Skip Fetch" @click="consoleSQL(false, 3)">
+          <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Skip Fetch"
+            @click="consoleSQL(false, 3)">
             Skip Fetch
           </button>
 
-          <button v-if="openedTransaction && !executingState"
-            class="dbms_object dbms_object_hidden postgresql_object btn btn-sm btn-primary omnidb__tab-actions__btn"
-            title="Run" @click="querySQL(3)">
+          <button v-if="openedTransaction && !executingState" class="btn btn-sm btn-primary" title="Run"
+            @click="querySQL(3)">
             Commit
           </button>
 
-          <button v-if="openedTransaction && !executingState"
-            class="dbms_object dbms_object_hidden postgresql_object btn btn-sm btn-secondary omnidb__tab-actions__btn"
-            title="Run" @click="querySQL(4)">
+          <button v-if="openedTransaction && !executingState" class="btn btn-sm btn-secondary" title="Run"
+            @click="querySQL(4)">
             Rollback
           </button>
 
-          <button v-if="executingState" class="btn btn-sm btn-danger omnidb__tab-actions__btn" title="Cancel"
-            @click="cancelConsole()">
+          <button v-if="executingState" class="btn btn-sm btn-danger" title="Cancel" @click="cancelConsole()">
             Cancel
           </button>
 
-          <div :id="`div_query_info_${tabId}`" class="omnidb__query-info">
+          <div :id="`div_query_info_${tabId}`">
             <span v-if="cancelled">
               <b>Cancelled</b>
             </span>
@@ -91,8 +87,8 @@
           </div>
         </div>
       </div>
-      <div ref="editor" :id="`txt_input_${tabId}`" class="omnidb__console__text-input h-100" @keyup="autocompleteStart"
-        @keydown="autocompleteKeyDown" @contextmenu.stop.prevent="contextMenu"></div>
+      <div ref="editor" :id="`txt_input_${tabId}`" class="h-100" @keyup="autocompleteStart" @keydown="autocompleteKeyDown"
+        @contextmenu.stop.prevent="contextMenu"></div>
     </pane>
   </splitpanes>
 
@@ -193,20 +189,16 @@ export default {
       };
       return statusMap[this.tabStatus] || "";
     },
-    statusTitle() {
-      return this.statusText;
-    },
     statusClass() {
-      const baseClass = "fas fa-dot-circle tab-status";
       const statusClassMap = {
         0: "tab-status-closed",
-        1: "tab-status-idle position-relative",
-        2: "tab-status-running position-relative",
+        1: "tab-status-idle",
+        2: "tab-status-running",
         3: "tab-status-idle_in_transaction",
         4: "tab-status-idle_in_transaction_aborted",
       };
 
-      return `${baseClass} ${statusClassMap[this.tabStatus] || ""}`;
+      return `${statusClassMap[this.tabStatus] || ""}`;
     },
     circleWavesClass() {
       return {
@@ -216,6 +208,9 @@ export default {
         "omnis__circle-waves--idle": this.tabStatus === tabStatusMap.IDLE,
         "omnis__circle-waves--running": this.tabStatus === tabStatusMap.RUNNING,
       };
+    },
+    postgresqlDialect() {
+      return this.dialect === "postgresql";
     },
   },
   mounted() {
@@ -444,6 +439,7 @@ export default {
     },
     consoleReturn(data, context) {
       if (!this.idleState) {
+        //FIXME: get rid of it when we will have own vue tab wrapper
         if (
           this.tabId === context.tab_tag.tabControl.selectedTab.id &&
           this.connId ===
@@ -547,5 +543,16 @@ export default {
 
 .console-body {
   height: calc(100vh - 60px);
+}
+
+.tab-actions {
+  align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  min-height: 35px;
+}
+
+.tab-actions>button {
+  margin-right: 5px;
 }
 </style>
