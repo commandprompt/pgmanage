@@ -13,6 +13,7 @@ import {
   autocomplete_start,
   autocomplete_keydown,
   autocomplete_update_editor_cursor,
+  close_autocomplete
 } from "../autocomplete";
 import { emitter } from "../emitter";
 import { format } from "sql-formatter";
@@ -61,6 +62,12 @@ export default {
     this.editor.on("change", () => {
       this.$emit("editorChange", this.editor.getValue().trim());
     });
+
+    this.editor.on("blur", () => {
+      setTimeout(() => {
+        close_autocomplete()
+      }, 200);
+    })
 
     settingsStore.$subscribe((mutation, state) => {
       this.editor.setTheme(`ace/theme/${state.editorTheme}`);

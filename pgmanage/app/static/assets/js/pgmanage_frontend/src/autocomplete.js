@@ -628,6 +628,15 @@ $(function() {
                               }
                             }
                         },
+                        afterOnCellMouseDown: function(event, coords, TD) {
+                          let a = this.getDataAtCell(coords.row, 0).replace(/<\/*b>/g, '')
+                          let elem = find_element_by_value(v_autocomplete_object.first_element.previous, a)
+                          if (!!elem) {
+                            close_autocomplete(elem.select_value)
+                          } else {
+                            close_autocomplete()
+                          }
+                        },
                         cells: function (row, col, prop) {
 
                             var cellProperties = {};
@@ -645,6 +654,7 @@ $(function() {
         return function (event) {
           event.preventDefault()
           event.stopPropagation()
+          console.log('onclick')
           close_autocomplete(group.elements[group.grid.getSelected()[0][0]].select_value);
         }
       }(v_autocomplete_object.elements[i]));
@@ -756,8 +766,6 @@ function build_autocomplete_elements(p_data, p_value) {
   for (var k=0; k<v_autocomplete_object.elements.length; k++) {
     if (v_autocomplete_object.elements[k].type!='keyword') {
       v_autocomplete_object.elements[k].grid.render();
-      v_autocomplete_object.elements[k].grid.selectCell(0,0);
-      v_autocomplete_object.elements[k].grid.deselectCell();
     }
   }
   v_autocomplete_object.editor.focus();
@@ -834,8 +842,6 @@ function renew_autocomplete(p_new_value) {
   for (var k=0; k<v_autocomplete_object.elements.length; k++) {
     if (v_autocomplete_object.elements[k].type!='keyword') {
       v_autocomplete_object.elements[k].grid.render();
-      v_autocomplete_object.elements[k].grid.selectCell(0,0);
-      v_autocomplete_object.elements[k].grid.deselectCell();
     }
   }
 
@@ -1162,8 +1168,6 @@ function autocomplete_select_element(p_element) {
   }
   //grid element
   else {
-    p_element.grid_reference.selectCell(p_element.visible_index,0)
-    p_element.grid_reference.deselectCell()
     v_autocomplete_object.selected_grid = p_element.grid_reference;
     v_autocomplete_object.selected_grid_row = p_element.visible_index;
 
@@ -1213,13 +1217,14 @@ function close_autocomplete(p_additional_text) {
     v_autocomplete_object.div.style.display = 'none';
   }, 500)
 
-  v_autocomplete_object.close_div.parentNode.removeChild(v_autocomplete_object.close_div);
 
   var v_editor = v_autocomplete_object.editor;
-  if (p_additional_text) {
-    v_editor.session.replace(v_autocomplete_object.range, p_additional_text);
+  if (v_editor) {
+    if (!!p_additional_text) {
+      v_editor.session.replace(v_autocomplete_object.range, p_additional_text);
+    }
+    v_editor.focus();
   }
-  v_editor.focus();
 }
 
 function autocomplete_start(editor, mode, event, force = null) {
@@ -1296,13 +1301,6 @@ function autocomplete_start(editor, mode, event, force = null) {
           }
           v_autocomplete_div.style.display = 'block';
 
-          var v_closediv = document.createElement('div');
-          v_autocomplete_object.close_div = v_closediv;
-          v_closediv.className = 'div_close_cm';
-          v_closediv.onmousedown = function() {
-            close_autocomplete();
-          };
-          document.body.appendChild(v_closediv);
 
           v_autocomplete_object.search_base = v_last_word;
 
@@ -1359,4 +1357,5 @@ export {
   autocomplete_keydown,
   autocomplete_update_editor_cursor,
   autocomplete_start,
+  close_autocomplete
 };
