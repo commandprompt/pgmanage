@@ -772,8 +772,10 @@ function build_autocomplete_elements(p_data, p_value) {
 
 function renew_autocomplete(p_new_value) {
   var v_search_regex = null;
+  // escaping special characters before pasting it to regexp constructor
+  let escaped_value = p_new_value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
-  v_search_regex = new RegExp('^(' + p_new_value + ')', 'i');
+  v_search_regex = new RegExp('^(' + escaped_value + ')', 'i');
 
   //v_search_regex = new RegExp('^' + p_new_value.split('').join('.*'), 'i');
 
@@ -1196,8 +1198,11 @@ function autocomplete_deselect_element() {
 }
 
 function update_selected_grid_row_position(p_cell) {
-  p_cell.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.scrollTop = p_cell.offsetTop + parseInt(p_cell.parentNode.parentNode.parentNode.parentNode.style.top,10);
-  p_cell.parentNode.classList.add('omnidb__autocomplete__data-row--selected');
+  if (!!p_cell) {
+    p_cell.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.scrollTop = p_cell.offsetTop + parseInt(p_cell.parentNode.parentNode.parentNode.parentNode.style.top,10);
+    p_cell.parentNode.classList.add('omnidb__autocomplete__data-row--selected');
+
+  }
 }
 
 function close_autocomplete(p_additional_text) {
