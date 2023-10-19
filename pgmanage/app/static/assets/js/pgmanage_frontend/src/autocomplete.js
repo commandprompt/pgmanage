@@ -654,7 +654,6 @@ $(function() {
         return function (event) {
           event.preventDefault()
           event.stopPropagation()
-          console.log('onclick')
           close_autocomplete(group.elements[group.grid.getSelected()[0][0]].select_value);
         }
       }(v_autocomplete_object.elements[i]));
