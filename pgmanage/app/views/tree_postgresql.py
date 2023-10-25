@@ -203,7 +203,11 @@ def get_tables(request, database):
     try:
         tables = database.QueryTables(False, schema)
         for table in tables.Rows:
-            table_data = {"name": table["table_name"], "oid": table["oid"]}
+            table_data = {
+                "name": table["table_name"],
+                "oid": table["oid"],
+                "name_raw": table["name_raw"],
+            }
             list_tables.append(table_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -225,6 +229,7 @@ def get_columns(request, database):
         for column in columns.Rows:
             column_data = {
                 "column_name": column["column_name"],
+                "name_raw": column["name_raw"],
                 "data_type": column["data_type"],
                 "data_length": column["data_length"],
                 "nullable": column["nullable"],
@@ -237,13 +242,12 @@ def get_columns(request, database):
     return JsonResponse(data=list_columns, safe=False)
 
 
-
 @user_authenticated
-@database_required_new(check_timeout = True, open_connection = True)
+@database_required_new(check_timeout=True, open_connection=True)
 def get_table_definition(request, v_database):
     data = request.data
-    table = data['table']
-    schema = data['schema']
+    table = data["table"]
+    schema = data["schema"]
 
     columns = []
     try:
@@ -252,18 +256,19 @@ def get_table_definition(request, v_database):
         q_definition = v_database.QueryTableDefinition(table, schema)
         for col in q_definition.Rows:
             column_data = {
-                'name': col['column_name'],
-                'data_type': col['data_type'],
-                'default_value': col['column_default'],
-                'nullable': col['is_nullable'] != 'NO',
-                'is_primary': col['column_name'] in pk_column_names,
-                'comment': col['comment']
+                "name": col["column_name"],
+                "data_type": col["data_type"],
+                "default_value": col["column_default"],
+                "nullable": col["is_nullable"] != "NO",
+                "is_primary": col["column_name"] in pk_column_names,
+                "comment": col["comment"],
             }
             columns.append(column_data)
     except Exception as exc:
-        return JsonResponse(data={'data': str(exc)}, status=400)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
-    return JsonResponse(data={'data': columns})
+    return JsonResponse(data={"data": columns})
+
 
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
@@ -277,7 +282,11 @@ def get_pk(request, database):
     try:
         pks = database.QueryTablesPrimaryKeys(table, False, schema)
         for pk in pks.Rows:
-            pk_data = {"constraint_name": pk["constraint_name"], "oid": pk["oid"]}
+            pk_data = {
+                "constraint_name": pk["constraint_name"],
+                "oid": pk["oid"],
+                "name_raw": pk["name_raw"],
+            }
             list_pk.append(pk_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -314,7 +323,11 @@ def get_fks(request, database):
     try:
         fks = database.QueryTablesForeignKeys(table, False, schema)
         for fk in fks.Rows:
-            fk_data = {"constraint_name": fk["constraint_name"], "oid": fk["oid"]}
+            fk_data = {
+                "constraint_name": fk["constraint_name"],
+                "oid": fk["oid"],
+                "name_raw": fk["name_raw"],
+            }
             list_fk.append(fk_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -364,6 +377,7 @@ def get_uniques(request, database):
             v_unique_data = {
                 "constraint_name": unique["constraint_name"],
                 "oid": unique["oid"],
+                "name_raw": unique["name_raw"],
             }
             list_uniques.append(v_unique_data)
     except Exception as exc:
@@ -403,6 +417,7 @@ def get_indexes(request, database):
         for index in indexes.Rows:
             index_data = {
                 "index_name": index["index_name"],
+                "name_raw": index["name_raw"],
                 "uniqueness": index["uniqueness"],
                 "oid": index["oid"],
             }
@@ -444,6 +459,7 @@ def get_checks(request, database):
         for check in checks.Rows:
             check_data = {
                 "constraint_name": check["constraint_name"],
+                "name_raw": check["name_raw"],
                 "constraint_source": check["constraint_source"],
                 "oid": check["oid"],
             }
@@ -468,6 +484,7 @@ def get_excludes(request, database):
         for exclude in excludes.Rows:
             exclude_data = {
                 "constraint_name": exclude["constraint_name"],
+                "name_raw": exclude["name_raw"],
                 "attributes": exclude["attributes"],
                 "operations": exclude["operations"],
                 "oid": exclude["oid"],
@@ -491,7 +508,11 @@ def get_rules(request, database):
     try:
         rules = database.QueryTablesRules(table, False, schema)
         for rule in rules.Rows:
-            rule_data = {"rule_name": rule["rule_name"], "oid": rule["oid"]}
+            rule_data = {
+                "rule_name": rule["rule_name"],
+                "oid": rule["oid"],
+                "name_raw": rule["name_raw"],
+            }
             list_rules.append(rule_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -529,6 +550,7 @@ def get_triggers(request, database):
         for trigger in triggers.Rows:
             trigger_data = {
                 "trigger_name": trigger["trigger_name"],
+                "name_raw": trigger["name_raw"],
                 "enabled": trigger["trigger_enabled"],
                 "trigger_function": trigger["trigger_function"],
                 "id": trigger["id"],
@@ -552,6 +574,7 @@ def get_eventtriggers(request, database):
         for trigger in triggers.Rows:
             trigger_data = {
                 "name": trigger["trigger_name"],
+                "name_raw": trigger["name_raw"],
                 "enabled": trigger["trigger_enabled"],
                 "event": trigger["event_name"],
                 "function": trigger["trigger_function"],
@@ -618,6 +641,7 @@ def get_statistics(request, database):
         for statistic in statistics.Rows:
             statistic_data = {
                 "statistic_name": statistic["statistic_name"],
+                "name_raw": statistic["name_raw"],
                 "schema_name": statistic["schema_name"],
                 "oid": statistic["oid"],
             }
@@ -658,7 +682,11 @@ def get_views(request, database):
     try:
         tables = database.QueryViews(False, schema)
         for table in tables.Rows:
-            table_data = {"name": table["table_name"], "oid": table["oid"]}
+            table_data = {
+                "name": table["table_name"],
+                "oid": table["oid"],
+                "name_raw": table["name_raw"],
+            }
             list_tables.append(table_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -680,6 +708,7 @@ def get_views_columns(request, database):
         for column in columns.Rows:
             column_data = {
                 "column_name": column["column_name"],
+                "name_raw": column["name_raw"],
                 "data_type": column["data_type"],
             }
             list_columns.append(column_data)
@@ -714,7 +743,11 @@ def get_mviews(request, database):
     try:
         tables = database.QueryMaterializedViews(False, schema)
         for table in tables.Rows:
-            table_data = {"name": table["table_name"], "oid": table["oid"]}
+            table_data = {
+                "name": table["table_name"],
+                "oid": table["oid"],
+                "name_raw": table["name_raw"],
+            }
             list_tables.append(table_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -736,6 +769,7 @@ def get_mviews_columns(request, database):
         for column in columns.Rows:
             column_data = {
                 "column_name": column["column_name"],
+                "name_raw": column["name_raw"],
                 "data_type": column["data_type"],
             }
             list_columns.append(column_data)
@@ -768,7 +802,11 @@ def get_schemas(request, database):
     try:
         schemas = database.QuerySchemas()
         for schema in schemas.Rows:
-            schema_data = {"name": schema["schema_name"], "oid": schema["oid"]}
+            schema_data = {
+                "name": schema["schema_name"],
+                "oid": schema["oid"],
+                "name_raw": schema["name_raw"],
+            }
             schemas_list.append(schema_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=500)
@@ -785,6 +823,7 @@ def get_databases(request, database):
         for database_object in databases.Rows:
             database_data = {
                 "name": database_object["database_name"],
+                "name_raw": database_object["name_raw"],
                 "oid": database_object["oid"],
             }
             list_databases.append(database_data)
@@ -819,7 +858,11 @@ def get_roles(request, database):
     try:
         roles = database.QueryRoles()
         for role in roles.Rows:
-            role_data = {"name": role["role_name"], "oid": role["oid"]}
+            role_data = {
+                "name": role["role_name"],
+                "oid": role["oid"],
+                "name_raw": role["name_raw"],
+            }
             list_roles.append(role_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -838,6 +881,7 @@ def get_functions(request, database):
         for function in functions.Rows:
             function_data = {
                 "name": function["name"],
+                "name_raw": function["name_raw"],
                 "id": function["id"],
                 "function_oid": function["function_oid"],
             }
@@ -1070,6 +1114,7 @@ def get_sequences(request, database):
         for sequence in sequences.Rows:
             sequence_data = {
                 "sequence_name": sequence["sequence_name"],
+                "name_raw": sequence["name_raw"],
                 "oid": sequence["oid"],
             }
             list_sequences.append(sequence_data)
@@ -1089,6 +1134,7 @@ def get_extensions(request, database):
         for extension in extensions.Rows:
             extension_data = {
                 "name": extension["extension_name"],
+                "name_raw": extension["name_raw"],
                 "oid": extension["oid"],
             }
             list_extensions.append(extension_data)
@@ -1184,6 +1230,7 @@ def get_publications(request, database):
         for pub in pubs.Rows:
             pub_data = {
                 "name": pub["pubname"],
+                "name_raw": pub["name_raw"],
                 "alltables": pub["puballtables"],
                 "insert": pub["pubinsert"],
                 "update": pub["pubupdate"],
@@ -1226,6 +1273,7 @@ def get_subscriptions(request, database):
         for sub in subs.Rows:
             sub_data = {
                 "name": sub["subname"],
+                "name_raw": sub["name_raw"],
                 "enabled": sub["subenabled"],
                 "conn_info": sub["subconninfo"],
                 "publications": sub["subpublications"],
@@ -1284,6 +1332,7 @@ def get_foreign_servers(request, database):
         for server in servers.Rows:
             server_data = {
                 "name": server["srvname"],
+                "name_raw": server["name_raw"],
                 "type": server["srvtype"],
                 "version": server["srvversion"],
                 "options": server["srvoptions"],
@@ -1308,6 +1357,7 @@ def get_user_mappings(request, database):
         for mapping in mappings.Rows:
             mapping_data = {
                 "name": mapping["rolname"],
+                "name_raw": mapping["name_raw"],
                 "options": mapping["umoptions"],
                 "foreign_server": foreign_server,
             }
@@ -1328,7 +1378,11 @@ def get_foreign_tables(request, database):
     try:
         tables = database.QueryForeignTables(False, schema)
         for table in tables.Rows:
-            table_data = {"name": table["table_name"], "oid": table["oid"]}
+            table_data = {
+                "name": table["table_name"],
+                "oid": table["oid"],
+                "name_raw": table["name_raw"],
+            }
             list_tables.append(table_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -1377,6 +1431,7 @@ def get_types(request, database):
         for type_object in types.Rows:
             type_data = {
                 "type_name": type_object["type_name"],
+                "name_raw": type_object["name_raw"],
                 "oid": type_object["oid"],
             }
             list_types.append(type_data)
@@ -1396,7 +1451,11 @@ def get_domains(request, database):
     try:
         domains = database.QueryDomains(False, schema)
         for domain in domains.Rows:
-            domain_data = {"domain_name": domain["domain_name"], "oid": domain["oid"]}
+            domain_data = {
+                "domain_name": domain["domain_name"],
+                "oid": domain["oid"],
+                "name_raw": domain["name_raw"],
+            }
             list_domains.append(domain_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -1409,11 +1468,15 @@ def get_domains(request, database):
 def get_inheriteds_parents(request, database):
     schema = request.data["schema"]
 
+    list_tables = []
     try:
         tables = database.QueryTablesInheritedsParents(False, schema)
-        list_tables = [
-            f'{table["table_schema"]}.{table["table_name"]}' for table in tables.Rows
-        ]
+        for table in tables.Rows:
+            table_data = {
+                "name": f'{table["table_schema"]}.{table["table_name"]}',
+                "name_raw": f'{table["table_schema_raw"]}.{table["name_raw"]}',
+            }
+            list_tables.append(table_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1432,7 +1495,11 @@ def get_inheriteds_children(request, database):
     try:
         tables = database.QueryTablesInheritedsChildren(table, schema)
         for table in tables.Rows:
-            table_data = {"name": table["table_name"], "oid": table["oid"]}
+            table_data = {
+                "name": table["table_name"],
+                "oid": table["oid"],
+                "name_raw": table["name_raw"],
+            }
             list_tables.append(table_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -1445,11 +1512,15 @@ def get_inheriteds_children(request, database):
 def get_partitions_parents(request, database):
     schema = request.data["schema"]
 
+    list_tables = []
     try:
         tables = database.QueryTablesPartitionsParents(False, schema)
-        list_tables = [
-            f'{table["table_schema"]}.{table["table_name"]}' for table in tables.Rows
-        ]
+        for table in tables.Rows:
+            table_data = {
+                "name": f'{table["table_schema"]}.{table["table_name"]}',
+                "name_raw": f'{table["table_schema_raw"]}.{table["name_raw"]}',
+            }
+        list_tables.append(table_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1468,7 +1539,11 @@ def get_partitions_children(request, database):
     try:
         tables = database.QueryTablesPartitionsChildren(table, schema)
         for table in tables.Rows:
-            table_data = {"name": table["table_name"], "oid": table["oid"]}
+            table_data = {
+                "name": table["table_name"],
+                "oid": table["oid"],
+                "name_raw": table["name_raw"],
+            }
             list_tables.append(table_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)

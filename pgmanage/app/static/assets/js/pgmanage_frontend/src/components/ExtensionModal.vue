@@ -32,7 +32,7 @@
             <select id="extensionSchema" class="form-control" v-model="selectedSchema"
               :disabled="!!requiredSchema || !isRelocatable">
               <option value="" disabled="">Select an item...</option>
-              <option v-for="(schema, index) in schemaList" :value="schema.name" :key="index">{{ schema.name }}</option>
+              <option v-for="(schema, index) in schemaList" :value="schema.name_raw" :key="index">{{ schema.name }}</option>
             </select>
           </div>
 
@@ -182,7 +182,7 @@ export default {
         tab_id: this.tabId,
       })
         .then((resp) => {
-          this.schemaList = resp.data.data
+          this.schemaList = resp.data
         })
         .catch((error) => {
           showToast("error", error.response.data.data)

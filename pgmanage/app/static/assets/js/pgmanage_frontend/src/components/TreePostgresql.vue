@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { emitter } from '../emitter'
+import { emitter } from "../emitter";
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import { checkBeforeChangeDatabase } from "../workspace";
@@ -32,6 +32,7 @@ import {
   TemplateSelectPostgresql,
   TemplateUpdatePostgresql,
   TemplateInsertPostgresql,
+  TemplateSelectFunctionPostgresql,
 } from "../tree_context_functions/tree_postgresql";
 import { createConfTab } from "../tab_functions/conf_tab";
 import { createSchemaEditorTab } from "../tab_functions/schema_editor_tab";
@@ -41,7 +42,7 @@ import { createExtensionModal, createPgCronModal } from "./postgresql_modals";
 import { createMessageModal } from "../notification_control";
 import { getProperties, clearProperties } from "../properties";
 import { startMonitorDashboard } from "../monitoring";
-import { showConfirm, showToast } from '../notification_control';
+import { showConfirm, showToast } from "../notification_control";
 
 export default {
   name: "TreePostgresql",
@@ -73,7 +74,7 @@ export default {
           },
         },
       ],
-      currentSchema: 'public'
+      currentSchema: "public",
     };
   },
   computed: {
@@ -111,7 +112,7 @@ export default {
                 "Alter Database",
                 this.templates.alter_database.replace(
                   "#database_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -131,7 +132,7 @@ export default {
                 "Drop Database",
                 this.templates.drop_database.replace(
                   "#database_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value ?? this.selectedNode.title
                 )
               );
             },
@@ -177,7 +178,9 @@ export default {
             label: "ER Diagram",
             icon: "fab cm-all fa-hubspot",
             onClick: () => {
-              v_connTabControl.tag.createERDTab(this.selectedNode.data.schema);
+              v_connTabControl.tag.createERDTab(
+                this.selectedNode.data.schema_raw
+              );
             },
           },
           {
@@ -202,7 +205,7 @@ export default {
                 "Alter Schema",
                 this.templates.alter_schema.replace(
                   "#schema_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -222,7 +225,7 @@ export default {
                 "Drop Schema",
                 this.templates.drop_schema.replace(
                   "#schema_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -234,7 +237,7 @@ export default {
             label: "Create Table",
             icon: "fas cm-all fa-plus",
             onClick: () => {
-              createSchemaEditorTab(this.selectedNode, 'create', 'postgres')
+              createSchemaEditorTab(this.selectedNode, "create", "postgres");
             },
           },
           {
@@ -282,8 +285,8 @@ export default {
                 icon: "fas cm-all fa-search",
                 onClick: () => {
                   TemplateSelectPostgresql(
-                    this.selectedNode.data.schema,
-                    this.selectedNode.title,
+                    this.selectedNode.data.schema_raw,
+                    this.selectedNode.data.raw_value,
                     "t"
                   );
                 },
@@ -293,8 +296,8 @@ export default {
                 icon: "fas cm-all fa-table",
                 onClick: () => {
                   createDataEditorTab(
-                    this.selectedNode.title,
-                    this.selectedNode.data.schema
+                    this.selectedNode.data.raw_value,
+                    this.selectedNode.data.schema_raw
                   );
                 },
               },
@@ -303,8 +306,8 @@ export default {
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
                   TemplateInsertPostgresql(
-                    this.selectedNode.data.schema,
-                    this.selectedNode.title
+                    this.selectedNode.data.schema_raw,
+                    this.selectedNode.data.raw_value
                   );
                 },
               },
@@ -313,8 +316,8 @@ export default {
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
                   TemplateUpdatePostgresql(
-                    this.selectedNode.data.schema,
-                    this.selectedNode.title
+                    this.selectedNode.data.schema_raw,
+                    this.selectedNode.data.raw_value
                   );
                 },
               },
@@ -326,7 +329,7 @@ export default {
                     "Delete Records",
                     this.templates.delete.replace(
                       "#table_name#",
-                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -339,7 +342,7 @@ export default {
                     "Truncate Table",
                     this.templates.truncate.replace(
                       "#table_name#",
-                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -358,7 +361,7 @@ export default {
                     "Vacuum table",
                     this.templates.vacuum_table.replace(
                       "#table_name#",
-                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -371,7 +374,7 @@ export default {
                     "Analyze Table",
                     this.templates.analyze_table.replace(
                       "#table_name#",
-                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -380,7 +383,7 @@ export default {
                 label: "Alter Table",
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
-                  createSchemaEditorTab(this.selectedNode, 'alter', 'postgres')
+                  createSchemaEditorTab(this.selectedNode, "alter", "postgres");
                 },
               },
               {
@@ -398,7 +401,7 @@ export default {
                     "Drop Table",
                     this.templates.drop_table.replace(
                       "#table_name#",
-                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -429,7 +432,7 @@ export default {
                 "Create Column",
                 this.templates.create_column.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -446,10 +449,11 @@ export default {
                 this.templates.alter_column
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace(/#column_name#/g, this.selectedNode.title)
+                  .replace(/#column_name#/g, this.selectedNode.data.raw_value)
               );
             },
           },
@@ -469,10 +473,11 @@ export default {
                 this.templates.drop_column
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace(/#column_name#/g, this.selectedNode.title)
+                  .replace(/#column_name#/g, this.selectedNode.data.raw_value)
               );
             },
           },
@@ -487,7 +492,7 @@ export default {
                 "Create Primary Key",
                 this.templates.create_primarykey.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -512,10 +517,14 @@ export default {
                 this.templates.drop_primarykey
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#constraint_name#", this.selectedNode.title)
+                  .replace(
+                    "#constraint_name#",
+                    this.selectedNode.data.raw_value
+                  )
               );
             },
           },
@@ -530,7 +539,7 @@ export default {
                 "Create Foreign Key",
                 this.templates.create_foreignkey.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -555,10 +564,14 @@ export default {
                 this.templates.drop_foreignkey
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#constraint_name#", this.selectedNode.title)
+                  .replace(
+                    "#constraint_name#",
+                    this.selectedNode.data.raw_value
+                  )
               );
             },
           },
@@ -573,7 +586,7 @@ export default {
                 "Create Unique",
                 this.templates.create_unique.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -598,10 +611,14 @@ export default {
                 this.templates.drop_unique
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#constraint_name#", this.selectedNode.title)
+                  .replace(
+                    "#constraint_name#",
+                    this.selectedNode.data.raw_value
+                  )
               );
             },
           },
@@ -616,7 +633,7 @@ export default {
                 "Create Check",
                 this.templates.create_check.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -640,10 +657,14 @@ export default {
                 this.templates.drop_check
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#constraint_name#", this.selectedNode.title)
+                  .replace(
+                    "#constraint_name#",
+                    this.selectedNode.data.raw_value
+                  )
               );
             },
           },
@@ -658,7 +679,7 @@ export default {
                 "Create Exclude",
                 this.templates.create_exclude.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -682,10 +703,14 @@ export default {
                 this.templates.drop_exclude
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#constraint_name#", this.selectedNode.title)
+                  .replace(
+                    "#constraint_name#",
+                    this.selectedNode.data.raw_value
+                  )
               );
             },
           },
@@ -700,7 +725,7 @@ export default {
                 "Create Index",
                 this.templates.create_index.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -728,7 +753,7 @@ export default {
                 "Alter Index",
                 this.templates.alter_index.replace(
                   "#index_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -741,7 +766,7 @@ export default {
                 "Reindex",
                 this.templates.reindex.replace(
                   "#index_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -761,7 +786,7 @@ export default {
                 "Drop Index",
                 this.templates.drop_index.replace(
                   "#index_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -777,7 +802,7 @@ export default {
                 "Create Rule",
                 this.templates.create_rule.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -805,10 +830,11 @@ export default {
                 this.templates.alter_rule
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#rule_name#", this.selectedNode.title)
+                  .replace("#rule_name#", this.selectedNode.data.raw_value)
               );
             },
           },
@@ -816,7 +842,9 @@ export default {
             label: "Edit Rule",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              v_connTabControl.tag.createQueryTab(
+                this.selectedNode.data.raw_value
+              );
               this.getRuleDefinitionPostgresql(this.selectedNode);
             },
           },
@@ -836,10 +864,11 @@ export default {
                 this.templates.drop_rule
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#rule_name#", this.selectedNode.title)
+                  .replace("#rule_name#", this.selectedNode.data.raw_value)
               );
             },
           },
@@ -854,7 +883,7 @@ export default {
                 "Create Trigger",
                 this.templates.create_trigger.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -882,10 +911,11 @@ export default {
                 this.templates.alter_trigger
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#trigger_name#", this.selectedNode.title)
+                  .replace("#trigger_name#", this.selectedNode.data.raw_value)
               );
             },
           },
@@ -898,10 +928,11 @@ export default {
                 this.templates.enable_trigger
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#trigger_name#", this.selectedNode.title)
+                  .replace("#trigger_name#", this.selectedNode.data.raw_value)
               );
             },
           },
@@ -914,10 +945,11 @@ export default {
                 this.templates.disable_trigger
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#trigger_name#", this.selectedNode.title)
+                  .replace("#trigger_name#", this.selectedNode.data.raw_value)
               );
             },
           },
@@ -937,10 +969,11 @@ export default {
                 this.templates.drop_trigger
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#trigger_name#", this.selectedNode.title)
+                  .replace("#trigger_name#", this.selectedNode.data.raw_value)
               );
             },
           },
@@ -1065,7 +1098,7 @@ export default {
                 "Create Partition",
                 this.templates.create_partition.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -1093,10 +1126,11 @@ export default {
                 this.templates.detach_partition
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace("#partition_name#", this.selectedNode.title)
+                  .replace("#partition_name#", this.selectedNode.data.raw_value)
               );
             },
           },
@@ -1108,7 +1142,7 @@ export default {
                 "Drop Partition",
                 this.templates.drop_partition.replace(
                   "#partition_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -1154,7 +1188,7 @@ export default {
                 "Alter Statistics",
                 this.templates.alter_statistics.replace(
                   "#statistics_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -1174,7 +1208,7 @@ export default {
                 "Drop Statistics",
                 this.templates.drop_statistics.replace(
                   "#statistics_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -1220,7 +1254,7 @@ export default {
                 "Create Foreign Table",
                 this.templates.create_foreign_table.replace(
                   "#schema_name#",
-                  this.selectedNode.data.schema
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -1237,8 +1271,8 @@ export default {
                 icon: "fas cm-all fa-search",
                 onClick: () => {
                   TemplateSelectPostgresql(
-                    this.selectedNode.data.schema,
-                    this.selectedNode.title,
+                    this.selectedNode.data.schema_raw,
+                    this.selectedNode.data.raw_value,
                     "f"
                   );
                 },
@@ -1248,8 +1282,8 @@ export default {
                 icon: "fas cm-all fa-table",
                 onClick: () => {
                   createDataEditorTab(
-                    this.selectedNode.title,
-                    this.selectedNode.data.schema
+                    this.selectedNode.data.raw_value,
+                    this.selectedNode.data.schema_raw
                   );
                 },
               },
@@ -1258,8 +1292,8 @@ export default {
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
                   TemplateInsertPostgresql(
-                    this.selectedNode.data.schema,
-                    this.selectedNode.title
+                    this.selectedNode.data.schema_raw,
+                    this.selectedNode.data.raw_value
                   );
                 },
               },
@@ -1268,8 +1302,8 @@ export default {
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
                   TemplateUpdatePostgresql(
-                    this.selectedNode.data.schema,
-                    this.selectedNode.title
+                    this.selectedNode.data.schema_raw,
+                    this.selectedNode.data.raw_value
                   );
                 },
               },
@@ -1281,7 +1315,7 @@ export default {
                     "Delete Records",
                     this.templates.delete.replace(
                       "#table_name#",
-                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -1300,7 +1334,7 @@ export default {
                     "Analyze Foreign Table",
                     this.templates.analyze_table.replace(
                       "#table_name#",
-                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -1313,7 +1347,7 @@ export default {
                     "Alter Foreign Table",
                     this.templates.alter_foreign_table.replace(
                       "#table_name#",
-                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -1333,7 +1367,7 @@ export default {
                     "Drop Foreign Table",
                     this.templates.drop_foreign_table.replace(
                       "#table_name#",
-                      `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                     )
                   );
                 },
@@ -1350,7 +1384,7 @@ export default {
                 "Create Foreign Column",
                 this.templates.create_foreign_column.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -1367,10 +1401,11 @@ export default {
                 this.templates.alter_foreign_column
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace(/#column_name#/g, this.selectedNode.title)
+                  .replace(/#column_name#/g, this.selectedNode.data.raw_value)
               );
             },
           },
@@ -1383,10 +1418,11 @@ export default {
                 this.templates.drop_foreign_column
                   .replace(
                     "#table_name#",
-                    `${this.selectedNode.data.schema}.${this.getParentNodeDeep(this.selectedNode, 2).title
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
                     }`
                   )
-                  .replace(/#column_name#/g, this.selectedNode.title)
+                  .replace(/#column_name#/g, this.selectedNode.data.raw_value)
               );
             },
           },
@@ -1401,7 +1437,7 @@ export default {
                 "Create Sequence",
                 this.templates.create_sequence.replace(
                   "#schema_name#",
-                  this.selectedNode.data.schema
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -1427,7 +1463,7 @@ export default {
                 "Alter Sequence",
                 this.templates.alter_sequence.replace(
                   "#sequence_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -1447,8 +1483,7 @@ export default {
                 "Drop Sequence",
                 this.templates.drop_sequence.replace(
                   "#sequence_name#",
-                  `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
-                  }`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -1464,7 +1499,7 @@ export default {
                 "Create View",
                 this.templates.create_view.replace(
                   "#schema_name#",
-                  this.selectedNode.data.schema
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -1488,8 +1523,8 @@ export default {
             icon: "fas cm-all fa-search",
             onClick: () => {
               TemplateSelectPostgresql(
-                this.getParentNodeDeep(this.selectedNode, 2).title,
-                this.selectedNode.title,
+                this.selectedNode.data.schema_raw,
+                this.selectedNode.data.raw_value,
                 "v"
               );
             },
@@ -1511,7 +1546,7 @@ export default {
                 "Alter View",
                 this.templates.alter_view.replace(
                   /#view_name#/g,
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -1531,7 +1566,7 @@ export default {
                 "Drop View",
                 this.templates.drop_view.replace(
                   "#view_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -1547,7 +1582,7 @@ export default {
                 "Create Trigger",
                 this.templates.create_view_trigger.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.getParentNode(this.selectedNode).title
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNode(this.selectedNode).data.raw_value
                   }`
                 )
               );
@@ -1575,7 +1610,7 @@ export default {
                 "Create Materialized View",
                 this.templates.create_mview.replace(
                   "#schema_name#",
-                  this.selectedNode.data.schema
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -1599,8 +1634,8 @@ export default {
             icon: "fas cm-all fa-search",
             onClick: () => {
               TemplateSelectPostgresql(
-                this.selectedNode.data.schema,
-                this.selectedNode.title,
+                this.selectedNode.data.schema_raw,
+                this.selectedNode.data.raw_value,
                 "m"
               );
             },
@@ -1609,7 +1644,9 @@ export default {
             label: "Edit Mat. View",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              v_connTabControl.tag.createQueryTab(this.selectedNode.title);
+              v_connTabControl.tag.createQueryTab(
+                this.selectedNode.data.raw_value
+              ); // CHECK HERE
               this.getMaterializedViewDefinitionPostgresql(this.selectedNode);
             },
           },
@@ -1621,7 +1658,7 @@ export default {
                 "Alter Materialized View",
                 this.templates.alter_mview.replace(
                   "#view_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -1634,7 +1671,7 @@ export default {
                 "Refresh Materialized View",
                 this.templates.refresh_mview.replace(
                   "#view_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -1647,7 +1684,7 @@ export default {
                 "Analyze Mat. View",
                 this.templates.analyze_table.replace(
                   "#table_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -1667,7 +1704,7 @@ export default {
                 "Drop Materialized View",
                 this.templates.drop_mview.replace(
                   "#view_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -1683,7 +1720,7 @@ export default {
                 "Create Function",
                 this.templates.create_function.replace(
                   "#schema_name#",
-                  this.selectedNode.data.schema
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -1707,8 +1744,8 @@ export default {
             icon: "fas cm-all fa-edit",
             onClick: () => {
               TemplateSelectFunctionPostgresql(
-                this.selectedNode.data.schema,
-                this.selectedNode.title,
+                this.selectedNode.data.schema_raw,
+                this.selectedNode.data.raw_value,
                 this.selectedNode.data.id
               );
             },
@@ -1772,7 +1809,7 @@ export default {
                 "Create Trigger Function",
                 this.templates.create_triggerfunction.replace(
                   "#schema_name#",
-                  this.selectedNode.data.schema
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -1842,7 +1879,7 @@ export default {
                 "Create Event Trigger Function",
                 this.templates.create_eventtriggerfunction.replace(
                   "#schema_name#",
-                  this.selectedNode.data.schema
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -2059,7 +2096,7 @@ export default {
                 "Create Type",
                 this.templates.create_type.replace(
                   "#schema_name#",
-                  this.selectedNode.data.schema
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -2085,7 +2122,7 @@ export default {
                 "Alter Type",
                 this.templates.alter_type.replace(
                   "#type_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -2105,7 +2142,7 @@ export default {
                 "Drop Type",
                 this.templates.drop_type.replace(
                   "#type_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -2121,7 +2158,7 @@ export default {
                 "Create Domain",
                 this.templates.create_domain.replace(
                   "#schema_name#",
-                  this.selectedNode.data.schema
+                  this.selectedNode.data.schema_raw
                 )
               );
             },
@@ -2147,7 +2184,7 @@ export default {
                 "Alter Domain",
                 this.templates.alter_domain.replace(
                   "#domain_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -2167,7 +2204,7 @@ export default {
                 "Drop Domain",
                 this.templates.drop_domain.replace(
                   "#domain_name#",
-                  `${this.selectedNode.data.schema}.${this.selectedNode.title}`
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
               );
             },
@@ -2220,7 +2257,7 @@ export default {
                 "Alter Extension",
                 this.templates.alter_extension.replace(
                   "#extension_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2247,7 +2284,7 @@ export default {
                 "Drop Role",
                 this.templates.drop_extension.replace(
                   "#extension_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2337,7 +2374,7 @@ export default {
                 "Alter Foreign Server",
                 this.templates.alter_foreign_server.replace(
                   "#srvname#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2350,7 +2387,7 @@ export default {
                 "Import Foreign Schema",
                 this.templates.import_foreign_schema.replace(
                   "#srvname#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2370,7 +2407,7 @@ export default {
                 "Drop Foreign Server",
                 this.templates.drop_foreign_server.replace(
                   "#srvname#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2386,7 +2423,7 @@ export default {
                 "Create User Mapping",
                 this.templates.create_user_mapping.replace(
                   "#srvname#",
-                  this.getParentNode(this.selectedNode).title
+                  this.getParentNode(this.selectedNode).data.raw_value
                 )
               );
             },
@@ -2400,10 +2437,10 @@ export default {
               tabSQLTemplate(
                 "Alter User Mapping",
                 this.templates.alter_user_mapping
-                  .replace("#user_name#", this.selectedNode.title)
+                  .replace("#user_name#", this.selectedNode.data.raw_value)
                   .replace(
                     "#srvname#",
-                    this.getParentNodeDeep(this.selectedNode, 2).title
+                    this.getParentNodeDeep(this.selectedNode, 2).data.raw_value
                   )
               );
             },
@@ -2415,10 +2452,10 @@ export default {
               tabSQLTemplate(
                 "Drop User Mapping",
                 this.templates.drop_user_mapping
-                  .replace("#user_name#", this.selectedNode.title)
+                  .replace("#user_name#", this.selectedNode.data.raw_value)
                   .replace(
                     "#srvname#",
-                    this.getParentNodeDeep(this.selectedNode, 2).title
+                    this.getParentNodeDeep(this.selectedNode, 2).data.raw_value
                   )
               );
             },
@@ -2457,7 +2494,7 @@ export default {
                 "Alter Trigger",
                 this.templates.alter_eventtrigger.replace(
                   "#trigger_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2470,7 +2507,7 @@ export default {
                 "Enable Event Trigger",
                 this.templates.enable_eventtrigger.replace(
                   "#trigger_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2483,7 +2520,7 @@ export default {
                 "Disable Event Trigger",
                 this.templates.disable_eventtrigger.replace(
                   "#trigger_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2503,7 +2540,7 @@ export default {
                 "Drop Event Trigger",
                 this.templates.drop_eventtrigger.replace(
                   "#trigger_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2587,7 +2624,7 @@ export default {
                 "Alter Publication",
                 this.templates.alter_publication.replace(
                   "#pub_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2607,7 +2644,7 @@ export default {
                 "Drop Publication",
                 this.templates.drop_publication.replace(
                   "#pub_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2641,7 +2678,7 @@ export default {
                     "#pub_name#",
                     this.getParentNodeDeep(this.selectedNode, 2).title
                   )
-                  .replace("#table_name#", this.selectedNode.title)
+                  .replace("#table_name#", this.selectedNode.data.raw_value)
               );
             },
           },
@@ -2679,7 +2716,7 @@ export default {
                 "Alter Subscription",
                 this.templates.alter_subscription.replace(
                   "#sub_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2699,7 +2736,7 @@ export default {
                 "Drop Subscription",
                 this.templates.drop_subscription.replace(
                   "#sub_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2809,23 +2846,23 @@ export default {
                 ).value;
 
                 if (password == "") {
-                  showToast("error", "Password is empty.")
+                  showToast("error", "Password is empty.");
                   return;
                 } else if (password_confirm == "") {
-                  showToast("error", "Password confirmation is empty")
+                  showToast("error", "Password confirmation is empty");
                   return;
                 } else if (password != password_confirm) {
-                  showToast("error", "Passwords do not match")
+                  showToast("error", "Passwords do not match");
                   return;
                 }
 
                 this.api
                   .post("/change_role_password_postgresql/", {
-                    role: this.selectedNode.title,
+                    role: this.selectedNode.data.raw_value,
                     password: password,
                   })
                   .then((resp) => {
-                    showToast("success", "Password changed successfully.")
+                    showToast("success", "Password changed successfully.");
                   })
                   .catch((error) => {
                     this.nodeOpenError(error, this.selectedNode);
@@ -2841,7 +2878,7 @@ export default {
                 "Alter Role",
                 this.templates.alter_role.replace(
                   "#role_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2861,7 +2898,7 @@ export default {
                 "Drop Role",
                 this.templates.drop_role.replace(
                   "#role_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -2981,41 +3018,55 @@ export default {
     },
   },
   mounted() {
-    this.doubleClickNode(this.getRootNode())
+    this.doubleClickNode(this.getRootNode());
     this.$nextTick(() => {
       const processNode = (node) => {
         if (["database_list", "schema_list"].includes(node.data.type)) {
-          this.doubleClickNode(node)
-        } else if (node.data.type === 'database' && node.title === this.selectedDatabase) {
-          this.doubleClickNode(node)
-        } else if (node.data.type === 'schema' && node.title === this.currentSchema) {
-          this.doubleClickNode(node)
-        } else if (node.data.type === 'table_list') {
-          this.doubleClickNode(node)
-          return
+          this.doubleClickNode(node);
+        } else if (
+          node.data.type === "database" &&
+          node.title === this.selectedDatabase
+        ) {
+          this.doubleClickNode(node);
+        } else if (
+          node.data.type === "schema" &&
+          node.title === this.currentSchema
+        ) {
+          this.doubleClickNode(node);
+        } else if (node.data.type === "table_list") {
+          this.doubleClickNode(node);
+          return;
         }
 
         setTimeout(() => {
-          const nodeElement = this.$refs.tree.getNode(node.path)
+          const nodeElement = this.$refs.tree.getNode(node.path);
           nodeElement.children.forEach((childNode) => {
-            processNode(childNode)
-          })
-        }, 200)
-      }
+            processNode(childNode);
+          });
+        }, 200);
+      };
       setTimeout(() => {
         this.getRootNode().children.forEach((node) => {
-          processNode(node)
-        })
-      }, 200)
-    })
+          processNode(node);
+        });
+      }, 200);
+    });
     emitter.on(`schemaChanged_${this.id}`, ({ schema_name, database_name }) => {
-      const tree = this.$refs.tree
-      let db_node = tree.getNextNode([0], (node) => { return node.data.type === 'database' && node.data.database === database_name })
-      let schema_node = tree.getNextNode(db_node.path, (node) => { return node.data.type === 'schema' && node.data.schema === schema_name })
-      let tables_node = tree.getNextNode(schema_node.path, (node) => { return node.data.type === 'table_list' })
+      const tree = this.$refs.tree;
+      let db_node = tree.getNextNode([0], (node) => {
+        return (
+          node.data.type === "database" && node.data.database === database_name
+        );
+      });
+      let schema_node = tree.getNextNode(db_node.path, (node) => {
+        return node.data.type === "schema" && node.data.schema === schema_name;
+      });
+      let tables_node = tree.getNextNode(schema_node.path, (node) => {
+        return node.data.type === "table_list";
+      });
       // this is to handle cases when tables_node is absent because schema_node is not expanded and therefore empty
-      this.refreshTree(tables_node || schema_node)
-    })
+      this.refreshTree(tables_node || schema_node);
+    });
   },
   methods: {
     refreshTreePostgresqlConfirm(node) {
@@ -3203,9 +3254,9 @@ export default {
       });
     },
     getPropertiesConfirm(node) {
-      let schema = node.data.schema ? node.data.schema : null;
+      let schema = node.data.schema_raw ? node.data.schema_raw : null;
       let table = null;
-      let object = node.title;
+      let object = node.data.raw_value;
       let handledTypes = [
         "role",
         "tablespace",
@@ -3254,7 +3305,7 @@ export default {
         case "rule":
         case "trigger":
         case "index":
-          table = this.getParentNodeDeep(node, 2).title;
+          table = this.getParentNodeDeep(node, 2).data.raw_value;
           break;
         case "function":
         case "procedure":
@@ -3267,9 +3318,6 @@ export default {
           break;
         case "user_mapping":
           schema = node.data.foreign_server;
-          break;
-        case "statistic":
-          object = node.data.statistics;
           break;
       }
 
@@ -3316,8 +3364,8 @@ export default {
         .then((resp) => {
           // Fix this not to use v_connTabControl
           v_connTabControl.tag.createQueryTab(`${node.title} Comment`);
-          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data)
+          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab;
+          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -3482,6 +3530,7 @@ export default {
               contextMenu: "cm_database",
               database: el.name,
               oid: el.oid,
+              raw_value: el.name_raw,
             });
           }, null);
         })
@@ -3495,7 +3544,7 @@ export default {
         .then((resp) => {
           this.removeChildNodes(node);
 
-          this.currentSchema = resp.data.current_schema
+          this.currentSchema = resp.data.current_schema;
 
           if (resp.data.has_pg_cron) {
             this.insertNode(node, "Jobs", {
@@ -3566,6 +3615,7 @@ export default {
               type: "schema",
               contextMenu: "cm_schema",
               schema: el.name,
+              schema_raw: el.name_raw,
               oid: el.oid,
             });
           }, null);
@@ -3582,6 +3632,7 @@ export default {
         type: "domain_list",
         contextMenu: "cm_domains",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Types", {
@@ -3589,6 +3640,7 @@ export default {
         type: "type_list",
         contextMenu: "cm_types",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Aggregates", {
@@ -3596,6 +3648,7 @@ export default {
         type: "aggregate_list",
         contextMenu: "cm_aggregates",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Procedures", {
@@ -3603,6 +3656,7 @@ export default {
         type: "procedure_list",
         contextMenu: "cm_procedures",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Event Trigger Functions", {
@@ -3610,6 +3664,7 @@ export default {
         type: "event_trigger_function_list",
         contextMenu: "cm_event_trigger_functions",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Trigger Functions", {
@@ -3617,6 +3672,7 @@ export default {
         type: "trigger_function_list",
         contextMenu: "cm_trigger_functions",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Functions", {
@@ -3624,6 +3680,7 @@ export default {
         type: "function_list",
         contextMenu: "cm_functions",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Materialized Views", {
@@ -3631,6 +3688,7 @@ export default {
         type: "mview_list",
         contextMenu: "cm_mviews",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Views", {
@@ -3638,6 +3696,7 @@ export default {
         type: "view_list",
         contextMenu: "cm_views",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Sequences", {
@@ -3645,6 +3704,7 @@ export default {
         type: "sequence_list",
         contextMenu: "cm_sequences",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Foreign Tables", {
@@ -3652,6 +3712,7 @@ export default {
         type: "foreign_table_list",
         contextMenu: "cm_foreign_tables",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Inheritance Tables", {
@@ -3659,6 +3720,7 @@ export default {
         type: "inherited_table_list",
         contextMenu: "cm_inherited_tables",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Partitioned Tables", {
@@ -3666,6 +3728,7 @@ export default {
         type: "partitioned_table_list",
         contextMenu: "cm_partitioned_tables",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
 
       this.insertNode(node, "Tables", {
@@ -3673,12 +3736,13 @@ export default {
         type: "table_list",
         contextMenu: "cm_tables",
         schema: node.data.schema,
+        schema_raw: node.data.schema_raw,
       });
     },
     getTablesPostgresql(node) {
       this.api
         .post("/get_tables_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -3693,7 +3757,8 @@ export default {
               type: "table",
               contextMenu: "cm_table",
               schema: node.data.schema,
-
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
               oid: el.oid,
             });
           }, null);
@@ -3705,8 +3770,8 @@ export default {
     getColumnsPostgresql(node) {
       this.api
         .post("/get_columns_postgresql/", {
-          table: node.title,
-          schema: node.data.schema,
+          table: node.data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -3716,6 +3781,7 @@ export default {
             type: "statistics_list",
             contextMenu: "cm_statistics",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Partitions", {
@@ -3723,6 +3789,7 @@ export default {
             type: "partition_list",
             contextMenu: "cm_partitions",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Inherited Tables", {
@@ -3730,6 +3797,7 @@ export default {
             type: "inherited_list",
             contextMenu: "cm_inheriteds",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Triggers", {
@@ -3737,6 +3805,7 @@ export default {
             type: "trigger_list",
             contextMenu: "cm_triggers",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Rules", {
@@ -3744,6 +3813,7 @@ export default {
             type: "rule_list",
             contextMenu: "cm_rules",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Indexes", {
@@ -3751,6 +3821,7 @@ export default {
             type: "indexes",
             contextMenu: "cm_indexes",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Excludes", {
@@ -3758,6 +3829,7 @@ export default {
             type: "exclude_list",
             contextMenu: "cm_excludes",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Checks", {
@@ -3765,6 +3837,7 @@ export default {
             type: "check_list",
             contextMenu: "cm_checks",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Uniques", {
@@ -3772,6 +3845,7 @@ export default {
             type: "uniques",
             contextMenu: "cm_uniques",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Foreign Keys", {
@@ -3779,6 +3853,7 @@ export default {
             type: "foreign_keys",
             contextMenu: "cm_fks",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Primary Key", {
@@ -3786,6 +3861,7 @@ export default {
             type: "primary_key",
             contextMenu: "cm_pks",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, `Columns (${resp.data.length})`, {
@@ -3793,6 +3869,7 @@ export default {
             type: "column_list",
             contextMenu: "cm_columns",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           const columns_node = this.getFirstChildNode(node);
@@ -3806,7 +3883,9 @@ export default {
                 type: "table_field",
                 contextMenu: "cm_column",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
                 position: el.position,
+                raw_value: el.name_raw,
               },
               null
             );
@@ -3818,6 +3897,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -3827,6 +3907,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -3839,8 +3920,8 @@ export default {
     getPKPostgresql(node) {
       this.api
         .post("/get_pk_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -3856,6 +3937,8 @@ export default {
               contextMenu: "cm_pk",
               oid: el.oid,
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -3866,9 +3949,9 @@ export default {
     getPKColumnsPostgresql(node) {
       this.api
         .post("/get_pk_columns_postgresql/", {
-          key: node.title,
-          table: this.getParentNodeDeep(node, 2).title,
-          schema: node.data.schema,
+          key: node.data.raw_value,
+          table: this.getParentNodeDeep(node, 2).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -3880,6 +3963,7 @@ export default {
               {
                 icon: "fas node-all fa-columns node-column",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -3892,8 +3976,8 @@ export default {
     getFKsPostgresql(node) {
       this.api
         .post("/get_fks_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -3909,6 +3993,8 @@ export default {
               contextMenu: "cm_fk",
               oid: el.oid,
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
             });
           }, null);
         })
@@ -3919,9 +4005,9 @@ export default {
     getFKsColumnsPostgresql(node) {
       this.api
         .post("/get_fks_columns_postgresql/", {
-          fkey: node.title,
-          table: this.getParentNodeDeep(node, 2).title,
-          schema: node.data.schema,
+          fkey: node.data.raw_value,
+          table: this.getParentNodeDeep(node, 2).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -3934,6 +4020,7 @@ export default {
                 icon: "fas node-all fa-columns node-column",
                 raw_html: true,
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -3943,6 +4030,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -3952,6 +4040,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -3961,6 +4050,7 @@ export default {
               {
                 icon: "fas node-all fa-table node-table",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -3973,8 +4063,8 @@ export default {
     getUniquesPostgresql(node) {
       this.api
         .post("/get_uniques_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -3990,6 +4080,8 @@ export default {
               contextMenu: "cm_unique",
               oid: el.oid,
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4000,9 +4092,9 @@ export default {
     getUniquesColumnsPostgresql(node) {
       this.api
         .post("/get_uniques_columns_postgresql/", {
-          unique: node.title,
-          table: this.getParentNodeDeep(node, 2).title,
-          schema: node.data.schema,
+          unique: node.data.raw_value,
+          table: this.getParentNodeDeep(node, 2).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4014,6 +4106,7 @@ export default {
               {
                 icon: "fas node-all fa-columns node-column",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4026,8 +4119,8 @@ export default {
     getChecksPostgresql(node) {
       this.api
         .post("/get_checks_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4043,6 +4136,8 @@ export default {
               contextMenu: "cm_check",
               oid: el.oid,
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
             });
 
             const check_node = this.getFirstChildNode(node);
@@ -4053,6 +4148,7 @@ export default {
               {
                 icon: "fas node-all fa-edit node-check-value",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4065,8 +4161,8 @@ export default {
     getExcludesPostgresql(node) {
       this.api
         .post("/get_excludes_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4081,7 +4177,9 @@ export default {
               type: "exclude",
               contextMenu: "cm_exclude",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
+              raw_value: el.name_raw,
             });
 
             const exclude_node = this.getFirstChildNode(node);
@@ -4092,6 +4190,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4102,6 +4201,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4114,8 +4214,8 @@ export default {
     getIndexesPostgresql(node) {
       this.api
         .post("/get_indexes_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4130,8 +4230,10 @@ export default {
               type: "index",
               contextMenu: "cm_index",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
               uniqueness: el.uniqueness,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4143,8 +4245,8 @@ export default {
       this.api
         .post("/get_indexes_columns_postgresql/", {
           index: node.title,
-          table: this.getParentNodeDeep(node, 2).title,
-          schema: node.data.schema,
+          table: this.getParentNodeDeep(node, 2).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4156,6 +4258,7 @@ export default {
               {
                 icon: "fas node-all fa-columns node-column",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4168,8 +4271,8 @@ export default {
     getRulesPostgresql(node) {
       this.api
         .post("/get_rules_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4187,7 +4290,9 @@ export default {
                 type: "rule",
                 contextMenu: "cm_rule",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
                 oid: el.oid,
+                raw_value: el.name_raw,
               },
               true
             );
@@ -4200,15 +4305,14 @@ export default {
     getRuleDefinitionPostgresql(node) {
       this.api
         .post("/get_rule_definition_postgresql/", {
-          rule: node.title,
-          table: this.getParentNodeDeep(node, 2).title,
-          schema: node.data.schema,
+          rule: node.data.raw_value,
+          table: this.getParentNodeDeep(node, 2).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
-
           // Fix this not to use v_connTabControl
-          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data)
+          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab;
+          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -4217,8 +4321,8 @@ export default {
     getTriggersPostgresql(node) {
       this.api
         .post("/get_triggers_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4233,7 +4337,9 @@ export default {
               type: "trigger",
               contextMenu: "cm_trigger",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
+              raw_value: el.name_raw,
             });
 
             const trigger_node = this.getFirstChildNode(node);
@@ -4246,6 +4352,7 @@ export default {
                 type: "direct_trigger_function",
                 contextMenu: "cm_direct_trigger_function",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
                 id: el.id,
                 function_oid: el.function_oid,
               },
@@ -4258,6 +4365,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4270,8 +4378,8 @@ export default {
     getInheritedsPostgresql(node) {
       this.api
         .post("/get_inheriteds_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4289,6 +4397,8 @@ export default {
                 type: "inherit",
                 contextMenu: "cm_inherited",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
+                raw_value: el.name_raw,
               },
               true
             );
@@ -4301,8 +4411,8 @@ export default {
     getPartitionsPostgresql(node) {
       this.api
         .post("/get_partitions_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4320,6 +4430,7 @@ export default {
                 type: "partition",
                 contextMenu: "cm_partition",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4332,8 +4443,8 @@ export default {
     getStatisticsPostgresql(node) {
       this.api
         .post("/get_statistics_postgresql/", {
-          table: this.getParentNode(node).title,
-          schema: node.data.schema,
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4348,8 +4459,10 @@ export default {
               type: "statistic",
               contextMenu: "cm_statistic",
               schema: el.schema_name,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
               statistics: el.statistic_name,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4360,8 +4473,8 @@ export default {
     getStatisticsColumnsPostgresql(node) {
       this.api
         .post("/get_statistics_columns_postgresql/", {
-          statistics: node.data.statistics,
-          schema: node.data.schema,
+          statistics: node.data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4373,6 +4486,7 @@ export default {
               {
                 icon: "fas node-all fa-columns node-column",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4385,7 +4499,7 @@ export default {
     getPartitionedParentsPostgresql(node) {
       this.api
         .post("/get_partitions_parents_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4395,11 +4509,13 @@ export default {
           });
 
           resp.data.forEach((el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.name, {
               icon: "fas node-all fa-layer-group node-ptable",
               type: "partitioned_parent",
               contextMenu: "cm_partitioned_parent",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4410,8 +4526,8 @@ export default {
     getPartitionedChildrenPostgresql(node) {
       this.api
         .post("/get_partitions_children_postgresql/", {
-          schema: node.data.schema,
-          table: node.title,
+          schema: node.data.schema_raw,
+          table: node.data.raw_value,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4426,7 +4542,9 @@ export default {
               type: "table",
               contextMenu: "cm_table",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4437,7 +4555,7 @@ export default {
     getInheritedsParentsPostgresql(node) {
       this.api
         .post("/get_inheriteds_parents_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4447,11 +4565,13 @@ export default {
           });
 
           resp.data.forEach((el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.name, {
               icon: "fas node-all fa-layer-group node-itable",
               type: "inherited_parent",
               contextMenu: "cm_inherited_parent",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4462,8 +4582,8 @@ export default {
     getInheritedsChildrenPostgresql(node) {
       this.api
         .post("/get_inheriteds_children_postgresql/", {
-          schema: node.data.schema,
-          table: node.title,
+          schema: node.data.schema_raw,
+          table: node.data.raw_value,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4478,7 +4598,9 @@ export default {
               type: "table",
               contextMenu: "cm_table",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4489,7 +4611,7 @@ export default {
     getForeignTablesPostgresql(node) {
       this.api
         .post("/get_foreign_tables_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4504,7 +4626,9 @@ export default {
               type: "foreign_table",
               contextMenu: "cm_foreign_table",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4515,8 +4639,8 @@ export default {
     getForeignColumnsPostgresql(node) {
       this.api
         .post("/get_foreign_columns_postgresql/", {
-          table: node.title,
-          schema: node.data.schema,
+          table: node.title, // CHeck here
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4526,6 +4650,7 @@ export default {
             type: "statistics_list",
             contextMenu: "cm_statistics",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           if (!!resp.data.length) {
@@ -4535,6 +4660,7 @@ export default {
               {
                 icon: "fas node-all fa-cube node-fdw",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4544,6 +4670,7 @@ export default {
               {
                 icon: "fas node-all fa-server node-server",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4556,6 +4683,7 @@ export default {
                 {
                   icon: "fas node-all fa-ellipsis-h node-bullet",
                   schema: node.data.schema,
+                  schema_raw: node.data.schema_raw,
                 },
                 true
               );
@@ -4567,6 +4695,7 @@ export default {
             type: "foreign_column_list",
             contextMenu: "cm_foreign_columns",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           const foreign_columns_node = this.getFirstChildNode(node);
@@ -4580,6 +4709,7 @@ export default {
                 type: "foreign_table_field",
                 contextMenu: "cm_foreign_column",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               null
             );
@@ -4595,6 +4725,7 @@ export default {
                   {
                     icon: "fas node-all fa-ellipsis-h node-bullet",
                     schema: node.data.schema,
+                    schema_raw: node.data.schema_raw,
                   },
                   true
                 );
@@ -4607,6 +4738,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4616,6 +4748,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4628,7 +4761,7 @@ export default {
     getSequencesPostgresql(node) {
       this.api
         .post("/get_sequences_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4645,7 +4778,9 @@ export default {
                 type: "sequence",
                 contextMenu: "cm_sequence",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
                 oid: el.oid,
+                raw_value: el.name_raw,
               },
               true
             );
@@ -4658,7 +4793,7 @@ export default {
     getViewsPostgresql(node) {
       this.api
         .post("/get_views_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4673,7 +4808,9 @@ export default {
               type: "view",
               contextMenu: "cm_view",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4684,8 +4821,8 @@ export default {
     getViewsColumnsPostgresql(node) {
       this.api
         .post("/get_views_columns_postgresql/", {
-          table: node.title,
-          schema: node.data.schema,
+          table: node.data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4695,6 +4832,7 @@ export default {
             type: "trigger_list",
             contextMenu: "cm_view_triggers",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Rules", {
@@ -4702,11 +4840,13 @@ export default {
             type: "rule_list",
             contextMenu: "cm_rules",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, `Columns (${resp.data.length})`, {
             icon: "fas node-all fa-columns node-column",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           const columns_node = this.getFirstChildNode(node);
@@ -4719,6 +4859,8 @@ export default {
                 icon: "fas node-all fa-columns node-column",
                 type: "table_field",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
+                raw_value: el.name_raw,
               },
               null
             );
@@ -4730,6 +4872,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4743,11 +4886,11 @@ export default {
       this.api
         .post("/get_view_definition_postgresql/", {
           view: node.title,
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
-          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data)
+          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab;
+          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -4756,7 +4899,7 @@ export default {
     getMaterializedViewsPostgresql(node) {
       this.api
         .post("/get_mviews_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4771,7 +4914,9 @@ export default {
               type: "mview",
               contextMenu: "cm_mview",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4782,8 +4927,8 @@ export default {
     getMaterializedViewsColumnsPostgresql(node) {
       this.api
         .post("/get_mviews_columns_postgresql/", {
-          table: node.title,
-          schema: node.data.schema,
+          table: node.data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4793,6 +4938,7 @@ export default {
             type: "statistics_list",
             contextMenu: "cm_statistics",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, "Indexes", {
@@ -4800,11 +4946,13 @@ export default {
             type: "indexes",
             contextMenu: "cm_indexes",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           this.insertNode(node, `Columns (${resp.data.length})`, {
             icon: "fas node-all fa-columns node-column",
             schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
 
           const columns_node = this.getFirstChildNode(node);
@@ -4817,6 +4965,8 @@ export default {
                 icon: "fas node-all fa-columns node-column",
                 type: "table_field",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
+                raw_value: el.name_raw,
               },
               null
             );
@@ -4828,6 +4978,7 @@ export default {
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
               },
               true
             );
@@ -4840,13 +4991,13 @@ export default {
     getMaterializedViewDefinitionPostgresql(node) {
       this.api
         .post("/get_mview_definition_postgresql/", {
-          view: node.title,
-          schema: node.data.schema,
+          view: node.data.raw_value,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           // Fix this not to use v_connTabControl
-          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data)
+          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab;
+          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -4855,7 +5006,7 @@ export default {
     getFunctionsPostgresql(node) {
       this.api
         .post("/get_functions_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4870,8 +5021,10 @@ export default {
               type: "function",
               contextMenu: "cm_function",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               function_oid: el.function_oid,
               id: el.id,
+              raw_value: el.name_raw,
             });
           });
         })
@@ -4883,7 +5036,7 @@ export default {
       this.api
         .post("/get_function_fields_postgresql/", {
           function: node.data.id,
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4896,6 +5049,7 @@ export default {
                 {
                   icon: "fas node-all fa-arrow-right node-function-field",
                   schema: node.data.schema,
+                  schema_raw: node.data.schema_raw,
                 },
                 true
               );
@@ -4906,6 +5060,7 @@ export default {
                 {
                   icon: "fas node-all fa-arrow-left node-function-field",
                   schema: node.data.schema,
+                  schema_raw: node.data.schema_raw,
                 },
                 true
               );
@@ -4916,6 +5071,7 @@ export default {
                 {
                   icon: "fas node-all fa-exchange-alt node-function-field",
                   schema: node.data.schema,
+                  schema_raw: node.data.schema_raw,
                 },
                 true
               );
@@ -4933,8 +5089,8 @@ export default {
         })
         .then((resp) => {
           // Fix this not to use v_connTabControl
-          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data)
+          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab;
+          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -4943,7 +5099,7 @@ export default {
     getTriggerFunctionsPostgresql(node) {
       this.api
         .post("/get_triggerfunctions_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -4961,6 +5117,7 @@ export default {
                 type: "trigger_function",
                 contextMenu: "cm_trigger_function",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
                 function_oid: el.function_oid,
                 id: el.id,
               },
@@ -4979,8 +5136,8 @@ export default {
         })
         .then((resp) => {
           // Fix this not to use v_connTabControl
-          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data)
+          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab;
+          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -4989,7 +5146,7 @@ export default {
     getEventTriggerFunctionsPostgresql(node) {
       this.api
         .post("/get_eventtriggerfunctions_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -5007,6 +5164,7 @@ export default {
                 type: "event_trigger_function",
                 contextMenu: "cm_event_trigger_function",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
                 id: el.id,
                 function_oid: el.function_oid,
               },
@@ -5025,8 +5183,8 @@ export default {
         })
         .then((resp) => {
           // Fix this not to use v_connTabControl
-          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data)
+          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab;
+          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -5035,7 +5193,7 @@ export default {
     getProceduresPostgresql(node) {
       this.api
         .post("/get_procedures_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -5050,6 +5208,7 @@ export default {
               type: "procedure",
               contextMenu: "cm_procedure",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               id: el.id,
               function_oid: el.function_oid,
             });
@@ -5063,7 +5222,7 @@ export default {
       this.api
         .post("/get_procedure_fields_postgresql/", {
           procedure: node.data.id,
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -5076,6 +5235,7 @@ export default {
                 {
                   icon: "fas node-all fa-arrow-right node-function-field",
                   schema: node.data.schema,
+                  schema_raw: node.data.schema_raw,
                 },
                 true
               );
@@ -5086,6 +5246,7 @@ export default {
                 {
                   icon: "fas node-all fa-arrow-left node-function-field",
                   schema: node.data.schema,
+                  schema_raw: node.data.schema_raw,
                 },
                 true
               );
@@ -5096,6 +5257,7 @@ export default {
                 {
                   icon: "fas node-all fa-exchange-alt node-function-field",
                   schema: node.data.schema,
+                  schema_raw: node.data.schema_raw,
                 },
                 true
               );
@@ -5113,8 +5275,8 @@ export default {
         })
         .then((resp) => {
           // Fix this not to use v_connTabControl
-          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab
-          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data)
+          let tab = v_connTabControl.selectedTab.tag.tabControl.selectedTab;
+          emitter.emit(`${tab.id}_copy_to_editor`, resp.data.data);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -5123,7 +5285,7 @@ export default {
     getAggregatesPostgresql(node) {
       this.api
         .post("/get_aggregates_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -5138,6 +5300,7 @@ export default {
               type: "aggregate",
               contextMenu: "cm_aggregate",
               schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               id: el.id,
               oid: el.oid,
             });
@@ -5150,7 +5313,7 @@ export default {
     getTypesPostgresql(node) {
       this.api
         .post("/get_types_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -5168,7 +5331,9 @@ export default {
                 type: "type",
                 contextMenu: "cm_type",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
                 oid: el.oid,
+                raw_value: el.name_raw,
               },
               true
             );
@@ -5181,7 +5346,7 @@ export default {
     getDomainsPostgresql(node) {
       this.api
         .post("/get_domains_postgresql/", {
-          schema: node.data.schema,
+          schema: node.data.schema_raw,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -5199,7 +5364,9 @@ export default {
                 type: "domain",
                 contextMenu: "cm_domain",
                 schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
                 oid: el.oid,
+                raw_value: el.name_raw,
               },
               true
             );
@@ -5228,6 +5395,7 @@ export default {
                 type: "extension",
                 contextMenu: "cm_extension",
                 oid: el.oid,
+                raw_value: el.name_raw,
               },
               true
             );
@@ -5285,7 +5453,7 @@ export default {
               icon: "fas node-all fa-server node-server",
               type: "foreign_server",
               contextMenu: "cm_foreign_server",
-
+              raw_value: el.name_raw,
               oid: el.oid,
             });
             const foreign_server_node = this.getFirstChildNode(node);
@@ -5334,7 +5502,7 @@ export default {
     getUserMappingsPostgresql(node) {
       this.api
         .post("/get_user_mappings_postgresql/", {
-          foreign_server: this.getParentNode(node).title,
+          foreign_server: this.getParentNode(node).data.raw_value,
         })
         .then((resp) => {
           this.removeChildNodes(node);
@@ -5349,6 +5517,7 @@ export default {
               type: "user_mapping",
               contextMenu: "cm_user_mapping",
               foreign_server: el.foreign_server,
+              raw_value: el.name_raw,
             });
 
             const user_mapping_node = this.getFirstChildNode(node);
@@ -5387,6 +5556,7 @@ export default {
               type: "event_trigger",
               contextMenu: "cm_event_trigger",
               oid: el.oid,
+              raw_value: el.name_raw,
             });
             const trigger_node = this.getFirstChildNode(node);
 
@@ -5441,7 +5611,7 @@ export default {
               icon: "fas node-all fa-arrow-alt-circle-down node-publication",
               type: "publication",
               contextMenu: "cm_publication",
-
+              raw_value: el.name_raw,
               oid: el.oid,
             });
             const publication_node = this.getFirstChildNode(node);
@@ -5549,6 +5719,7 @@ export default {
               type: "subscription",
               contextMenu: "cm_subscription",
               oid: el.oid,
+              raw_value: el.name_raw,
             });
             const subscription_node = this.getFirstChildNode(node);
 
@@ -5673,6 +5844,7 @@ export default {
               type: "role",
               contextMenu: "cm_role",
               oid: el.oid,
+              raw_value: el.name_raw,
             },
             true
           );

@@ -1344,5 +1344,6 @@ export {
   TemplateSelectPostgresql,
   TemplateUpdatePostgresql,
   TemplateInsertPostgresql,
-  getDebugFunctionDefinitionPostgresql
+  getDebugFunctionDefinitionPostgresql,
+  TemplateSelectFunctionPostgresql
 };
