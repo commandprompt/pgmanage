@@ -50,6 +50,7 @@ import axios from 'axios'
 import { showAlert, showConfirm } from './notification_control'
 import { emitter } from './emitter'
 import { settingsStore } from './stores/settings'
+import { startTutorial } from './tutorial'
 
 let v_start_height;
 /// <summary>

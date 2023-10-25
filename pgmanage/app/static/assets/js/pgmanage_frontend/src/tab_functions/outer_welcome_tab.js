@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import { endLoading } from "../ajax_control";
+import { startTutorial } from "../tutorial";
 
 let createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_name = false, p_tooltip_name = false) {
   // Removing the last `add` tab
@@ -124,7 +125,7 @@ let createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_nam
     '<p class="text-center"><span class="badge badge-danger" style="vertical-align: middle;">disclaimer</span> PgManage is a powerful tool, and with great power...<br/>Please <strong><span class="text-danger">learn how to use it on a testing environment, NOT on production</span></strong>!</p>' +
 
 
-    '<button type="button" class="btn btn-lg btn-primary w-auto mx-auto my-4" onclick="startTutorial(' + "'getting_started'" + ');">' +
+    '<button id="getting_started_button" type="button" class="btn btn-lg btn-primary w-auto mx-auto my-4">' +
       'Getting started' +
     '</button>' +
 
@@ -230,6 +231,8 @@ let createWelcomeTabFunction = function(p_index,p_create_query_tab = true, p_nam
   '</div>';
 
   v_tab.elementDiv.innerHTML = v_html;
+
+  document.getElementById("getting_started_button").onclick = function() { startTutorial('getting_started')}
 
   var v_tag = {
     tab_id: v_tab.id,

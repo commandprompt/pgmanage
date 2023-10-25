@@ -155,4 +155,4 @@ var v_createSnippetPanelFunction = function(p_index) {
 
 }
 
-export { v_createSnippetPanelFunction }
+export { v_createSnippetPanelFunction, toggleSnippetPanel }

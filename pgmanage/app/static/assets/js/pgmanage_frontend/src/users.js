@@ -575,4 +575,4 @@ function renderSelectedUser(event) {
 	
 }
 
-export { listUsers }
+export { listUsers, newUser }

@@ -26,6 +26,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import { toggleSnippetPanel } from "./panel_functions/outer_snippet_panel";
+import { listUsers, newUser } from "./users";
+
 function startTutorial(p_tutorial_name) {
   if (v_omnis.omnis_ui_assistant) {
     v_omnis.omnis_ui_assistant.self_destruct();
@@ -53,7 +56,7 @@ function startTutorial(p_tutorial_name) {
   }
   var v_button_inner_query =
   '<li class="mb-2">' +
-    `<button ` + v_button_inner_query_attr + ` type="button" class="btn btn-primary d-flex align-items-center" onclick="startTutorial('connection_tab');">` +
+    `<button id="connection_tab_tutorial" ` + v_button_inner_query_attr + ` type="button" class="btn btn-primary d-flex align-items-center">` +
       '<i class="fas fa-list mr-2"></i>The Connection Tab' +
     '</button>' +
   '</li>';
@@ -80,10 +83,8 @@ function startTutorial(p_tutorial_name) {
         <p>Contains general settings and options:</p>
         <ul>
         <li>Username and versioning.</li>
-        <li><i class="fas fa-plug omnidb__theme__text--primary mr-2"></i>Connection management.</li>
         <li><i class="fas fa-user omnidb__theme__text--primary mr-2"></i>User management.</li>
         <li><i class="fas fa-cog omnidb__theme__text--primary mr-2"></i>UI settings (shortcuts, theme, fonts...).</li>
-        <li><i class="fas fa-cube omnidb__theme__text--primary mr-2"></i>Plugins management.</li>
         <li><i class="fas fa-info-circle omnidb__theme__text--primary mr-2"></i>About.</li>
         <li><i class="fas fa-sign-out-alt omnidb__theme__text--primary mr-2"></i>Sign Out.</li>
         </ul>
@@ -100,11 +101,12 @@ function startTutorial(p_tutorial_name) {
         <p>If you just configured Pgmanage and logged with the default <strong>admin</strong> user, you should create the first user.</p>
         <p>Follow this walkthrough if you want to create other users as well.</p>
         `,
-        p_next_button: false,
+        p_next_button: true,
         p_target: document.getElementById('omnidb__utilities-menu__link-user'),
         p_title: 'Managing Users'
       },
       {
+        p_callback_start: function() { listUsers();},
         p_callback_after_update_start: function() {setTimeout(function(){
             if (v_omnis.omnis_ui_assistant.divClonedElement.children[0]) {
               v_omnis.omnis_ui_assistant.divClonedElement.children[0].classList.remove('ml-2');
@@ -121,6 +123,7 @@ function startTutorial(p_tutorial_name) {
         p_update_delay: 1000
       },
       {
+        p_callback_start: function() { newUser() },
         p_message: `
         <ul>
         <li><i class="fas fa-user omnidb__theme__text--primary mr-2"></i>PgManage login name.</li>
@@ -515,11 +518,12 @@ function startTutorial(p_tutorial_name) {
     ]
   }
   // Configuring tutorial getting started, changes based on gv_desktopMode
-  let v_tutorial_link_creating_user = (gv_desktopMode)
+
+  let v_tutorial_link_creating_user = (gv_desktopMode || !v_super_user)
   ? ''
   : `
   <li class="mb-2">
-    <button type="button" class="btn btn-primary d-flex align-items-center" onclick="startTutorial('utilities_menu');">
+    <button id="utilities_menu_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
       <i class="fas fa-user-plus mr-2"></i>Create an pgmanage user
     </button>
   </li>`;
@@ -530,22 +534,22 @@ function startTutorial(p_tutorial_name) {
         v_tutorial_link_creating_user +
         `
         <li class="mb-2">
-          <button type="button" class="btn btn-primary d-flex align-items-center" onclick="startTutorial('connections_menu');">
+          <button id="connections_menu_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
             <i class="fas fa-plus mr-2"></i>Create a database connection
           </button>
         </li>
         <li class="mb-2">
-          <button type="button" class="btn btn-primary d-flex align-items-center" onclick="startTutorial('terminal_connection');">
+          <button id="terminal_connection_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
             <i class="fas fa-terminal mr-2"></i>Create a terminal connection
           </button>
         </li>
         <li class="mb-2">
-          <button type="button" class="btn btn-primary d-flex align-items-center" onclick="startTutorial('snippets');">
+          <button id="snippets_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
             <i class="fas fa-file-code mr-2"></i>Meet the snippets panel
           </button>
         </li>
         <li class="mb-2">
-          <button type="button" class="btn btn-primary d-flex align-items-center" onclick="startTutorial('selecting_connection');">
+          <button id="using_connection_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
             <i class="fas fa-plug mr-2"></i>Using a connection
           </button>
         </li>
@@ -562,4 +566,16 @@ function startTutorial(p_tutorial_name) {
   v_omnis.omnis_ui_assistant.updateStepList(v_steps);
   // Go to the first step of the walkthrough
   v_omnis.omnis_ui_assistant.goToStep(0);
+  if (p_tutorial_name === "getting_started") {
+    document.getElementById("snippets_tutorial").onclick = function() { startTutorial('snippets')}
+    document.getElementById("using_connection_tutorial").onclick = function() { startTutorial('selecting_connection')}
+    document.getElementById("terminal_connection_tutorial").onclick = function() { startTutorial('terminal_connection')}
+    document.getElementById("connections_menu_tutorial").onclick = function() { startTutorial('connections_menu')}
+    document.getElementById("connection_tab_tutorial").onclick = function() { startTutorial('connection_tab')}
+    if (!gv_desktopMode && v_super_user) {
+      document.getElementById("utilities_menu_tutorial").onclick = function() { startTutorial('utilities_menu')}
+    }
+  }
 }
+
+export { startTutorial }
