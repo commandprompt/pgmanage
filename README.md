@@ -17,7 +17,7 @@ We proudly leverage all of the great work Open Source work done by the original
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt-get update
 sudo apt-get install git libssl-dev python-protobuf build-essential
-sudo apt-get install python3.8 python3.8-dev python3.8-venv  python3-wheel libpq-dev libldap2-dev libsasl2-dev
+sudo apt-get install python3.9 python3.9-dev python3.9-venv  python3-wheel libpq-dev libldap2-dev libsasl2-dev
 ```
 
 ## Set up app environment
@@ -25,20 +25,41 @@ clone pgmanage repository; change to the root directory of cloned repository,  a
 ```
 git clone https://github.com/commandprompt/pgmanage.git
 cd pgmanage
-python3.8 -mvenv .env
+python3.9 -mvenv .env
 ```
-## Install dependencies and run the app
-activate python virtual environment created in the previous step:
-```
-source .env/bin/activate
-pip install -r requirements.txt
-```
+## Install Dependencies and Run the App
 
-Once all app requirements are installed cd to **pgmanage** subdirectory and start the application web service by running
-```
-./manage.py runserver
-```
-Once you see that he application server is ready, open http://localhost:8000 URL in your preferred browser. Then login with **admin:admin** credentials
+1. Activate the Python virtual environment created in the previous step:
+    ```bash
+    source .env/bin/activate
+    ```
+
+2. Install Python dependencies using pip:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3. Navigate to the pgmanage/app/static/assets/js/pgmanage_frontend/ directory and install Node.js dependencies using npm:
+    ```bash
+    cd pgmanage/app/static/assets/js/pgmanage_frontend/
+    npm install
+    ```
+
+4. Start a development front-end server:
+    ```bash
+    npm run dev
+    ```
+
+5. Once all app requirements are installed, navigate to the pgmanage subdirectory and start the application web service by running:
+    ```bash
+    ./manage.py runserver
+    ```
+
+6. When you see that the application server is ready, open http://localhost:8000 in your preferred web browser.
+
+7. Login using the following credentials:
+    - Username: admin
+    - Password: admin
 
 # PgManage 1.0 Beta 3
 
