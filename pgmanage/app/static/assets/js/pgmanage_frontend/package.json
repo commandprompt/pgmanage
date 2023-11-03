@@ -45,6 +45,7 @@
     "short-unique-id": "^4.4.4",
     "splitpanes": "^3.1.5",
     "sql-formatter": "^12.2.4",
+    "tabulator-tables": "^5.5.2",
     "vue": "^3.2.45",
     "vue-toast-notification": "^3.1.1",
     "xterm": "^5.2.1",

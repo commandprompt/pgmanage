@@ -4,6 +4,7 @@ from app.models.main import Connection, ConsoleHistory, QueryHistory
 from app.utils.decorators import user_authenticated
 from app.utils.response_helpers import create_response_template, error_response
 from django.http import JsonResponse
+from django.core.paginator import Paginator
 
 from pgmanage import settings
 
@@ -67,6 +68,51 @@ def get_command_list(request):
     response_data["v_data"] = {"commandList": command_list, "pages": page}
 
     return JsonResponse(response_data)
+
+
+@user_authenticated
+def get_command_list_tabulator(request):
+    data = request.data
+
+    current_page = data["current_page"]
+    database_index = data["database_index"]
+    command_contains = data["command_contains"]
+    command_from = data["command_from"]
+    command_to = data["command_to"]
+
+    try:
+        conn = Connection.objects.get(id=database_index)
+
+        query = QueryHistory.objects.filter(
+            user=request.user, connection=conn, snippet__icontains=command_contains
+        ).order_by("-start_time")
+
+        if command_from is not None:
+            query = query.filter(start_time__gte=command_from)
+
+        if command_to is not None:
+            query = query.filter(start_time__lte=command_to)
+
+        p = Paginator(query, settings.CH_CMDS_PER_PAGE)
+
+        commands = p.page(current_page).object_list
+
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    
+    command_list = []
+
+    for command in commands:
+        command_data = {
+            "start_time" : command.start_time,
+            "end_time": command.end_time,
+            "duration": command.duration,
+            "status": command.status,
+            "snippet": command.snippet
+        }
+        command_list.append(command_data)
+
+    return JsonResponse(data={"command_list": command_list, "pages": p.num_pages})
 
 
 @user_authenticated

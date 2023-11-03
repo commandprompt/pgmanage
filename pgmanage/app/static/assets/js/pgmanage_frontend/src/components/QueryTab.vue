@@ -22,6 +22,12 @@
             <i class="fas fa-clock-rotate-left fa-light"></i>
           </button>
 
+          <button class="btn btn-sm btn-danger" title="Command History Tabulator"
+            @click="showCommandListTabulator()">
+            <i class="fas fa-clock-rotate-left fa-light"></i>
+          </button>
+
+
           <template v-if="postgresqlDialect">
             <!-- EXPLAIN ANALYZE BUTTONS-->
             <div class="btn-group ml-2 mr-2">
@@ -107,6 +113,7 @@
   </splitpanes>
 
   <CommandsHistoryModal :tab-id="tabId" />
+  <CommandsHistoryModalTabulator ref="commandHistory" :tab-id="tabId" :database-index="databaseIndex"/>
 </template>
 
 <script>
@@ -121,7 +128,8 @@ import CancelButton from "./CancelSQLButton.vue";
 import QueryEditor from "./QueryEditor.vue";
 import { emitter } from "../emitter";
 import CommandsHistoryModal from "./CommandsHistoryModal.vue";
-import { showCommandList } from "../command_history";
+import CommandsHistoryModalTabulator from "./CommandsHistoryModalTabulator.vue";
+import { showCommandList} from "../command_history";
 import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryResultTabs from "./QueryResultTabs.vue";
 
@@ -136,6 +144,7 @@ export default {
     CancelButton,
     QueryEditor,
     CommandsHistoryModal,
+    CommandsHistoryModalTabulator,
     TabStatusIndicator,
     QueryResultTabs,
   },
@@ -434,6 +443,9 @@ export default {
       emitter.all.delete(`${this.tabId}_run_query`);
     },
     showCommandList,
+    showCommandListTabulator() {
+      this.$refs.commandHistory.show()
+    }
   },
 };
 </script>

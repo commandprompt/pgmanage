@@ -377,4 +377,4 @@ function closeCommandHistory() {
 	$(v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.commandHistory.modal).modal('hide');
 }
 
-export { showCommandList }
+export { showCommandList}
