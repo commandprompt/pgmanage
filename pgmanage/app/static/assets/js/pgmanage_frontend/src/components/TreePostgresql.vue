@@ -2282,7 +2282,7 @@ export default {
             icon: "fas cm-all fa-times",
             onClick: () => {
               tabSQLTemplate(
-                "Drop Role",
+                "Drop Extension",
                 this.templates.drop_extension.replace(
                   "#extension_name#",
                   this.selectedNode.data.raw_value

@@ -20,6 +20,7 @@ class Client:
         _connection_sessions (dict): A dictionary storing connection sessions for the client.
         last_update (datetime.datetime): The timestamp of the client's last update.
     """
+
     to_be_removed = []
 
     def __init__(self, client_id: str) -> None:
@@ -334,6 +335,13 @@ class Client:
             p_parse_conn_string=False,
             connection_params=connection_params,
         )
+
+        # check if database connection is valid
+        try:
+            database_new.v_connection.Open()
+        except Exception:
+            # otherwise revert to main connection
+            database_new = main_tab_database
 
         if use_lock:
             database_new.v_lock = threading.Lock()

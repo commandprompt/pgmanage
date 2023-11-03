@@ -204,25 +204,38 @@ export default {
       return this.$refs.tree.getFirstNode()
     },
     refreshTreeRecursive(node_type) {
-      const rootNode = this.getRootNode()
+      const rootNode = this.getRootNode();
       const getInnerNode = (node, node_type) => {
         if (!!node.children.length) {
           if (node.data.type === node_type) {
-            this.refreshTree(node)
+            this.refreshTree(node);
+            this.expandNode(node);
           }
+
           for (let i = 0; i < node.children.length; i++) {
             let childNode = node.children[i];
-    
+
             if (childNode.data?.database === this.selectedDatabase) {
-              getInnerNode(childNode, node_type);
+              if (
+                childNode.data.type === "database" &&
+                node_type === "extension_list"
+              ) {
+                this.refreshTree(childNode);
+                
+                setTimeout(() => {
+                  getInnerNode(childNode, node_type);
+                }, 200);
+              } else {
+                getInnerNode(childNode, node_type);
+              }
             }
           }
         }
-      }
+      };
 
       for (let i = 0; i < rootNode.children.length; i++) {
-        getInnerNode(rootNode.children[i], node_type)
+        getInnerNode(rootNode.children[i], node_type);
       }
-    }
+    },
   },
 };

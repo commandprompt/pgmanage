@@ -15,7 +15,7 @@ jobDetailModal.mount("#utility-job-detail-wrap");
 function createExtensionModal(node, mode) {
   const wrap_div = document.getElementById("extension-modal-wrap");
 
-  wrap_div.innerHTML = `<extension-modal :mode=mode :tree-node=treeNode></extension-modal>`;
+  wrap_div.innerHTML = `<extension-modal :mode=mode :tree-node=treeNode :tab-id=tabId :database-index=databaseIndex></extension-modal>`;
 
   const app = createApp({
     components: {
@@ -25,6 +25,8 @@ function createExtensionModal(node, mode) {
       return {
         mode: mode,
         treeNode: node,
+        tabId: window.v_connTabControl.selectedTab.id,
+        databaseIndex: window.v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
       };
     },
     mounted() {

@@ -82,7 +82,9 @@ export default {
   },
   props: {
     mode: String,
-    treeNode: Object
+    treeNode: Object,
+    tabId: String,
+    databaseIndex: Number
   },
   data() {
     return {
@@ -92,9 +94,6 @@ export default {
       selectedSchema: '',
       selectedVersion: '',
       editor: '',
-      tabId: window.v_connTabControl.selectedTab.id,
-      databaseIndex: window.v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-      tree: window.v_connTabControl.selectedTab.tag.tree
     }
   },
   computed: {
@@ -195,7 +194,7 @@ export default {
         query: this.generatedSQL
       })
         .then((resp) => {
-          emitter.emit(`refreshNode_${this.tree.id}`, {"node": this.treeNode})
+          emitter.emit(`refreshTreeRecursive_${this.tabId}`, "extension_list");
           $('#postgresqlExtensionModal').modal('hide')
         })
         .catch((error) => {
@@ -239,7 +238,7 @@ export default {
         query: query
       })
         .then((resp) => {
-          emitter.emit(`removeNode_${this.tree.id}`, {"node": this.treeNode})
+          emitter.emit(`refreshTreeRecursive_${this.tabId}`, "extension_list");
         })
         .catch((error) => {
           showToast("error", error.response.data.data)
