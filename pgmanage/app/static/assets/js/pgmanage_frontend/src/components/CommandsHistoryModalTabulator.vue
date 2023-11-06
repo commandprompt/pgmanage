@@ -11,63 +11,63 @@
           </button>
         </div>
         <div class="modal-body">
-          <div :id="`command_history_div_${tabId}_tabulator`" class="query_command_history">
-            <div :id="`command_history_header_${tabId}_tabulator`" class="query_command_history_header">
-              <div class="mb-3">
-                <div class="form-row">
-                  <div class="form-group col-5">
-                    <p class="font-weight-bold mb-2">Select a daterange:</p>
-                    <input v-model="startedFrom" type="text" class="form-control form-control-sm d-none"
-                      placeholder="Start Time" />
-                    <input v-model="startedTo" type="text" class="form-control form-control-sm d-none"
-                      placeholder="End Time" />
-                    <button ref="timeRange" type="button" class="btn btn-outline-primary">
-                      <i class="far fa-calendar-alt"></i>
-                      <span class="mx-1">{{ timeRangeLabel }}</span><i class="fa fa-caret-down"></i>
-                    </button>
-                  </div>
-
-                  <div class="form-group col-7 d-flex justify-content-end align-items-end">
-                    <div>
-                      <label class="font-weight-bold mb-2">Command contains:</label>
-                      <input v-model="commandContains"  @change="getCommandList()" type="text" class="form-control" />
-                    </div>
-
-                    <button class="bt_execute btn btn-primary ml-1" title="Refresh" @click="getCommandList()">
-                      <i class="fas fa-sync-alt mr-1"></i>
-                      Refresh
-                    </button>
-                    <ConfirmableButton :defaulttext="`Clear List`" :confirm-text="`Confirm Clear?`"  :callbackFunc="clearCommandList" class="btn btn-danger" />
-
-                  </div>
-                </div>
+          <div class="mb-3">
+            <div class="form-row">
+              <div class="form-group col-5">
+                <p class="font-weight-bold mb-2">Select a daterange:</p>
+                <input v-model="startedFrom" type="text" class="form-control form-control-sm d-none"
+                  placeholder="Start Time" />
+                <input v-model="startedTo" type="text" class="form-control form-control-sm d-none"
+                  placeholder="End Time" />
+                <button ref="timeRange" type="button" class="btn btn-outline-primary">
+                  <i class="far fa-calendar-alt"></i>
+                  <span class="mx-1">{{ timeRangeLabel }}</span><i class="fa fa-caret-down"></i>
+                </button>
               </div>
 
-              <div ref="daterangePicker" class="position-relative"></div>
-
-              <div class="pagination d-flex align-items-center mb-3">
-                <button class="pagination__btn mr-2">First</button>
-                <button class="pagination__btn mx-2">
-                  <i class="fa-solid fa-arrow-left"></i>
-                  Previous
-                </button>
-                <div class="pagination__pages mx-3">
-                  <span>{{ currentPage }}</span>
-                  /
-                  <span>{{ pages }}</span>
+              <div class="form-group col-7 d-flex justify-content-end align-items-end">
+                <div>
+                  <label class="font-weight-bold mb-2">Command contains:</label>
+                  <input v-model="commandContains" @change="getCommandList()" type="text" class="form-control" />
                 </div>
 
-                <button class="pagination__btn mx-2">
-                  Next
-                  <i class="fa-solid fa-arrow-right"></i>
+                <button class="bt_execute btn btn-primary ml-1" title="Refresh" @click="getCommandList()">
+                  <i class="fas fa-sync-alt mr-1"></i>
+                  Refresh
                 </button>
-
-                <button class="pagination__btn ml-2">Last</button>
+                <ConfirmableButton :defaulttext="`Clear List`" :confirm-text="`Confirm Clear?`"
+                  :callbackFunc="clearCommandList" class="btn btn-danger ml-1" />
               </div>
             </div>
-
-            <div :id="`${tabId}_history_table`" style="height: calc(100vh - 20rem);"></div>
           </div>
+
+          <div ref="daterangePicker" class="position-relative"></div>
+
+          <div class="pagination d-flex align-items-center mb-3">
+            <button class="pagination__btn mr-2" @click="getFirstPage()">
+              First
+            </button>
+            <button class="pagination__btn mx-2" @click="getPreviousPage()">
+              <i class="fa-solid fa-arrow-left"></i>
+              Previous
+            </button>
+            <div class="pagination__pages mx-3">
+              <span>{{ currentPage }}</span>
+              /
+              <span>{{ pages }}</span>
+            </div>
+
+            <button class="pagination__btn mx-2" @click="getNextPage()">
+              Next
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <button class="pagination__btn ml-2" @click="getLastPage()">
+              Last
+            </button>
+          </div>
+
+          <div :id="`${tabId}_history_table`" style="height: calc(100vh - 20rem)"></div>
         </div>
       </div>
     </div>
@@ -79,8 +79,7 @@ import axios from "axios";
 import moment from "moment";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
-import ConfirmableButton from './ConfirmableButton.vue'
-
+import ConfirmableButton from "./ConfirmableButton.vue";
 
 export default {
   setup() { },
@@ -90,8 +89,8 @@ export default {
     databaseIndex: Number,
   },
   components: {
-      ConfirmableButton
-    },
+    ConfirmableButton,
+  },
   data() {
     return {
       currentPage: 1,
@@ -191,7 +190,7 @@ export default {
       this.table = new Tabulator(`#${this.tabId}_history_table`, {
         placeholder: "No Data Available",
         selectable: true,
-        layout:"fitColumns",
+        layout: "fitColumns",
         columnDefaults: {
           headerHozAlign: "center",
           headerSort: false,
@@ -256,27 +255,52 @@ export default {
             el.start_time = moment(el.start_time).format();
             el.end_time = moment(el.end_time).format();
           });
-          this.table.setData(resp.data.command_list);  
+          this.table.setData(resp.data.command_list);
         })
         .catch((error) => {
           console.log(error);
         });
     },
     clearCommandList() {
-        axios.post("/clear_command_list_tabulator/", {
+      axios
+        .post("/clear_command_list_tabulator/", {
           command_from: this.startedFrom,
           command_to: this.startedTo,
           command_contains: this.commandContains,
           database_index: this.databaseIndex,
         })
         .then((resp) => {
-          this.currentPage = 1
-          this.getCommandList()
+          this.currentPage = 1;
+          this.getCommandList();
         })
         .catch((error) => {
-          console.log(error)
-        })
+          console.log(error);
+        });
+    },
+    getNextPage() {
+      if (this.currentPage < this.pages) {
+        this.currentPage += 1;
+        this.getCommandList();
       }
+    },
+    getPreviousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage -= 1;
+        this.getCommandList();
+      }
+    },
+    getFirstPage() {
+      if (this.currentPage !== 1) {
+        this.currentPage = 1;
+        this.getCommandList();
+      }
+    },
+    getLastPage() {
+      if (this.currentPage !== this.pages) {
+        this.currentPage = this.pages;
+        this.getCommandList();
+      }
+    },
   },
 };
 </script>
