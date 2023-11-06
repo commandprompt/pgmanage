@@ -57,9 +57,7 @@ base_urlpatterns = [
 
     #COMMANDS HISTORY
     re_path(r'^get_command_list/', views.commands_history.get_command_list, name='get_command_list'),
-    re_path(r'^get_command_list_tabulator/', views.commands_history.get_command_list_tabulator, name='get_command_list_tabulator'),
     re_path(r'^clear_command_list/', views.commands_history.clear_command_list, name='clear_command_list'),
-    re_path(r'^clear_command_list_tabulator/', views.commands_history.clear_command_list_tabulator, name='clear_command_list_tabulator'),
     re_path(r'^get_console_history/', views.commands_history.get_console_history, name='get_console_history'),
     re_path(r'^clear_console_list/', views.commands_history.clear_console_list, name='clear_console_list'),
 
