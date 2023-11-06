@@ -3,7 +3,7 @@ from math import ceil
 from app.models.main import Connection, ConsoleHistory, QueryHistory
 from app.utils.decorators import user_authenticated
 from app.utils.response_helpers import create_response_template, error_response
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
 
 from pgmanage import settings
@@ -99,16 +99,16 @@ def get_command_list_tabulator(request):
 
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
-    
+
     command_list = []
 
     for command in commands:
         command_data = {
-            "start_time" : command.start_time,
+            "start_time": command.start_time,
             "end_time": command.end_time,
             "duration": command.duration,
             "status": command.status,
-            "snippet": command.snippet
+            "snippet": command.snippet,
         }
         command_list.append(command_data)
 
@@ -144,6 +144,35 @@ def clear_command_list(request):
         return error_response(message=str(exc))
 
     return JsonResponse(response_data)
+
+
+@user_authenticated
+def clear_command_list_tabulator(request):
+    data = request.data
+
+    database_index = data["database_index"]
+    command_contains = data["command_contains"]
+    command_from = data["command_from"]
+    command_to = data["command_to"]
+
+    try:
+        conn = Connection.objects.get(id=database_index)
+
+        query = QueryHistory.objects.filter(
+            user=request.user, connection=conn, snippet__icontains=command_contains
+        ).order_by("-start_time")
+
+        if command_from is not None and command_from != "":
+            query = query.filter(start_time__gte=command_from)
+
+        if command_to is not None and command_to != "":
+            query = query.filter(start_time__lte=command_to)
+
+        query.delete()
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return HttpResponse(status=204)
 
 
 @user_authenticated

@@ -37,11 +37,8 @@
                       <i class="fas fa-sync-alt mr-1"></i>
                       Refresh
                     </button>
+                    <ConfirmableButton :defaulttext="`Clear List`" :confirm-text="`Confirm Clear?`"  :callbackFunc="clearCommandList" class="btn btn-danger" />
 
-                    <button class="bt_execute btn btn-danger ml-1" title="Clear List">
-                      <i class="fas fa-broom mr-1"></i>
-                      Clear List
-                    </button>
                   </div>
                 </div>
               </div>
@@ -68,9 +65,8 @@
                 <button class="pagination__btn ml-2">Last</button>
               </div>
             </div>
-            <!--DIV FOR TABULATOR-->
-            <div id="tabulator-example" class="query_command_history_grid"
-              style="width: 100%; height: calc(100vh - 20rem); overflow: hidden"></div>
+
+            <div :id="`${tabId}_history_table`" style="height: calc(100vh - 20rem);"></div>
           </div>
         </div>
       </div>
@@ -83,6 +79,8 @@ import axios from "axios";
 import moment from "moment";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
+import ConfirmableButton from './ConfirmableButton.vue'
+
 
 export default {
   setup() { },
@@ -91,6 +89,9 @@ export default {
     tabId: String,
     databaseIndex: Number,
   },
+  components: {
+      ConfirmableButton
+    },
   data() {
     return {
       currentPage: 1,
@@ -187,35 +188,33 @@ export default {
       );
     },
     setupTabulator() {
-      this.table = new Tabulator("#tabulator-example", {
+      this.table = new Tabulator(`#${this.tabId}_history_table`, {
         placeholder: "No Data Available",
         selectable: true,
-        layout:"fitDataTable",
+        layout:"fitColumns",
+        columnDefaults: {
+          headerHozAlign: "center",
+          headerSort: false,
+        },
         columns: [
           {
             title: "Start",
             field: "start_time",
-            headerSort: false,
-            headerHozAlign: "center",
           },
           {
             title: "End",
             field: "end_time",
-            headerSort: false,
-            headerHozAlign: "center",
           },
           {
             title: "Duration",
             field: "duration",
-            headerSort: false,
-            headerHozAlign: "center",
+            width: 100,
           },
           {
             title: "Status",
             field: "status",
+            width: 50,
             hozAlign: "center",
-            headerSort: false,
-            headerHozAlign: "center",
             formatter: function (cell, formatterParams, onRendered) {
               if (cell.getValue() === "success") {
                 return "<i title='Success' class='fas fa-check text-success'></i>";
@@ -227,8 +226,7 @@ export default {
           {
             title: "Command",
             field: "snippet",
-            headerSort: false,
-            headerHozAlign: "center",
+            widthGrow: 4,
             contextMenu: [
               {
                 label: "Copy Content To Query Tab",
@@ -265,8 +263,20 @@ export default {
         });
     },
     clearCommandList() {
-      
-    }
+        axios.post("/clear_command_list_tabulator/", {
+          command_from: this.startedFrom,
+          command_to: this.startedTo,
+          command_contains: this.commandContains,
+          database_index: this.databaseIndex,
+        })
+        .then((resp) => {
+          this.currentPage = 1
+          this.getCommandList()
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+      }
   },
 };
 </script>
