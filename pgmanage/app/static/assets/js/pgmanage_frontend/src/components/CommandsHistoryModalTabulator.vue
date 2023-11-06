@@ -35,8 +35,12 @@
                   <i class="fas fa-sync-alt mr-1"></i>
                   Refresh
                 </button>
-                <ConfirmableButton :defaulttext="`Clear List`" :confirm-text="`Confirm Clear?`"
-                  :callbackFunc="clearCommandList" class="btn btn-danger ml-1" />
+                <ConfirmableButton :confirm-text="`Confirm Clear?`"
+                  :callbackFunc="clearCommandList" class="btn btn-danger ml-1">
+                  <i class='fas fa-broom mr-1'></i>
+                  Clear List
+                  </ConfirmableButton>
+
               </div>
             </div>
           </div>
