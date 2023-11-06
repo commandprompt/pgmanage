@@ -35,12 +35,11 @@
                   <i class="fas fa-sync-alt mr-1"></i>
                   Refresh
                 </button>
-                <ConfirmableButton :confirm-text="`Confirm Clear?`"
-                  :callbackFunc="clearCommandList" class="btn btn-danger ml-1">
-                  <i class='fas fa-broom mr-1'></i>
+                <ConfirmableButton :confirm-text="`Confirm Clear?`" :callbackFunc="clearCommandList"
+                  class="btn btn-danger ml-1">
+                  <i class="fas fa-broom mr-1"></i>
                   Clear List
-                  </ConfirmableButton>
-
+                </ConfirmableButton>
               </div>
             </div>
           </div>
@@ -84,16 +83,16 @@ import moment from "moment";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
 import ConfirmableButton from "./ConfirmableButton.vue";
+import { showToast } from "../notification_control";
 
 export default {
-  setup() { },
   name: "CommandsHistoryModal",
+  components: {
+    ConfirmableButton,
+  },
   props: {
     tabId: String,
     databaseIndex: Number,
-  },
-  components: {
-    ConfirmableButton,
   },
   data() {
     return {
@@ -262,7 +261,7 @@ export default {
           this.table.setData(resp.data.command_list);
         })
         .catch((error) => {
-          console.log(error);
+          showToast("error", error.response.data.data);
         });
     },
     clearCommandList() {
@@ -278,7 +277,7 @@ export default {
           this.getCommandList();
         })
         .catch((error) => {
-          console.log(error);
+          showToast("error", error.response.data.data);
         });
     },
     getNextPage() {
