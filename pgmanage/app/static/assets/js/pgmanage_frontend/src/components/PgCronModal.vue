@@ -317,8 +317,9 @@ export default {
         .then((resp) => {
           this.jobLogs = resp.data.logs
           this.jobLogs.forEach(log => {
-            log[5] = moment(log[5]).format()
-            log[6] = moment(log[6]).format()
+            log[1] = !!log[1] ? log[1] : "N/A"
+            log[5] = moment(log[5]).isValid() ? moment(log[5]).format() : "N/A"
+            log[6] = moment(log[6]).isValid() ? moment(log[6]).format() : "N/A"
             if(log[4] === 'succeeded') {
               log[4] = "<div class='text-center'><i title='Success' class='fas fa-check text-success action-grid action-status-ok'></i></div>"
             } else {

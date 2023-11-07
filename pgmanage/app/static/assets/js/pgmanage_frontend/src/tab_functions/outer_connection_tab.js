@@ -39,8 +39,6 @@ import {
 } from "../workspace";
 import { beforeCloseTab } from "../create_tab_functions";
 import { connectionsStore } from "../stores/connections.js";
-import ContextMenu from "@imengyu/vue3-context-menu";
-import { h } from "vue";
 import { createRequest } from "../long_polling";
 import { v_queryRequestCodes } from "../query";
 import { cancelMonitorUnits } from "../monitoring";
@@ -161,30 +159,6 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
             }
             v_this_tab.removeTab();
           });
-      },
-      p_rightClickFunction: function(e) {
-        var v_option_list = [
-          {
-            label: h('p', {
-              class: 'mb-0 text-danger',
-              innerHTML: 'Close Connection Tab'
-            }),
-            // icon: 'fas cm-all fa-terminal text-danger',
-            onClick: function() {
-              if (v_tab.closeFunction!=null) {
-                v_tab.closeFunction(e,v_tab);
-              }
-            }
-          }
-        ];
-        ContextMenu.showContextMenu({
-          theme: "pgmanage",
-          x: e.x,
-          y: e.y,
-          zIndex: 1000,
-          minWidth: 230,
-          items: v_option_list,
-        });
       },
       p_tooltip: p_tooltip_name
     });
