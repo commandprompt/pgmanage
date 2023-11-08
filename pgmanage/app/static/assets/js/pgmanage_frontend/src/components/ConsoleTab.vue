@@ -22,6 +22,10 @@
           <i class="fas fa-clock-rotate-left fa-light"></i>
         </button>
 
+        <button class="btn btn-sm btn-success" title="Command History" @click="showCommandsHistory()">
+          <i class="fas fa-clock-rotate-left fa-light"></i>
+        </button>
+
         <template v-if="postgresqlDialect">
           <div class="omnidb__form-check form-check form-check-inline">
             <input :id="`check_autocommit_${tabId}`" class="form-check-input" type="checkbox" v-model="autocommit" />
@@ -76,6 +80,7 @@
   </splitpanes>
 
   <ConsoleHistoryModal :tab-id="tabId" />
+  <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Console"/>
 </template>
 
 <script>
@@ -86,6 +91,7 @@ import { Splitpanes, Pane } from "splitpanes";
 import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
 import ConsoleHistoryModal from "./ConsoleHistoryModal.vue";
+import CommandsHistoryModal from "./CommandsHistoryModal.vue";
 import moment from "moment";
 import { v_queryRequestCodes } from "../query";
 import { createRequest } from "../long_polling";
@@ -114,6 +120,7 @@ export default {
     Splitpanes,
     Pane,
     ConsoleHistoryModal,
+    CommandsHistoryModal,
     TabStatusIndicator,
     QueryEditor,
     CancelButton,
@@ -347,6 +354,9 @@ export default {
     },
     updateEditorContent(newContent) {
       this.editorContent = newContent;
+    },
+    showCommandsHistory() {
+      this.$refs.commandsHistory.show()
     },
     showConsoleHistory,
   },

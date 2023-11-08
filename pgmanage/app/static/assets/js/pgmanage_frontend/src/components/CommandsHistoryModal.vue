@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header align-items-center">
           <h2 class="modal-title font-weight-bold">
-            Command history Tabulator
+            {{ tabType }} commands history
           </h2>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
@@ -28,14 +28,14 @@
               <div class="form-group col-7 d-flex justify-content-end align-items-end">
                 <div>
                   <label class="font-weight-bold mb-2">Command contains:</label>
-                  <input v-model="commandContains" @change="getCommandList()" type="text" class="form-control" />
+                  <input v-model="commandContains" @change="getCommandsHistory()" type="text" class="form-control" />
                 </div>
 
-                <button class="bt_execute btn btn-primary ml-1" title="Refresh" @click="getCommandList()">
+                <button class="bt_execute btn btn-primary ml-1" title="Refresh" @click="getCommandsHistory()">
                   <i class="fas fa-sync-alt mr-1"></i>
                   Refresh
                 </button>
-                <ConfirmableButton :confirm-text="`Confirm Clear?`" :callbackFunc="clearCommandList"
+                <ConfirmableButton :confirm-text="`Confirm Clear?`" :callbackFunc="clearCommandsHistory"
                   class="btn btn-danger ml-1">
                   <i class="fas fa-broom mr-1"></i>
                   Clear List
@@ -70,7 +70,7 @@
             </button>
           </div>
 
-          <div :id="`${tabId}_history_table`" style="height: calc(100vh - 20rem)"></div>
+          <div :id="`${tabId}_commands_history_table`" style="height: calc(100vh - 20rem)"></div>
         </div>
       </div>
     </div>
@@ -93,6 +93,12 @@ export default {
   props: {
     tabId: String,
     databaseIndex: Number,
+    tabType: {
+      type: String,
+      validator(value) {
+        return ["Query", "Console"].includes(value);
+      },
+    },
   },
   data() {
     return {
@@ -104,6 +110,91 @@ export default {
       timeRangeLabel: "Last 6 Hours",
     };
   },
+  computed: {
+    defaultColumns() {
+      if (this.tabType === "Query") {
+        return [
+          {
+            title: "Start",
+            field: "start_time",
+          },
+          {
+            title: "End",
+            field: "end_time",
+          },
+          {
+            title: "Duration",
+            field: "duration",
+            width: 100,
+          },
+          {
+            title: "Status",
+            field: "status",
+            width: 50,
+            hozAlign: "center",
+            formatter: function (cell, formatterParams, onRendered) {
+              if (cell.getValue() === "success") {
+                return "<i title='Success' class='fas fa-check text-success'></i>";
+              } else {
+                return "<i title='Error' class='fas fa-exclamation-circle text-danger'></i>";
+              }
+            },
+          },
+          {
+            title: "Command",
+            field: "snippet",
+            widthGrow: 4,
+            contextMenu: [
+              {
+                label: "Copy Content To Query Tab",
+                action: (e, cell) => {
+                  emitter.emit(`${this.tabId}_copy_to_editor`, cell.getValue());
+                  $(this.$refs.historyModal).modal("hide");
+                },
+              },
+            ],
+          },
+        ];
+      }
+      return [
+        {
+          title: "Date",
+          field: "start_time",
+        },
+        {
+          title: "Command",
+          field: "snippet",
+          widthGrow: 4,
+          contextMenu: [
+            {
+              label:
+                '<div style="position: absolute;"><i class="fas fa-copy cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy</div>',
+              action: (e, cell) => {
+                this.table.selectRow(cell.getRow());
+                this.table.copyToClipboard("selected");
+              },
+            },
+            {
+              label:
+                '<div style="position: absolute;"><i class="fas fa-bolt cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy Content To Console Tab</div>',
+              action: (e, cell) => {
+                emitter.emit(`${this.tabId}_copy_to_editor`, cell.getValue());
+                $(this.$refs.historyModal).modal("hide");
+              },
+            },
+            {
+              label:
+                '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
+              action: (e, cell) => {
+                console.log("Not implemented");
+                // cellDataModal()
+              },
+            },
+          ],
+        },
+      ];
+    },
+  },
   mounted() {
     this.setupDateRangePicker();
     this.setupTabulator();
@@ -112,7 +203,7 @@ export default {
     show() {
       $(this.$refs.historyModal).modal("show");
       setTimeout(() => {
-        this.getCommandList();
+        this.getCommandsHistory();
       }, 200);
     },
     setupDateRangePicker() {
@@ -185,78 +276,40 @@ export default {
           } else {
             this.startedTo = null;
           }
-          this.getCommandList();
+          this.getCommandsHistory();
         }
       );
     },
     setupTabulator() {
-      this.table = new Tabulator(`#${this.tabId}_history_table`, {
+      this.table = new Tabulator(`#${this.tabId}_commands_history_table`, {
         placeholder: "No Data Available",
         selectable: true,
         layout: "fitColumns",
+        clipboard: true,
         columnDefaults: {
           headerHozAlign: "center",
           headerSort: false,
         },
-        columns: [
-          {
-            title: "Start",
-            field: "start_time",
-          },
-          {
-            title: "End",
-            field: "end_time",
-          },
-          {
-            title: "Duration",
-            field: "duration",
-            width: 100,
-          },
-          {
-            title: "Status",
-            field: "status",
-            width: 50,
-            hozAlign: "center",
-            formatter: function (cell, formatterParams, onRendered) {
-              if (cell.getValue() === "success") {
-                return "<i title='Success' class='fas fa-check text-success'></i>";
-              } else {
-                return "<i title='Error' class='fas fa-exclamation-circle text-danger'></i>";
-              }
-            },
-          },
-          {
-            title: "Command",
-            field: "snippet",
-            widthGrow: 4,
-            contextMenu: [
-              {
-                label: "Copy Content To Query Tab",
-                action: (e, cell) => {
-                  emitter.emit(`${this.tabId}_copy_to_editor`, cell.getValue());
-                  $(this.$refs.historyModal).modal("hide");
-                },
-              },
-            ],
-          },
-        ],
+        columns: this.defaultColumns,
       });
     },
-    getCommandList() {
+    getCommandsHistory() {
       axios
-        .post("/get_command_list/", {
+        .post("/get_commands_history/", {
           command_from: this.startedFrom,
           command_to: this.startedTo,
           command_contains: this.commandContains,
+          command_type: this.tabType,
           current_page: this.currentPage,
           database_index: this.databaseIndex,
         })
         .then((resp) => {
           this.pages = resp.data.pages;
+          if (this.currentPage > resp.data.pages) this.currentPage = 1;
 
           resp.data.command_list.forEach((el) => {
             el.start_time = moment(el.start_time).format();
-            el.end_time = moment(el.end_time).format();
+            if (el.end_time) el.end_time = moment(el.end_time).format();
           });
           this.table.setData(resp.data.command_list);
         })
@@ -264,17 +317,18 @@ export default {
           showToast("error", error.response.data.data);
         });
     },
-    clearCommandList() {
+    clearCommandsHistory() {
       axios
-        .post("/clear_command_list/", {
+        .post("/clear_commands_history/", {
           command_from: this.startedFrom,
           command_to: this.startedTo,
           command_contains: this.commandContains,
           database_index: this.databaseIndex,
+          command_type: this.tabType,
         })
         .then((resp) => {
           this.currentPage = 1;
-          this.getCommandList();
+          this.getCommandsHistory();
         })
         .catch((error) => {
           showToast("error", error.response.data.data);
@@ -283,25 +337,25 @@ export default {
     getNextPage() {
       if (this.currentPage < this.pages) {
         this.currentPage += 1;
-        this.getCommandList();
+        this.getCommandsHistory();
       }
     },
     getPreviousPage() {
       if (this.currentPage > 1) {
         this.currentPage -= 1;
-        this.getCommandList();
+        this.getCommandsHistory();
       }
     },
     getFirstPage() {
       if (this.currentPage !== 1) {
         this.currentPage = 1;
-        this.getCommandList();
+        this.getCommandsHistory();
       }
     },
     getLastPage() {
       if (this.currentPage !== this.pages) {
         this.currentPage = this.pages;
-        this.getCommandList();
+        this.getCommandsHistory();
       }
     },
   },

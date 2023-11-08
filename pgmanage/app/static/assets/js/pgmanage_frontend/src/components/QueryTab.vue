@@ -107,7 +107,7 @@
     </pane>
   </splitpanes>
 
-  <CommandsHistoryModal ref="commandHistory" :tab-id="tabId" :database-index="databaseIndex"/>
+  <CommandsHistoryModal ref="commandHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Query"/>
 </template>
 
 <script>
