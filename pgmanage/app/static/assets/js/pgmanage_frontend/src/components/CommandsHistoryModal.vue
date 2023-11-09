@@ -76,8 +76,7 @@
     </div>
   </div>
 
-  <CellDataModal :tab-id="tabId" :cell-content="cellContent" :show-modal="cellModalVisible"
-    @modal-hide="cellModalVisible = false" />
+  <CellDataModal :cell-content="cellContent" :show-modal="cellModalVisible" @modal-hide="cellModalVisible = false" />
 </template>
 
 <script>
@@ -301,6 +300,15 @@ export default {
         selectable: true,
         layout: "fitColumns",
         clipboard: true,
+        clipboardCopyConfig: {
+          columnHeaders: false, //do not include column headers in clipboard output
+        },
+        clipboardCopyFormatter: function (type, output) {
+          if (type == "plain") {
+            return output.split("\t").pop();
+          }
+          return output;
+        },
         columnDefaults: {
           headerHozAlign: "center",
           headerSort: false,

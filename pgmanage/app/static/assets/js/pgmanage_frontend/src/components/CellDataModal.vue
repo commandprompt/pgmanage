@@ -5,14 +5,11 @@
         <div class="modal-header align-items-center">
           <h2 class="modal-title font-weight-bold">Show Data</h2>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="hideCellDataModal()">
-            <span aria-hidden="true">&times;</span>
+            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
           </button>
         </div>
         <div class="modal-body" style="white-space: pre-line">
-          <div ref="editor" style="
-              height: 70vh;
-              border: 1px solid rgb(195, 195, 195);
-            "></div>
+          <div ref="editor" style="height: 70vh; border: 1px solid rgb(195, 195, 195)"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="hideCellDataModal()">
@@ -31,7 +28,6 @@ import { settingsStore } from "../stores/settings";
 export default {
   name: "CellDataModal",
   props: {
-    tabId: String,
     cellContent: String,
     showModal: Boolean,
   },
