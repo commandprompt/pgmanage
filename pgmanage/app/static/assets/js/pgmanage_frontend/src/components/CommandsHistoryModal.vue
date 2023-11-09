@@ -75,6 +75,8 @@
       </div>
     </div>
   </div>
+
+  <CellDataModal :tab-id="tabId" :cell-content="cellContent" :show-modal="showModal" @modal-hidden="showModal = false" />
 </template>
 
 <script>
@@ -84,11 +86,13 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
 import ConfirmableButton from "./ConfirmableButton.vue";
 import { showToast } from "../notification_control";
+import CellDataModal from "./CellDataModal.vue";
 
 export default {
   name: "CommandsHistoryModal",
   components: {
     ConfirmableButton,
+    CellDataModal,
   },
   props: {
     tabId: String,
@@ -108,6 +112,8 @@ export default {
       startedTo: moment().toISOString(),
       commandContains: "",
       timeRangeLabel: "Last 6 Hours",
+      cellContent: "",
+      showModal: false,
     };
   },
   computed: {
@@ -186,8 +192,8 @@ export default {
               label:
                 '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
               action: (e, cell) => {
-                console.log("Not implemented");
-                // cellDataModal()
+                this.cellContent = cell.getValue();
+                this.showModal = true;
               },
             },
           ],
