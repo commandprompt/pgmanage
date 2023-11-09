@@ -18,7 +18,7 @@
           </button>
 
           <button :class="`bt_history_${tabId}`" class="btn btn-sm btn-secondary" title="Command History"
-            @click="showCommandList()">
+            @click="showCommandsHistory()">
             <i class="fas fa-clock-rotate-left fa-light"></i>
           </button>
 
@@ -107,7 +107,7 @@
     </pane>
   </splitpanes>
 
-  <CommandsHistoryModal ref="commandHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Query"/>
+  <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Query" :commands-modal-visible="commandsModalVisible" @modal-hide="commandsModalVisible=false"/>
 </template>
 
 <script>
@@ -170,6 +170,7 @@ export default {
       readOnlyEditor: false,
       editorContent: "",
       longQuery: false,
+      commandsModalVisible: false
     };
   },
   computed: {
@@ -433,8 +434,8 @@ export default {
       emitter.all.delete(`${this.tabId}_run_explain_analyze`);
       emitter.all.delete(`${this.tabId}_run_query`);
     },
-    showCommandList() {
-      this.$refs.commandHistory.show()
+    showCommandsHistory() {
+      this.commandsModalVisible = true
     }
   },
 };

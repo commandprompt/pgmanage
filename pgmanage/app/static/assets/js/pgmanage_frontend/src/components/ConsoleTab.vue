@@ -80,7 +80,7 @@
   </splitpanes>
 
   <ConsoleHistoryModal :tab-id="tabId" />
-  <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Console"/>
+  <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Console" :commands-modal-visible="commandsModalVisible" @modal-hide="commandsModalVisible=false"/>
 </template>
 
 <script>
@@ -148,6 +148,7 @@ export default {
       readOnlyEditor: false,
       editorContent: "",
       longQuery: false,
+      commandsModalVisible: false
     };
   },
   computed: {
@@ -356,7 +357,7 @@ export default {
       this.editorContent = newContent;
     },
     showCommandsHistory() {
-      this.$refs.commandsHistory.show()
+      this.commandsModalVisible = true
     },
     showConsoleHistory,
   },

@@ -76,7 +76,8 @@
     </div>
   </div>
 
-  <CellDataModal :tab-id="tabId" :cell-content="cellContent" :show-modal="showModal" @modal-hidden="showModal = false" />
+  <CellDataModal :tab-id="tabId" :cell-content="cellContent" :show-modal="cellModalVisible"
+    @modal-hide="cellModalVisible = false" />
 </template>
 
 <script>
@@ -103,7 +104,9 @@ export default {
         return ["Query", "Console"].includes(value);
       },
     },
+    commandsModalVisible: Boolean,
   },
+  emits: ["modalHide"],
   data() {
     return {
       currentPage: 1,
@@ -113,7 +116,7 @@ export default {
       commandContains: "",
       timeRangeLabel: "Last 6 Hours",
       cellContent: "",
-      showModal: false,
+      cellModalVisible: false,
     };
   },
   computed: {
@@ -193,7 +196,7 @@ export default {
                 '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
               action: (e, cell) => {
                 this.cellContent = cell.getValue();
-                this.showModal = true;
+                this.cellModalVisible = true;
               },
             },
           ],
@@ -201,17 +204,23 @@ export default {
       ];
     },
   },
-  mounted() {
-    this.setupDateRangePicker();
-    this.setupTabulator();
-  },
-  methods: {
-    show() {
-      $(this.$refs.historyModal).modal("show");
+  watch: {
+    commandsModalVisible: function () {
+      this.showCommandsModal();
       setTimeout(() => {
         this.getCommandsHistory();
       }, 200);
     },
+  },
+  mounted() {
+    this.setupDateRangePicker();
+    this.setupTabulator();
+
+    $(this.$refs.historyModal).on("hide.bs.modal", () => {
+      this.$emit("modalHide");
+    });
+  },
+  methods: {
     setupDateRangePicker() {
       $(this.$refs.timeRange).daterangepicker(
         {
@@ -363,6 +372,9 @@ export default {
         this.currentPage = this.pages;
         this.getCommandsHistory();
       }
+    },
+    showCommandsModal() {
+      $(this.$refs.historyModal).modal("show");
     },
   },
 };

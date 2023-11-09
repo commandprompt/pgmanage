@@ -35,7 +35,7 @@ export default {
     cellContent: String,
     showModal: Boolean,
   },
-  emits: ["modalHidden"],
+  emits: ["modalHide"],
   watch: {
     showModal: function () {
       this.showCellDataModal();
@@ -68,7 +68,7 @@ export default {
     hideCellDataModal() {
       this.editor.destroy();
       $(this.$refs.cellDataModal).modal("hide");
-      this.$emit("modalHidden");
+      this.$emit("modalHide");
     },
   },
 };
