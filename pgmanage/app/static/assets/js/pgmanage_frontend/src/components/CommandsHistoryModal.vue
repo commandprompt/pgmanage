@@ -205,10 +205,13 @@ export default {
   },
   watch: {
     commandsModalVisible: function () {
-      this.showCommandsModal();
-      setTimeout(() => {
-        this.getCommandsHistory();
-      }, 200);
+      if (this.commandsModalVisible) {
+        this.resetToDefault();
+        this.showCommandsModal();
+        setTimeout(() => {
+          this.getCommandsHistory();
+        }, 200);
+      }
     },
   },
   mounted() {
@@ -383,6 +386,12 @@ export default {
     },
     showCommandsModal() {
       $(this.$refs.historyModal).modal("show");
+    },
+    resetToDefault() {
+      this.startedFrom = moment().subtract(6, "hour").toISOString();
+      this.startedTo = moment().toISOString();
+      this.timeRangeLabel = "Last 6 Hours";
+      this.commandContains = "";
     },
   },
 };
