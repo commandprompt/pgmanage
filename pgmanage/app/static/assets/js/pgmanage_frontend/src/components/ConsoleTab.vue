@@ -18,11 +18,7 @@
           <i class="fas fa-broom fa-ligth"></i>
         </button>
 
-        <button class="btn btn-sm btn-secondary" title="Command History" @click="showConsoleHistory()">
-          <i class="fas fa-clock-rotate-left fa-light"></i>
-        </button>
-
-        <button class="btn btn-sm btn-success" title="Command History" @click="showCommandsHistory()">
+        <button class="btn btn-sm btn-secondary" title="Command History" @click="showCommandsHistory()">
           <i class="fas fa-clock-rotate-left fa-light"></i>
         </button>
 
@@ -79,18 +75,15 @@
     </pane>
   </splitpanes>
 
-  <ConsoleHistoryModal :tab-id="tabId" />
   <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Console" :commands-modal-visible="commandsModalVisible" @modal-hide="commandsModalVisible=false"/>
 </template>
 
 <script>
-import { showConsoleHistory } from "../console";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { Splitpanes, Pane } from "splitpanes";
 import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
-import ConsoleHistoryModal from "./ConsoleHistoryModal.vue";
 import CommandsHistoryModal from "./CommandsHistoryModal.vue";
 import moment from "moment";
 import { v_queryRequestCodes } from "../query";
@@ -119,7 +112,6 @@ export default {
   components: {
     Splitpanes,
     Pane,
-    ConsoleHistoryModal,
     CommandsHistoryModal,
     TabStatusIndicator,
     QueryEditor,
@@ -359,7 +351,6 @@ export default {
     showCommandsHistory() {
       this.commandsModalVisible = true
     },
-    showConsoleHistory,
   },
 };
 </script>
