@@ -227,48 +227,48 @@ export default {
       $(this.$refs.timeRange).daterangepicker(
         {
           timePicker: true,
-          startDate: moment(this.startedFrom).format("Y-MM-DD H"),
-          endDate: moment(this.startedTo).format("Y-MM-DD H"),
+          startDate: moment(this.startedFrom).format(),
+          endDate: moment(this.startedTo).format(),
           parentEl: this.$refs.daterangePicker,
           previewUTC: true,
           locale: {
-            format: "Y-MM-DD H",
+            format: moment.defaultFormat,
           },
           ranges: {
             "Last 6 Hours": [
-              moment().subtract(6, "hour").format("Y-MM-DD H"),
-              moment().format("Y-MM-DD H"),
+              moment().subtract(6, "hour").format(),
+              moment().format(),
             ],
             "Last 12 Hours": [
-              moment().subtract(12, "hour").format("Y-MM-DD H"),
-              moment().format("Y-MM-DD H"),
+              moment().subtract(12, "hour").format(),
+              moment().format(),
             ],
             "Last 24 Hours": [
-              moment().subtract(24, "hour").format("Y-MM-DD H"),
-              moment().format("Y-MM-DD H"),
+              moment().subtract(24, "hour").format(),
+              moment().format(),
             ],
             "Last 7 Days": [
-              moment().subtract(7, "days").startOf("day").format("Y-MM-DD H"),
-              moment().format("Y-MM-DD H"),
+              moment().subtract(7, "days").startOf("day").format(),
+              moment().format(),
             ],
             "Last 30 Days": [
-              moment().subtract(30, "days").startOf("day").format("Y-MM-DD H"),
-              moment().format("Y-MM-DD H"),
+              moment().subtract(30, "days").startOf("day").format(),
+              moment().format(),
             ],
             Yesterday: [
-              moment().subtract(1, "days").startOf("day").format("Y-MM-DD H"),
-              moment().subtract(1, "days").endOf("day").format("Y-MM-DD H"),
+              moment().subtract(1, "days").startOf("day").format(),
+              moment().subtract(1, "days").endOf("day").format(),
             ],
             "This Month": [
-              moment().startOf("month").format("Y-MM-DD H"),
-              moment().format("Y-MM-DD H"),
+              moment().startOf("month").format(),
+              moment().format(),
             ],
             "Last Month": [
               moment()
                 .subtract(1, "month")
                 .startOf("month")
-                .format("Y-MM-DD H"),
-              moment().subtract(1, "month").endOf("month").format("Y-MM-DD H"),
+                .format(),
+              moment().subtract(1, "month").endOf("month").format(),
             ],
           },
         },
