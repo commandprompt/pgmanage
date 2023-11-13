@@ -37,7 +37,8 @@ def get_pgcron_job_logs(request, database):
     if job_meta:
         logs = database.GetPgCronJobLogs(job_meta.get('id'))
         [stats] = database.GetPgCronJobStats(job_meta.get('id')).Rows
-        return JsonResponse(data={'logs':logs.Rows, 'stats': dict(stats)}, safe=False)
+        json_logs = list(dict(row) for row in logs.Rows)
+        return JsonResponse(data={'logs': json_logs, 'stats': dict(stats)}, safe=False)
 
     return JsonResponse(data={'data': 'invalid job details supplied'}, status=400)
 
