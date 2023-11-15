@@ -534,21 +534,34 @@ $('#modal_monitoring_unit_test').on('shown.bs.modal', function (e) {
 
             }
             else if (v_type === 'grid') {
-              let columns = p_return.v_data.v_object.columns.map(x => {return {title: x, readOnly: true }});
               v_div_result.className = 'dashboard_unit_grid';
-              v_tab_tag.object = new Handsontable(v_div_result,
-                {
-                  licenseKey: 'non-commercial-and-evaluation',
-                  columns: columns,
-                  data: p_return.v_data.v_object.data,
-                  colHeaders : true,
-                  rowHeaders : true,
-                  stretchH: 'all',
-                  copyPaste: {pasteMode: '', rowsLimit: 1000000000, columnsLimit: 1000000000},
-                  manualColumnResize: true,
-                  fillHandle:false,
-                  readOnly: true,
-                });
+              v_tab_tag.object = new Tabulator(v_div_result, {
+                data: p_return.v_data.data,
+                height: "100%",
+                layout: "fitDataStretch",
+                columnDefaults: {
+                  headerHozAlign: "center",
+                  headerSort: false,
+                },
+                autoColumns: true,
+                autoColumnsDefinitions: function (definitions) {
+                  //definitions - array of column definition objects
+                  definitions.unshift({
+                    formatter: "rownum",
+                    hozAlign: "center",
+                    width: 40,
+                    frozen: true,
+                  });
+
+                  return definitions
+                },
+                selectable: true,
+                clipboard: "copy",
+                clipboardCopyConfig: {
+                  columnHeaders: false, //do not include column headers in clipboard output
+                },
+                clipboardCopyRowRange: "selected",
+              })
             }
             else if (v_type=='graph') {
               v_div_result.className = 'unit_graph';
