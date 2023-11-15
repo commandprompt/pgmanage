@@ -33,6 +33,7 @@ import 'chartjs-plugin-annotation';
 import { showPasswordPrompt } from "./passwords";
 import { startLoading, endLoading, execAjax } from "./ajax_control";
 import { showConfirm, showToast } from "./notification_control";
+import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 var v_unit_list_grid = null;
 
@@ -126,6 +127,7 @@ function buildMonitorUnit(p_unit, p_first) {
   div_card_body.className = 'card-body';
   var div_loading = document.createElement('div');
   div_loading.classList.add('div_loading');
+  div_loading.style.zIndex = 10
   div_loading.innerHTML =
   '<div class="div_loading_cover"></div>' +
   '<div class="div_loading_content">' +
@@ -673,7 +675,7 @@ function refreshMonitorUnitsObjects() {
   for (var i=0; i<v_tab_tag.units.length; i++) {
     if (v_tab_tag.units[i].type=='grid') {
       if (v_tab_tag.units[i].object) {
-        v_tab_tag.units[i].object.render();
+        v_tab_tag.units[i].object.redraw(true);
       }
     }
   }
@@ -771,6 +773,8 @@ function refreshMonitorDashboard(p_loading,p_tab_tag,p_div) {
                     else {
                       v_tab_tag.units[p].object_data = JSON.parse(JSON.stringify(v_return_unit.v_object));
                     }
+                  } else if (v_return_unit.data) {
+                    v_tab_tag.units[p].object_data = JSON.parse(JSON.stringify(v_return_unit.data));
                   }
                   v_unit = v_tab_tag.units[p];
                   break;
@@ -1024,61 +1028,74 @@ function refreshMonitorDashboard(p_loading,p_tab_tag,p_div) {
                   v_return_unit.type='grid';
 
                   if (v_return_unit.v_error) {
-
                     v_unit.div_error.innerHTML = v_return_unit.v_message;
                     v_unit.error = true;
                     //v_unit.object = null;
                     //v_unit.div_content.innerHTML = '';
-
                   }
                   // New grid
-                  else if (v_unit.object==null) {
-                    v_unit.div_content.classList.add('unit_grid');
-                    v_unit.div_content.innerHTML = '';
+                  else if (v_unit.object == null) {
+                    v_unit.div_content.classList.add("unit_grid");
+                    v_unit.div_content.innerHTML = "";
 
-                    let columns = v_return_unit.v_object.columns.map(x => {return {title: x, readOnly: true }});
-
-                    v_unit.div_details.innerHTML = `${v_return_unit.v_object.data.length} rows`;
-
-        						var v_grid = new Handsontable(v_unit.div_content,
-        						{
-                      licenseKey: 'non-commercial-and-evaluation',
-                      columns : columns,
-                      data: v_return_unit.v_object.data,
-        							colHeaders : true,
-        							rowHeaders : true,
-        							//copyRowsLimit : 1000000000,
-        							//copyColsLimit : 1000000000,
-                      copyPaste: {pasteMode: '', rowsLimit: 1000000000, columnsLimit: 1000000000},
-        							manualColumnResize: true,
-        							fillHandle:false,
-        							contextMenu: {
-        								callback: function (key, options) {
-        									if (key === 'view_data') {
-                            cellDataModal(this,options[0].start.row,options[0].start.col,this.getDataAtCell(options[0].start.row,options[0].start.col),false);
-        									}
-                          else if (key === 'copy') {
-                            this.selectCell(options[0].start.row,options[0].start.col,options[0].end.row,options[0].end.col);
-                            document.execCommand('copy');
-                          }
+                    let cellContextMenu = [
+                      {
+                        label:
+                          '<div style="position: absolute;"><i class="fas fa-copy cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy</div>',
+                        action: function (e, cell) {
+                          cell.getTable().copyToClipboard("selected");
                         },
-                        items: {
-                          "copy": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-copy cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">Copy</div>'},
-                          "view_data": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-edit cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">View Content</div>'}
-                        }
-        						    },
-        					        cells: function (row, col, prop) {
-        							    var cellProperties = {};
-        							    return cellProperties;
-        							}
-        						});
+                      },
+                      {
+                        label:
+                          '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
+                        action: (e, cell) => {
+                          cellDataModal(
+                            null,
+                            null,
+                            null,
+                            cell.getValue(),
+                            false
+                          );
+                        },
+                      },
+                    ];
+                    let tabulator = new Tabulator(v_unit.div_content, {
+                      data: v_return_unit.data,
+                      height: "100%",
+                      layout: "fitDataStretch",
+                      selectable: true,
+                      clipboard: "copy",
+                      clipboardCopyConfig: {
+                        columnHeaders: false, //do not include column headers in clipboard output
+                      },
+                      clipboardCopyRowRange: "selected",
+                      columnDefaults: {
+                        headerHozAlign: "center",
+                        headerSort: false,
+                      },
+                      autoColumns: true,
+                      autoColumnsDefinitions: function (definitions) {
+                        //definitions - array of column definition objects
+                        definitions.unshift({
+                          formatter: "rownum",
+                          hozAlign: "center",
+                          width: 40,
+                          frozen: true,
+                        });
 
-                    v_unit.object = v_grid;
+                        definitions.forEach((column) => {
+                          column.contextMenu = cellContextMenu;
+                        });
+                        return definitions;
+                      },
+                    });
+                    v_unit.object = tabulator;
                   }
                   // Existing grid
                   else {
-                    v_unit.div_details.innerHTML = `${v_return_unit.v_object.data.length} rows`;
-                    v_unit.object.loadData(v_return_unit.v_object.data);
+                    v_unit.div_details.innerHTML = `${v_return_unit.data.length} rows`;
+                    v_unit.object.setData(v_return_unit.data);
                   }
                 }
 
