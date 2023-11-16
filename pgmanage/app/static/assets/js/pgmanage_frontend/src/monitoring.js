@@ -35,7 +35,6 @@ import { startLoading, endLoading, execAjax } from "./ajax_control";
 import { showConfirm, showToast } from "./notification_control";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
-var v_unit_list_grid = null;
 
 function closeMonitorUnit(p_div) {
   var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
@@ -280,19 +279,15 @@ function startMonitorDashboard() {
         'box');
 
 }
-function toggleMonitorUnit(p_id,p_plugin_name) {
-  var v_grid = v_unit_list_grid;
-  var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-  let v_unit_idx = v_tab_tag.units.findIndex(unit => unit.id === p_id)
-  var v_row_data = v_grid.getSourceDataAtRow(v_grid.getSelected()[0][0]);
+function toggleMonitorUnit(unitData) {
+  let v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+  let v_unit_idx = v_tab_tag.units.findIndex(unit => unit.id === unitData.id)
 
-  var v_plugin_name = '';
   if (v_unit_idx === -1) {
-    if (p_plugin_name!=null)
-      v_plugin_name = p_plugin_name;
+    let plugin_name = unitData.plugin_name ?? ''
 
-    var div = buildMonitorUnit({'v_saved_id': -1, 'v_id': p_id, 'v_title': v_row_data.title, 'v_interval': v_row_data.interval, 'v_plugin_name': v_plugin_name},true);
-    $(div.firstChild).effect('highlight', {}, 1000);
+    let div = buildMonitorUnit({'v_saved_id': -1, 'v_id': unitData.id, 'v_title': unitData.title, 'v_interval': unitData.interval, 'v_plugin_name': plugin_name},true);
+
     refreshMonitorDashboard(true,v_tab_tag,div);
   } else {
     let v_unit_div = v_tab_tag.units[v_unit_idx].div
@@ -610,77 +605,92 @@ function testMonitorScript() {
 
 }
 
-function refreshMonitorUnitsList() {
-  var input = JSON.stringify({"p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-                              "p_tab_id": v_connTabControl.selectedTab.id,
-                              "p_mode": 0});
+let actionsFormatter = function (cell, formatterParams, onRendered) {
+  let sourceDataRow = cell.getRow().getData();
+  let v_tab_tag_units =
+    v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.units;
+  let checked = v_tab_tag_units.some((unit) => unit.id === sourceDataRow.id)
+    ? "checked"
+    : "";
 
-  var v_grid_div = document.getElementById('monitoring_units_grid');
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.checked = checked;
+  input.onclick = function () {
+    toggleMonitorUnit(sourceDataRow);
+  };
 
-  execAjax('/get_monitor_unit_list/',
-				input,
-				function(p_return) {
+  if (!!cell.getValue()) {
+    const cellWrapper = document.createElement("div");
+    cellWrapper.className = "d-flex justify-content-between align-items-center";
 
-          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.unit_list_id_list = p_return.v_data.id_list;
+    cellWrapper.appendChild(input);
 
-          if (v_unit_list_grid)
-            v_unit_list_grid.destroy();
-          v_unit_list_grid = new Handsontable(v_grid_div,
-          {
-            licenseKey: 'non-commercial-and-evaluation',
-            data: p_return.v_data.data,
-            colHeaders: ['Show', 'Title', 'Type', 'Refr.(s)'],
-            columns : [
-                  {data: 'actions', renderer: actionsRenderer},
-                  {data: 'title'},
-                  {data: 'type'},
-                  {data: 'interval'}],
+    const editIcon = document.createElement("i");
+    editIcon.title = "Edit";
+    editIcon.className = "fas fa-edit action-grid action-edit-monitor";
+    editIcon.onclick = function () {
+      editMonitorUnit(sourceDataRow.id);
+    };
 
-            stretchH: 'all',
-            readOnly: true,
-            tableClassName: 'omnidb__ht__first-col-actions',
-            manualColumnResize: false,
-            fillHandle:true,
-            disableVisualSelection: true,
-            fixedColumnsLeft: 1,
-          });
+    const deleteIcon = document.createElement("i");
+    deleteIcon.title = "Delete";
+    deleteIcon.className = "fas fa-times action-grid action-close text-danger";
+    deleteIcon.onclick = function () {
+      deleteMonitorUnit(sourceDataRow.id);
+    };
 
-          endLoading();
+    cellWrapper.appendChild(editIcon);
+    cellWrapper.appendChild(deleteIcon);
 
-        },
-        null,
-        'box');
-}
-function actionsRenderer(instance, td, row, col, prop, value, cellProperties) {
-  let sourceDataRowId = instance.getSourceDataAtRow(row).id
-  let pluginName = instance.getSourceDataAtRow(row).plugin_name
-  let v_tab_tag_units = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.units;
-  let checked = v_tab_tag_units.some(unit => unit.id === sourceDataRowId) ? 'checked' : ''
-  
-  const input = document.createElement('input')
-  input.type = 'checkbox'
-  input.checked = checked
-  if (!!value) {
-    const editIcon = document.createElement('i')
-    editIcon.title = 'Edit'
-    editIcon.className = 'fas fa-edit action-grid action-edit-monitor'
-    editIcon.onclick = function() { editMonitorUnit(sourceDataRowId) }
-    
-    const deleteIcon = document.createElement('i')
-    deleteIcon.title = 'Delete'
-    deleteIcon.className = 'fas fa-times action-grid action-close text-danger'
-    deleteIcon.onclick = function() { deleteMonitorUnit(sourceDataRowId) }
-    
-    input.onclick = function() { toggleMonitorUnit(sourceDataRowId)}
-    Handsontable.dom.empty(td);
-    td.appendChild(input)
-    td.appendChild(editIcon)
-    td.appendChild(deleteIcon)
-  } else {
-    input.onclick = function() { toggleMonitorUnit(sourceDataRowId, pluginName)}
-    Handsontable.dom.empty(td);
-    td.appendChild(input)
+    return cellWrapper;
   }
+  return input;
+};
+
+function refreshMonitorUnitsList() {
+  let input = JSON.stringify({
+    p_database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+    p_tab_id: v_connTabControl.selectedTab.id,
+    p_mode: 0,
+  });
+
+  let grid_div = document.getElementById("monitoring_units_grid");
+
+  execAjax(
+    "/get_monitor_unit_list/",
+    input,
+    function (p_return) {
+      let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+      tab_tag.unit_list_id_list = p_return.v_data.id_list;
+
+      if (tab_tag.unit_list_grid) tab_tag.unit_list_grid.destroy();
+
+      tab_tag.unit_list_grid = new Tabulator(grid_div, {
+        layout: "fitDataStretch",
+        data: p_return.v_data.data,
+        columnDefaults: {
+          headerHozAlign: "center",
+          headerSort: false,
+        },
+        columns: [
+          {
+            title: "Show",
+            field: "actions",
+            hozAlign: "center",
+            formatter: actionsFormatter,
+          },
+          { title: "Title", field: "title" },
+          { title: "Type", field: "type" },
+          { title: "Refr.(s)", field: "interval" },
+        ],
+      });
+
+      endLoading();
+    },
+    null,
+    "box"
+  );
 }
 
 function refreshMonitorUnitsObjects() {
