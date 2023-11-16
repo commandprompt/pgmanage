@@ -35,9 +35,6 @@ var v_createMonitorDashboardTabFunction = function() {
       if(this.tag != null) {
         this.tag.resize();
         refreshMonitorUnitsObjects();
-        if (this.tag.unit_list_grid!=null) {
-          showMonitorUnitList();
-        }
       }
     },
     p_closeFunction: function(e,p_tab) {
