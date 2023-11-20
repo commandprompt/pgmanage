@@ -31,8 +31,8 @@ import { refreshOuterConnectionHeights } from './tab_functions/outer_connection_
 import { getAllSnippets } from './tree_context_functions/tree_snippets'
 import { getTreePostgresql, postgresqlTerminateBackend } from './tree_context_functions/tree_postgresql'
 import { getTreeMysql, mysqlTerminateBackend } from './tree_context_functions/tree_mysql'
-import { getTreeMariadb } from './tree_context_functions/tree_mariadb'
-import { getTreeOracle } from './tree_context_functions/tree_oracle'
+import { getTreeMariadb, mariadbTerminateBackend } from './tree_context_functions/tree_mariadb'
+import { getTreeOracle, oracleTerminateBackend } from './tree_context_functions/tree_oracle'
 import { connectionsModalInit, conn_app} from './connections_modal.js'
 import { connectionsStore } from './stores/connections.js'
 import { passwordModalsInit, showNewMasterPassPrompt, showMasterPassPrompt } from './passwords.js'
@@ -1072,7 +1072,7 @@ function showMenuNewTab(e) {
 					v_connTabControl.tag.createMonitoringTab(
 							'Backends',
 							'select * from pg_stat_activity', [{
-									icon: 'fas fa-times action-grid action-close text-danger',
+									icon: 'fas fa-times action-grid action-close',
 									title: 'Terminate',
 									action: 'postgresqlTerminateBackend'
 							}]);
@@ -1089,7 +1089,7 @@ function showMenuNewTab(e) {
 					v_connTabControl.tag.createMonitoringTab(
 							'Process List',
 							'select * from information_schema.processlist', [{
-									icon: 'fas fa-times action-grid action-close text-danger',
+									icon: 'fas fa-times action-grid action-close',
 									title: 'Terminate',
 									action: 'mysqlTerminateBackend'
 							}]);
@@ -1221,13 +1221,19 @@ function updateExplainComponent() {
 }
 
 
-function monitoringAction(p_row_index, p_function) {
-  let handlerFn = p_function === 'postgresqlTerminateBackend' ? postgresqlTerminateBackend : mysqlTerminateBackend
-	var v_row_data = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.ht.getDataAtRow(p_row_index);
-	v_row_data.shift();
-	if(typeof handlerFn === 'function') {
-		handlerFn(v_row_data);
-	}
+function monitoringAction(row_data, p_function) {
+  const handlerFnMap = {
+    postgresqlTerminateBackend: postgresqlTerminateBackend,
+    mysqlTerminateBackend: mysqlTerminateBackend,
+    oracleTerminateBackend: oracleTerminateBackend,
+    mariadbTerminateBackend: mariadbTerminateBackend,
+  };
+
+  let handlerFn = handlerFnMap[p_function];
+
+  if (handlerFn && typeof handlerFn === "function") {
+    handlerFn(row_data);
+  }
 }
 
 function uiCopyTextToClipboard(p_value) {
