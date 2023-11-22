@@ -1434,8 +1434,6 @@ body {
 }
 
 .omnidb__autocomplete__data-row:hover, .omnidb__autocomplete__data-word:hover, .omnidb__autocomplete__data-row--selected:hover, .omnidb__autocomplete__data-row--selected {
-  padding: 0px 5px;
-  border: 1px solid #72aaff !important;
   background-color: #cfe2ff !important;
   cursor: pointer;
 }
@@ -1444,31 +1442,26 @@ body {
   height: 300px;
 }
 
-#div_autocomplete .handsontable tr:hover {
+#div_autocomplete .tabulator .tabulator-row:hover {
   background-color: #c7d6ff;
   cursor: pointer;
 }
 
-#div_autocomplete .htDimmed {
+#div_autocomplete .tabulator-row > .tabulator-cell:last-of-type {
   color: #000000;
 }
 
-#div_autocomplete .handsontable tr {
+#div_autocomplete .tabulator .tabulator-row {
   background-color: #fbfbfb;
-  border-left: none;
+  border-bottom: 0;
 }
 
-#div_autocomplete .handsontable th, #div_autocomplete .handsontable td {
+#div_autocomplete .tabulator .tabulator-cell {
   background-color: inherit;
-  border-left: none;
-  border-right: none;
-  border-bottom: none;
+  border: 0;
   padding-right: 5px;
 }
 
-#div_autocomplete .handsontable tr:first-child th, #div_autocomplete .handsontable tr:first-child td {
-  border-top: none;
-}
 
 /* ANIMATIONS */
 @keyframes workspaceFadeIn {

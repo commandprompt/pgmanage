@@ -521,7 +521,7 @@ function resizeTreeVerticalEnd(event) {
   v_result_div.style.height = v_inner_height;
 
 	if (v_tag.currTreeTab=='properties') {
-    v_tag.gridProperties.render();
+    v_tag.gridProperties.redraw();
   }
 	else if (v_tag.currTreeTab=='ddl') {
     v_tag.ddlEditor.resize();
@@ -800,7 +800,7 @@ function refreshTreeHeight() {
 	if (v_tag.currTreeTab=='properties') {
 		var v_height  = window.innerHeight - $(v_tag.divProperties).offset().top - 15;
 		v_tag.divProperties.style.height = v_height + "px";
-		v_tag.gridProperties.render();
+		v_tag.gridProperties.redraw();
 	}
 	else if (v_tag.currTreeTab=='ddl') {
 		var v_height  = window.innerHeight - $(v_tag.divDDL).offset().top - 15;
@@ -1182,7 +1182,7 @@ function drop(event, grid_container, div_left, div_right) {
     for (let i = 0; i < cols.length; i++) {
       document.getElementsByClassName('omnidb__workspace-resize-grid__column')[i].classList.remove('omnidb__workspace-resize-grid__column--enter');
     }
-    v_connTabControl.selectedTab.tag.gridProperties.render();
+    v_connTabControl.selectedTab.tag.gridProperties.redraw();
   }
   catch (e) {
 

@@ -3261,7 +3261,7 @@ export default {
     getPropertiesConfirm(node) {
       let schema = node.data.schema_raw ? node.data.schema_raw : null;
       let table = null;
-      let object = node.data.raw_value;
+      let object = node.data.raw_value ?? node.title;
       let handledTypes = [
         "role",
         "tablespace",
