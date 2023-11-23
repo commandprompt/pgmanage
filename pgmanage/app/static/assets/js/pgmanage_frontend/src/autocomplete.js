@@ -624,12 +624,12 @@ $(function() {
 
       v_autocomplete_object.elements[i].grid.on("renderComplete", function () {
         if (v_autocomplete_object.selected_grid == this) {
-          let cell = this.getRowFromPosition(
+          let rowCell = this.getRowFromPosition(
             v_autocomplete_object.selected_grid_row + 1
           )
-            .getCell(0)
-            .getElement();
-          if (cell != null) {
+          let cell = rowCell ? rowCell.getCell(0).getElement() : null;
+
+          if (!!cell && !!cell.parentNode) {
             cell.parentNode.classList.add(
               "omnidb__autocomplete__data-row--selected"
             );
@@ -1179,8 +1179,11 @@ function autocomplete_deselect_element() {
     if (v_previous.visible_index==null)
       v_previous.container.classList.remove('omnidb__autocomplete__data-row--selected');
     else {
-      let previous_cell = v_previous.grid_reference.getRowFromPosition(v_previous.visible_index+1).getCell(0).getElement();
-      if (previous_cell!=null) {
+      let previous_cell_row = v_previous.grid_reference.getRowFromPosition(v_previous.visible_index+1)
+
+      let previous_cell = previous_cell_row ? previous_cell_row.getCell(0).getElement() : null
+
+      if (!!previous_cell && !!previous_cell.parentNode) {
         previous_cell.parentNode.classList.remove('omnidb__autocomplete__data-row--selected');
       }
       v_autocomplete_object.selected_grid = null;
@@ -1193,7 +1196,8 @@ function autocomplete_deselect_element() {
 function update_selected_grid_row_position(cell) {
   if (!!cell) {
     cell.scrollIntoView();
-    cell.parentNode.classList.add('omnidb__autocomplete__data-row--selected');
+    if (cell.parentNode)
+      cell.parentNode.classList.add('omnidb__autocomplete__data-row--selected');
 
   }
 }
