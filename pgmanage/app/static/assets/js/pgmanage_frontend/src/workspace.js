@@ -800,7 +800,7 @@ function refreshTreeHeight() {
 	if (v_tag.currTreeTab=='properties') {
 		var v_height  = window.innerHeight - $(v_tag.divProperties).offset().top - 15;
 		v_tag.divProperties.style.height = v_height + "px";
-		v_tag.gridProperties.redraw();
+		v_tag.gridProperties.redraw(true);
 	}
 	else if (v_tag.currTreeTab=='ddl') {
 		var v_height  = window.innerHeight - $(v_tag.divDDL).offset().top - 15;
