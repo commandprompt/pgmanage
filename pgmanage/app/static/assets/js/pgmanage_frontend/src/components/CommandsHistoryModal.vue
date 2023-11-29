@@ -215,11 +215,15 @@ export default {
     },
   },
   mounted() {
-    this.setupDateRangePicker();
     this.setupTabulator();
+
+    $(this.$refs.historyModal).on("shown.bs.modal", () => {
+      this.setupDateRangePicker();
+    });
 
     $(this.$refs.historyModal).on("hide.bs.modal", () => {
       this.$emit("modalHide");
+      $(this.$refs.timeRange).data('daterangepicker').remove()
     });
   },
   methods: {
@@ -302,7 +306,7 @@ export default {
         placeholder: "No Data Available",
         selectable: true,
         layout: "fitColumns",
-        clipboard: true,
+        clipboard: "copy",
         clipboardCopyConfig: {
           columnHeaders: false, //do not include column headers in clipboard output
         },
