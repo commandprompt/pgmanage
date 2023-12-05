@@ -29,9 +29,7 @@
     </div>
   </div>
 
-  <div ref="gridContainer" :style="{height: `calc(100vh - ${heightSubtract}px)`}" class="grid-scrollable">
-     <hot-table ref="hotTableComponent" v-show='dataLoaded' class='data-grid' :settings="hotSettings"></hot-table>
-     <div ref="hotTableInputHolder" class="handsontableInputHolder" style="z-index: -1"></div>
+    <div ref="tabulator" class="data-grid">
   </div>
 
   <div ref="bottomToolbar" class="data-editor__footer d-flex align-items-center justify-content-end p-2">
@@ -51,40 +49,16 @@ import { isEqual, zipObject } from 'lodash';
 import { showToast } from "../notification_control";
 import { v_queryRequestCodes } from '../query'
 import { createRequest } from '../long_polling'
-import { HotTable } from '@handsontable/vue3';
-import { TextEditor } from 'handsontable/editors/textEditor';
-import { registerAllModules } from 'handsontable/registry';
+import { TabulatorFull as Tabulator} from 'tabulator-tables'
 
 // TODO: run query in transaction
 // TODO: remove old code, update request code numbers
 // TODO: redraw the grid on font size change
 // TODO: handle font size change - recalculate top/bottom toolbar dimensions
 
-// register Handsontable's modules, needed for column auto-sizing
-registerAllModules();
-
-class CustomEditor extends TextEditor {
-  constructor(props) {
-    super(props);
-  }
-
-  createElements() {
-    super.createElements();
-
-    this.TEXTAREA = document.createElement('input');
-    this.TEXTAREA.setAttribute('placeholder', 'Custom placeholder');
-    this.TEXTAREA.setAttribute('data-hot-input', true);
-    this.textareaStyle = this.TEXTAREA.style;
-    this.TEXTAREA_PARENT.innerText = '';
-    this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
-  }
-}
 
 export default {
   name: "DataEditorTab",
-  components: {
-    HotTable,
-  },
   props: {
     dialect: String,
     schema: String,
@@ -107,23 +81,10 @@ export default {
       rowLimit: 10,
       dataLoaded: false,
       heightSubtract: 200,
+      tabulator: null
     };
   },
   computed: {
-    hotSettings(){
-      return {
-        licenseKey: 'non-commercial-and-evaluation',
-        manualColumnResize: true,
-        fixedColumnsLeft: 2,
-        minSpareRows: 0,
-        width: '100%',
-        height: '100%',
-        editor: CustomEditor, //TODO: add dynamic editors based on column data-type
-        colHeaders: this.colHeaders,
-        autoColumnSize: {syncLimit: 300, useHeaders: true},
-        renderer: this.cellRenderer
-      }
-    },
     talbleUnquoted() {
       return this.table.replace(/^"(.*)"$/, '$1')
     },
@@ -141,22 +102,34 @@ export default {
     }
   },
   mounted() {
+    this.tabulator = new Tabulator(this.$refs.tabulator, {
+      height: `calc(60vh - ${this.heightSubtract}px)`,
+      layout: 'fitDataStretch',
+      data: [],
+      columnDefaults: {
+          headerHozAlign: "center",
+          headerSort: false,
+        },
+      selectable: false,
+      rowFormatter: this.rowFormatter
+    })
+    this.tabulator.on("cellEdited", this.cellEdited);
+
     this.knex = Knex({ client: this.dialect || 'postgres'})
     this.getTableColumns().then(this.getTableData)
-    this.$refs.hotTableComponent.hotInstance.addHook('afterChange', this.htAfterChange)
-    this.$refs.hotTableComponent.hotInstance.addHook('afterOnCellMouseDown', this.htMouseDown)
-    this.$refs.hotTableComponent.$el.addEventListener('dblclick', this.htCellDblClick)
     this.handleResize()
   },
   methods: {
-    actionsRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
-      const div = document.createElement('div');
+    actionsFormatter(cell, formatterParams, onRendered) {
+      const div = document.createElement("div");
       div.className = 'btn p-0';
 
-      let cellData = value
-      if(!cellData)
+
+      let cellData = cell.getValue()
+      if (!cellData)
         return
-      if(cellData.is_deleted || cellData.is_dirty) {
+
+      if (cellData.is_deleted || cellData.is_dirty) {
         const revertIcon = document.createElement('i')
         revertIcon.className = 'fas fa-rotate-left text-info'
         revertIcon.title = 'Revert'
@@ -171,52 +144,19 @@ export default {
         div.appendChild(deleteIcon)
       }
 
-      td.innerText = '' //don't show the actual contents of the cell
-
-      let cellClass = ''
-      if(cellData.is_dirty)
-        cellClass = 'row-dirty'
-      if(cellData.is_deleted)
-        cellClass = 'row-deleted'
-      if(cellData.is_new)
-        cellClass = 'row-new'
-      td.className = `'cellReadOnly' ${cellClass}`
-      td.appendChild(div);
+      return div
     },
-    cellRenderer(instance, td, row, col, prop, value, cellProperties) {
-          let newValue = value
-          if(value) {
-            // truncate displayed cell data to reduce column width
-            if(value.length > 100)
-              newValue = `${value.substring(0,120)}...`
-          }
+    rowFormatter(row) {
+      let rowMeta = row.getData()[0]
 
-          arguments[5] = newValue
-          Handsontable.renderers.TextRenderer.apply(this, arguments);
-
-          let rowMeta = instance.getDataAtCell(row, 0)
-          if(rowMeta) {
-            if(rowMeta.is_dirty)
-              td.classList.add('row-dirty')
-            if(rowMeta.is_deleted)
-              td.classList.add('row-deleted')
-            if(rowMeta.is_new)
-              td.classList.add('row-new')
-          }
-    },
-    colHeaders(colIndex) {
-      // TODO: can we render this with vue somehow?
-      if(colIndex === 0)
-        return `<div data-action="add" class="btn p-0" title="Add column">
-        <i data-action="add" class="fa-solid fa-circle-plus text-success"></i>
-        </div>`
-
-      let col = this.tableColumns[colIndex-1]
-      if(col) {
-        let prepend = col.is_primary ? '<i class="fas fa-key action-key text-secondary mr-1"></i>' : ''
-        return `${prepend}<span>${col.name}</span><div class='font-weight-light'>${col.data_type}</div>`
+      if (rowMeta) {
+        if (rowMeta.is_dirty)
+          row.getElement().classList.add('row-dirty')
+        if (rowMeta.is_deleted)
+          row.getElement().classList.add('row-deleted')
+        if (rowMeta.is_new)
+          row.getElement().classList.add('row-new')
       }
-      return ''
     },
     getTableColumns() {
       return axios
@@ -229,20 +169,36 @@ export default {
         .then((response) => {
           this.tableColumns = response.data.columns
           this.queryFilter = `${this.$props.initial_filter} ${response.data.initial_orderby}`.trim()
-          let actionsCol = {
-            readOnly: true,
-            renderer: this.actionsRenderer
-          }
-          let columns = this.tableColumns.map((c) => { editor: CustomEditor })
-          columns.unshift(actionsCol)
 
-          this.$refs.hotTableComponent.hotInstance.updateSettings({
-            columns: columns,
-            copyPaste: {
-              pasteMode:"",
-              uiContainer: this.$refs.hotTableInputHolder
+          let actionsCol = {
+            title: `<div data-action="add" class="btn p-0" title="Add column">
+              <i data-action="add" class="fa-solid fa-circle-plus text-success"></i>
+              </div>`,
+            field: '0',
+            frozen: 'true',
+            hozAlign: 'center',
+            formatter: this.actionsFormatter,
+            cellClick: this.handleClick,
+            headerClick: this.addRow,
+          }
+          let columns = this.tableColumns.map((col, idx) => {
+            let prepend = col.is_primary ? '<i class="fas fa-key action-key text-secondary mr-1"></i>' : ''
+            let title = `${prepend}<span>${col.name}</span><div class='font-weight-light'>${col.data_type}</div>`
+
+            return {
+              field: (idx + 1).toString(),
+              title: title,
+              formatter: this.cellFormatter,
+              editor: "input",
+              editable: false,
+              cellDblClick: function (e, cell) {
+                cell.edit(true);
+              }
             }
           })
+          columns.unshift(actionsCol)
+          this.tabulator.setColumns(columns)
+
           this.dataLoaded = true
         })
         .catch((error) => {
@@ -277,58 +233,37 @@ export default {
         this.$refs.bottomToolbar.getBoundingClientRect().height +
         this.$refs.topToolbar.getBoundingClientRect().bottom
     },
-    htMouseDown(event, coords, TD) {
-      let hotInstance = this.$refs.hotTableComponent.hotInstance
-      // disables highlight of actions column
-      if (coords.col == 0){
-        hotInstance.deselectCell(coords.row, coords.col);
-      }
-
-      let action_type = event.target.dataset.action
-      if(action_type) {
-        let rowMeta = hotInstance.getDataAtCell(coords.row,coords.col)
-        if(action_type === 'delete')
-          this.deleteRow(rowMeta, coords.row)
-        if(action_type === 'revert')
-          this.revertRow(rowMeta, coords.row)
-        if(action_type === 'add')
-          this.addRow()
+    handleClick(e, cell) {
+      let rowNum = cell.getRow().getPosition() - 1
+      let action_type = e.target.dataset.action
+      if (action_type) {
+        let row = cell.getRow()
+        let rowMeta = {}
+        if (row.getCell(0)) {
+          rowMeta = row.getCell(0).getValue()
+        }
+        if (action_type === 'delete')
+          this.deleteRow(rowMeta, rowNum)
+        if (action_type === 'revert')
+          this.revertRow(rowMeta, rowNum)
       }
     },
-    htAfterChange(changes, source) {
-      if(!this.hasPK)
+    cellEdited(cell) {
+      if (!this.hasPK)
         return
-      if(source === 'edit') {
-        let hotInstance = this.$refs.hotTableComponent.hotInstance
-        //changes are [[row prop old new]]
-        changes.forEach((change) => {
-          let rowNum = change[0]
-          let rowData = hotInstance.getDataAtRow(rowNum)
-          let rowMeta = hotInstance.getDataAtCell(rowNum,0)
-          let originalRow = this.tableData.find((row) => row[0].initial_id == rowMeta.initial_id)
-          //compare rows without metadata
-          if(originalRow)
-            rowMeta.is_dirty = !isEqual(rowData.slice(1), originalRow.slice(1)) && !rowMeta.is_new
-        })
+      // workaround when empty cell with initial null value is changed to empty string when starting editing
+      if (cell.getOldValue() === null && cell.getValue() === '')
+        cell.setValue(null)
+
+      let rowData = cell.getRow().getData()
+      let rowMeta = rowData[0]
+      let originalRow = this.tableData.find((row) => row[0].initial_id == rowMeta.initial_id)
+
+      if (originalRow) {
+        debugger
+        rowMeta.is_dirty = !isEqual(rowData.slice(1), originalRow.slice(1)) && !rowMeta.is_new
       }
-    },
-    htCellDblClick() {
-      // this function is a workaround which enables cell editing on double click
-      // this should be working out of the box in handsontable but it doesn't
-      let hotInstance = this.$refs.hotTableComponent.hotInstance
-      if(!hotInstance)
-        return
 
-      let selected = hotInstance.getSelected()
-      if(!selected)
-        return
-
-      let selection = selected[0]
-
-      let singleCellSelected = selection[0] === selection[2] && selection[1] === selection[3]
-      if(singleCellSelected)
-        hotInstance.getActiveEditor().enableFullEditMode();
-        hotInstance.getActiveEditor().beginEditing()
     },
     handleResponse(response) {
       if(response.v_error == true) {
@@ -347,7 +282,7 @@ export default {
           return [rowMeta].concat(row)
         })
         this.tableDataLocal = JSON.parse(JSON.stringify(this.tableData))
-        this.$refs.hotTableComponent.hotInstance.updateData(this.tableDataLocal);
+        this.tabulator.replaceData(this.tableDataLocal)
       }
     },
     handleSaveResponse(response) {
@@ -369,7 +304,6 @@ export default {
 
       newRow[0] = rowMeta
       this.tableDataLocal.unshift(newRow)
-      this.$refs.hotTableComponent.hotInstance.selectCell(0, 2)
     },
     revertRow(rowMeta,rowNum) {
       let sourceRow = this.tableData.find((row) => row[0].initial_id == rowMeta.initial_id)
@@ -451,7 +385,7 @@ export default {
   watch: {
     tableDataLocal: {
       handler(newVal, oldVal) {
-        this.$refs.hotTableComponent.hotInstance.updateData(this.tableDataLocal)
+        this.tabulator.replaceData(this.tableDataLocal)
       },
       deep: true
     },
