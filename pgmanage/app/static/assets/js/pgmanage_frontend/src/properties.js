@@ -70,7 +70,7 @@ function getProperties(view, data) {
 function clearProperties() {
   var tab_tag = v_connTabControl.selectedTab.tag;
   if (!tab_tag.gridPropertiesCleared) {
-    tab_tag.gridProperties.setData([]);
+    tab_tag.gridProperties.clearData();
     tab_tag.gridPropertiesCleared = true;
 
     tab_tag.ddlEditor.setValue("");

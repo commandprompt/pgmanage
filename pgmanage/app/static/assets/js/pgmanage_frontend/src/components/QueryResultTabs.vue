@@ -48,7 +48,7 @@
                 {{ queryInfoText }}
               </div>
             </template>
-            <div v-show="showTable" ref="tabulatorDiv"></div>
+            <div v-show="showTable" ref="tabulator"></div>
           </div>
         </div>
         <template v-if="postgresqlDialect">
@@ -72,39 +72,9 @@
 import ExplainTabContent from "./ExplainTabContent.vue";
 import { queryModes, tabStatusMap } from "../constants";
 import { emitter } from "../emitter";
-import {
-  Tabulator,
-  ClipboardModule,
-  MenuModule,
-  SortModule,
-  FrozenColumnsModule,
-  ResizeTableModule,
-  ResizeColumnsModule,
-  FormatModule,
-  ExportModule,
-  SelectRowModule,
-  KeybindingsModule,
-  AccessorModule,
-  InteractionModule,
-  EditModule,
-} from "tabulator-tables";
+import { TabulatorFull as Tabulator} from "tabulator-tables";
 import CellDataModal from "./CellDataModal.vue";
 
-Tabulator.registerModule([
-  ClipboardModule,
-  MenuModule,
-  SortModule,
-  FrozenColumnsModule,
-  ResizeTableModule,
-  ResizeColumnsModule,
-  FormatModule,
-  ExportModule,
-  SelectRowModule,
-  KeybindingsModule,
-  AccessorModule,
-  InteractionModule,
-  EditModule,
-]);
 export default {
   components: {
     ExplainTabContent,
@@ -180,7 +150,7 @@ export default {
       });
     }
 
-    this.table = new Tabulator(this.$refs.tabulatorDiv, this.tableSettings);
+    this.table = new Tabulator(this.$refs.tabulator, this.tableSettings);
   },
   methods: {
     renderResult(data, context) {

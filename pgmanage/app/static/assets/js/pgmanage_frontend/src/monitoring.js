@@ -279,21 +279,30 @@ function startMonitorDashboard() {
         'box');
 
 }
+
 function toggleMonitorUnit(unitData) {
-  let v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-  let v_unit_idx = v_tab_tag.units.findIndex(unit => unit.id === unitData.id)
+  let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+  let unit_idx = tab_tag.units.findIndex((unit) => unit.id === unitData.id);
 
-  if (v_unit_idx === -1) {
-    let plugin_name = unitData.plugin_name ?? ''
+  if (unit_idx === -1) {
+    let plugin_name = unitData.plugin_name ?? "";
 
-    let div = buildMonitorUnit({'v_saved_id': -1, 'v_id': unitData.id, 'v_title': unitData.title, 'v_interval': unitData.interval, 'v_plugin_name': plugin_name},true);
+    let div = buildMonitorUnit(
+      {
+        v_saved_id: -1,
+        v_id: unitData.id,
+        v_title: unitData.title,
+        v_interval: unitData.interval,
+        v_plugin_name: plugin_name,
+      },
+      true
+    );
 
-    refreshMonitorDashboard(true,v_tab_tag,div);
+    refreshMonitorDashboard(true, tab_tag, div);
   } else {
-    let v_unit_div = v_tab_tag.units[v_unit_idx].div
-    closeMonitorUnit(v_unit_div)
+    let v_unit_div = tab_tag.units[unit_idx].div;
+    closeMonitorUnit(v_unit_div);
   }
-
 }
 
 function deleteMonitorUnit(p_unit_id) {
@@ -607,9 +616,9 @@ function testMonitorScript() {
 
 let actionsFormatter = function (cell, formatterParams, onRendered) {
   let sourceDataRow = cell.getRow().getData();
-  let v_tab_tag_units =
+  let tab_tag_units =
     v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.units;
-  let checked = v_tab_tag_units.some((unit) => unit.id === sourceDataRow.id)
+  let checked = tab_tag_units.some((unit) => unit.id === sourceDataRow.id)
     ? "checked"
     : "";
 

@@ -116,7 +116,6 @@ import { showToast } from "../notification_control";
 import moment from "moment";
 import { createRequest } from "../long_polling";
 import { v_queryRequestCodes } from "../query";
-import { registerAllModules } from "handsontable/registry";
 import { queryModes, queryState, tabStatusMap } from "../constants";
 import CancelButton from "./CancelSQLButton.vue";
 import QueryEditor from "./QueryEditor.vue";
@@ -125,8 +124,6 @@ import CommandsHistoryModal from "./CommandsHistoryModal.vue";
 import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryResultTabs from "./QueryResultTabs.vue";
 
-// register Handsontable's modules
-registerAllModules();
 
 export default {
   name: "QueryTab",

@@ -178,7 +178,7 @@ function refreshMonitoring(p_tab_tag) {
         function actionsFormatter(cell, formatterParams, onRendered) {
           let sourceDataRow = cell.getRow().getData();
           let actionsWrapper = document.createElement("div");
-  
+
           cell.getValue().forEach((actionItem) => {
             let iconClassName;
             if (actionItem.icon.includes("fa-times")) {
@@ -186,16 +186,16 @@ function refreshMonitoring(p_tab_tag) {
             } else {
               iconClassName = `${actionItem.icon} omnidb__theme-icon--primary`;
             }
-  
+
             const actionWrapper = document.createElement("div");
             actionWrapper.className = "text-center";
             const actionIcon = document.createElement("i");
             actionIcon.className = `actionable_icon ${iconClassName}`;
-  
+
             actionIcon.onclick = () => {
               monitoringAction(sourceDataRow, actionItem.action);
             };
-  
+
             actionWrapper.appendChild(actionIcon);
             actionsWrapper.appendChild(actionWrapper);
           });
