@@ -42,7 +42,6 @@ import ContextMenu from '@imengyu/vue3-context-menu'
 import { createRequest } from './long_polling'
 import { v_queryRequestCodes } from './query'
 import { checkDebugStatus } from './debug'
-import { checkEditDataStatus } from './tree_context_functions/edit_data'
 import { startMonitorDashboard } from './monitoring'
 import { createTabControl } from './tabs'
 import { startLoading } from './ajax_control'
@@ -813,7 +812,7 @@ function checkTabStatus(v_tab) {
 	if (v_tab.tag.tabControl.selectedTab.tag.mode=='query')
     emitter.emit(`${v_tab.tag.tabControl.selectedTab.id}_check_query_status`);
 	else if (v_tab.tag.tabControl.selectedTab.tag.mode=='edit')
-		checkEditDataStatus(v_tab.tag.tabControl.selectedTab);
+    console.log('Not implemented') // TODO: implement check tab status functionality for edit tab
 	else if (v_tab.tag.tabControl.selectedTab.tag.mode=='debug')
 		checkDebugStatus(v_tab.tag.tabControl.selectedTab);
 	else if (v_tab.tag.tabControl.selectedTab.tag.mode=='console')

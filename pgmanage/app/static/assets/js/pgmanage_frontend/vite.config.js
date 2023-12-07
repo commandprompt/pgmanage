@@ -55,6 +55,7 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       vue: "vue/dist/vue.esm-bundler.js",
       "~bootstrap": path.resolve(__dirname, "node_modules/bootstrap"),
+      'moment': path.resolve(__dirname, 'node_modules/moment/moment.js')
     },
   },
 });

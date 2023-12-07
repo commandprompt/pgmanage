@@ -29,7 +29,6 @@ import { createRequest } from "./long_polling";
 import { v_queryRequestCodes } from "./query";
 import { getDebugFunctionDefinitionPostgresql } from "./tree_context_functions/tree_postgresql";
 import { adjustChartTheme } from "./header_actions";
-import { blueRenderer, whiteRenderer } from "./renderers";
 import { Range } from "ace-builds";
 import { execAjax } from "./ajax_control";
 import { showAlert } from "./notification_control";
