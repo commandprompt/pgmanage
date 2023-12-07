@@ -239,7 +239,7 @@ export default {
         "utf-8-sig", "windows-1252"
       ],
       shortcutLabels: [
-        "Run Query", "Cancel Query", "Indent", "New Inner Tab",
+        "Run Query", "Run Selection", "Cancel Query", "Indent", "New Inner Tab",
         "Remove Current Inner Tab", "Select Left Inner Tab", "Select Right Inner Tab",
         "Autocomplete", "Run Explain", "Run Explain Analyze",
       ],
@@ -275,9 +275,6 @@ export default {
         settingsStore.setTheme(value);
       },
     },
-    autocomplete () {
-      return settingsStore.enableAutocomplete
-    }
   },
   created() {
     this.getShortcuts();
@@ -304,6 +301,13 @@ export default {
         }
         else if (window.v_connTabControl.selectedTab.tag.mode == 'outer_terminal')
           terminalRun();
+      },
+      shortcut_run_selection: function () {
+        if (window.v_connTabControl.selectedTab.tag.mode == 'connection') {
+          if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'query') {
+            emitter.emit(`${window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_run_selection`)
+          }
+        }
       },
       shortcut_explain: function () {
 
@@ -435,9 +439,11 @@ export default {
 
     this.applyThemes()
 
-    settingsStore.$subscribe((mutation, state) => {
-      if (mutation.events.key === "enableAutocomplete") {
-        this.saveSettingsUser()
+    settingsStore.$onAction((action) => {
+      if (action.name === "setAutocomplete") {
+        action.after(() => {
+          this.saveSettingsUser();
+        })
       }
     });
   },
@@ -464,7 +470,8 @@ export default {
         shortcuts: this.shortcutList
       })
         .then((resp) => {
-          showToast("success", "Shortcuts saved.");
+          showToast("success", "Shortcuts saved.")
+          emitter.emit('shortcuts_updated', "")
         })
         .catch((error) => {
           console.log(error);
@@ -601,7 +608,7 @@ export default {
           "binary_path": this.binaryPath,
           "date_format": this.selectedDateFormat,
           "pigz_path": this.pigzPath,
-          "autocomplete": this.autocomplete,
+          "autocomplete": settingsStore.enableAutocomplete,
         })
           .then((resp) => {
             $('#modal_settings').modal('hide');

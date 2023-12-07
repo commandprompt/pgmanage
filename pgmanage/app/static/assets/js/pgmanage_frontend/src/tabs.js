@@ -274,20 +274,14 @@ function createTabControl({ p_div, p_hierarchy, p_layout}) {
         // Looking for a welcome tab
         var v_welcome_tab_index = false;
         for (let i = 0; i < v_connTabControl.tabList.length; i++) {
-          if (v_connTabControl.tabList[i].tag) {
-            if (v_connTabControl.tabList[i].tag.mode === 'welcome') {
-              v_welcome_tab_index = i;
-            }
+          if (v_connTabControl.tabList[i].text === 'Welcome') {
+            v_welcome_tab_index = i;
           }
         }
 
         if (v_welcome_tab_index) {
           this.selectTabIndex(v_welcome_tab_index);
         }
-        // Not forcing user to have a welcome tab.
-        // else {
-        //   v_connTabControl.tag.createWelcomeTab();
-        // }
       }
 
 		},

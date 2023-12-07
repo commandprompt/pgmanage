@@ -1,0 +1,95 @@
+.recent-conections {
+    &__item {
+        position: relative;
+        margin: 8px;
+        cursor: pointer;
+
+        &_wrap {
+            transition: all .2s ease-in-out;
+            padding: 8px 8px 8px;
+            border-radius: $borderRadius;
+
+            @include themify() {
+                border: themed($border);
+            }
+        }
+
+        &_text {
+            max-width: calc(100% - 90px);
+        }
+
+        &_title {
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        &_logo {
+            width: 50px;
+            height: 50px;
+            border-radius: $borderRadius;
+            overflow: hidden;
+            flex-shrink: 0;
+
+            @include themify() {
+                border: themed($border);
+            }
+
+            & > .icon {
+                height: 100%;
+                mask-position: center;
+                mask-size: 40px 40px;
+                mask-repeat: no-repeat;
+                -webkit-mask-position: center;
+                -webkit-mask-size: 40px 40px;
+                -webkit-mask-repeat: no-repeat;
+
+                background-color: $secondaryGrey;
+
+                &-mariadb {
+                    mask-image: url("../images/db_icons/mariadb.svg");
+                    -webkit-mask-image: url("../images/db_icons/mariadb.svg");
+                }
+
+                &-mysql {
+                    mask-image: url("../images/db_icons/mysql.svg");
+                    -webkit-mask-image: url("../images/db_icons/mysql.svg");
+                }
+
+                &-oracle {
+                    mask-image: url("../images/db_icons/oracle.svg");
+                    -webkit-mask-image: url("../images/db_icons/oracle.svg");
+                }
+
+                &-postgresql {
+                    mask-image: url("../images/db_icons/postgresql.svg");
+                    -webkit-mask-image: url("../images/db_icons/postgresql.svg");
+                }
+
+                &-sqlite {
+                    mask-image: url("../../images/db_icons/sqlite.svg");
+                    -webkit-mask-image: url("../images/db_icons/sqlite.svg");
+                }
+
+                &-terminal {
+                    mask-image: url("../images/db_icons/terminal.svg");
+                    -webkit-mask-image: url("../images/db_icons/terminal.svg");
+                }
+            }
+        }
+
+        &:hover {
+            .recent-conections__item_wrap {
+                background-color: rgba($primaryBlue, .15);
+                border: 1px solid $primaryBlue;
+            }
+
+
+            .recent-conections__item_logo {
+                border: 1px solid $primaryBlue;
+                & > .icon {
+                    background-color: $primaryBlue;
+                }
+            }
+        }
+    }
+}

@@ -50,6 +50,7 @@ import { showAlert, showConfirm } from './notification_control'
 import { emitter } from './emitter'
 import { settingsStore } from './stores/settings'
 import { startTutorial } from './tutorial'
+import { welcomeScreenInit } from './tab_functions/welcome_screen'
 
 let v_start_height;
 /// <summary>
@@ -100,8 +101,7 @@ $(function () {
   initCreateTabFunctions();
 
   // Creating the welcome tab.
-  v_connTabControl.tag.createWelcomeTab();
-
+  welcomeScreenInit()
   // Creating the snippets panel.
   v_connTabControl.tag.createSnippetPanel();
 

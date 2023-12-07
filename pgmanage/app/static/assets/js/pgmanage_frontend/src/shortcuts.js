@@ -50,6 +50,29 @@ let default_shortcuts = {
         'shortcut_key': 'Q',
     }
   },
+  'shortcut_run_selection': {
+    'windows': {
+        'ctrl_pressed': false,
+        'shift_pressed': false,
+        'alt_pressed': true,
+        'meta_pressed': false,
+        'shortcut_key': 'R',
+    },
+    'linux': {
+        'ctrl_pressed': false,
+        'shift_pressed': false,
+        'alt_pressed': true,
+        'meta_pressed': false,
+        'shortcut_key': 'R',
+    },
+    'macos': {
+        'ctrl_pressed': true,
+        'shift_pressed': false,
+        'alt_pressed': false,
+        'meta_pressed': false,
+        'shortcut_key': 'R',
+    }
+  },
   'shortcut_cancel_query': {
     'windows': {
         'ctrl_pressed': false,

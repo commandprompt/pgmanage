@@ -149,6 +149,13 @@ class Client:
         if is_main_tab:
             self._connection_sessions[conn_tab_id] = tab
         else:
+            main_tab = self.get_tab(conn_tab_id=conn_tab_id)
+            if not main_tab:
+                self.create_main_tab(
+                    tab={"omnidatabase": None, "type": "connection", "tab_list": {}},
+                    conn_tab_id=conn_tab_id,
+                )
+
             self._connection_sessions[conn_tab_id]["tab_list"][tab_id] = tab
 
         return tab

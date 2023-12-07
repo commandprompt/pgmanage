@@ -52,7 +52,8 @@ def get_connections(request, session):
                     'key_set': False if conn.ssh_key.strip() == '' else True
                 },
                 'connection_params': conn.connection_params,
-                'last_used_database': conn.last_used_database
+                'last_used_database': conn.last_used_database,
+                'last_access_date': conn.last_access_date
             }
             database_object = session.v_databases.get(conn.id)
 
@@ -370,13 +371,13 @@ def save_connection(request, session):
                     conn.ssh_password = encrypt(conn_object['tunnel']['password'], key)
             if conn_object['tunnel']['key'].strip() != '':
                 conn.ssh_key = encrypt(conn_object['tunnel']['key'], key)
-            
+
             if conn.technology.name in ['mariadb', 'mysql']:
                 conn.connection_params = {}
 
             for k, v in conn_object["connection_params"].items():
                 conn.connection_params[k] = v
-            
+
             conn.use_tunnel = conn_object['tunnel']['enabled']
             conn.conn_string = conn_object['conn_string']
             conn.save()

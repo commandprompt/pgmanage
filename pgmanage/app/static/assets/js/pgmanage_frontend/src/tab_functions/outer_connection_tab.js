@@ -61,6 +61,9 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
     let v_conn = connectionsStore.connections[0];
     for (let i = 0; i < connectionsStore.connections.length; i++) {
       if (connectionsStore.connections[i].id === p_index) {
+        // patch the connection last used date when connecting
+        // to refresh last-used labels on the welcome screen
+        connectionsStore.connections[i].last_access_date = moment.now()
         v_conn = connectionsStore.connections[i];
       }
     }

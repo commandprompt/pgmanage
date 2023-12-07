@@ -43,6 +43,10 @@ function call_polling(startup) {
       });
       call_polling(false)
     })
+    .catch((error) => {
+      polling_busy = false
+      console.log(error)
+    })
 }
 
 function polling_response(message) {
@@ -87,16 +91,14 @@ function polling_response(message) {
     case parseInt(v_queryResponseCodes.QueryResult): {
       if (context) {
         SetAcked(context);
-        // temporary development workaround,
-        if (!message.v_data.chunks || message.v_data.last_block || message.v_error ) {
-          if(context.simple && context.callback!=null) { //used by schema editor only, dont run any legacy rendering for simple requests
-            context.callback(message)
-          } else  {
-            context.callback(message, context)
-          }
-
-          //Remove context
-          removeContext(context_code);
+        if(context.simple && context.callback!=null) { //used by schema editor only, dont run any legacy rendering for simple requests
+          context.callback(message)
+        } else  {
+          context.callback(message, context)
+        }
+        //Remove context
+        if (message.v_data.last_block || message.v_error) {
+          removeContext(context_code)
         }
 
       }

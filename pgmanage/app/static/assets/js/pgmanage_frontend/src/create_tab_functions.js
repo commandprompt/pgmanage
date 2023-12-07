@@ -31,7 +31,6 @@ import { v_createSnippetPanelFunction } from './panel_functions/outer_snippet_pa
 import { v_createMonitoringTabFunction } from './tab_functions/inner_monitoring_tab'
 import { v_createMonitorDashboardTabFunction, v_createNewMonitorUnitTabFunction } from './tab_functions/inner_monitoring_dashboard_tab'
 import { createOuterTerminalTabFunction } from './tab_functions/outer_terminal_tab'
-import { createWelcomeTabFunction } from './tab_functions/outer_welcome_tab'
 import { v_createGraphTabFunction } from './tab_functions/inner_graph_tab'
 import { createERDTabFunction } from './tab_functions/erd_tab'
 import ContextMenu from '@imengyu/vue3-context-menu'
@@ -414,9 +413,6 @@ function initCreateTabFunctions() {
 
   // Functions to create tabs inside snippet panel
   v_connTabControl.tag.createSnippetTextTab = v_createSnippetTextTabFunction;
-
-	// Functions to create welcome tab globally
-	v_connTabControl.tag.createWelcomeTab = createWelcomeTabFunction;
 
   // Functions to create tabs inside a connection tab
 	v_connTabControl.tag.createQueryTab = createQueryTabFunction;

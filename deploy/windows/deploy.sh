@@ -4,6 +4,10 @@
 set -e -e
 
 APP_VERSION="$1"
+REPO="https://github.com/commandprompt/pgmanage"
+BRANCH="master"
+DEPLOY_DIR=$(pwd)
+TEMP_DIR=$DEPLOY_DIR/tmp
 
 # if version is not provided, we use last tag from repository
 if [ -z "$APP_VERSION" ]
@@ -18,19 +22,26 @@ fi
 APP_LONG_VERSION=PgManage.$APP_VERSION
 
 echo "making release dir: release_$APP_VERSION"
-rm -rf release_$APP_VERSION tmp
-mkdir release_$APP_VERSION tmp
+rm -rf release_$APP_VERSION $TEMP_DIR
+mkdir release_$APP_VERSION $TEMP_DIR
 
-# Prepare temporary directory
-echo "copying app files into tmp"
-cp -R ../../pgmanage/* tmp
-cd tmp/
-rm -rf pgmanage.db pgmanage.log
-touch pgmanage.db
+cd $TEMP_DIR
+
+echo "Cloning repository $REPO"
+git clone $REPO --depth 1 -b $BRANCH .
+
+echo "creating virtual env"
+python -m venv venv
+
+dos2unix venv/Scripts/activate
+source venv/Scripts/activate
 
 # Install all required libraries
-pip3 install -r ../../../requirements.txt
+echo "installing python dependencies"
+pip3 install -r requirements.txt
 pip3 install pyinstaller==5.13.0
+
+cd pgmanage/
 
 # set up versions in custom_settins.py
 echo "setting app version in sources to $APP_VERSION"
@@ -39,25 +50,31 @@ sed -i "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
 
 # building vite bundle
 cd app/static/assets/js/pgmanage_frontend/
+
+echo "installing javascript dependencies"
 npm install
+
+echo "building vite bundle"
 npm run build
-cd ../../../../../
+
+cd $TEMP_DIR/pgmanage
 
 echo "running pyinstaller"
+touch pgmanage.db
 pyinstaller ./pgmanage-win.spec
 pyinstaller ./process_executor-win.spec
-mv dist/pgmanage-server ../release_$APP_VERSION/
-mv dist/process_executor ../release_$APP_VERSION/pgmanage-server/
+mv dist/pgmanage-server $DEPLOY_DIR/release_$APP_VERSION/
+mv dist/process_executor $DEPLOY_DIR/release_$APP_VERSION/pgmanage-server/
 
-cd ..
+cd $DEPLOY_DIR
 curl -C - https://dl.nwjs.io/v0.69.1/nwjs-v0.69.1-win-x64.zip -o nwjs.zip
-unzip -o nwjs.zip -d tmp/
+unzip -o nwjs.zip -d $TEMP_DIR/
 
-mv tmp/nwjs-v0.69.1-win-x64/* release_$APP_VERSION/
+mv $TEMP_DIR/nwjs-v0.69.1-win-x64/* release_$APP_VERSION/
 mv release_$APP_VERSION/nw.exe release_$APP_VERSION/pgmanage-app.exe
-cp ../app/index.html release_$APP_VERSION
-cp ../app/package.json release_$APP_VERSION
-cp ../app/pgmanage_icon.png release_$APP_VERSION
+cp $TEMP_DIR/deploy/app/index.html release_$APP_VERSION
+cp $TEMP_DIR/deploy/app/package.json release_$APP_VERSION
+cp $TEMP_DIR/deploy/app/pgmanage_icon.png release_$APP_VERSION
 
 sed -i "s/version_placeholder/v$APP_VERSION/" release_$APP_VERSION/index.html
 # install resource hacker with default path, then uncomment these lines to replace the default pyinstaller and nwjs exe icons
@@ -67,4 +84,11 @@ sed -i "s/version_placeholder/v$APP_VERSION/" release_$APP_VERSION/index.html
 
 
 /cygdrive/c/Program\ Files\ \(x86\)/NSIS/makensisw.exe /DSRCDIR=release_$APP_VERSION install_script.nsi
-rm -rf tmp
+
+echo "deactivating virtual env and cleaning temp folder"
+
+# deactivate virtualenv
+deactivate
+
+# clean temp folder
+rm -rf $TEMP_DIR

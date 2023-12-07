@@ -103,13 +103,21 @@ export default {
       this.editor.resize();
     },
     getQueryEditorValue(raw_query) {
-      if (raw_query) return this.editor.getValue().trim();
-      let selectedText = this.editor.getSelectedText();
-      return !!selectedText ? selectedText : this.editor.getValue().trim();
+      if (raw_query) return this.editor.getValue().trim()
+      let selectedText = this.editor.getSelectedText()
+      let lineAtCursor = this.editor.session.getLine(this.editor.getCursorPosition().row)
+      return !!selectedText ? selectedText : lineAtCursor
     },
     contextMenu(event) {
       //TODO rewrite buildSnippetContextMenuObjects to not use editor directly
       let option_list = [
+        {
+          label: "Run selection/line at cursor",
+          icon: "fas cm-all fa-play fa-light",
+          onClick: () => {
+            this.$emit("run-selection");
+          },
+        },
         {
           label: "Copy",
           icon: "fas cm-all fa-terminal",

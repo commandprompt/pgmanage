@@ -129,7 +129,7 @@
 
           <div class="form-group">
               <label for="connectionSring" class="font-weight-bold mb-2">Use a connection string</label>
-              <input v-model="connectionLocal.conn_string" type="text" class="form-control" id="connectionSring"
+              <input v-model="connectionLocal.conn_string" @input="clearPort" type="text" class="form-control" id="connectionSring"
                 :class="['form-control', { 'is-invalid': v$.connectionLocal.conn_string.$invalid }]"
                 :placeholder="placeholder.conn_string"
                 :disabled="connStringDisabled">
@@ -364,28 +364,28 @@ import ConfirmableButton from './ConfirmableButton.vue'
         const placeholderMap = {
           'postgresql': {
             'server': 'ex: 127.0.0.1',
-            'port': '5432',
+            'port': 'ex: 5432',
             'service': 'ex: postgres',
             'user': 'ex: postgres',
             'conn_string': 'ex: postgresql://postgres@localhost:5432/postgres'
           },
           'mysql': {
             'server': 'ex: 127.0.0.1',
-            'port': '3306',
+            'port': 'ex: 3306',
             'service': 'ex: db',
             'user': 'ex: root',
             'conn_string': 'ex: mysql://root@localhost:3306/db'
           },
           'mariadb': {
             'server': 'ex: 127.0.0.1',
-            'port': '3306',
+            'port': 'ex: 3306',
             'service': 'ex: db',
             'user': 'ex: root',
             'conn_string': 'ex: mysql://root@localhost:3306/db'
           },
           'oracle': {
             'server': 'ex: 127.0.0.1',
-            'port': '1521',
+            'port': 'ex: 1521',
             'service': 'ex: xe',
             'user': 'ex: system',
             'conn_string': 'ex: oracle://system@localhost:1521/xe'
@@ -413,7 +413,6 @@ import ConfirmableButton from './ConfirmableButton.vue'
       },
       connStringDisabled() {
         return (!!this.connectionLocal.server ||
-        !!this.connectionLocal.port ||
         !!this.connectionLocal.user ||
         !!this.connectionLocal.password ||
         !!this.connectionLocal.service ||
@@ -443,6 +442,9 @@ import ConfirmableButton from './ConfirmableButton.vue'
           this.connectionLocal.connection_params = {[value]: true}
         }
         this.tempMode = value;
+      },
+      clearPort() {
+        this.connectionLocal.port = ''
       },
       dispatchConnectionSelected(connection) {
         let event = new CustomEvent('connection:selected', { detail: connection })

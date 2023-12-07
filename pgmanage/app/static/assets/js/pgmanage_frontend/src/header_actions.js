@@ -417,5 +417,6 @@ export {
   adjustChartTheme,
   adjustGraphTheme,
   changeTheme,
-  cellDataModal
+  cellDataModal,
+  showConfigUser
 };
