@@ -293,6 +293,7 @@ base_urlpatterns = [
     re_path(r'^template_select_sqlite/', views.tree_sqlite.template_select, name='template_select'),
     re_path(r'^template_insert_sqlite/', views.tree_sqlite.template_insert, name='template_insert'),
     re_path(r'^template_update_sqlite/', views.tree_sqlite.template_update, name='template_update'),
+    re_path(r'^get_table_definition_sqlite/', views.tree_sqlite.get_table_definition, name="get_table_definition_sqlite"),
 
     #MONITORING SYSTEM
     re_path(r'^test_monitor_script/', views.monitor_dashboard.test_monitor_script, name='test_monitor_script'),

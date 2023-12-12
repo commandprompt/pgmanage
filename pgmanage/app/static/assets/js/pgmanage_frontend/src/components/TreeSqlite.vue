@@ -30,6 +30,8 @@ import {
 import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import { getProperties, clearProperties } from "../properties";
 import { createDataEditorTab } from "../tab_functions/data_editor_tab";
+import { createSchemaEditorTab } from "../tab_functions/schema_editor_tab";
+import { emitter } from "../emitter";
 
 export default {
   name: "TreeSqlite",
@@ -68,6 +70,7 @@ export default {
       return {
         cm_server: [this.cmRefreshObject],
         cm_tables: [
+          this.cmRefreshObject,
           {
             label: "ER Diagram",
             icon: "fab cm-all fa-hubspot",
@@ -75,12 +78,11 @@ export default {
               v_connTabControl.tag.createERDTab();
             },
           },
-          this.cmRefreshObject,
           {
             label: "Create Table",
-            icon: "fas cm-all fa-edit",
+            icon: "fas cm-all fa-plus",
             onClick: () => {
-              tabSQLTemplate("Create Table", this.templates.create_table);
+              createSchemaEditorTab(this.selectedNode, "create", "sqlite3");
             },
           },
         ],
@@ -144,13 +146,7 @@ export default {
                 label: "Alter Table",
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
-                  tabSQLTemplate(
-                    "Alter Table",
-                    this.templates.alter_table.replace(
-                      "#table_name#",
-                      this.selectedNode.title
-                    )
-                  );
+                  createSchemaEditorTab(this.selectedNode, "alter", "sqlite3");
                 },
               },
               {
@@ -311,6 +307,15 @@ export default {
         this.doubleClickNode(this.$refs.tree.getNode([0, 0]))
       }, 200)
     })
+
+    emitter.on(`schemaChanged_${this.id}`, () => {
+      const tree = this.$refs.tree;
+      let tables_node = tree.getNextNode([0], (node) => {
+        return node.data.type === "table_list";
+      });
+
+      this.refreshTree(tables_node);
+    });
   },
   methods: {
     refreshTree(node) {

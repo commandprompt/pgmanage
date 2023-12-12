@@ -1076,3 +1076,7 @@ END
             return self.GetDDLTrigger(p_object, p_table)
         else:
             return ''
+
+    @lock_required
+    def QueryTableDefinition(self, table=None):
+        return self.v_connection.Query("PRAGMA table_info('{0}')".format(table), True)

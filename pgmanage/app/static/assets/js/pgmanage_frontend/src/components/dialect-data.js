@@ -14,6 +14,10 @@ export default Object.freeze({
         hasSchema: false,
         hasComments: false,
         formatterDialect: 'sqlite',
+        disabledFeatures: {
+            alterColumn: true,
+            multiStatement: true,
+        }
     },
 
 });

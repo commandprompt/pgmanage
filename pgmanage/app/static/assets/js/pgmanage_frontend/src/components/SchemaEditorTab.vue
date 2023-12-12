@@ -101,7 +101,8 @@ export default {
             defaultValue: 0,
             nullable: false,
             isPK: true,
-            comment: null
+            comment: null,
+            editable: true
           }]
         },
         generatedSQL: '',
@@ -154,8 +155,7 @@ export default {
       }
     },
     loadTableDefinition() {
-        // FIXME: this should be database-agnostic
-        axios.post('/get_table_definition_postgresql/', {
+        axios.post(`/get_table_definition_${this.dialectData.formatterDialect}/`, {
           database_index: this.database_index,
           tab_id: this.tab_id,
           table: this.localTable.tableName || this.table,
@@ -170,6 +170,7 @@ export default {
               nullable: col.nullable,
               isPK: col.is_primary,
               comment: col.comment,
+              editable: col.name == 'name' ? true : this.editable
             }
           })
           this.initialTable.columns = coldefs
@@ -370,6 +371,9 @@ export default {
     },
     getMode() {
       return this.mode
+    },
+    editable() {
+      return ((this.mode == 'alter' && !this.dialectData?.disabledFeatures?.alterColumn) || this.mode == 'create')
     }
   },
   watch: {

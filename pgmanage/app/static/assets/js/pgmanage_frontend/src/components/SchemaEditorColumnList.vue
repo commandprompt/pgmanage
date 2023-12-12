@@ -38,19 +38,20 @@
               :default="{ name: 'integer' }"
               :maxItem=20
               v-model="column.dataType"
+              :disabled="!column.editable"
             />
           </div>
 
           <div :class="commentable ? 'col-2' : 'col-3'">
-            <input type='text' v-model="column.defaultValue" class="form-control mb-0" placeholder="NULL" />
+            <input type='text' v-model="column.defaultValue" class="form-control mb-0" placeholder="NULL" :disabled="!column.editable"/>
           </div>
 
           <div class="col-1 d-flex align-items-center">
-            <input type='checkbox' class="custom-checkbox" v-model="column.nullable"/>
+            <input type='checkbox' class="custom-checkbox" v-model="column.nullable" :disabled="!column.editable"/>
           </div>
 
           <div class="col-1 d-flex align-items-center">
-            <input type='checkbox' class="custom-checkbox" v-model="column.isPK" />
+            <input type='checkbox' class="custom-checkbox" v-model="column.isPK" :disabled="!column.editable"/>
           </div>
 
           <div v-if="commentable" class="col-3">
@@ -119,7 +120,8 @@
           nullable: false,
           isPK: false,
           comment:null,
-          new: this.mode === 'alter'
+          new: this.mode === 'alter',
+          editable: true
         }
         this.columns.push(defaultCol)
       },
@@ -167,3 +169,10 @@
     }
   }
 </script>
+
+<style scoped>
+input[type='checkbox'].custom-checkbox:disabled {
+  background-color: initial;
+  border-color: rgba(118, 118, 118, 0.3);
+}
+</style>
