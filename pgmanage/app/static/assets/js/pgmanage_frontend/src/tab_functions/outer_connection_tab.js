@@ -44,6 +44,7 @@ import { v_queryRequestCodes } from "../query";
 import { cancelMonitorUnits } from "../monitoring";
 import { createTabControl } from "../tabs";
 import ace from 'ace-builds'
+import moment from "moment";
 import { endLoading } from "../ajax_control";
 import { showToast } from "../notification_control";
 import { settingsStore } from "../stores/settings";
