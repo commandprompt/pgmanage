@@ -29,7 +29,7 @@
     </div>
   </div>
 
-    <div ref="tabulator" class="data-grid">
+    <div ref="tabulator" class="tabulator-custom data-grid">
   </div>
 
   <div ref="bottomToolbar" class="data-editor__footer d-flex align-items-center justify-content-end p-2">
@@ -103,11 +103,11 @@ export default {
   },
   mounted() {
     this.tabulator = new Tabulator(this.$refs.tabulator, {
-      height: `calc(60vh - ${this.heightSubtract}px)`,
+      height: `calc(100vh - ${this.heightSubtract}px)`,
       layout: 'fitDataStretch',
       data: [],
       columnDefaults: {
-          headerHozAlign: "center",
+          headerHozAlign: "left",
           headerSort: false,
         },
       selectable: false,

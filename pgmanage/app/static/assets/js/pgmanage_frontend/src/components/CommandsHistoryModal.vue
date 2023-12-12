@@ -70,7 +70,7 @@
             </button>
           </div>
 
-          <div :id="`${tabId}_commands_history_table`" style="height: calc(100vh - 20rem)"></div>
+          <div :id="`${tabId}_commands_history_table`" class="tabulator-custom" style="height: calc(100vh - 20rem)"></div>
         </div>
       </div>
     </div>
@@ -317,7 +317,7 @@ export default {
           return output;
         },
         columnDefaults: {
-          headerHozAlign: "center",
+          headerHozAlign: "left",
           headerSort: false,
         },
         columns: this.defaultColumns,

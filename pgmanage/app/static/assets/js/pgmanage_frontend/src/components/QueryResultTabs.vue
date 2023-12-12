@@ -48,7 +48,7 @@
                 {{ queryInfoText }}
               </div>
             </template>
-            <div v-show="showTable" ref="tabulator"></div>
+            <div v-show="showTable" ref="tabulator" class="tabulator-custom"></div>
           </div>
         </div>
         <template v-if="postgresqlDialect">
@@ -103,7 +103,7 @@ export default {
         height: "90%",
         layout: "fitDataStretch",
         columnDefaults: {
-          headerHozAlign: "center",
+          headerHozAlign: "left",
           headerSort: false,
         },
         clipboard: "copy",

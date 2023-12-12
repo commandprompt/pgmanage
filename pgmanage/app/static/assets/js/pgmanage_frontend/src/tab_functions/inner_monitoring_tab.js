@@ -58,7 +58,7 @@ var v_createMonitoringTabFunction = function(p_name, p_query, p_actions) {
   "<div class='p-2'>" +
     "<button id='bt_refresh_" + v_tab.id + "' class='btn btn-primary btn-sm my-2 mr-1' title='Refresh'><i class='fas fa-sync-alt mr-2'></i>Refresh</button>" +
     "<span id='div_query_info_" + v_tab.id + "' class='query_info'></span>" +
-    "<div id='div_result_" + v_tab.id + "' class='omnidb__query-result-tabs__content' style='width: 100%; overflow: auto;'></div>"
+    "<div id='div_result_" + v_tab.id + "' class='omnidb__query-result-tabs__content tabulator-custom' style='width: 100%; overflow: auto;'></div>"
   "</div>";
 
   // var v_div = document.getElementById('div_' + v_tab.id);
@@ -209,7 +209,7 @@ function refreshMonitoring(p_tab_tag) {
           autoColumns: true,
           layout: "fitDataStretch",
           columnDefaults: {
-            headerHozAlign: "center",
+            headerHozAlign: "left",
             headerSort: false,
           },
           autoColumnsDefinitions: function (definitions) {

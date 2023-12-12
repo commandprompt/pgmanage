@@ -1068,6 +1068,7 @@ function refreshMonitorDashboard(p_loading,p_tab_tag,p_div) {
                   // New grid
                   else if (v_unit.object == null) {
                     v_unit.div_content.classList.add("unit_grid");
+                    v_unit.div_content.classList.add("tabulator-custom");
                     v_unit.div_content.innerHTML = "";
 
                     let cellContextMenu = [
