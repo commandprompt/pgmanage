@@ -993,7 +993,17 @@ class SQLite(Generic):
                 raise Spartacus.Database.Exception('This method should be called in the middle of Open() and Close() calls.')
             else:
                 if self.v_start:
-                    self.v_cur.execute(p_sql)
+                    if len(p_sql.split(";\n")) >= 2:
+                        try:
+                            self.v_cur.execute("BEGIN")
+                            for sql in p_sql.split(";\n"):
+                                self.v_cur.execute(sql)
+                            self.v_con.commit()
+                        except sqlite3.Error as exc:
+                            self.v_con.rollback()
+                            raise Spartacus.Database.Exception(str(exc))
+                    else:
+                        self.v_cur.execute(p_sql)
                 v_table = DataTable(None, p_alltypesstr, p_simple)
                 if self.v_cur.description:
                     for c in self.v_cur.description:
