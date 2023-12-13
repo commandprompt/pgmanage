@@ -1,3 +1,7 @@
+import TableCompiler_SQLite3 from 'knex/lib/dialects/sqlite3/schema/sqlite-tablecompiler'
+import { identity, flatten } from 'lodash'
+
+
 export default Object.freeze({
     'postgres': {
         dataTypes: [
@@ -6,6 +10,11 @@ export default Object.freeze({
         hasSchema: true,
         hasComments: true,
         formatterDialect: 'postgresql',
+        api_endpoints: {
+            schemas_url: "/get_schemas_postgresql/",
+            types_url: "/get_types_postgresql/",
+            table_definition_url: "/get_table_definition_postgresql/"
+        },
     },
     'sqlite3': {
         dataTypes: [
@@ -14,10 +23,29 @@ export default Object.freeze({
         hasSchema: false,
         hasComments: false,
         formatterDialect: 'sqlite',
+        api_endpoints: {
+            table_definition_url: "/get_table_definition_sqlite/",
+        },
         disabledFeatures: {
             alterColumn: true,
             multiStatement: true,
-        }
+        },
+        overrides: [
+            () => {
+                TableCompiler_SQLite3.prototype.dropColumn = function() {
+                    const columns = flatten(arguments);
+                
+                    const columnsWrapped = columns.map((column) =>
+                      this.client.customWrapIdentifier(column, identity)
+                    );
+                    columnsWrapped.forEach((col_name) => {
+                      this.pushQuery({
+                        sql: `alter table ${this.tableName()} drop column ${this.formatter.wrap(col_name)}`,
+                      });
+                    })
+                }
+            },
+        ],
     },
 
 });

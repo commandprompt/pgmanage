@@ -129,33 +129,45 @@ export default {
     loadDialectData(dialect) {
       this.dialectData = dialects[dialect]
 
-      if(dialect === 'postgres') {
-        axios.post('/get_schemas_postgresql/', {
-          database_index: this.database_index,
-          tab_id: this.tab_id
-        })
-        .then((response) => {
-          this.schemas = response.data.map((schema) => {return schema.name})
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-
-        axios.post('/get_types_postgresql/', {
-          database_index: this.database_index,
-          tab_id: this.tab_id,
-          schema: this.schema
-        })
-        .then((response) => {
-          this.customTypes = response.data.map((type) => {return type.type_name})
-        })
-        .catch((error) => {
-          console.log(error)
-        })
+      if (this.dialectData.hasOwnProperty('overrides')) {
+        this.dialectData.overrides.forEach(func => func())
       }
+      this.loadSchemas()
+      this.loadTypes()
+    },
+    loadSchemas() {
+      const schemasUrl = this.dialectData?.api_endpoints?.schemas_url ?? null;
+      if (!schemasUrl) return;
+
+      axios.post(schemasUrl, {
+        database_index: this.database_index,
+        tab_id: this.tab_id
+      })
+      .then((response) => {
+        this.schemas = response.data.map((schema) => {return schema.name})
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    },
+    loadTypes() {
+      const typesUrl = this.dialectData?.api_endpoints?.types_url ?? null;
+      if (!typesUrl) return;
+
+      axios.post(typesUrl, {
+        database_index: this.database_index,
+        tab_id: this.tab_id,
+        schema: this.schema
+      })
+      .then((response) => {
+        this.customTypes = response.data.map((type) => {return type.type_name})
+      })
+      .catch((error) => {
+        console.log(error)
+      })
     },
     loadTableDefinition() {
-        axios.post(`/get_table_definition_${this.dialectData.formatterDialect}/`, {
+        axios.post(this.dialectData.api_endpoints.table_definition_url, {
           database_index: this.database_index,
           tab_id: this.tab_id,
           table: this.localTable.tableName || this.table,
@@ -211,7 +223,7 @@ export default {
         // TODO: add support for composite PKs
         let originalColumns = this.initialTable.columns
         this.localTable.columns.forEach((column, idx) => {
-          if(column.deleted) changes.drops.push(column.name)
+          if(column.deleted) changes.drops.push(originalColumns[idx].name)
           if(column.new) changes.adds.push(column)
           if(column.deleted || column.new) return //no need to do further steps for new or deleted cols
           if(column.dataType !== originalColumns[idx].dataType) changes.typeChanges.push(column)
