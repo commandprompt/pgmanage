@@ -60,7 +60,7 @@ function getProperties(view, data) {
           error.response.data.data
         );
       } else {
-        showToast("error", p_return.v_data.message)
+        showToast("error", error.response.data.data)
       }
     });
 }
