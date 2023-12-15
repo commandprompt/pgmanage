@@ -175,9 +175,9 @@
               <div class="hotkeys">
                 <div class="mb-3">
                   <h2 class='d-inline-block mr-2 mb-0'>Hotkeys</h2>
-                  <button @click="showSettings" class="btn btn-sm btn-icon btn-icon-secondary">
+                  <a @click="showSettings" href="#" class="links__item">
                       <i class="fas fa-tools" title="Customize"></i>
-                  </button>
+                  </a>
                 </div>
                 <div class='hotkeys__list'>
                   <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="mb-1 hotkeys__list_item hotkey">

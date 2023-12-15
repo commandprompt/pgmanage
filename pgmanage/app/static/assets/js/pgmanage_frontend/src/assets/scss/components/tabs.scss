@@ -11,7 +11,7 @@
 
                 @include themify() {
                     color: themed($color) !important; //workaround! to be removed when new stylesheets are implemented
-                    background-color: themed($modalContentBg);
+                    background-color: themed($popupBg);
                 }
 
                 &.active {

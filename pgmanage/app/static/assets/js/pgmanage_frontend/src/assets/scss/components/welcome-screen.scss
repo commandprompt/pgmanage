@@ -152,6 +152,12 @@
                 margin: 0 .14rem;    
             }
         }
+
+        &__btn {
+            &:hover {
+
+            }
+        }
     }
 
     .links {
@@ -164,12 +170,13 @@
         &__item {
             color: $primaryMutedColor;
             text-decoration: none;
-            transition: all .3s ease-in-out;
+            transition: all .15s ease-in-out;
            
             &:hover {
-                background: linear-gradient(to right, $primaryBlue, $primaryDark);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+                color: $primaryBlue;
+                i {
+                    color: $primaryBlue; 
+                }
             }
 
             &:not(:last-of-type) {
