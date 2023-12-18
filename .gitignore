@@ -8,3 +8,4 @@
 *.vagrant
 *.idea
 *.DS_Store
+venv

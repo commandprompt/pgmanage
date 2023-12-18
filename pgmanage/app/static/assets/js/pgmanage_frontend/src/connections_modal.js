@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { connectionsStore } from './stores/connections.js'
 import ConnectionsModal from './components/ConnectionsModal.vue'
+import moment from 'moment'
 
 const conn_app = createApp({
     components: {

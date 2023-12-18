@@ -444,9 +444,11 @@ def refresh_monitor_units(request, v_database):
                 byte_code = compile_restricted(script_data, '<inline>', 'exec')
                 exec(byte_code, restricted_globals, loc1)
                 data = loc1['result']
-
-                if v_unit_data['v_type']  == 'grid' or v_id['rendered'] == 1:
-                    v_unit_data['v_object'] = data
+                
+                if v_id["rendered"] == 1 and v_unit_data["v_type"] != "grid":
+                    v_unit_data["v_object"] = data
+                elif v_unit_data["v_type"]  == "grid":
+                    v_unit_data["data"] = [dict(row) for row in data.get("data", [])]
                 elif v_unit_data['v_type'] == 'graph':
                     byte_code = compile_restricted(script_chart, '<inline>', 'exec')
                     exec(byte_code, restricted_globals, loc2)
@@ -519,7 +521,7 @@ def test_monitor_script(request, v_database):
         data = loc1['result']
 
         if v_type  == 'grid':
-            v_return['v_data']['v_object'] = data
+            v_return['v_data']['data'] = [dict(row) for row in data.get("data", [])]
         elif v_type == 'graph':
             byte_code = compile_restricted(v_script_chart, '<inline>', 'exec')
             exec(byte_code, restricted_globals, loc2)

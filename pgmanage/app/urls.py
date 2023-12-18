@@ -56,10 +56,8 @@ base_urlpatterns = [
     re_path(r'^delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),
 
     #COMMANDS HISTORY
-    re_path(r'^get_command_list/', views.commands_history.get_command_list, name='get_command_list'),
-    re_path(r'^clear_command_list/', views.commands_history.clear_command_list, name='clear_command_list'),
-    re_path(r'^get_console_history/', views.commands_history.get_console_history, name='get_console_history'),
-    re_path(r'^clear_console_list/', views.commands_history.clear_console_list, name='clear_console_list'),
+    re_path(r'^get_commands_history/', views.commands_history.get_commands_history, name="get_commands_history"),
+    re_path(r'^clear_commands_history/', views.commands_history.clear_commands_history, name="clear_commands_history"),
 
     #HOOKS
     re_path(r'^get_plugins/', views.plugins.get_plugins, name='get_plugins'),

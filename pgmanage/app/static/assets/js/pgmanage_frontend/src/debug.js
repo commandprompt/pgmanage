@@ -26,10 +26,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import { createRequest } from "./long_polling";
-import { v_queryRequestCodes } from "./query";
+import { queryRequestCodes } from "./constants";
 import { getDebugFunctionDefinitionPostgresql } from "./tree_context_functions/tree_postgresql";
 import { adjustChartTheme } from "./header_actions";
-import { blueRenderer, whiteRenderer } from "./renderers";
 import { Range } from "ace-builds";
 import { execAjax } from "./ajax_control";
 import { showAlert } from "./notification_control";
@@ -251,7 +250,7 @@ function startDebug() {
 		}
 		v_tab_tag.markerList = [];
 
-		createRequest(v_queryRequestCodes.Debug, v_message_data, v_context);
+		createRequest(queryRequestCodes.Debug, v_message_data, v_context);
 
 	}
 
@@ -315,7 +314,7 @@ function stepDebug(p_mode) {
     }
     v_context.tab_tag.context = v_context;
 
-		createRequest(v_queryRequestCodes.Debug, v_message_data, v_context);
+		createRequest(queryRequestCodes.Debug, v_message_data, v_context);
 
   }
 }
@@ -374,7 +373,7 @@ function cancelDebug() {
 	    acked: false
 	  }
 
-		createRequest(v_queryRequestCodes.Debug, v_message_data);
+		createRequest(queryRequestCodes.Debug, v_message_data);
 
 	}
 }

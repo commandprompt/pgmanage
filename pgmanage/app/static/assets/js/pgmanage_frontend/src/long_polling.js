@@ -2,7 +2,7 @@ import axios from 'axios'
 import ShortUniqueId from 'short-unique-id';
 
 import { terminalReturn } from "./terminal";
-import { v_queryResponseCodes } from "./query";
+import { queryResponseCodes } from "./constants";
 import { debugResponse } from "./debug";
 import { showPasswordPrompt } from "./passwords";
 import { getCookie } from './ajax_control'
@@ -63,32 +63,32 @@ function polling_response(message) {
   }
 
   switch(message.v_code) {
-    case parseInt(v_queryResponseCodes.Pong): {
+    case parseInt(queryResponseCodes.Pong): {
       websocketPong();
       break;
     }
-    case parseInt(v_queryResponseCodes.SessionMissing): {
+    case parseInt(queryResponseCodes.SessionMissing): {
       showAlert('Session not found please reload the page.');
       break;
     }
-    case parseInt(v_queryResponseCodes.MessageException): {
+    case parseInt(queryResponseCodes.MessageException): {
       showToast("error", message.v_data);
       break;
     }
-    case parseInt(v_queryResponseCodes.PasswordRequired): {
+    case parseInt(queryResponseCodes.PasswordRequired): {
       if (context) {
         SetAcked(context);
         QueryPasswordRequired(context, message.v_data);
         break;
       }
     }
-    case parseInt(v_queryResponseCodes.QueryAck): {
+    case parseInt(queryResponseCodes.QueryAck): {
       if (context) {
         SetAcked(context);
         break;
       }
     }
-    case parseInt(v_queryResponseCodes.QueryResult): {
+    case parseInt(queryResponseCodes.QueryResult): {
       if (context) {
         SetAcked(context);
         if(context.simple && context.callback!=null) { //used by schema editor only, dont run any legacy rendering for simple requests
@@ -104,7 +104,7 @@ function polling_response(message) {
       }
       break;
     }
-    case parseInt(v_queryResponseCodes.ConsoleResult): {
+    case parseInt(queryResponseCodes.ConsoleResult): {
       if (context) {
         if (message.v_data.v_last_block || message.v_error) {
           context.callback(message, context)
@@ -115,27 +115,27 @@ function polling_response(message) {
       }
       break;
     }
-    case parseInt(v_queryResponseCodes.TerminalResult): {
+    case parseInt(queryResponseCodes.TerminalResult): {
       if (context) {
         terminalReturn(message, context);
       }
       break;
     }
-    case parseInt(v_queryResponseCodes.QueryEditDataResult): {
+    case parseInt(queryResponseCodes.QueryEditDataResult): {
       if (context) {
         context.callback(message)
         removeContext(context_code);
       }
       break;
     }
-    case parseInt(v_queryResponseCodes.SaveEditDataResult): {
+    case parseInt(queryResponseCodes.SaveEditDataResult): {
       if (context) {
         context.callback(message)
         removeContext(context_code);
       }
       break;
     }
-    case parseInt(v_queryResponseCodes.DebugResponse): {
+    case parseInt(queryResponseCodes.DebugResponse): {
       if (context) {
         SetAcked(context);
         debugResponse(message, context);
@@ -145,7 +145,7 @@ function polling_response(message) {
       }
       break;
     }
-    case parseInt(v_queryResponseCodes.RemoveContext): {
+    case parseInt(queryResponseCodes.RemoveContext): {
       if (context) {
         removeContext(context_code);
       }
@@ -154,7 +154,7 @@ function polling_response(message) {
     default: {
       break;
     }
-    case parseInt(v_queryResponseCodes.AdvancedObjectSearchResult): {
+    case parseInt(queryResponseCodes.AdvancedObjectSearchResult): {
       if (context) {
         SetAcked(context);
         advancedObjectSearchReturn(message, context);

@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import { createRequest } from "../long_polling";
-import { v_queryRequestCodes } from "../query";
+import { queryRequestCodes } from "../constants";
 import { checkDebugStatus } from "../debug";
 import { createTabControl } from "../tabs";
 import ace from 'ace-builds'
@@ -65,7 +65,7 @@ let createDebuggerTabFunction = function(p_function) {
       beforeCloseTab(e,
         function() {
           var v_message_data = { tab_id: v_current_tab.tag.tab_id, tab_db_id: null };
-          createRequest(v_queryRequestCodes.CloseTab, [v_message_data]);
+          createRequest(queryRequestCodes.CloseTab, [v_message_data]);
           v_current_tab.removeTab();
           if (v_tab.tag.tabCloseFunction)
             v_tab.tag.tabCloseFunction(v_tab.tag);

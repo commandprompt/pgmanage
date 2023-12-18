@@ -1,10 +1,10 @@
 import { monitoringAction, renameTab, removeTab, showMenuNewTab } from '../workspace'
 import { beforeCloseTab } from "../create_tab_functions"
 import { cellDataModal } from '../header_actions';
-import { blueHtmlRenderer, whiteHtmlRenderer } from '../renderers';
 import { showPasswordPrompt } from '../passwords';
 import { execAjax } from '../ajax_control';
 import { showToast } from '../notification_control';
+import { TabulatorFull as Tabulator } from 'tabulator-tables';
 
 var v_createMonitoringTabFunction = function(p_name, p_query, p_actions) {
 
@@ -58,7 +58,7 @@ var v_createMonitoringTabFunction = function(p_name, p_query, p_actions) {
   "<div class='p-2'>" +
     "<button id='bt_refresh_" + v_tab.id + "' class='btn btn-primary btn-sm my-2 mr-1' title='Refresh'><i class='fas fa-sync-alt mr-2'></i>Refresh</button>" +
     "<span id='div_query_info_" + v_tab.id + "' class='query_info'></span>" +
-    "<div id='div_result_" + v_tab.id + "' class='omnidb__query-result-tabs__content' style='width: 100%; overflow: auto;'></div>"
+    "<div id='div_result_" + v_tab.id + "' class='omnidb__query-result-tabs__content tabulator-custom' style='width: 100%; overflow: auto;'></div>"
   "</div>";
 
   // var v_div = document.getElementById('div_' + v_tab.id);
@@ -144,95 +144,109 @@ function refreshMonitoring(p_tab_tag) {
       JSON.stringify({"p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
                       "p_tab_id": v_connTabControl.selectedTab.id,
                       "p_query": p_tab_tag.query}),
-      function(p_return) {
-
-        var v_data = p_return.v_data;
-
-        if (p_tab_tag.ht!=null) {
-          p_tab_tag.ht.destroy();
-          p_tab_tag.ht = null;
+      function (p_return) {
+        let data = p_return.v_data;
+  
+        if (p_tab_tag.tabulator != null) {
+          p_tab_tag.tabulator.destroy();
+          p_tab_tag.tabulator = null;
         }
-
-        p_tab_tag.query_info.innerHTML = v_data.v_query_info;
-
-        var columnProperties = [];
-
-        var v_fixedColumnsLeft = 0;
-
-        if (p_tab_tag.actions!=null) {
-          v_fixedColumnsLeft = 1;
-          for (var i=0; i<v_data.v_data.length; i++) {
-            var v_actions_html = '';
-            for (var j=0; j<p_tab_tag.actions.length; j++) {
-              if (p_tab_tag.actions[j].icon.includes('fa-times')) {
-                p_tab_tag.actions[j].icon += ' text-danger';
-              }
-              else {
-                p_tab_tag.actions[j].icon += ' omnidb__theme-icon--primary';
-              }
-              v_actions_html += `<div class="text-center"><i class="actionable_icon ${p_tab_tag.actions[j].icon}" data-action="${p_tab_tag.actions[j].action}" data-idx="${i}"></div>`;
-            }
-            v_data.v_data[i].unshift(v_actions_html);
-          }
-
-          var col = new Object();
-          col.readOnly = true;
-          col.title =  'Actions';
-          col.renderer = 'html';
-          columnProperties.push(col);
-
-        }
-
-
-        for (var i = 0; i < v_data.v_col_names.length; i++) {
-          var col = new Object();
-          col.readOnly = true;
-          col.title =  v_data.v_col_names[i];
-          columnProperties.push(col);
-        }
-
-        p_tab_tag.ht = new Handsontable(p_tab_tag.div_result,
-        {
-          licenseKey: 'non-commercial-and-evaluation',
-          data: v_data.v_data,
-          columns : columnProperties,
-          colHeaders : true,
-          rowHeaders : true,
-          fixedColumnsLeft: v_fixedColumnsLeft,
-          fillHandle:false,
-          //copyRowsLimit : 1000000000,
-          //copyColsLimit : 1000000000,
-          copyPaste: {pasteMode: '', rowsLimit: 1000000000, columnsLimit: 1000000000},
-          manualColumnResize: true,
-          contextMenu: {
-            callback: function (key, options) {
-              if (key === 'view_data') {
-                  cellDataModal(this,options[0].start.row,options[0].start.col,this.getDataAtCell(options[0].start.row,options[0].start.col),false);
-              }
-              else if (key === 'copy') {
-                this.selectCell(options[0].start.row,options[0].start.col,options[0].end.row,options[0].end.col);
-                document.execCommand('copy');
-              }
+  
+        let cellContextMenu = [
+          {
+            label:
+              '<div style="position: absolute;"><i class="fas fa-copy cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy</div>',
+            action: function (e, cell) {
+              cell.getTable().copyToClipboard("selected");
             },
-            items: {
-              "copy": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-copy cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">Copy</div>'},
-              "view_data": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-edit cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">View Content</div>'}
-            }
           },
-          cells: function (row, col, prop) {
-            var cellProperties = {};
-            if (row % 2 == 0)
-              cellProperties.renderer = blueHtmlRenderer;
-            else
-              cellProperties.renderer = whiteHtmlRenderer;
-            return cellProperties;
+          {
+            label:
+              '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
+            action: (e, cell) => {
+              cellDataModal(null, null, null, cell.getValue(), false);
+            },
           },
+        ];
+  
+        p_tab_tag.query_info.innerHTML = `Number of records: ${data.data.length}`;
+  
+        data.data.forEach((col, idx) => {
+          col.actions = [...p_tab_tag.actions];
         });
-        setTimeout(function() {
-          $('.actionable_icon').on('click', function(el) {
-            monitoringAction(el.target.dataset.idx,el.target.dataset.action);
-          })
-        }, 500)
+  
+        function actionsFormatter(cell, formatterParams, onRendered) {
+          let sourceDataRow = cell.getRow().getData();
+          let actionsWrapper = document.createElement("div");
+
+          cell.getValue().forEach((actionItem) => {
+            let iconClassName;
+            if (actionItem.icon.includes("fa-times")) {
+              iconClassName = `${actionItem.icon} text-danger`;
+            } else {
+              iconClassName = `${actionItem.icon} omnidb__theme-icon--primary`;
+            }
+
+            const actionWrapper = document.createElement("div");
+            actionWrapper.className = "text-center";
+            const actionIcon = document.createElement("i");
+            actionIcon.className = `actionable_icon ${iconClassName}`;
+
+            actionIcon.onclick = () => {
+              monitoringAction(sourceDataRow, actionItem.action);
+            };
+
+            actionWrapper.appendChild(actionIcon);
+            actionsWrapper.appendChild(actionWrapper);
+          });
+          return actionsWrapper;
+        }
+  
+        p_tab_tag.tabulator = new Tabulator(p_tab_tag.div_result, {
+          data: data.data,
+          height: "90vh",
+          width: "100%",
+          autoColumns: true,
+          layout: "fitDataStretch",
+          columnDefaults: {
+            headerHozAlign: "left",
+            headerSort: false,
+          },
+          autoColumnsDefinitions: function (definitions) {
+            //definitions - array of column definition objects
+  
+            definitions.forEach((column) => {
+              column.contextMenu = cellContextMenu;
+            });
+  
+            let updatedDefinitions = definitions.filter(
+              (column) => column.title != "actions"
+            );
+  
+            updatedDefinitions.unshift({
+              title: "actions",
+              field: "actions",
+              formatter: actionsFormatter,
+              hozAlign: "center",
+              frozen: true,
+              clipboard: false,
+            });
+            updatedDefinitions.unshift({
+              formatter: "rownum",
+              hozAlign: "center",
+              width: 40,
+              frozen: true,
+            });
+  
+            return updatedDefinitions;
+          },
+          selectable: true,
+          clipboard: "copy",
+          clipboardCopyConfig: {
+            columnHeaders: false, //do not include column headers in clipboard output
+          },
+          clipboardCopyRowRange: "selected",
+        });
       },
       function(p_return) {
         if (p_return.v_data.password_timeout) {

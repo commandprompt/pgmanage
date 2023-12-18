@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import string
@@ -470,10 +471,10 @@ def refresh_monitoring(request, v_database):
 
     try:
         data = v_database.Query(sql, True, True)
+
         response_data["v_data"] = {
-            "v_col_names": data.Columns,
-            "v_data": data.Rows,
-            "v_query_info": f"Number of records: {len(data.Rows)}",
+            "col_names": data.Columns,
+            "data": json.loads(data.Jsonify()),
         }
     except Exception as exc:
         return error_response(message=str(exc), password_timeout=True)

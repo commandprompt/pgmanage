@@ -1,0 +1,71 @@
+#div_autocomplete .tabulator .tabulator-row:hover {
+    background-color: #c7d6ff;
+    cursor: pointer;
+  }
+  
+  #div_autocomplete .tabulator-row > .tabulator-cell:last-of-type {
+    color: #000000;
+  }
+  
+  #div_autocomplete .tabulator .tabulator-row {
+    background-color: #fbfbfb;
+    border-bottom: 0;
+  }
+  
+  #div_autocomplete .tabulator .tabulator-cell {
+    background-color: inherit;
+    border: 0;
+    padding-right: 5px;
+  }
+
+  
+  //dark
+  #div_autocomplete {
+    box-shadow: none !important;
+    border-top: 1px solid #484a55;
+    border-left: 1px solid #484a55;
+    border-right: 1px solid #484a55;
+}
+
+#div_autocomplete .tabulator .tabulator-row {
+    background-color: #1D1F21;
+}
+
+#div_autocomplete .tabulator .tabulator-row:nth-of-type(2n) .tabulator-cell {
+    color: #ffffff;
+    border-right: 1px transparent !important;
+    border-bottom: 1px transparent !important;
+}
+
+#div_autocomplete .tabulator .tabulator-row:nth-of-type(2n + 1) .tabulator-cell {
+    color: #ffffff;
+    border-right: 1px transparent !important;
+    border-bottom: 1px transparent !important;
+}
+
+#div_autocomplete .tabulator .tabulator-row:first-child .tabulator-cell {
+    border-top: 1px transparent !important;
+}
+
+#div_autocomplete .tabulator .tabulator-cell:first-of-type, #div_autocomplete .handsontable .htNoFrame + th, #div_autocomplete .handsontable .htNoFrame + td {
+    border-left: 1px transparent !important;
+}
+
+#div_autocomplete .tabulator .tabulator-row:hover {
+    background-color: #4e5a6b !important;
+}
+
+//light
+/* Autocomplete */
+.omnidb__autocomplete {
+    background: #FFFFFF;
+
+    &__data {
+      background-color: #FBFBFB;
+    }
+  }
+
+  #div_autocomplete .tabulator .tabulator-row:hover {
+    background-color: #c7d6ff !important;
+    cursor: pointer;
+  }

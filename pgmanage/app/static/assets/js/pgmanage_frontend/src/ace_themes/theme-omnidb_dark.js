@@ -21,7 +21,7 @@ color: #F8FAFC\
 color: #F8FAFC\
 }\
 .ace-omnidb_dark .ace_marker-layer .ace_selection {\
-background: #162D4E;\
+background: #1560AD;\
 }\
 .ace-omnidb_dark.ace_multiselect .ace_selection.ace_start {\
 box-shadow: 0 0 3px 0px #1D1F21;\

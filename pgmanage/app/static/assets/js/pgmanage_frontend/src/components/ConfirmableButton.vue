@@ -1,5 +1,9 @@
 <template>
-  <button v-if="!clicked" type="button" @click="defaultClick">{{ defaulttext }}</button>
+  <button v-if="!clicked" type="button" @click="defaultClick">
+    <slot>
+      Delete
+    </slot>
+  </button>
   <button v-else type="button" @click="confirmClick">{{ confirmText }}</button>
 </template>
 
@@ -10,10 +14,6 @@ export default {
     callbackFunc: {
       type: Function,
       required: true
-    },
-    defaulttext: {
-      type: String,
-      default: "Delete"
     },
     confirmText: {
       type: String,

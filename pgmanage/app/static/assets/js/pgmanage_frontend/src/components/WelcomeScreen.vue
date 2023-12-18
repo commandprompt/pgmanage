@@ -1,11 +1,21 @@
 <template>
-<div>
-    <div class='container-fluid'>
-        <h1 class='text-center display-2 text-muted'>Welcome!</h1>
+<div class="welcome">
+    <div class='welcome__container'>
+      <div class="welcome__header mt-1 mb-4">
+        <p class='mb-0'>Welcome to</p>
+        <div class="welcome__logo d-flex mt-3 mb-4">
+          <img :src="logoUrl" alt="">
+          <img id="gears" :src="gearsUrl">
+            
+        </div>     
+      </div>
+       
+      <div class="welcome__main">
         <div class='row'>
-            <div class='col-4'>
-                <h1>Recent Connections</h1>
-                <div class="recent-conections d-flex flex-column">
+            <div class='col-4 welcome__col'>
+              <div class="recent-conections">
+                <h2 class="mb-3">Recent Connections</h2>
+                <div class="recent-conections__list d-flex flex-column">
                   <div v-for="(connection, idx) in recentConnections" :key="idx" @click="dispatchConnectionSelected(connection)" class="recent-conections__item">
                     <div class="recent-conections__item_wrap d-flex align-items-center m-0">
                         <div class="recent-conections__item_logo mr-3">
@@ -13,7 +23,7 @@
                         </div>
                         <div class="recent-conections__item_text d-flex flex-column">
                             <p class="recent-conections__item_title">{{ connection.alias }}</p>
-                            <span class="recent-conections__item_subtitle muted-text line-clamp-text clipped-text">{{connectionSubtitle(connection)}}</span>
+                            <span class="recent-conections__item_subtitle muted-text clipped-text">{{connectionSubtitle(connection)}}</span>
                             <span class="muted-text">{{ ago(connection.last_access_date) }}</span>
                         </div>
                     </div>
@@ -22,43 +32,57 @@
                       You don't have any recent connections yet...
                   </div>
                 </div>
+              </div>
+            
             </div>
-            <div class='col-4'>
-                <div><h1 class='d-inline-block mr-2'>Hotkeys</h1>
-                  <button @click="showSettings" class="btn btn-sm btn-icon btn-icon-secondary">
+            <div class='col-4 welcome__col'>
+              <div class="hotkeys">
+                <div class="mb-3">
+                  <h2 class='d-inline-block mr-2 mb-0'>Hotkeys</h2>
+                  <a @click="showSettings" href="#" class="links__item">
                       <i class="fas fa-tools" title="Customize"></i>
-                  </button>
+                  </a>
                 </div>
-                <div class='shortcut-widget'>
-                  <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="mb-2">
-                      <div class='shortcut-label'>{{shortcutLabel(shortcut)}}</div>
-                      <span v-for="(button, idx) in shortcutKeyNames(shortcut)" :key="idx" class='shortcut-button mr-2'>
+                <div class='hotkeys__list'>
+                  <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="mb-1 hotkeys__list_item hotkey">
+                      <p class='hotkey__label'>{{shortcutLabel(shortcut)}}</p>
+                      <span v-for="(button, idx) in shortcutKeyNames(shortcut)" :key="idx" class='hotkey__button mr-2'>
                         {{button}}
                       </span>
                   </div>
                 </div>
+              </div>
+             
             </div>
             <div class='col-4'>
-                <h1>Explore</h1>
-                <a href='#' @click="showTutorial" class='welcome-link text-muted d-block' title="Get Started">
-                  <i class="fa-solid fa-circle-info"></i>
-                  Get Started
-                </a>
-                <a href='https://pgmanage.readthedocs.io' target='_blank' class='welcome-link text-muted d-block mb-4' title="Handbook">
-                  <i class="fa-solid fa-book-bookmark"></i>
-                  PgManage Handbook
-                </a>
-                <h1>Get Involved</h1>
-                <a href='https://github.com/commandprompt/pgmanage/discussions/' target='_blank' class='welcome-link text-muted d-block' title="Discuss">
-                  <i class="fa-solid fa-comments"></i>
-                  Discuss
-                </a>
-                <a href='https://github.com/commandprompt/pgmanage/issues' target='_blank' class='welcome-link text-muted d-block' title="Report a Bug">
-                  <i class="fa-solid fa-bug"></i>
-                  Report a Bug
-                </a>
+              <div class="welcome__col links">
+                <div class="links__group links__explore d-flex flex-column">
+                  <h2 class="mb-3">Explore</h2>
+                  <a href='#' @click="showTutorial" class='links__item' title="Get Started">
+                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    Get Started
+                  </a>
+                  <a href='https://pgmanage.readthedocs.io' target='_blank' class='links__item' title="Handbook">
+                    <i class="fa-solid fa-book-bookmark mr-1"></i>
+                    PgManage Handbook
+                  </a>
+                </div>
+
+                <div class="links__group links__involved d-flex flex-column">
+                  <h2 class="mb-3">Get Involved</h2>
+                  <a href='https://github.com/commandprompt/pgmanage/discussions/' target='_blank' class='links__item' title="Discuss">
+                    <i class="fa-solid fa-comments mr-1"></i>
+                    Discuss
+                  </a>
+                  <a href='https://github.com/commandprompt/pgmanage/issues' target='_blank' class='links__item' title="Report a Bug">
+                    <i class="fa-solid fa-bug mr-1"></i>
+                    Report a Bug
+                  </a>
+                </div>
+              </div>  
             </div>
         </div>
+      </div>
     </div>
 </div>
 </template>
@@ -72,6 +96,9 @@ import { showConfigUser } from '../header_actions'
 import { startTutorial } from '../tutorial'
 import { endLoading } from "../ajax_control";
 import { default_shortcuts } from '../shortcuts'
+import gearsUrl from '../../src/assets/images/gears.svg'
+import logoUrl from '../../src/assets/images/logo.svg'
+
 
 export default {
   name: "WelcomeScreen",
@@ -98,7 +125,9 @@ export default {
   },
   data() {
     return {
-        shortcuts: []
+        shortcuts: [],
+        gearsUrl: gearsUrl,
+        logoUrl: logoUrl
     };
   },
   mounted() {
@@ -181,33 +210,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-  .welcome-link {
-    font-size: 1.4em;
-    line-height: 2em;
-  }
-  .shortcut-widget {
-    font-size: 1.2rem;
-
-  }
-  .shortcut-widget .shortcut-label {
-    font-weight: 400;
-    display: inline-block;
-    min-width: 30%;
-  }
-  .shortcut-widget .shortcut-button {
-    display: inline-block;
-    padding: 0 .35rem;
-    border-radius: 4px;
-    line-height: 1.6;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    background: rgba(0,0,0,.05);
-    -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,.05);
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,.05);
-    color: rgba(0,0,0,.67);
-    margin: 0 .14rem;
-  }
-</style>

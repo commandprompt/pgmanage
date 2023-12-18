@@ -33,8 +33,8 @@ import 'chartjs-plugin-annotation';
 import { showPasswordPrompt } from "./passwords";
 import { startLoading, endLoading, execAjax } from "./ajax_control";
 import { showConfirm, showToast } from "./notification_control";
+import { TabulatorFull as Tabulator } from "tabulator-tables";
 
-var v_unit_list_grid = null;
 
 function closeMonitorUnit(p_div) {
   var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
@@ -126,6 +126,7 @@ function buildMonitorUnit(p_unit, p_first) {
   div_card_body.className = 'card-body';
   var div_loading = document.createElement('div');
   div_loading.classList.add('div_loading');
+  div_loading.style.zIndex = 10
   div_loading.innerHTML =
   '<div class="div_loading_cover"></div>' +
   '<div class="div_loading_content">' +
@@ -278,25 +279,30 @@ function startMonitorDashboard() {
         'box');
 
 }
-function toggleMonitorUnit(p_id,p_plugin_name) {
-  var v_grid = v_unit_list_grid;
-  var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-  let v_unit_idx = v_tab_tag.units.findIndex(unit => unit.id === p_id)
-  var v_row_data = v_grid.getSourceDataAtRow(v_grid.getSelected()[0][0]);
 
-  var v_plugin_name = '';
-  if (v_unit_idx === -1) {
-    if (p_plugin_name!=null)
-      v_plugin_name = p_plugin_name;
+function toggleMonitorUnit(unitData) {
+  let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+  let unit_idx = tab_tag.units.findIndex((unit) => unit.id === unitData.id);
 
-    var div = buildMonitorUnit({'v_saved_id': -1, 'v_id': p_id, 'v_title': v_row_data.title, 'v_interval': v_row_data.interval, 'v_plugin_name': v_plugin_name},true);
-    $(div.firstChild).effect('highlight', {}, 1000);
-    refreshMonitorDashboard(true,v_tab_tag,div);
+  if (unit_idx === -1) {
+    let plugin_name = unitData.plugin_name ?? "";
+
+    let div = buildMonitorUnit(
+      {
+        v_saved_id: -1,
+        v_id: unitData.id,
+        v_title: unitData.title,
+        v_interval: unitData.interval,
+        v_plugin_name: plugin_name,
+      },
+      true
+    );
+
+    refreshMonitorDashboard(true, tab_tag, div);
   } else {
-    let v_unit_div = v_tab_tag.units[v_unit_idx].div
-    closeMonitorUnit(v_unit_div)
+    let v_unit_div = tab_tag.units[unit_idx].div;
+    closeMonitorUnit(v_unit_div);
   }
-
 }
 
 function deleteMonitorUnit(p_unit_id) {
@@ -532,21 +538,34 @@ $('#modal_monitoring_unit_test').on('shown.bs.modal', function (e) {
 
             }
             else if (v_type === 'grid') {
-              let columns = p_return.v_data.v_object.columns.map(x => {return {title: x, readOnly: true }});
               v_div_result.className = 'dashboard_unit_grid';
-              v_tab_tag.object = new Handsontable(v_div_result,
-                {
-                  licenseKey: 'non-commercial-and-evaluation',
-                  columns: columns,
-                  data: p_return.v_data.v_object.data,
-                  colHeaders : true,
-                  rowHeaders : true,
-                  stretchH: 'all',
-                  copyPaste: {pasteMode: '', rowsLimit: 1000000000, columnsLimit: 1000000000},
-                  manualColumnResize: true,
-                  fillHandle:false,
-                  readOnly: true,
-                });
+              v_tab_tag.object = new Tabulator(v_div_result, {
+                data: p_return.v_data.data,
+                height: "100%",
+                layout: "fitDataStretch",
+                columnDefaults: {
+                  headerHozAlign: "center",
+                  headerSort: false,
+                },
+                autoColumns: true,
+                autoColumnsDefinitions: function (definitions) {
+                  //definitions - array of column definition objects
+                  definitions.unshift({
+                    formatter: "rownum",
+                    hozAlign: "center",
+                    width: 40,
+                    frozen: true,
+                  });
+
+                  return definitions
+                },
+                selectable: true,
+                clipboard: "copy",
+                clipboardCopyConfig: {
+                  columnHeaders: false, //do not include column headers in clipboard output
+                },
+                clipboardCopyRowRange: "selected",
+              })
             }
             else if (v_type=='graph') {
               v_div_result.className = 'unit_graph';
@@ -595,77 +614,92 @@ function testMonitorScript() {
 
 }
 
-function refreshMonitorUnitsList() {
-  var input = JSON.stringify({"p_database_index": v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
-                              "p_tab_id": v_connTabControl.selectedTab.id,
-                              "p_mode": 0});
+let actionsFormatter = function (cell, formatterParams, onRendered) {
+  let sourceDataRow = cell.getRow().getData();
+  let tab_tag_units =
+    v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.units;
+  let checked = tab_tag_units.some((unit) => unit.id === sourceDataRow.id)
+    ? "checked"
+    : "";
 
-  var v_grid_div = document.getElementById('monitoring_units_grid');
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.checked = checked;
+  input.onclick = function () {
+    toggleMonitorUnit(sourceDataRow);
+  };
 
-  execAjax('/get_monitor_unit_list/',
-				input,
-				function(p_return) {
+  if (!!cell.getValue()) {
+    const cellWrapper = document.createElement("div");
+    cellWrapper.className = "d-flex justify-content-between align-items-center";
 
-          v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.unit_list_id_list = p_return.v_data.id_list;
+    cellWrapper.appendChild(input);
 
-          if (v_unit_list_grid)
-            v_unit_list_grid.destroy();
-          v_unit_list_grid = new Handsontable(v_grid_div,
-          {
-            licenseKey: 'non-commercial-and-evaluation',
-            data: p_return.v_data.data,
-            colHeaders: ['Show', 'Title', 'Type', 'Refr.(s)'],
-            columns : [
-                  {data: 'actions', renderer: actionsRenderer},
-                  {data: 'title'},
-                  {data: 'type'},
-                  {data: 'interval'}],
+    const editIcon = document.createElement("i");
+    editIcon.title = "Edit";
+    editIcon.className = "fas fa-edit action-grid action-edit-monitor";
+    editIcon.onclick = function () {
+      editMonitorUnit(sourceDataRow.id);
+    };
 
-            stretchH: 'all',
-            readOnly: true,
-            tableClassName: 'omnidb__ht__first-col-actions',
-            manualColumnResize: false,
-            fillHandle:true,
-            disableVisualSelection: true,
-            fixedColumnsLeft: 1,
-          });
+    const deleteIcon = document.createElement("i");
+    deleteIcon.title = "Delete";
+    deleteIcon.className = "fas fa-times action-grid action-close text-danger";
+    deleteIcon.onclick = function () {
+      deleteMonitorUnit(sourceDataRow.id);
+    };
 
-          endLoading();
+    cellWrapper.appendChild(editIcon);
+    cellWrapper.appendChild(deleteIcon);
 
-        },
-        null,
-        'box');
-}
-function actionsRenderer(instance, td, row, col, prop, value, cellProperties) {
-  let sourceDataRowId = instance.getSourceDataAtRow(row).id
-  let pluginName = instance.getSourceDataAtRow(row).plugin_name
-  let v_tab_tag_units = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.units;
-  let checked = v_tab_tag_units.some(unit => unit.id === sourceDataRowId) ? 'checked' : ''
-  
-  const input = document.createElement('input')
-  input.type = 'checkbox'
-  input.checked = checked
-  if (!!value) {
-    const editIcon = document.createElement('i')
-    editIcon.title = 'Edit'
-    editIcon.className = 'fas fa-edit action-grid action-edit-monitor'
-    editIcon.onclick = function() { editMonitorUnit(sourceDataRowId) }
-    
-    const deleteIcon = document.createElement('i')
-    deleteIcon.title = 'Delete'
-    deleteIcon.className = 'fas fa-times action-grid action-close text-danger'
-    deleteIcon.onclick = function() { deleteMonitorUnit(sourceDataRowId) }
-    
-    input.onclick = function() { toggleMonitorUnit(sourceDataRowId)}
-    Handsontable.dom.empty(td);
-    td.appendChild(input)
-    td.appendChild(editIcon)
-    td.appendChild(deleteIcon)
-  } else {
-    input.onclick = function() { toggleMonitorUnit(sourceDataRowId, pluginName)}
-    Handsontable.dom.empty(td);
-    td.appendChild(input)
+    return cellWrapper;
   }
+  return input;
+};
+
+function refreshMonitorUnitsList() {
+  let input = JSON.stringify({
+    p_database_index: v_connTabControl.selectedTab.tag.selectedDatabaseIndex,
+    p_tab_id: v_connTabControl.selectedTab.id,
+    p_mode: 0,
+  });
+
+  let grid_div = document.getElementById("monitoring_units_grid");
+
+  execAjax(
+    "/get_monitor_unit_list/",
+    input,
+    function (p_return) {
+      let tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+      tab_tag.unit_list_id_list = p_return.v_data.id_list;
+
+      if (tab_tag.unit_list_grid) tab_tag.unit_list_grid.destroy();
+
+      tab_tag.unit_list_grid = new Tabulator(grid_div, {
+        layout: "fitDataStretch",
+        data: p_return.v_data.data,
+        columnDefaults: {
+          headerHozAlign: "center",
+          headerSort: false,
+        },
+        columns: [
+          {
+            title: "Show",
+            field: "actions",
+            hozAlign: "center",
+            formatter: actionsFormatter,
+          },
+          { title: "Title", field: "title" },
+          { title: "Type", field: "type" },
+          { title: "Refr.(s)", field: "interval" },
+        ],
+      });
+
+      endLoading();
+    },
+    null,
+    "box"
+  );
 }
 
 function refreshMonitorUnitsObjects() {
@@ -673,7 +707,7 @@ function refreshMonitorUnitsObjects() {
   for (var i=0; i<v_tab_tag.units.length; i++) {
     if (v_tab_tag.units[i].type=='grid') {
       if (v_tab_tag.units[i].object) {
-        v_tab_tag.units[i].object.render();
+        v_tab_tag.units[i].object.redraw(true);
       }
     }
   }
@@ -771,6 +805,8 @@ function refreshMonitorDashboard(p_loading,p_tab_tag,p_div) {
                     else {
                       v_tab_tag.units[p].object_data = JSON.parse(JSON.stringify(v_return_unit.v_object));
                     }
+                  } else if (v_return_unit.data) {
+                    v_tab_tag.units[p].object_data = JSON.parse(JSON.stringify(v_return_unit.data));
                   }
                   v_unit = v_tab_tag.units[p];
                   break;
@@ -1024,61 +1060,75 @@ function refreshMonitorDashboard(p_loading,p_tab_tag,p_div) {
                   v_return_unit.type='grid';
 
                   if (v_return_unit.v_error) {
-
                     v_unit.div_error.innerHTML = v_return_unit.v_message;
                     v_unit.error = true;
                     //v_unit.object = null;
                     //v_unit.div_content.innerHTML = '';
-
                   }
                   // New grid
-                  else if (v_unit.object==null) {
-                    v_unit.div_content.classList.add('unit_grid');
-                    v_unit.div_content.innerHTML = '';
+                  else if (v_unit.object == null) {
+                    v_unit.div_content.classList.add("unit_grid");
+                    v_unit.div_content.classList.add("tabulator-custom");
+                    v_unit.div_content.innerHTML = "";
 
-                    let columns = v_return_unit.v_object.columns.map(x => {return {title: x, readOnly: true }});
-
-                    v_unit.div_details.innerHTML = `${v_return_unit.v_object.data.length} rows`;
-
-        						var v_grid = new Handsontable(v_unit.div_content,
-        						{
-                      licenseKey: 'non-commercial-and-evaluation',
-                      columns : columns,
-                      data: v_return_unit.v_object.data,
-        							colHeaders : true,
-        							rowHeaders : true,
-        							//copyRowsLimit : 1000000000,
-        							//copyColsLimit : 1000000000,
-                      copyPaste: {pasteMode: '', rowsLimit: 1000000000, columnsLimit: 1000000000},
-        							manualColumnResize: true,
-        							fillHandle:false,
-        							contextMenu: {
-        								callback: function (key, options) {
-        									if (key === 'view_data') {
-                            cellDataModal(this,options[0].start.row,options[0].start.col,this.getDataAtCell(options[0].start.row,options[0].start.col),false);
-        									}
-                          else if (key === 'copy') {
-                            this.selectCell(options[0].start.row,options[0].start.col,options[0].end.row,options[0].end.col);
-                            document.execCommand('copy');
-                          }
+                    let cellContextMenu = [
+                      {
+                        label:
+                          '<div style="position: absolute;"><i class="fas fa-copy cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy</div>',
+                        action: function (e, cell) {
+                          cell.getTable().copyToClipboard("selected");
                         },
-                        items: {
-                          "copy": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-copy cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">Copy</div>'},
-                          "view_data": {name: '<div style=\"position: absolute;\"><i class=\"fas fa-edit cm-all\" style=\"vertical-align: middle;\"></i></div><div style=\"padding-left: 30px;\">View Content</div>'}
-                        }
-        						    },
-        					        cells: function (row, col, prop) {
-        							    var cellProperties = {};
-        							    return cellProperties;
-        							}
-        						});
+                      },
+                      {
+                        label:
+                          '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
+                        action: (e, cell) => {
+                          cellDataModal(
+                            null,
+                            null,
+                            null,
+                            cell.getValue(),
+                            false
+                          );
+                        },
+                      },
+                    ];
+                    let tabulator = new Tabulator(v_unit.div_content, {
+                      data: v_return_unit.data,
+                      height: "100%",
+                      layout: "fitDataStretch",
+                      selectable: true,
+                      clipboard: "copy",
+                      clipboardCopyConfig: {
+                        columnHeaders: false, //do not include column headers in clipboard output
+                      },
+                      clipboardCopyRowRange: "selected",
+                      columnDefaults: {
+                        headerHozAlign: "center",
+                        headerSort: false,
+                      },
+                      autoColumns: true,
+                      autoColumnsDefinitions: function (definitions) {
+                        //definitions - array of column definition objects
+                        definitions.unshift({
+                          formatter: "rownum",
+                          hozAlign: "center",
+                          width: 40,
+                          frozen: true,
+                        });
 
-                    v_unit.object = v_grid;
+                        definitions.forEach((column) => {
+                          column.contextMenu = cellContextMenu;
+                        });
+                        return definitions;
+                      },
+                    });
+                    v_unit.object = tabulator;
                   }
                   // Existing grid
                   else {
-                    v_unit.div_details.innerHTML = `${v_return_unit.v_object.data.length} rows`;
-                    v_unit.object.loadData(v_return_unit.v_object.data);
+                    v_unit.div_details.innerHTML = `${v_return_unit.data.length} rows`;
+                    v_unit.object.setData(v_return_unit.data);
                   }
                 }
 

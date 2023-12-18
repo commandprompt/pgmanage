@@ -42,7 +42,7 @@ function getProperties(view, data) {
       data: data,
     })
     .then((resp) => {
-      tab_tag.gridProperties.loadData(resp.data.properties);
+      tab_tag.gridProperties.setData(resp.data.properties);
       tab_tag.ddlEditor.setValue(resp.data.ddl);
       tab_tag.ddlEditor.clearSelection();
       tab_tag.ddlEditor.gotoLine(0, 0, true);
@@ -60,7 +60,7 @@ function getProperties(view, data) {
           error.response.data.data
         );
       } else {
-        showToast("error", p_return.v_data.message)
+        showToast("error", error.response.data.data)
       }
     });
 }
@@ -70,7 +70,7 @@ function getProperties(view, data) {
 function clearProperties() {
   var tab_tag = v_connTabControl.selectedTab.tag;
   if (!tab_tag.gridPropertiesCleared) {
-    tab_tag.gridProperties.loadData([]);
+    tab_tag.gridProperties.clearData();
     tab_tag.gridPropertiesCleared = true;
 
     tab_tag.ddlEditor.setValue("");

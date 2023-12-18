@@ -72,23 +72,6 @@ let createConsoleTabFunction = function () {
     tab_check_span: tab_check_span,
     tabControl: v_connTabControl.selectedTab.tag.tabControl,
     connTab: v_connTabControl.selectedTab,
-    consoleHistory: {
-      modal: document.getElementById("modal_console_history_" + tab.id),
-      div: document.getElementById("console_history_div_" + tab.id),
-      headerDiv: document.getElementById("console_history_header_" + tab.id),
-      gridDiv: document.getElementById("console_history_grid_" + tab.id),
-      grid: null,
-      currentPage: 1,
-      pages: 1,
-      spanNumPages: null,
-      spanCurrPage: null,
-      inputStartedFrom: null,
-      inputStartedFromLastValue: null,
-      inputStartedTo: null,
-      inputStartedToLastValue: null,
-      inputCommandContains: null,
-      inputCommandContainsLastValue: null,
-    },
   };
 
   tab.tag = tag;
@@ -107,14 +90,6 @@ let createConsoleTabFunction = function () {
   add_tab.tag = {
     mode: "add",
   };
-
-  // Sets a render refresh for the grid on the consoleHistory.modal after the modal is fully loaded
-  $(
-    v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory
-      .modal
-  ).on("shown.bs.modal", function () {
-    v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.consoleHistory.grid.render();
-  });
 };
 
 export { createConsoleTabFunction };

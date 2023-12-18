@@ -40,14 +40,15 @@ import {
 import { beforeCloseTab } from "../create_tab_functions";
 import { connectionsStore } from "../stores/connections.js";
 import { createRequest } from "../long_polling";
-import { v_queryRequestCodes } from "../query";
+import { queryRequestCodes } from "../constants";
 import { cancelMonitorUnits } from "../monitoring";
 import { createTabControl } from "../tabs";
-import { whiteHtmlRenderer } from "../renderers";
 import ace from 'ace-builds'
+import moment from "moment";
 import { endLoading } from "../ajax_control";
 import { showToast } from "../notification_control";
 import { settingsStore } from "../stores/settings";
+import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name = false, p_tooltip_name = false) {
   // Creating the first outer tab without any connections created.
@@ -155,7 +156,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
             v_tabs_to_remove.push(v_message_data);
 
             if (v_tabs_to_remove.length>0) {
-              createRequest(v_queryRequestCodes.CloseTab, v_tabs_to_remove);
+              createRequest(queryRequestCodes.CloseTab, v_tabs_to_remove);
             }
             if (!!v_this_tab.tree) {
               v_this_tab.tree.unmount()
@@ -311,46 +312,34 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
     //Properties Grid
     v_properties_tab.elementDiv.innerHTML =
     "<div class='p-2'>" +
-      "<div id='div_properties_result_" + v_tab.id + "' style='width: 100%; overflow: hidden;'></div>" +
+      "<div id='div_properties_result_" + v_tab.id + "' class='tabulator-custom' style='width: 100%; overflow: hidden;'></div>" +
     "</div>";
     var v_divProperties = document.getElementById('div_properties_result_' + v_tab.id);
     // v_divProperties.classList.add('omnidb__theme-border--primary');
     // v_divProperties.style.overflow = 'hidden';
     var v_ddlProperties = v_ddl_tab.elementDiv;
 
-    var columnProperties = [
-      {
-        title: 'Property',
-        readOnly: true,
-      },
-      {
-        title: 'Value',
-        readOnly: true,
-      },
-    ];
 
-
-    var ht = new Handsontable(v_divProperties,
-    {
-      licenseKey: 'non-commercial-and-evaluation',
+    let tabulator = new Tabulator(v_divProperties, {
+      columnDefaults: {
+        headerHozAlign: "center",
+        headerSort: false,
+      },
       data: [],
-      className: 'simple',
-      columns : columnProperties,
-      colHeaders : true,
-      stretchH: 'all',
-      autoColumnSize : true,
-      manualColumnResize: false,
-      minSpareCols :0,
-      minSpareRows :0,
-      fillHandle:false,
-      disableVisualSelection: true,
-      cells: function (row, col, prop) {
-
-        var cellProperties = {};
-        cellProperties.renderer = whiteHtmlRenderer;
-        return cellProperties;
-
-      }
+      columns: [
+        {
+          title: "Property",
+          field: "0",
+          resizable: false,
+        },
+        {
+          title: "Value",
+          field: "1",
+          resizable: false,
+        },
+      ],
+      layout: "fitDataStretch",
+      selectable: false,
     });
 
     var v_tag = {
@@ -361,7 +350,7 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
       divTree: document.getElementById(v_tab.id + '_tree'),
       divTreeTabs: document.getElementById('tree_tabs_parent_' + v_tab.id),
       divProperties: v_divProperties,
-      gridProperties: ht,
+      gridProperties: tabulator,
       gridPropertiesCleared: true,
       divDDL: v_ddlProperties,
       divLoading: document.getElementById(v_tab.id + '_loading'),

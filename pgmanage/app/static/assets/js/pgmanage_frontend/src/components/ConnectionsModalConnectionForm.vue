@@ -523,7 +523,7 @@ import ConfirmableButton from './ConfirmableButton.vue'
           this.connectionLocal.connection_params = {}
         }
         if (newVal)
-          this.connectionLocal.port = this.placeholder.port
+          this.connectionLocal.port = this.placeholder.port.replace('ex: ','')
     },
     }
   }

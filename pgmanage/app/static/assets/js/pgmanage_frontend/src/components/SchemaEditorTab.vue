@@ -55,7 +55,7 @@ import { useVuelidate } from '@vuelidate/core'
 import ColumnList from './SchemaEditorColumnList.vue'
 import dialects from './dialect-data'
 import { createRequest } from '../long_polling'
-import { v_queryRequestCodes } from '../query'
+import { queryRequestCodes } from '../constants'
 import axios from 'axios'
 import { showToast } from '../notification_control'
 import { settingsStore } from '../stores/settings'
@@ -345,7 +345,7 @@ export default {
         simple: true //a hacky way to prevent long polling handler from running legacy rentering routines
 			}
       this.queryIsRunning = true
-      createRequest(v_queryRequestCodes.Query, message_data, context)
+      createRequest(queryRequestCodes.Query, message_data, context)
     },
     handleResponse(response) {
       if(response.v_error == true) {

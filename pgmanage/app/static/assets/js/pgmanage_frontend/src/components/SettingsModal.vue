@@ -173,7 +173,6 @@
 <script>
 import { refreshHeights } from '../workspace'
 import { terminalRun } from '../terminal'
-import { queryEditData } from '../tree_context_functions/edit_data'
 import { default_shortcuts } from '../shortcuts'
 import { changeTheme } from '../header_actions'
 import ace from 'ace-builds'
@@ -298,7 +297,7 @@ export default {
           else if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'console')
             emitter.emit(`${window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_run_console`, false)
           else if (window.v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.mode == 'edit')
-            queryEditData();
+            console.log('Not implemented') //TODO: implement shortcut functionality for new edit data
         }
         else if (window.v_connTabControl.selectedTab.tag.mode == 'outer_terminal')
           terminalRun();

@@ -616,7 +616,6 @@ SOFTWARE.
     .omnidb__autocomplete__data-row:hover,
     .omnidb__autocomplete__data-word:hover,
     .omnidb__autocomplete__data-row--selected:hover {
-      border: 1px solid #484a55 !important;
       background-color: #4e5a6b !important;
     }
 
@@ -1002,11 +1001,6 @@ SOFTWARE.
   	background-color: rgb(255, 144, 144) !important;
   	color: #000 !important;
   }
-
-  .cellReadOnly {
-  	// background-color: rgb(47, 49, 51) !important;
-  	// color: #969696 !important;
-  }
   .conversion_table {
   	color: #d7d7d7;
   }
@@ -1129,31 +1123,31 @@ SOFTWARE.
       border-right: 1px solid #484a55;
   }
 
-  #div_autocomplete .handsontable tr {
+  #div_autocomplete .tabulator .tabulator-row {
       background-color: #1D1F21;
   }
 
-  #div_autocomplete .handsontable tr:nth-of-type(2n) td {
+  #div_autocomplete .tabulator .tabulator-row:nth-of-type(2n) .tabulator-cell {
       color: #ffffff;
       border-right: 1px transparent !important;
       border-bottom: 1px transparent !important;
   }
 
-  #div_autocomplete .handsontable tr:nth-of-type(2n + 1) td {
+  #div_autocomplete .tabulator .tabulator-row:nth-of-type(2n + 1) .tabulator-cell {
       color: #ffffff;
       border-right: 1px transparent !important;
       border-bottom: 1px transparent !important;
   }
 
-  #div_autocomplete .handsontable tr:first-child th, #div_autocomplete .handsontable tr:first-child td {
+  #div_autocomplete .tabulator .tabulator-row:first-child .tabulator-cell {
       border-top: 1px transparent !important;
   }
 
-  #div_autocomplete .handsontable th:first-child, #div_autocomplete .handsontable td:first-of-type, #div_autocomplete .handsontable .htNoFrame + th, #div_autocomplete .handsontable .htNoFrame + td {
+  #div_autocomplete .tabulator .tabulator-cell:first-of-type, #div_autocomplete .handsontable .htNoFrame + th, #div_autocomplete .handsontable .htNoFrame + td {
       border-left: 1px transparent !important;
   }
 
-  #div_autocomplete .handsontable tr:hover {
+  #div_autocomplete .tabulator .tabulator-row:hover {
       background-color: #4e5a6b !important;
   }
 

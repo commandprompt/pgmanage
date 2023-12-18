@@ -22,6 +22,7 @@ import axios from 'axios'
 import { getCookie } from './ajax_control.js';
 import { showAlert } from './notification_control.js';
 import moment from 'moment';
+import "tabulator-tables/dist/css/tabulator.min.css"
 
 window.jQuery = window.$ = $;
 ace.config.setModuleUrl('ace/theme/omnidb', omniURL)

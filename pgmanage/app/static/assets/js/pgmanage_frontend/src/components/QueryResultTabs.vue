@@ -48,7 +48,7 @@
                 {{ queryInfoText }}
               </div>
             </template>
-            <hot-table v-show="showTable" ref="hotTableComponent" :settings="hotSettings"></hot-table>
+            <div v-show="showTable" ref="tabulator" class="tabulator-custom"></div>
           </div>
         </div>
         <template v-if="postgresqlDialect">
@@ -65,20 +65,20 @@
       </div>
     </div>
   </div>
-  <div ref="hotTableInputHolder" class="handsontableInputHolder" style="z-index: -1"></div>
+  <CellDataModal :cell-content="cellContent" :show-modal="cellModalVisible" @modal-hide="cellModalVisible = false" />
 </template>
 
 <script>
 import ExplainTabContent from "./ExplainTabContent.vue";
 import { queryModes, tabStatusMap } from "../constants";
-import { HotTable } from "@handsontable/vue3";
-import { cellDataModal } from "../header_actions";
 import { emitter } from "../emitter";
+import { TabulatorFull as Tabulator} from "tabulator-tables";
+import CellDataModal from "./CellDataModal.vue";
 
 export default {
   components: {
     ExplainTabContent,
-    HotTable,
+    CellDataModal,
   },
   props: {
     tabId: String,
@@ -95,46 +95,28 @@ export default {
       exportDownloadName: "",
       notices: [],
       queryInfoText: "",
-      hotSettings: {
+      tableSettings: {
         data: [],
+        placeholderHeaderFilter: "No Matching Data",
+        autoResize: false,
+        selectable: true,
         height: "90%",
-        width: "100%",
-        readOnly: true,
-        rowHeaders: true,
-        fillHandle: false,
-        manualColumnResize: true,
-        renderAllRows: false,
-        licenseKey: "non-commercial-and-evaluation",
-        contextMenu: {
-          items: {
-            copy: {
-              name() {
-                return '<div class="position-absolute"><i class="fas fa-copy cm-all align-middle"></i></div><div class="pl-5">Copy</div>';
-              },
-            },
-            view_data: {
-              name() {
-                return '<div class="position-absolute"><i class="fas fa-edit cm-all align-middle"></i></div><div class="pl-5">View Content</div>';
-              },
-              callback(key, selection, clickEvent) {
-                //TODO overwrite cellDataModal function
-                cellDataModal(
-                  this,
-                  selection[0].start.row,
-                  selection[0].start.col,
-                  this.getDataAtCell(
-                    selection[0].start.row,
-                    selection[0].start.col
-                  ),
-                  false
-                );
-              },
-            },
-          },
+        layout: "fitDataStretch",
+        columnDefaults: {
+          headerHozAlign: "left",
+          headerSort: false,
+        },
+        clipboard: "copy",
+        clipboardCopyRowRange: "selected",
+        clipboardCopyConfig: {
+          columnHeaders: false, //do not include column headers in clipboard output
         },
       },
       query: "",
       plan: "",
+      table: "",
+      cellContent: "",
+      cellModalVisible: false,
     };
   },
   computed: {
@@ -167,6 +149,8 @@ export default {
         this.$emit("enableExplainButtons");
       });
     }
+
+    this.table = new Tabulator(this.$refs.tabulator, this.tableSettings);
   },
   methods: {
     renderResult(data, context) {
@@ -249,32 +233,58 @@ export default {
           this.queryInfoText = "No results";
         }
       } else {
-        this.updateHotTable(data);
+        this.updateTableData(data);
       }
     },
-    updateHotTable(data) {
-      this.$refs.hotTableComponent.hotInstance.updateSettings({
-        colHeaders: data.col_names,
-        copyPaste: {
-          pasteMode: "",
-          uiContainer: this.$refs.hotTableInputHolder,
+    updateTableData(data) {
+      let cellContextMenu = [
+        {
+          label:
+            '<div style="position: absolute;"><i class="fas fa-copy cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy</div>',
+          action: function (e, cell) {
+            cell.getTable().copyToClipboard("selected");
+          },
         },
-      });
-      this.$refs.hotTableComponent.hotInstance.updateData(data.data);
+        {
+          label:
+            '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
+          action: (e, cell) => {
+            this.cellContent = cell.getValue();
+            this.cellModalVisible = true;
+          },
+        },
+      ];
 
-      this.$nextTick(() => {
-        this.$refs.hotTableComponent.hotInstance.render();
+      let columns = data.col_names.map((col, idx) => {
+        return {
+          title: col,
+          field: idx.toString(),
+          resizable: "header",
+          contextMenu: cellContextMenu,
+        };
       });
+
+      columns.unshift({
+        formatter: "rownum",
+        hozAlign: "center",
+        width: 40,
+        frozen: true,
+      });
+      this.table.setColumns(columns);
+
+      this.table
+        .setData(data.data)
+        .then(() => {
+          this.table.redraw(true);
+        })
+        .catch((error) => {
+          this.errorMessage = error;
+        });
     },
     fetchData(data) {
-      let initialData =
-        this.$refs.hotTableComponent.hotInstance.getSourceData();
-
-      data.data.forEach((row) => {
-        initialData.push(row);
-      });
-
-      this.$refs.hotTableComponent.hotInstance.updateData(initialData);
+      let initialData = this.table.getData();
+      data.data.unshift(...initialData);
+      this.table.replaceData(data.data)
     },
     clearData() {
       this.notices = [];

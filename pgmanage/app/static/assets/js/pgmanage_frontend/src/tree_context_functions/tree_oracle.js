@@ -1326,7 +1326,7 @@ function oracleTerminateBackendConfirm(pid) {
 }
 
 function oracleTerminateBackend(row) {
-    let pid = `${row[1]},${row[2]}`;
+    let pid = `${row.SID},${row['SERIAL#']}`;
     createMessageModal(`Are you sure you want to terminate session ${pid}?`,
         function() {
             oracleTerminateBackendConfirm(pid);
@@ -1339,4 +1339,5 @@ export {
   TemplateUpdateOracle,
   TemplateInsertOracle,
   TemplateSelectOracle,
+  oracleTerminateBackend
 };

@@ -106,7 +106,6 @@
                 </div>
                 <div id="job_statistics_grid"></div>
                 <h4 v-if="jobLogs.length" class="mb-0 mt-2">Showing last {{jobLogs.length}} records</h4>
-                <div v-if="!jobLogs.length">No Logs</div>
             </div>
           </div>
         </div>
@@ -150,6 +149,7 @@ import axios from 'axios'
 import { showToast } from '../notification_control'
 import moment from 'moment'
 import { settingsStore } from '../stores/settings'
+import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 export default {
   name: 'PgCronModal',
@@ -291,23 +291,22 @@ export default {
     },
 
     setupJobStatisticsTab() {
-      let container = document.querySelector('#job_statistics_grid')
-      // reset grid container state if it already has hansontable stuff
-      // this is needed to properly hide the grid when stats are cleared
-      container.innerHTML = ''
-      container.removeAttribute('class')
-      container.removeAttribute('style')
-
       const grid_columns = [
-        {'title': 'Run ID', readOnly: true},
-        {'title': 'Job PID', readOnly: true},
-        {'title': 'Database', readOnly: true},
-        {'title': 'Username', readOnly: true},
-        {'title': 'Status', readOnly: true, renderer: 'html'},
-        {'title': 'Start', readOnly: true, },
-        {'title': 'End', readOnly: true},
-        {'title': 'Return Message', readOnly: true},
-        {'title': 'Command', readOnly: true},
+      {'title': 'Run ID', field: "runid"},
+        {'title': 'Job PID', field: "job_pid"},
+        {'title': 'Database', field: "database"},
+        {'title': 'Username', field: "username"},
+        {'title': 'Status', field: "status", formatter: function (cell, formatterParams, onRendered) {
+              if (cell.getValue() === "succeeded") {
+                return "<div class='text-center'><i title='Success' class='fas fa-check text-success action-grid action-status-ok'></i></div>";
+              } else {
+                return "<div class='text-center'><i title='Error' class='fas fa-exclamation-circle text-danger action-grid action-status-error'></i></div>";
+              }
+            },},
+        {'title': 'Start', field: "start_time",},
+        {'title': 'End', field: "end_time",},
+        {'title': 'Return Message', field: "return_message"},
+        {'title': 'Command', field: "command", layout: "fitData"},
       ]
       axios.post('/get_pgcron_job_logs/', {
         database_index: this.databaseIndex,
@@ -316,32 +315,26 @@ export default {
       })
         .then((resp) => {
           this.jobLogs = resp.data.logs
+
           this.jobLogs.forEach(log => {
-            log[1] = !!log[1] ? log[1] : "N/A"
-            log[5] = moment(log[5]).isValid() ? moment(log[5]).format() : "N/A"
-            log[6] = moment(log[6]).isValid() ? moment(log[6]).format() : "N/A"
-            if(log[4] === 'succeeded') {
-              log[4] = "<div class='text-center'><i title='Success' class='fas fa-check text-success action-grid action-status-ok'></i></div>"
-            } else {
-              log[4] = "<div class='text-center'><i title='Error' class='fas fa-exclamation-circle text-danger action-grid action-status-error'></i></div>"
-            }
+            log.job_pid = !!log.job_pid ? log.job_pid : "N/A"
+            log.start_time = moment(log.start_time).isValid() ? moment(log.start_time).format() : "N/A"
+            log.end_time = moment(log.end_time).isValid() ? moment(log.end_time).format() : "N/A"
           })
 
           this.jobStats = resp.data.stats
-          // no sense in rendering the table if there is no logs
-          if(this.jobLogs.length) {
-            let hot = new Handsontable(container, {
-              data: this.jobLogs,
-              className: 'simple',
-              columns : grid_columns,
-              colHeaders : true,
-              rowHeaders : false,
-              height: '41vh',
-              width: '100%',
-              stretchH: 'last',
-              licenseKey: 'non-commercial-and-evaluation' // for non-commercial use only
-            });
-          }
+          let table = new Tabulator('#job_statistics_grid', {
+            placeholder: "No Logs",
+            height:"41vh",
+            width: "100%",
+            layout: "fitDataStretch", 
+            columnDefaults: {
+            headerHozAlign: "center",
+            headerSort: false,
+          },
+          columns: grid_columns,
+          data: this.jobLogs
+          })
         })
         .catch((error) => {
           showToast("error", error.response.data.data)

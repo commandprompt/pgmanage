@@ -28,17 +28,8 @@ SOFTWARE.
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { h } from "vue";
 import { createContext, createRequest } from "./long_polling";
-import { v_queryRequestCodes } from "./query";
-import { v_consoleState } from "./console";
+import { requestState, queryRequestCodes } from "./constants";
 
-/// <summary>
-/// Terminal state
-/// </summary>
-var v_terminalState = {
-	Idle: 0,
-	Executing: 1,
-	Ready: 2
-}
 
 function clearTerminal() {
   var v_tag = v_connTabControl.selectedTab.tag;
@@ -102,7 +93,7 @@ function terminalContextMenu(e,p_tab) {
 		          label: 'Confirm',
 		          icon: 'fas cm-all fa-check',
 		          onClick: function() {
-								createRequest(v_queryRequestCodes.CloseTab, [{ conn_tab_id: v_tag.tab_id, tab_db_id: null }]);
+								createRequest(queryRequestCodes.CloseTab, [{ conn_tab_id: v_tag.tab_id, tab_db_id: null }]);
 								if (v_tab.closeFunction!=null) {
 									v_tab.closeFunction(e,v_tab);
 								}
@@ -144,17 +135,9 @@ function terminalRun(p_spawn = false, p_query = '') {
 			v_ssh_id: v_tag.connId
     }
 
-    var d = new Date,
-    dformat = [(d.getMonth()+1).padLeft(),
-               d.getDate().padLeft(),
-               d.getFullYear()].join('/') +' ' +
-              [d.getHours().padLeft(),
-               d.getMinutes().padLeft(),
-               d.getSeconds().padLeft()].join(':');
+    createRequest(queryRequestCodes.Terminal, v_message_data, v_tag.context.code);
 
-    createRequest(v_queryRequestCodes.Terminal, v_message_data, v_tag.context.code);
-
-    v_tag.state = v_consoleState.Executing;
+    v_tag.state = requestState.Executing;
 
 }
 
@@ -170,7 +153,7 @@ function terminalReturnRender(p_message,p_context) {
 		p_context.tab_tag.clear_terminal = false;
 	}
 
-  p_context.tab_tag.state = v_consoleState.Idle;
+  p_context.tab_tag.state = requestState.Idle;
 
   v_tag.editor_console.write(p_message.v_data.v_data)
   //appendToEditor(v_tag.editor_console,p_message.v_data.v_data);

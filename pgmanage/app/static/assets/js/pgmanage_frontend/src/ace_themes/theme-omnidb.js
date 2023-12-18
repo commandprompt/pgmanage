@@ -17,7 +17,7 @@ color: #206bc4;\
 opacity: 0.5\
 }\
 .ace-omnidb .ace_marker-layer .ace_selection {\
-background: #E8EFF8;\
+background: rgba(21, 97, 172, 0.2);\
 }\
 .ace-omnidb.ace_multiselect .ace_selection.ace_start {\
 box-shadow: 0 0 3px 0px #FFFFFF;\

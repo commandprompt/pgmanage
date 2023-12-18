@@ -31,8 +31,8 @@ import { refreshOuterConnectionHeights } from './tab_functions/outer_connection_
 import { getAllSnippets } from './tree_context_functions/tree_snippets'
 import { getTreePostgresql, postgresqlTerminateBackend } from './tree_context_functions/tree_postgresql'
 import { getTreeMysql, mysqlTerminateBackend } from './tree_context_functions/tree_mysql'
-import { getTreeMariadb } from './tree_context_functions/tree_mariadb'
-import { getTreeOracle } from './tree_context_functions/tree_oracle'
+import { getTreeMariadb, mariadbTerminateBackend } from './tree_context_functions/tree_mariadb'
+import { getTreeOracle, oracleTerminateBackend } from './tree_context_functions/tree_oracle'
 import { connectionsModalInit, conn_app} from './connections_modal.js'
 import { connectionsStore } from './stores/connections.js'
 import { passwordModalsInit, showNewMasterPassPrompt, showMasterPassPrompt } from './passwords.js'
@@ -40,9 +40,8 @@ import { settingsModalInit } from './settings_modal.js'
 import { format } from 'sql-formatter'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import { createRequest } from './long_polling'
-import { v_queryRequestCodes } from './query'
+import { queryRequestCodes } from './constants'
 import { checkDebugStatus } from './debug'
-import { checkEditDataStatus } from './tree_context_functions/edit_data'
 import { startMonitorDashboard } from './monitoring'
 import { createTabControl } from './tabs'
 import { startLoading } from './ajax_control'
@@ -315,7 +314,7 @@ function removeTab(p_tab) {
       v_message_data.tab_db_id = p_tab.tag.tab_db_id;
     }
 
-    createRequest(v_queryRequestCodes.CloseTab, [v_message_data]);
+    createRequest(queryRequestCodes.CloseTab, [v_message_data]);
 	}
 	p_tab.removeTab();
 
@@ -521,7 +520,7 @@ function resizeTreeVerticalEnd(event) {
   v_result_div.style.height = v_inner_height;
 
 	if (v_tag.currTreeTab=='properties') {
-    v_tag.gridProperties.render();
+    v_tag.gridProperties.redraw();
   }
 	else if (v_tag.currTreeTab=='ddl') {
     v_tag.ddlEditor.resize();
@@ -800,7 +799,7 @@ function refreshTreeHeight() {
 	if (v_tag.currTreeTab=='properties') {
 		var v_height  = window.innerHeight - $(v_tag.divProperties).offset().top - 15;
 		v_tag.divProperties.style.height = v_height + "px";
-		v_tag.gridProperties.render();
+		v_tag.gridProperties.redraw(true);
 	}
 	else if (v_tag.currTreeTab=='ddl') {
 		var v_height  = window.innerHeight - $(v_tag.divDDL).offset().top - 15;
@@ -813,7 +812,7 @@ function checkTabStatus(v_tab) {
 	if (v_tab.tag.tabControl.selectedTab.tag.mode=='query')
     emitter.emit(`${v_tab.tag.tabControl.selectedTab.id}_check_query_status`);
 	else if (v_tab.tag.tabControl.selectedTab.tag.mode=='edit')
-		checkEditDataStatus(v_tab.tag.tabControl.selectedTab);
+    console.log('Not implemented') // TODO: implement check tab status functionality for edit tab
 	else if (v_tab.tag.tabControl.selectedTab.tag.mode=='debug')
 		checkDebugStatus(v_tab.tag.tabControl.selectedTab);
 	else if (v_tab.tag.tabControl.selectedTab.tag.mode=='console')
@@ -1072,7 +1071,7 @@ function showMenuNewTab(e) {
 					v_connTabControl.tag.createMonitoringTab(
 							'Backends',
 							'select * from pg_stat_activity', [{
-									icon: 'fas fa-times action-grid action-close text-danger',
+									icon: 'fas fa-times action-grid action-close',
 									title: 'Terminate',
 									action: 'postgresqlTerminateBackend'
 							}]);
@@ -1089,7 +1088,7 @@ function showMenuNewTab(e) {
 					v_connTabControl.tag.createMonitoringTab(
 							'Process List',
 							'select * from information_schema.processlist', [{
-									icon: 'fas fa-times action-grid action-close text-danger',
+									icon: 'fas fa-times action-grid action-close',
 									title: 'Terminate',
 									action: 'mysqlTerminateBackend'
 							}]);
@@ -1182,7 +1181,7 @@ function drop(event, grid_container, div_left, div_right) {
     for (let i = 0; i < cols.length; i++) {
       document.getElementsByClassName('omnidb__workspace-resize-grid__column')[i].classList.remove('omnidb__workspace-resize-grid__column--enter');
     }
-    v_connTabControl.selectedTab.tag.gridProperties.render();
+    v_connTabControl.selectedTab.tag.gridProperties.redraw();
   }
   catch (e) {
 
@@ -1221,13 +1220,19 @@ function updateExplainComponent() {
 }
 
 
-function monitoringAction(p_row_index, p_function) {
-  let handlerFn = p_function === 'postgresqlTerminateBackend' ? postgresqlTerminateBackend : mysqlTerminateBackend
-	var v_row_data = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.ht.getDataAtRow(p_row_index);
-	v_row_data.shift();
-	if(typeof handlerFn === 'function') {
-		handlerFn(v_row_data);
-	}
+function monitoringAction(row_data, p_function) {
+  const handlerFnMap = {
+    postgresqlTerminateBackend: postgresqlTerminateBackend,
+    mysqlTerminateBackend: mysqlTerminateBackend,
+    oracleTerminateBackend: oracleTerminateBackend,
+    mariadbTerminateBackend: mariadbTerminateBackend,
+  };
+
+  let handlerFn = handlerFnMap[p_function];
+
+  if (handlerFn && typeof handlerFn === "function") {
+    handlerFn(row_data);
+  }
 }
 
 function uiCopyTextToClipboard(p_value) {

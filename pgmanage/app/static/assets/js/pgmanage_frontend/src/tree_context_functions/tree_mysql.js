@@ -923,9 +923,9 @@ function mysqlTerminateBackendConfirm(pid) {
 
 function mysqlTerminateBackend(row) {
   createMessageModal(
-    `Are you sure you want to terminate process ${row[0]}?`,
+    `Are you sure you want to terminate process ${row.ID}?`,
     function () {
-      mysqlTerminateBackendConfirm(row[0]);
+      mysqlTerminateBackendConfirm(row.ID);
     }
   );
 }

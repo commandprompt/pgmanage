@@ -28,7 +28,6 @@ SOFTWARE.
 import { v_createSnippetTextTabFunction } from './tab_functions/inner_snippet_tab'
 import { v_createConnTabFunction } from './tab_functions/outer_connection_tab'
 import { v_createSnippetPanelFunction } from './panel_functions/outer_snippet_panel'
-import { createEditDataTabFunction } from './tab_functions/inner_edit_data_tab'
 import { v_createMonitoringTabFunction } from './tab_functions/inner_monitoring_tab'
 import { v_createMonitorDashboardTabFunction, v_createNewMonitorUnitTabFunction } from './tab_functions/inner_monitoring_dashboard_tab'
 import { createOuterTerminalTabFunction } from './tab_functions/outer_terminal_tab'
@@ -425,7 +424,6 @@ function initCreateTabFunctions() {
   v_connTabControl.tag.openWebSite  = function (_, p_site) {
 	window.open(p_site, '_blank');
   };
-	v_connTabControl.tag.createEditDataTab = createEditDataTabFunction;
   v_connTabControl.tag.createGraphTab = v_createGraphTabFunction;
   v_connTabControl.tag.createERDTab = createERDTabFunction;
   v_connTabControl.tag.createMonitoringTab = v_createMonitoringTabFunction;

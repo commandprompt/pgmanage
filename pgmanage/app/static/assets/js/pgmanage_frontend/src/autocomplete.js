@@ -25,10 +25,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { whiteHtmlRenderer, whiteRightHtmlRenderer } from "./renderers";
 import { Range } from "ace-builds";
 import { execAjax } from "./ajax_control";
 import { emitter } from "./emitter";
+import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 var v_autocomplete_object;
 
@@ -595,70 +595,63 @@ $(function() {
     ]
   };
 
-  for (var i=0; i<v_autocomplete_object.elements.length; i++) {
-    if (v_autocomplete_object.elements[i].type!='keyword') {
-    var columnProperties = [];
+  for (var i = 0; i < v_autocomplete_object.elements.length; i++) {
+    if (v_autocomplete_object.elements[i].type != "keyword") {
+      let columnProperties = [
+        {
+          title: "Name",
+          field: "0",
+          formatter: "html",
+          hozAlign: "left",
+        },
+        {
+          title: "Schema",
+          field: "1",
+          hozAlign: "right",
+        },
+      ];
 
-    var col = new Object();
-    col.title =  '';
-    col.readOnly = true;
-    columnProperties.push(col);
-
-    var col = new Object();
-    col.title =  '';
-    col.readOnly = true;
-    columnProperties.push(col);
-
-    v_autocomplete_object.elements[i].grid = new Handsontable(v_autocomplete_object.elements[i].container,
-                      {
-                        licenseKey: 'non-commercial-and-evaluation',
-                        data: [],
-                        columns : columnProperties,
-                        colHeaders : false,
-                        manualColumnResize: true,
-                        fillHandle:false,
-                        disableVisualSelection: true,
-                        stretchH: 'last',
-                        afterRender: function () {
-
-                            if (v_autocomplete_object.selected_grid==this) {
-                              var v_cell = this.getCell(v_autocomplete_object.selected_grid_row,0);
-                              if (v_cell!=null) {
-                                this.getCell(v_autocomplete_object.selected_grid_row,0).parentNode.classList.add('omnidb__autocomplete__data-row--selected');
-                              }
-                            }
-                        },
-                        afterOnCellMouseDown: function(event, coords, TD) {
-                          let a = this.getDataAtCell(coords.row, 0).replace(/<\/*b>/g, '')
-                          let elem = find_element_by_value(v_autocomplete_object.first_element.previous, a)
-                          if (!!elem) {
-                            close_autocomplete(elem.select_value)
-                          } else {
-                            close_autocomplete()
-                          }
-                        },
-                        cells: function (row, col, prop) {
-
-                            var cellProperties = {};
-                            cellProperties.renderer = whiteHtmlRenderer;
-                            if (col==1)
-                              cellProperties.renderer = whiteRightHtmlRenderer;
-                            return cellProperties;
-                        },
-                        cell: [
-                           {col: 0, className: "htRight"}
-                         ]
-                      });
-
-      v_autocomplete_object.elements[i].container.onclick = (function(group) {
-        return function (event) {
-          event.preventDefault()
-          event.stopPropagation()
-          close_autocomplete(group.elements[group.grid.getSelected()[0][0]].select_value);
+      v_autocomplete_object.elements[i].grid = new Tabulator(
+        v_autocomplete_object.elements[i].container,
+        {
+          data: [],
+          columns: columnProperties,
+          headerVisible: false,
+          selectable: "highlight",
+          layout: "fitDataStretch",
         }
-      }(v_autocomplete_object.elements[i]));
+      );
 
+      v_autocomplete_object.elements[i].grid.on("renderComplete", function () {
+        if (v_autocomplete_object.selected_grid == this) {
+          let rowCell = this.getRowFromPosition(
+            v_autocomplete_object.selected_grid_row + 1
+          )
+          let cell = rowCell ? rowCell.getCell(0).getElement() : null;
 
+          if (!!cell && !!cell.parentNode) {
+            cell.parentNode.classList.add(
+              "omnidb__autocomplete__data-row--selected"
+            );
+          }
+        }
+      });
+
+      v_autocomplete_object.elements[i].grid.on(
+        "cellClick",
+        function (e, cell) {
+          let elem = find_element_by_value(
+            v_autocomplete_object.first_element.previous,
+            cell.getValue().replace(/<\/*b>/g, "")
+          );
+
+          if (!!elem) {
+            close_autocomplete(elem.select_value);
+          } else {
+            close_autocomplete();
+          }
+        }
+      );
     }
   }
 });
@@ -738,7 +731,7 @@ function build_autocomplete_elements(p_data, p_value) {
     }
     if (v_global_group.type!='keyword') {
       v_global_group.grid_data = v_list;
-      v_global_group.grid.loadData(v_list_render);
+      v_global_group.grid.setData(v_list_render);
     }
   }
 
@@ -764,7 +757,7 @@ function build_autocomplete_elements(p_data, p_value) {
   //refreshing grids
   for (var k=0; k<v_autocomplete_object.elements.length; k++) {
     if (v_autocomplete_object.elements[k].type!='keyword') {
-      v_autocomplete_object.elements[k].grid.render();
+      v_autocomplete_object.elements[k].grid.redraw(true);
     }
   }
   v_autocomplete_object.editor.focus();
@@ -819,7 +812,7 @@ function renew_autocomplete(p_new_value) {
           v_group.num_visible++;
         }
       }
-      v_group.grid.loadData(v_new_data);
+      v_group.grid.setData(v_new_data);
     }
 
     //no more elements, hide div and group
@@ -842,7 +835,7 @@ function renew_autocomplete(p_new_value) {
   //refreshing grids
   for (var k=0; k<v_autocomplete_object.elements.length; k++) {
     if (v_autocomplete_object.elements[k].type!='keyword') {
-      v_autocomplete_object.elements[k].grid.render();
+      v_autocomplete_object.elements[k].grid.redraw(true);
     }
   }
 
@@ -930,9 +923,9 @@ function autocomplete_get_results(p_sql,p_value,p_pos) {
           //adjust grid columns widths
           for (var i=0; i<v_autocomplete_object.elements.length; i++) {
             if (v_autocomplete_object.elements[i].type!='keyword') {
-              var v_columns = v_autocomplete_object.elements[i].grid.getSettings().columns
-              v_columns[0].width = v_new_width_result + 30;
-              v_autocomplete_object.elements[i].grid.updateSettings({ columns: v_columns});
+              let columns = v_autocomplete_object.elements[i].grid.getColumnDefinitions();
+              columns[0].minWidth = v_new_width_result + 30;
+              v_autocomplete_object.elements[i].grid.setColumns(columns);
             }
           }
 
@@ -1171,8 +1164,8 @@ function autocomplete_select_element(p_element) {
   else {
     v_autocomplete_object.selected_grid = p_element.grid_reference;
     v_autocomplete_object.selected_grid_row = p_element.visible_index;
-
-    update_selected_grid_row_position(p_element.grid_reference.getCell(p_element.visible_index,0));
+    let selected_cell = p_element.grid_reference.getRowFromPosition(p_element.visible_index+1).getCell(0).getElement();
+    update_selected_grid_row_position(selected_cell);
     v_autocomplete_object.editor.focus();
   }
 
@@ -1186,9 +1179,12 @@ function autocomplete_deselect_element() {
     if (v_previous.visible_index==null)
       v_previous.container.classList.remove('omnidb__autocomplete__data-row--selected');
     else {
-      var v_cell = v_previous.grid_reference.getCell(v_previous.visible_index,0);
-      if (v_cell!=null) {
-        v_previous.grid_reference.getCell(v_previous.visible_index,0).parentNode.classList.remove('omnidb__autocomplete__data-row--selected');
+      let previous_cell_row = v_previous.grid_reference.getRowFromPosition(v_previous.visible_index+1)
+
+      let previous_cell = previous_cell_row ? previous_cell_row.getCell(0).getElement() : null
+
+      if (!!previous_cell && !!previous_cell.parentNode) {
+        previous_cell.parentNode.classList.remove('omnidb__autocomplete__data-row--selected');
       }
       v_autocomplete_object.selected_grid = null;
       v_autocomplete_object.selected_grid_row = null;
@@ -1197,10 +1193,11 @@ function autocomplete_deselect_element() {
   v_autocomplete_object.selected = null;
 }
 
-function update_selected_grid_row_position(p_cell) {
-  if (!!p_cell) {
-    p_cell.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.scrollTop = p_cell.offsetTop + parseInt(p_cell.parentNode.parentNode.parentNode.parentNode.style.top,10);
-    p_cell.parentNode.classList.add('omnidb__autocomplete__data-row--selected');
+function update_selected_grid_row_position(cell) {
+  if (!!cell) {
+    cell.scrollIntoView();
+    if (cell.parentNode)
+      cell.parentNode.classList.add('omnidb__autocomplete__data-row--selected');
 
   }
 }

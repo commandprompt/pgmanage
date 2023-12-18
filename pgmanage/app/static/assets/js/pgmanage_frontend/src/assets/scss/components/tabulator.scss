@@ -1,0 +1,210 @@
+.tabulator {
+    &.tabulator-custom {
+        border: 0;
+        font-family: $fontFamilyMonospace;
+        @include themify() {
+            color: themed($color);
+            background-color: themed($surfaceBg);
+        }
+    
+        .tabulator {
+            &-header {
+                border: 0 !important;
+                color: $primaryMutedColor;
+                font-size: 0.65rem;
+                padding: 0 0.36rem 0 0;
+    
+                @include themify() {
+                    background-color: themed($surfaceBg);
+                }
+    
+                .tabulator-col {
+                    background: inherit !important;
+                    border: 0 !important;
+                }
+            }
+    
+            &-col {
+                border: 0;
+            }
+    
+            &-frozen.tabulator-frozen-left  {
+                border: 0 !important;
+                font-weight: bold;
+                position: relative;
+        
+                &::after {
+                    content: '';
+                    width: 100%;
+                    height: 100%;
+                    display: block;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    z-index: -1;
+                    @include themify() {
+                        background-color: themed($surfaceBg);
+                    }
+                }
+            }
+    
+            &-col-resize-handle {
+               transition: .2s ease-in-out;
+                &:hover {
+                    background-color: $primaryBlue;
+                }
+            }
+    
+            &-tableholder {
+                .tabulator-table {
+                    @include themify() {
+                        background-color: themed($surfaceBg);
+                    }
+                }
+            }
+    
+            &-table {
+                .tabulator {
+                    &-row {
+                        height: 2rem;
+                        padding: 0 0.36rem 0 0;
+                        height: calc(1.5em + 0.75rem + 2px);
+    
+                        &-odd {
+                            @include themify() {
+                                background-color: themed($surfaceBg);
+                                color: themed($color);
+                            }
+    
+                            .tabulator-frozen-left:after {
+                                @include themify() {
+                                    background-color: themed($surfaceBg);
+                        
+                                }
+                            }
+                        }
+        
+                        &-even {
+                            @include themify() {
+                                background-color: themed($surfaceBgSecondary);
+                                color: themed($color);
+                            }
+    
+                            .tabulator-frozen-left:after {
+                                @include themify() {
+                                    background-color: themed($surfaceBgSecondary);
+                                }
+                            }
+                        }
+    
+                        &.tabulator-selected {
+                            background-color: rgba($primaryBlue, 0.25) !important;
+                        }
+                    }
+    
+                    &-cell {
+                        border: 0;
+                        padding: 0.45rem 0.75rem;
+                        height: 100%;
+                    }
+                }
+            }
+        }
+    
+        &.data-grid {
+            .tabulator {
+                &-col.tabulator-frozen-left .tabulator-col-title {
+                    text-align: center !important;
+                }
+    
+                &-cell.tabulator-frozen-left  {
+                    @include themify() {
+                        background-color: themed($surfaceBg);
+                    }
+                }
+    
+                &-row {
+                    &.row {
+                        &-deleted {
+                            background-color: rgba($dangerColor, 0.25) !important;
+        
+                            .tabulator-frozen-left:after {
+                                background-color: rgba($dangerColor, 0.25) !important;
+                            }
+                        }
+        
+                        &-dirty {
+                            background-color: rgba($warningColor, 0.25) !important;
+                            .tabulator-frozen-left:after {
+                                background-color: rgba($warningColor, 0.25) !important;
+                            }
+                        }
+                        &-new {
+                            background-color: rgba($successColor, 0.25) !important;
+                            .tabulator-frozen-left:after {
+                                background-color: rgba($successColor, 0.25) !important;
+                            }
+                        }
+                    }
+                }
+    
+                &-cell {
+                    &:hover:not(.tabulator-editing) {
+                        backdrop-filter: brightness(95%);
+                        transition: backdrop-filter .3s ease-in-out;
+                    }
+                    &.tabulator-editing {
+                        padding:0 !important;
+                        box-shadow: inset $primaryBlue 0px 1px 2px, 
+                                    inset $primaryBlue 0px 0px 0px 2px !important;
+                
+                        input[type='text']  {
+                            padding: 0.45rem 0.75rem  !important;
+                            background-color: transparent !important;
+                            border: 0!important;
+                            border-radius: 0 !important;
+                            &:focus,
+                            &:-webkit-autofill,
+                            &:-webkit-autofill:hover,
+                            &:-webkit-autofill:focus {
+                                box-shadow: none !important;
+                                border: 0 !important;
+                            }
+                     
+                            &::placeholder {
+                                font-size: $fontSize;
+                            }
+                                   
+                            @include themify {
+                                color: themed($color) !important;
+                            }
+                        } 
+                    }
+                }
+            }
+        }
+    }
+
+    &-popup-container {
+        font-size: $fontSize;
+        border-radius: $borderRadius;
+        border-width: 1px;
+        box-shadow: $dropdownBoxShadow !important;
+        padding: 0.5rem 0;
+    
+        @include themify() {
+            background-color: themed($popupBg) !important;
+            border: themed($border) !important;
+        }
+    
+        .tabulator-menu-item {
+            @include themify() {
+                color: themed($color);
+            }
+    
+            &:hover, &.open {
+                background-color: rgba($primaryBlue, 0.15) !important;
+            }
+        }
+    }
+}

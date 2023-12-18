@@ -1312,9 +1312,9 @@ function postgresqlTerminateBackendConfirm(pid) {
 
 function postgresqlTerminateBackend(row) {
   createMessageModal(
-    `Are you sure you want to terminate backend ${row[2]}?`,
+    `Are you sure you want to terminate backend ${row.pid}?`,
     function () {
-      postgresqlTerminateBackendConfirm(row[2]);
+      postgresqlTerminateBackendConfirm(row.pid);
     }
   );
 }
