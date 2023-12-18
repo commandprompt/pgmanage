@@ -34,9 +34,16 @@ def get_tree_info(request, database):
 @user_authenticated
 @database_required_new(check_timeout=False, open_connection=True)
 def get_tables(request, database):
+    tables_list = []
     try:
         tables = database.QueryTables()
-        tables_list = [table["table_name"] for table in tables.Rows]
+        for table in tables.Rows:
+            table_data = {
+                "name": table["table_name"],
+                "name_raw": table["name_raw"],
+            }
+            tables_list.append(table_data)
+
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -337,7 +344,7 @@ def get_table_definition(request, database):
                 "name": col["name"],
                 "data_type": col["type"],
                 "default_value": col["dflt_value"],
-                "nullable": col["notnull"] == '0',
+                "nullable": col["notnull"] == "0",
                 "is_primary": col["name"] in pk_column_names,
             }
             columns.append(column_data)

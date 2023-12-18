@@ -131,7 +131,7 @@ export default {
                     "Delete Records",
                     this.templates.delete.replace(
                       "#table_name#",
-                      this.selectedNode.title
+                      this.selectedNode.data.raw_value
                     )
                   );
                 },
@@ -157,7 +157,7 @@ export default {
                     "Drop Table",
                     this.templates.drop_table.replace(
                       "#table_name#",
-                      this.selectedNode.title
+                      this.selectedNode.data.raw_value
                     )
                   );
                 },
@@ -415,10 +415,11 @@ export default {
           });
 
           resp.data.forEach((el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.name, {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
+              raw_value: el.name_raw,
             });
           });
         })

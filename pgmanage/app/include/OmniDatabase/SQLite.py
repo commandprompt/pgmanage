@@ -191,7 +191,8 @@ class SQLite:
     @lock_required
     def QueryTables(self, *kwargs):
         return self.v_connection.Query('''
-            select name as table_name
+            select name as table_name,
+                quote(name) as name_raw
 		    from sqlite_master
 			where type = 'table'
         ''', True)
@@ -680,7 +681,7 @@ class SQLite:
             if len(v_fields.Rows) > 0:
                 v_sql += '\n     , t.'.join([r['column_name'] for r in v_fields.Rows])
 
-            v_sql += '\nFROM {0} t'.format(p_table)
+            v_sql += "\nFROM '{0}' t".format(p_table)
 
             v_pk = self.QueryTablesPrimaryKeys(p_table)
 
@@ -706,7 +707,7 @@ class SQLite:
         v_fields = self.QueryTablesFields(p_table)
 
         if len(v_fields.Rows) > 0:
-            v_sql = 'INSERT INTO {0} (\n'.format(p_table)
+            v_sql = "INSERT INTO '{0}' (\n".format(p_table)
             v_pk = self.QueryTablesPrimaryKeys(p_table)
 
             if len(v_pk.Rows) > 0:
@@ -767,7 +768,7 @@ class SQLite:
         v_fields = self.QueryTablesFields(p_table)
 
         if len(v_fields.Rows) > 0:
-            v_sql = 'UPDATE {0}\nSET '.format(p_table)
+            v_sql = "UPDATE '{0}' \nSET ".format(p_table)
             v_pk = self.QueryTablesPrimaryKeys(p_table)
 
             if len(v_pk.Rows) > 0:
@@ -830,7 +831,7 @@ class SQLite:
             v_limit = ' limit ' + p_count
         return self.v_connection.Query('''
             select {0}
-            from {1} t
+            from '{1}' t
             {2}
             {3}
         '''.format(
