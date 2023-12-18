@@ -204,9 +204,15 @@ def get_indexes_columns(request, database):
 @user_authenticated
 @database_required_new(check_timeout=False, open_connection=True)
 def get_views(request, database):
+    views_list = []
     try:
         views = database.QueryViews()
-        views_list = [view["table_name"] for view in views.Rows]
+        for view in views.Rows:
+            view_data = {
+                "name": view["table_name"],
+                "name_raw": view["name_raw"],
+            }
+            views_list.append(view_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data=views_list, safe=False)

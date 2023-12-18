@@ -592,7 +592,8 @@ class SQLite:
     @lock_required
     def QueryViews(self):
         return self.v_connection.Query('''
-            select name as table_name
+            select name as table_name,
+                   quote(name) as name_raw
 		    from sqlite_master
 			where type = 'view'
         ''', True)
@@ -699,7 +700,7 @@ class SQLite:
             if len(v_fields.Rows) > 0:
                 v_sql += '\n     , t.'.join([r['column_name'] for r in v_fields.Rows])
 
-            v_sql += '\nFROM {0} t'.format(p_table)
+            v_sql += "\nFROM '{0}' t".format(p_table)
 
         return Template(v_sql)
 

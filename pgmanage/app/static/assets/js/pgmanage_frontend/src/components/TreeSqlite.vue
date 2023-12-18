@@ -291,7 +291,7 @@ export default {
                 "Drop View",
                 this.templates.drop_view.replace(
                   "#view_name#",
-                  this.selectedNode.title
+                  this.selectedNode.data.raw_value
                 )
               );
             },
@@ -734,10 +734,11 @@ export default {
             title: `Views (${resp.data.length})`,
           });
           resp.data.forEach((element) => {
-            this.insertNode(node, element, {
+            this.insertNode(node, element.name, {
               icon: "fas node-all fa-eye node-view",
               type: "view",
               contextMenu: "cm_view",
+              raw_value: element.name_raw
             });
           });
         })
