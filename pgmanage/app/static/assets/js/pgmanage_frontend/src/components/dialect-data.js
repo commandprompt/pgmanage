@@ -29,6 +29,7 @@ export default Object.freeze({
         disabledFeatures: {
             alterColumn: true,
             multiStatement: true,
+            multiPrimaryKeys: true,
         },
         overrides: [
             () => {

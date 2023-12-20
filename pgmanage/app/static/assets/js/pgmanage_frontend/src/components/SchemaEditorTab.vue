@@ -38,6 +38,7 @@
       :dataTypes="dataTypes"
       :commentable="commentable"
       :mode="getMode"
+      :multiPKeys="multiPrimaryKeys"
       @columns:changed="changeColumns" />
 
     <div class="form-group mb-2">
@@ -313,7 +314,7 @@ export default {
       this.hasChanges = this.generatedSQL.length > 0
     },
     changeColumns(columns) {
-      this.localTable.columns = columns
+      this.localTable.columns = [...columns]
     },
     applyChanges() {
       let message_data = {
@@ -386,7 +387,10 @@ export default {
     },
     editable() {
       return ((this.mode == 'alter' && !this.dialectData?.disabledFeatures?.alterColumn) || this.mode == 'create')
-    }
+    },
+    multiPrimaryKeys() {
+      return !this.dialectData?.disabledFeatures?.multiPrimaryKeys
+    },
   },
   watch: {
     generatedSQL() {

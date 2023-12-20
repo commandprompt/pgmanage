@@ -51,7 +51,7 @@
           </div>
 
           <div class="col-1 d-flex align-items-center">
-            <input type='checkbox' class="custom-checkbox" v-model="column.isPK" :disabled="!column.editable"/>
+            <input type='checkbox' class="custom-checkbox" v-model="column.isPK" :disabled="disabledPrimaryKey"/>
           </div>
 
           <div v-if="commentable" class="col-3">
@@ -92,6 +92,8 @@
 
 <script>
   import SearchableDropdown from "./SearchableDropdown.vue";
+  import _ from 'lodash';
+
   export default {
     name: 'SchemaEditorColumnList',
     data() {
@@ -104,12 +106,24 @@
       SearchableDropdown
     },
     props: {
-      initialColumns: Array,
+      initialColumns: {
+        type: Array,
+        default: []
+      },
       commentable: Boolean,
       mode: String,
       dataTypes: Array,
+      multiPKeys: Boolean
     },
     emits: ["columns:changed"],
+    computed: {
+      countOfPrimaryKeys() {
+        return this.columns.filter(obj => obj.isPK === true).length
+      },
+      disabledPrimaryKey() {
+        return this.mode === "alter" && !this.multiPKeys && this.countOfPrimaryKeys == 1
+      }
+    },
     methods: {
       addColumn() {
         let colName = `column_${this.columns.length}`
@@ -156,16 +170,31 @@
     watch: {
       initialColumns: {
         handler(newVal, oldVal) {
-          this.columns = newVal
+          this.columns = JSON.parse(JSON.stringify(newVal))
         },
         immediate: true
       },
       columns: {
         handler(newVal, oldVal) {
-          this.$emit('columns:changed', newVal)
+
+          if (!this.multiPKeys && this.countOfPrimaryKeys > 1) {
+            newVal = newVal.map((obj) => {
+              let isInitialPK = this.initialColumns.find(
+                (initialObj) => initialObj.name === obj.name
+              )?.isPK;
+              return {
+                ...obj,
+                isPK: isInitialPK ? false : obj.isPK,
+              };
+            });
+          }
+
+          if (!_.isEqual(newVal, this.initialColumns)) {
+            this.$emit("columns:changed", newVal);
+          }
         },
-        deep: true
-      }
+        deep: true,
+      },
     }
   }
 </script>
