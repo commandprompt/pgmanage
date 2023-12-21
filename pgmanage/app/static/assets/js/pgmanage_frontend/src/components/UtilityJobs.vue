@@ -49,9 +49,9 @@
 </template>
 
 <script>
-import { jobDetailState } from '../job_detail_state'
-import axios from 'axios'
-import moment from 'moment'
+import { utilityJobStore } from "../stores/utility_jobs";
+import axios from "axios";
+import moment from "moment";
 
 const JobState = {
   PROCESS_NOT_STARTED: 0,
@@ -68,16 +68,17 @@ export default {
     return {
       pendingJobId: [],
       jobList: [],
-      workerId: '',
+      workerId: "",
       selectedJob: {},
-    }
+    };
   },
   mounted() {
-    this.startWorker()
+    this.startWorker();
   },
   methods: {
     getJobList() {
-      axios.get('/bgprocess/')
+      axios
+        .get("/bgprocess/")
         .then((resp) => {
           this.jobList = resp.data.data.map((j) => {
             let processState = this.evaluateProcessState(j);
@@ -85,64 +86,76 @@ export default {
               ...j,
               start_time: moment(j.start_time).format(),
               process_state: processState,
-              canStop: ![JobState.PROCESS_NOT_STARTED, JobState.PROCESS_STARTED].includes(processState),
-            }
-          })
+              canStop: ![
+                JobState.PROCESS_NOT_STARTED,
+                JobState.PROCESS_STARTED,
+              ].includes(processState),
+            };
+          });
           this.checkPending();
         })
         .catch((error) => {
-          console.log(error)
-        })
+          console.log(error);
+        });
     },
     startWorker() {
-      this.getJobList()
-      this.pendingJobId = this.jobList.filter((p) => (p.process_state === JobState.PROCESS_STARTED)).map((p) => p.id)
+      this.getJobList();
+      this.pendingJobId = this.jobList
+        .filter((p) => p.process_state === JobState.PROCESS_STARTED)
+        .map((p) => p.id);
       this.workerId = setInterval(() => {
         if (this.pendingJobId.length > 0) {
           this.getJobList();
         }
-      }, 1000)
+      }, 1000);
     },
     startJob(job_id, desc) {
-      this.pendingJobId.push(job_id)
+      this.pendingJobId.push(job_id);
     },
     stopJob(job_id) {
-      this.jobList.find((p) => p.id == job_id).process_state = JobState.PROCESS_TERMINATING;
-      axios.post(`/bgprocess/stop/${job_id}/`)
+      this.jobList.find((p) => p.id == job_id).process_state =
+        JobState.PROCESS_TERMINATING;
+      axios
+        .post(`/bgprocess/stop/${job_id}/`)
         .then((resp) => {
-          this.jobList.find((p) => p.id == job_id).process_state = JobState.PROCESS_TERMINATED;
+          this.jobList.find((p) => p.id == job_id).process_state =
+            JobState.PROCESS_TERMINATED;
         })
         .catch((error) => {
-          console.log(error)
-        })
+          console.log(error);
+        });
     },
     deleteJob(job_id) {
-      axios.post(`/bgprocess/delete/${job_id}/`)
+      axios
+        .post(`/bgprocess/delete/${job_id}/`)
         .then((resp) => {
-          this.pendingJobId = this.pendingJobId.filter(id => id != job_id)
-          this.getJobList()
+          this.pendingJobId = this.pendingJobId.filter((id) => id != job_id);
+          this.getJobList();
         })
         .catch((error) => {
-          console.log(error)
-        })
+          console.log(error);
+        });
     },
     jobStatus(process_state) {
       if (process_state === JobState.PROCESS_STARTED) {
-        return 'Running'
+        return "Running";
       } else if (process_state === JobState.PROCESS_FINISHED) {
-        return 'Finished'
+        return "Finished";
       } else if (process_state === JobState.PROCESS_TERMINATED) {
-        return 'Terminated'
+        return "Terminated";
       } else if (process_state === JobState.PROCESS_TERMINATING) {
-        return 'Terminating'
+        return "Terminating";
       } else if (process_state === JobState.PROCESS_FAILED) {
-        return 'Failed'
+        return "Failed";
       }
-      return ''
+      return "";
     },
     evaluateProcessState(p) {
       let retState = p.process_state;
-      if ((p.end_time || p.exit_code != null) && p.process_state == JobState.PROCESS_STARTED) {
+      if (
+        (p.end_time || p.exit_code != null) &&
+        p.process_state == JobState.PROCESS_STARTED
+      ) {
         retState = JobState.PROCESS_FINISHED;
       }
       if (retState == JobState.PROCESS_FINISHED && p.exit_code != 0) {
@@ -151,23 +164,30 @@ export default {
       return retState;
     },
     checkPending() {
-      const completedJobIds = this.jobList.filter((j) => {
-        if (![
-          JobState.PROCESS_NOT_STARTED,
-          JobState.PROCESS_STARTED,
-          JobState.PROCESS_TERMINATING].includes(j.process_state)) {
-          return true;
-        }
-      }).map((j) => j.id);
+      const completedJobIds = this.jobList
+        .filter((j) => {
+          if (
+            ![
+              JobState.PROCESS_NOT_STARTED,
+              JobState.PROCESS_STARTED,
+              JobState.PROCESS_TERMINATING,
+            ].includes(j.process_state)
+          ) {
+            return true;
+          }
+        })
+        .map((j) => j.id);
       this.pendingJobId = this.pendingJobId.filter((id) => {
         if (completedJobIds.includes(id)) {
-          let j = this.jobList.find((j) => j.id == id)
+          let j = this.jobList.find((j) => j.id == id);
           if (j.process_state != JobState.PROCESS_TERMINATED)
-            this.sendNotifyJobFinished(j.description, j.process_state, () => this.getJobDetails(j.id, event))
-          return false
+            this.sendNotifyJobFinished(j.description, j.process_state, () =>
+              this.getJobDetails(j.id, event)
+            );
+          return false;
         }
-        return true
-      })
+        return true;
+      });
     },
     createNotifyMessage(title, desc) {
       return `<div class="v-toast__body p-0">
@@ -176,34 +196,35 @@ export default {
                   <div class="text-right">
                     <button class="btn v-toast__details font-weight-bold">View details</button>
                   </div>
-              </div>`
+              </div>`;
     },
     sendNotifyJobFinished(desc, process_state, onClickProcess) {
       let success = true;
-      let message = this.createNotifyMessage('Job finished', desc)
+      let message = this.createNotifyMessage("Job finished", desc);
       if (process_state == JobState.PROCESS_FAILED) {
-        message = this.createNotifyMessage('Job terminated', desc)
+        message = this.createNotifyMessage("Job terminated", desc);
         success = false;
       }
       if (success) {
         this.$toast.success(message, {
           onClick: onClickProcess,
-        })
+        });
       } else {
         this.$toast.error(message, {
           onClick: onClickProcess,
-        })
+        });
       }
     },
     getJobDetails(job_id, event) {
-      if (!event || event.target.tagName === 'BUTTON') {
-        const job = JSON.parse(JSON.stringify(this.jobList.find((j) => j.id == job_id)));
-        jobDetailState.setJobAndShow(job)
-      }
-      else {
+      if (!event || event.target.tagName === "BUTTON") {
+        const job = JSON.parse(
+          JSON.stringify(this.jobList.find((j) => j.id == job_id))
+        );
+        utilityJobStore.setJob(job);
+      } else {
         event.stopPropagation();
       }
     },
-  }
-}
+  },
+};
 </script>
