@@ -1,6 +1,13 @@
 <template>
-  <PowerTree ref="tree" v-model="nodes" @nodedblclick="doubleClickNode" @toggle="onToggle"
-    @nodecontextmenu="onContextMenu" :allow-multiselect="false" @nodeclick="onClickHandler">
+  <PowerTree
+    ref="tree"
+    v-model="nodes"
+    @nodedblclick="doubleClickNode"
+    @toggle="onToggle"
+    @nodecontextmenu="onContextMenu"
+    :allow-multiselect="false"
+    @nodeclick="onClickHandler"
+  >
     <template v-slot:toggle="{ node }">
       <i v-if="node.isExpanded" class="exp_col fas fa-chevron-down"></i>
       <i v-if="!node.isExpanded" class="exp_col fas fa-chevron-right"></i>
@@ -21,8 +28,14 @@
 <script>
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
-import { getAllSnippets } from '../tree_context_functions/tree_snippets'
-import { createMessageModal, showConfirm, showToast } from '../notification_control'
+import { getAllSnippets } from "../tree_context_functions/tree_snippets";
+import {
+  createMessageModal,
+  showConfirm,
+  showToast,
+} from "../notification_control";
+import { emitter } from "../emitter";
+import { snippetsStore } from "../stores/snippets";
 
 export default {
   name: "TreeSnippets",
@@ -130,6 +143,24 @@ export default {
       };
     },
   },
+  mounted() {
+    emitter.on(
+      `${this.snippetTag.tab_id}_refresh_snippet_tree`,
+      (parent_id = null) => {
+        let root_node = this.getRootNode();
+        let node = null;
+        if (parent_id === null) {
+          node = root_node;
+        } else {
+          node = this.snippetTreeFindNode(parent_id, root_node);
+        }
+
+        if (!!node) {
+          this.refreshTree(node);
+        }
+      }
+    );
+  },
   methods: {
     doubleClickNode(node, e) {
       if (node.isLeaf) {
@@ -153,7 +184,7 @@ export default {
         .then((resp) => {
           this.removeChildNodes(node);
 
-          resp.data.list_texts.forEach((el) => {
+          resp.data.snippets.forEach((el) => {
             this.insertNode(
               node,
               el.name,
@@ -169,7 +200,7 @@ export default {
             );
           });
 
-          resp.data.list_nodes.forEach((el) => {
+          resp.data.folders.forEach((el) => {
             this.insertNode(node, el.name, {
               icon: "fas node-all fa-folder node-snippet-folder",
               type: "folder",
@@ -191,9 +222,9 @@ export default {
       showConfirm(
         `<input id="element_name" required class="form-control" placeholder="${placeholder}" style="width: 100%;">`,
         () => {
-          let value = document.getElementById("element_name").value.trim()
-          if(!value) {
-            showToast("error", "Name cannot be empty.")
+          let value = document.getElementById("element_name").value.trim();
+          if (!value) {
+            showToast("error", "Name cannot be empty.");
             return;
           }
 
@@ -224,8 +255,8 @@ export default {
     renameNodeSnippet(node) {
       showConfirm(
         '<input id="element_name" class="form-control" value="' +
-        node.title +
-        '" style="width: 100%;">',
+          node.title +
+          '" style="width: 100%;">',
         () => {
           this.api
             .post("/rename_node_snippet/", {
@@ -266,21 +297,13 @@ export default {
     },
     startEditSnippetText(node) {
       // Checking if there is a tab for this snippet.
-      let snippet_tab_list = this.snippetTag.tabControl.tabList;
-      let avaiable_tab = false;
+      let existing_tab = snippetsStore.getExistingTab(node.data.id);
 
-      snippet_tab_list.forEach((snippet_tab) => {
-        let snippet_object = snippet_tab.tag.snippetObject;
-        if (typeof snippet_object === "object") {
-          if (snippet_object.id === node.data.id) {
-            avaiable_tab = snippet_tab;
-          }
-        }
-      });
-
-      if (avaiable_tab) {
-        this.snippetTag.tabControl.selectTab(avaiable_tab);
+      if (existing_tab) {
+        // TODO: emit event on tabControl to select snippet tab
+        this.snippetTag.tabControl.selectTab(existing_tab);
       } else {
+        // TODO: emit event on tabControl to create new snippet Tab
         v_connTabControl.tag.createSnippetTextTab(node.data);
       }
 
@@ -289,19 +312,28 @@ export default {
           snippet_id: node.data.id,
         })
         .then((resp) => {
-          v_connTabControl.snippet_tag.tabControl.selectedTab.tag.editor.setValue(
+          emitter.emit(
+            `${this.snippetTag.tabControl.selectedTab.id}_copy_to_editor`,
             resp.data.data
-          );
-          v_connTabControl.snippet_tag.tabControl.selectedTab.tag.editor.clearSelection();
-          v_connTabControl.snippet_tag.tabControl.selectedTab.tag.editor.gotoLine(
-            0,
-            0,
-            true
           );
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
         });
+    },
+    snippetTreeFindNode(id, current_node) {
+      let node = null;
+
+      current_node.children.forEach((node) => {
+        if (node.data.id === id) {
+          return node;
+        } else {
+          node = this.snippetTreeFindNode(id, node);
+          if (node !== null) return node;
+        }
+      });
+
+      return node;
     },
   },
 };

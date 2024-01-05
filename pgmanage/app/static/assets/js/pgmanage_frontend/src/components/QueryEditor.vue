@@ -109,7 +109,6 @@ export default {
       return !!selectedText ? selectedText : lineAtCursor
     },
     contextMenu(event) {
-      //TODO rewrite buildSnippetContextMenuObjects to not use editor directly
       let option_list = [
         {
           label: "Run selection/line at cursor",
@@ -133,7 +132,7 @@ export default {
           children: buildSnippetContextMenuObjects(
             "save",
             snippetsStore,
-            this.editor
+            this.editor.getValue()
           ),
         },
       ];
@@ -145,7 +144,7 @@ export default {
           children: buildSnippetContextMenuObjects(
             "load",
             snippetsStore,
-            this.editor
+            this.editor.getValue()
           ),
         });
       ContextMenu.showContextMenu({
@@ -191,6 +190,11 @@ export default {
         this.editor.clearSelection();
         this.editor.gotoLine(0, 0, true);
       });
+
+      emitter.on(`${this.tabId}_insert_to_editor`, (command) => {
+        this.editor.insert(command)
+        this.editor.clearSelection();
+        });
 
       emitter.on(`${this.tabId}_indent_sql`, () => {
         this.indentSQL();

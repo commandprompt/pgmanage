@@ -1,178 +1,106 @@
-/*
-This file is part of OmniDB.
-OmniDB is open-source software, distributed "AS IS" under the MIT license in the hope that it will be useful.
+import { removeTab } from "../workspace";
+import { beforeCloseTab } from "../create_tab_functions";
+import { createApp } from "vue";
+import SnippetTab from "../components/SnippetTab.vue";
+import { emitter } from "../emitter";
 
-The MIT License (MIT)
-
-Portions Copyright (c) 2015-2020, The OmniDB Team
-Portions Copyright (c) 2017-2020, 2ndQuadrant Limited
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-import { refreshHeights , indentSQL, removeTab} from '../workspace'
-import { saveSnippetText } from '../tree_context_functions/tree_snippets'
-import { beforeCloseTab } from '../create_tab_functions'
-import ace from 'ace-builds'
-import { settingsStore } from '../stores/settings';
-
-var v_createSnippetTextTabFunction = function(p_snippet = null) {
-
-  var v_name = 'New Snippet';
-  var v_details = {
+export let createSnippetTabFunction = function (snippet = null) {
+  let snippet_name = "New Snippet";
+  let snippet_details = {
     id: null,
     name: null,
     parent: null,
-    type: 'snippet'
+    type: "snippet",
+  };
+
+  if (snippet) {
+    snippet_name = snippet.name;
+    snippet_details = {
+      id: snippet.id,
+      name: snippet_name,
+      parent: snippet.id_parent,
+      type: "snippet",
+    };
   }
 
-  if (p_snippet) {
-    v_name = p_snippet.name;
-    v_details = {
-      id: p_snippet.id,
-      name: p_snippet.name,
-      parent: p_snippet.id_parent,
-      type: 'snippet'
-    }
-  }
+  // Removing last tab of the inner tab list.
+  v_connTabControl.snippet_tag.tabControl.removeLastTab();
 
-  v_connTabControl.snippet_tag.tabControl.removeTabIndex(v_connTabControl.snippet_tag.tabControl.tabList.length-1);
-  var v_tab = v_connTabControl.snippet_tag.tabControl.createTab({
-    p_name: '<span id="tab_title">' + v_name + '</span><span id="tab_loading" style="visibility:hidden;"><i class="tab-icon node-spin"></i></span><i title="" id="tab_check" style="display: none;" class="fas fa-check-circle tab-icon icon-check"></i>',
-    p_selectFunction: function() {
-      refreshHeights();
-      if(this.tag != null && this.editor != null) {
-          this.editor.focus();
+  let name_html = `
+  <span id="tab_title">
+  ${snippet_name}
+  </span>
+  <span id="tab_loading" style="visibility:hidden;">
+    <i class="tab-icon node-spin"></i>
+  </span>
+  <i title="" id="tab_check" style="display: none;" class="fas fa-check-circle tab-icon icon-check"></i>
+`;
+
+  let tab = v_connTabControl.snippet_tag.tabControl.createTab({
+    p_name: name_html,
+    p_selectFunction: function () {
+      if (this.tag != null) {
+        emitter.emit(`${this.id}_editor_focus`);
       }
     },
-    p_closeFunction: function(e,p_tab) {
-      var v_current_tab = p_tab;
-      beforeCloseTab(e,
-        function() {
-          removeTab(v_current_tab);
-        });
-    }
+    p_closeFunction: function (e, tab) {
+      let current_tab = tab;
+      beforeCloseTab(e, function () {
+        current_tab.app.unmount();
+        removeTab(current_tab);
+      });
+    },
   });
-  v_connTabControl.snippet_tag.tabControl.selectTab(v_tab);
+  v_connTabControl.snippet_tag.tabControl.selectTab(tab);
 
   //Adding unique names to spans
-  var v_tab_title_span = document.getElementById('tab_title');
-  v_tab_title_span.id = 'tab_title_' + v_tab.id;
-  var v_tab_loading_span = document.getElementById('tab_loading');
-  v_tab_loading_span.id = 'tab_loading_' + v_tab.id;
-  var v_tab_check_span = document.getElementById('tab_check');
-  v_tab_check_span.id = 'tab_check_' + v_tab.id;
+  let tab_title_span = document.getElementById("tab_title");
+  tab_title_span.id = `tab_title_${tab.id}`;
+  let tab_loading_span = document.getElementById("tab_loading");
+  tab_loading_span.id = `tab_loading_${tab.id}`;
+  let tab_check_span = document.getElementById("tab_check");
+  tab_check_span.id = `tab_check_${tab.id}`;
 
-  var v_html =
-  '<div id="txt_snippet_' + v_tab.id + '" style="width: 100%; height: 200px;"></div>' +
-  '<div class="row mt-2 px-2">' +
-    '<div class="tab_actions omnidb__tab-actions col-12">' +
-      '<button id="bt_indent_' + v_tab.id + '" class="btn btn-secondary omnidb__tab-actions__btn" title="Indent SQL"><i class="fas fa-indent mr-2"></i>Indent</button>' +
-      '<button id="bt_save_' + v_tab.id + '" class="btn btn-primary omnidb__tab-actions__btn" title="Save" style="margin-top: 5px; margin-bottom: 5px; margin-right: 5px; display: inline-block;"><i class="fas fa-save mr-2"></i>Save</button>' +
-    '</div>' +
-  '</div>';
+  tab.elementDiv.innerHTML = `<snippet-tab :tab-id="tabId" :snippet="snippet"> </snippet-tab>`;
 
-  var v_div = document.getElementById('div_' + v_tab.id);
-  v_div.innerHTML = v_html;
+  const app = createApp({
+    components: {
+      SnippetTab,
+    },
+    data() {
+      return {
+        tabId: tab.id,
+        snippet: snippet_details
+      };
+    },
+  });
+  tab.app = app;
 
-  // Assign onclick handlers after the buttons are added to the DOM
-  let indentButton = document.getElementById(`bt_indent_${v_tab.id}`);
-  indentButton.onclick = function() {
-    indentSQL('snippet');
-  };
+  app.mount(`#${tab.elementDiv.id}`);
 
-  let saveButton = document.getElementById(`bt_save_${v_tab.id}`);
-  saveButton.onclick = function(event) {
-    saveSnippetText(event);
-  };
-
-  var v_txt_snippet = document.getElementById('txt_snippet_' + v_tab.id);
-
-  v_txt_snippet.style.height = window.innerHeight - $(v_txt_snippet).offset().top - 70 + 'px';
-
-  var langTools = ace.require("ace/ext/language_tools");
-  var v_editor = ace.edit('txt_snippet_' + v_tab.id);
-  v_editor.$blockScrolling = Infinity;
-  v_editor.setTheme("ace/theme/" + settingsStore.editorTheme);
-  v_editor.session.setMode("ace/mode/sql");
-
-  v_editor.setFontSize(Number(settingsStore.fontSize));
-  v_editor.setShowPrintMargin(false)
-
-  v_editor.commands.bindKey("ctrl-space", null);
-
-  //Remove shortcuts from ace in order to avoid conflict with omnidb shortcuts
-  v_editor.commands.bindKey("Cmd-,", null)
-  v_editor.commands.bindKey("Ctrl-,", null)
-  v_editor.commands.bindKey("Cmd-Delete", null)
-  v_editor.commands.bindKey("Ctrl-Delete", null)
-  v_editor.commands.bindKey("Ctrl-Up", null)
-  v_editor.commands.bindKey("Ctrl-Down", null)
-
-  v_txt_snippet.onclick = function() {
-
-    v_editor.focus();
-
-  };
-
-  var v_tag = {
-    tab_id: v_tab.id,
-    mode: 'snippet',
-    editor: v_editor,
-    editorDiv: v_txt_snippet,
-    editorDivId: 'txt_snippet_' + v_tab.id,
-    query_info: document.getElementById('div_query_info_' + v_tab.id),
-    div_result: document.getElementById('div_result_' + v_tab.id),
-    sel_export_type : document.getElementById('sel_export_type_' + v_tab.id),
-    tab_title_span : v_tab_title_span,
-    tab_loading_span : v_tab_loading_span,
-    tab_check_span : v_tab_check_span,
-    bt_start: document.getElementById('bt_start_' + v_tab.id),
-    bt_save: document.getElementById('bt_save_' + v_tab.id),
+  let tag = {
+    tab_id: tab.id,
+    mode: "snippet",
+    tab_title_span: tab_title_span,
+    tab_loading_span: tab_loading_span,
+    tab_check_span: tab_check_span,
     tabControl: v_connTabControl.snippet_tag.tabControl,
-    snippetTab: v_connTabControl.selectedTab,
-    snippetObject: v_details
+    snippetObject: snippet_details,
   };
 
-  v_tab.tag = v_tag;
+  tab.tag = tag;
 
   // Creating + tab in the outer tab list
-  var v_add_tab = v_connTabControl.snippet_tag.tabControl.createTab(
-    {
-      p_name: '+',
-      p_close: false,
-      p_isDraggable: false,
-      p_selectable: false,
-      p_clickFunction: function(e) {
-        // showMenuNewTab(e);
-        v_connTabControl.tag.createSnippetTextTab();
-      }
-    });
-  v_add_tab.tag = {
-    mode: 'add'
-  }
-
-  //setTimeout(function() {
-  //  refreshHeights();
-  //},10);
-
-  v_editor.focus();
-
+  let add_tab = v_connTabControl.snippet_tag.tabControl.createTab({
+    p_name: "+",
+    p_close: false,
+    p_isDraggable: false,
+    p_selectable: false,
+    p_clickFunction: function (e) {
+      v_connTabControl.tag.createSnippetTextTab();
+    },
+  });
+  add_tab.tag = {
+    mode: "add",
+  };
 };
-
-export { v_createSnippetTextTabFunction }

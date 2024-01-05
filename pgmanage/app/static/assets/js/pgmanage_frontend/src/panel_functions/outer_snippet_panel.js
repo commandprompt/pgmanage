@@ -67,7 +67,7 @@ var v_createSnippetPanelFunction = function(p_index) {
   v_connTabControl.selectTab(v_tab);
 
   var v_html =
-  "<div id='" + v_tab.id + "_panel_snippet' class='omnidb__panel omnidb__panel--snippet pt-2'>" +
+  "<div id='" + v_tab.id + "_panel_snippet' class='omnidb__panel omnidb__panel--snippet pt-2' style='height: 100vh'>" +
 
     "<button type='button' class='px-4 btn btn-secondary omnidb__panel__toggler'><i class='fas fa-arrows-alt-v'></i></button>" +
 
@@ -143,10 +143,6 @@ var v_createSnippetPanelFunction = function(p_index) {
     v_connTabControl.snippet_tag.tabControl.selectTab(v_connTabControl.snippet_tag.tabControl.tabList[0]);
   }
   v_connTabControl.tag.createSnippetTextTab();
-  v_connTabControl.snippet_tag.tabControl.selectedTab.tag.editor.setValue('');
-  v_connTabControl.snippet_tag.tabControl.selectedTab.tag.editor.clearSelection();
-  v_connTabControl.snippet_tag.tabControl.selectedTab.tag.editor.gotoLine(0, 0, true);
-
   // Creating `Add` tab in the outer tab list
   // v_connTabControl.createAddTab();
   // v_connTabControl.createTab('+',false,v_connTabControl.tag.createConnTab,false);

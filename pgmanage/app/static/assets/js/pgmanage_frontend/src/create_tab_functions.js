@@ -25,7 +25,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { v_createSnippetTextTabFunction } from './tab_functions/inner_snippet_tab'
+import { createSnippetTabFunction } from './tab_functions/inner_snippet_tab'
 import { v_createConnTabFunction } from './tab_functions/outer_connection_tab'
 import { v_createSnippetPanelFunction } from './panel_functions/outer_snippet_panel'
 import { v_createMonitoringTabFunction } from './tab_functions/inner_monitoring_tab'
@@ -412,7 +412,7 @@ function initCreateTabFunctions() {
   v_connTabControl.tag.createSnippetPanel = v_createSnippetPanelFunction;
 
   // Functions to create tabs inside snippet panel
-  v_connTabControl.tag.createSnippetTextTab = v_createSnippetTextTabFunction;
+  v_connTabControl.tag.createSnippetTextTab = createSnippetTabFunction
 
   // Functions to create tabs inside a connection tab
 	v_connTabControl.tag.createQueryTab = createQueryTabFunction;

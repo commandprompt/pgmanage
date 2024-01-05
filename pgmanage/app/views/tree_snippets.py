@@ -54,15 +54,15 @@ def build_snippets_object_recursive(
 def get_node_children(request):
     snippet_id = request.data["snippet_id"]
 
-    data = {"list_nodes": [], "list_texts": []}
+    data = {"folders": [], "snippets": []}
 
     for folder in SnippetFolder.objects.filter(user=request.user, parent=snippet_id):
         node_data = {"id": folder.id, "name": folder.name}
-        data["list_nodes"].append(node_data)
+        data["folders"].append(node_data)
 
     for file in SnippetFile.objects.filter(user=request.user, parent=snippet_id):
         node_data = {"id": file.id, "name": file.name}
-        data["list_texts"].append(node_data)
+        data["snippets"].append(node_data)
 
     return JsonResponse(data=data)
 
@@ -120,7 +120,7 @@ def delete_node_snippet(request):
     mode = data["mode"]
 
     try:
-        if mode == "node":
+        if mode == "folder":
             folder = SnippetFolder.objects.get(id=snippet_id)
             folder.delete()
         else:
@@ -182,7 +182,7 @@ def rename_node_snippet(request):
     mode = data["mode"]
 
     try:
-        if mode == "node":
+        if mode == "folder":
             folder = SnippetFolder.objects.get(id=node_id)
             folder.name = name
             folder.modify_date = make_aware(datetime.now())

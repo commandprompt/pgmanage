@@ -25,6 +25,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+import { settingsModalInit } from './settings_modal.js'
 import { initCreateTabFunctions } from './create_tab_functions'
 import { getTreeSqlite } from './tree_context_functions/tree_sqlite'
 import { refreshOuterConnectionHeights } from './tab_functions/outer_connection_tab'
@@ -36,7 +37,6 @@ import { getTreeOracle, oracleTerminateBackend } from './tree_context_functions/
 import { connectionsModalInit, conn_app} from './connections_modal.js'
 import { connectionsStore } from './stores/connections.js'
 import { passwordModalsInit, showNewMasterPassPrompt, showMasterPassPrompt } from './passwords.js'
-import { settingsModalInit } from './settings_modal.js'
 import { format } from 'sql-formatter'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import { createRequest } from './long_polling'
@@ -101,6 +101,10 @@ $(function () {
 
   // Creating the welcome tab.
   welcomeScreenInit()
+
+  // Retrieving global snippets
+  getAllSnippets();
+  
   // Creating the snippets panel.
   v_connTabControl.tag.createSnippetPanel();
 
@@ -133,8 +137,6 @@ $(function () {
   // Updating explain component choice.
   updateExplainComponent();
 
-  // Retrieving global snippets
-  getAllSnippets();
 
   // Loads or Updates all tooltips.
   $('[data-toggle="tooltip"]').tooltip({animation:true});
