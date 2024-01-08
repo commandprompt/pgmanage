@@ -247,17 +247,20 @@ export default {
         () => {
           let input = document.getElementById("element_name");
           input.focus();
-          input.selectionStart = 0;
-          input.selectionEnd = 10000;
+          input.select();
         }
       );
     },
     renameNodeSnippet(node) {
       showConfirm(
-        '<input id="element_name" class="form-control" value="' +
-          node.title +
-          '" style="width: 100%;">',
+        `<input id="element_name" class="form-control" value="${node.title}" style="width: 100%;">`,
         () => {
+          let value = document.getElementById("element_name").value.trim();
+          if (!value) {
+            showToast("error", "Name cannot be empty.");
+            return;
+          }
+          
           this.api
             .post("/rename_node_snippet/", {
               id: node.data.id,

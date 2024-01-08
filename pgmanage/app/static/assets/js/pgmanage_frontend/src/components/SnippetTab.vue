@@ -1,7 +1,7 @@
 <template>
   <div ref="editor" class="snippet-editor"></div>
 
-  <div class="row mt-2 px-2">
+  <div ref="bottomToolbar" class="row px-2">
     <div class="tab_actions tab-actions col-12">
       <button class="btn btn-secondary" title="Indent SQL" @click="indentSQL">
         <i class="fas fa-indent mr-2"></i>Indent
@@ -48,7 +48,13 @@ export default {
         linesBetweenQueries: 1,
         language: "sql",
       },
+      heightSubtract: 100 + settingsStore.fontSize
     };
+  },
+  computed: {
+    pageSize() {
+      return `calc(100vh - ${this.heightSubtract}px)`
+    },
   },
   mounted() {
     this.setupEditor();
@@ -61,6 +67,19 @@ export default {
       this.editor.setValue(snippet);
       this.editor.clearSelection();
       this.editor.gotoLine(0, 0, true);
+    });
+
+    emitter.on(`${this.tabId}_resize`, () => {
+      this.handleResize()
+    })
+
+    settingsStore.$onAction((action) => {
+      if (action.name === "setFontSize") {
+        action.after(() => {
+          this.editor.setFontSize(settingsStore.fontSize);
+          this.handleResize()
+        })
+      }
     });
   },
   methods: {
@@ -123,13 +142,19 @@ export default {
         });
       }
     },
+    handleResize() {
+      this.heightSubtract = this.$refs.bottomToolbar.getBoundingClientRect().height + this.$refs.editor.getBoundingClientRect().top
+      if (this.heightSubtract > window.innerHeight){
+        this.heightSubtract = 100 + settingsStore.fontSize
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
 .snippet-editor {
-  height: calc(100vh - 110px);
+  height: v-bind(pageSize);
 }
 
 .tab-actions {

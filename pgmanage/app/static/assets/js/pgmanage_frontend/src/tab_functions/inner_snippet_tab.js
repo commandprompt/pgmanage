@@ -41,6 +41,7 @@ export let createSnippetTabFunction = function (snippet = null) {
     p_selectFunction: function () {
       if (this.tag != null) {
         emitter.emit(`${this.id}_editor_focus`);
+        emitter.emit(`${this.id}_resize`)
       }
     },
     p_closeFunction: function (e, tab) {

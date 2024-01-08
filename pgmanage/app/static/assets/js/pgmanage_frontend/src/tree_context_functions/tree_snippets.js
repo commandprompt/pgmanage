@@ -80,7 +80,7 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
   let elements = [];
   const isSaveMode = mode === "save";
 
-  const handleSaveConfirmation = () => {
+  const handleSaveConfirmation = (file) => {
     showConfirm(
       `<b>WARNING</b>, are you sure you want to overwrite file ${file.name}?`,
       () => {
@@ -106,6 +106,11 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
           '<input id="element_name" class="form-control" placeholder="Snippet Name" style="width: 100%;">',
           function () {
             const snippetName = document.getElementById("element_name").value;
+
+            if (!snippetName) {
+              showToast("error", "Name cannot be empty.");
+              return;
+            }
             saveSnippetTextConfirm(
               {
                 id: null,
@@ -132,7 +137,7 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
       label: isSaveMode ? `Overwrite ${file.name}` : file.name,
       icon: "fas cm-all fa-align-left",
       onClick: isSaveMode
-        ? handleSaveConfirmation
+        ? () => handleSaveConfirmation(file)
         : () => executeSnippet(file.id),
     });
   });
