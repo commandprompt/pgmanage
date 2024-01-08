@@ -67,7 +67,7 @@ var v_createSnippetPanelFunction = function(p_index) {
   v_connTabControl.selectTab(v_tab);
 
   var v_html =
-  "<div id='" + v_tab.id + "_panel_snippet' class='omnidb__panel omnidb__panel--snippet pt-2' style='height: 100vh'>" +
+  "<div id='" + v_tab.id + "_panel_snippet' class='omnidb__panel omnidb__panel--snippet' style='height: 100vh'>" +
 
     "<button type='button' class='px-4 btn btn-secondary omnidb__panel__toggler'><i class='fas fa-arrows-alt-v'></i></button>" +
 

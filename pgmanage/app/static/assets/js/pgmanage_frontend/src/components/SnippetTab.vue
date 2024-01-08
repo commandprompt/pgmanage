@@ -48,39 +48,21 @@ export default {
         linesBetweenQueries: 1,
         language: "sql",
       },
-      heightSubtract: 100 + settingsStore.fontSize
+      heightSubtract: 100 + settingsStore.fontSize,
     };
   },
   computed: {
     pageSize() {
-      return `calc(100vh - ${this.heightSubtract}px)`
+      return `calc(100vh - ${this.heightSubtract}px)`;
     },
   },
   mounted() {
     this.setupEditor();
-
-    emitter.on(`${this.tabId}_editor_focus`, () => {
-      this.editor.focus();
-    });
-
-    emitter.on(`${this.tabId}_copy_to_editor`, (snippet) => {
-      this.editor.setValue(snippet);
-      this.editor.clearSelection();
-      this.editor.gotoLine(0, 0, true);
-    });
-
-    emitter.on(`${this.tabId}_resize`, () => {
-      this.handleResize()
-    })
-
-    settingsStore.$onAction((action) => {
-      if (action.name === "setFontSize") {
-        action.after(() => {
-          this.editor.setFontSize(settingsStore.fontSize);
-          this.handleResize()
-        })
-      }
-    });
+    this.handleResize();
+    this.setupEvents();
+  },
+  unmounted() {
+    this.clearEvents();
   },
   methods: {
     setupEditor() {
@@ -103,6 +85,35 @@ export default {
       this.editor.commands.bindKey("Ctrl-Down", null);
 
       this.editor.focus();
+    },
+    setupEvents() {
+      emitter.on(`${this.tabId}_editor_focus`, () => {
+        this.editor.focus();
+      });
+
+      emitter.on(`${this.tabId}_copy_to_editor`, (snippet) => {
+        this.editor.setValue(snippet);
+        this.editor.clearSelection();
+        this.editor.gotoLine(0, 0, true);
+      });
+
+      emitter.on(`${this.tabId}_resize`, () => {
+        this.handleResize();
+      });
+
+      settingsStore.$onAction((action) => {
+        if (action.name === "setFontSize") {
+          action.after(() => {
+            this.editor.setFontSize(settingsStore.fontSize);
+            this.handleResize();
+          });
+        }
+      });
+    },
+    clearEvents() {
+      emitter.all.delete(`${this.tabId}_resize`);
+      emitter.all.delete(`${this.tabId}_editor_focus`);
+      emitter.all.delete(`${this.tabId}_copy_to_editor`);
     },
     indentSQL() {
       let editor_value = this.editor.getValue();
@@ -132,7 +143,7 @@ export default {
           y: event.y,
           zIndex: 1000,
           minWidth: 230,
-          direction: 'tr',
+          direction: "tr",
           items: buildSnippetContextMenuObjects(
             "save",
             snippetsStore,
@@ -143,9 +154,11 @@ export default {
       }
     },
     handleResize() {
-      this.heightSubtract = this.$refs.bottomToolbar.getBoundingClientRect().height + this.$refs.editor.getBoundingClientRect().top
-      if (this.heightSubtract > window.innerHeight){
-        this.heightSubtract = 100 + settingsStore.fontSize
+      this.heightSubtract =
+        this.$refs.bottomToolbar.getBoundingClientRect().height +
+        this.$refs.editor.getBoundingClientRect().top;
+      if (this.heightSubtract > window.innerHeight) {
+        this.heightSubtract = 100 + settingsStore.fontSize;
       }
     },
   },
@@ -164,7 +177,7 @@ export default {
   min-height: 35px;
 }
 
-.tab-actions > button {
+.tab-actions>button {
   margin-right: 5px;
 }
 </style>
