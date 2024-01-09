@@ -2,7 +2,7 @@ import { createApp } from "vue";
 import TreeSnippets from "../components/TreeSnippets.vue";
 import axios from "axios";
 import { showConfirm, showToast } from "../notification_control";
-import { snippetsStore } from "../stores/snippets";
+import { snippetsStore } from "../stores/stores_initializer";
 import { emitter } from "../emitter";
 
 function getAllSnippets() {

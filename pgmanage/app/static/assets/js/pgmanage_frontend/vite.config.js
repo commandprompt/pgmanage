@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { fileURLToPath, URL } from "node:url";
 
 import { defineConfig } from "vite";
@@ -57,5 +58,8 @@ export default defineConfig({
       "~bootstrap": path.resolve(__dirname, "node_modules/bootstrap"),
       'moment': path.resolve(__dirname, 'node_modules/moment/moment.js')
     },
+  },
+  test: {
+    environment: "happy-dom",
   },
 });

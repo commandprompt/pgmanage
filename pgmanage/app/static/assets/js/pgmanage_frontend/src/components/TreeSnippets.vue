@@ -35,7 +35,7 @@ import {
   showToast,
 } from "../notification_control";
 import { emitter } from "../emitter";
-import { snippetsStore } from "../stores/snippets";
+import { snippetsStore } from "../stores/stores_initializer";
 
 export default {
   name: "TreeSnippets",

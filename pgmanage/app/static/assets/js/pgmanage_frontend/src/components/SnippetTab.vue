@@ -23,7 +23,7 @@ import {
   buildSnippetContextMenuObjects,
   saveSnippetTextConfirm,
 } from "../tree_context_functions/tree_snippets";
-import { snippetsStore } from "../stores/snippets";
+import { snippetsStore } from "../stores/stores_initializer";
 
 export default {
   name: "SnippetTab",
