@@ -29,7 +29,7 @@ SOFTWARE.
 import { listUsers } from './users'
 import ace from 'ace-builds'
 import { showConfirm } from './notification_control';
-import { settingsStore } from './stores/settings';
+import { settingsStore } from './stores/stores_initializer';
 
 /// <summary>
 /// Opens OmniDB about window.

@@ -47,7 +47,7 @@ import ace from 'ace-builds'
 import moment from "moment";
 import { endLoading } from "../ajax_control";
 import { showToast } from "../notification_control";
-import { settingsStore } from "../stores/settings";
+import { settingsStore } from "../stores/stores_initializer";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name = false, p_tooltip_name = false) {

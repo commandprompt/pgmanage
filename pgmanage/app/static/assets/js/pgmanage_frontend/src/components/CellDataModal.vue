@@ -23,7 +23,7 @@
 
 <script>
 import ace from "ace-builds";
-import { settingsStore } from "../stores/settings";
+import { settingsStore } from "../stores/stores_initializer";
 
 export default {
   name: "CellDataModal",

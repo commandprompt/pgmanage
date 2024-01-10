@@ -29,7 +29,7 @@ import { refreshHeights } from "../workspace";
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { startTerminal, terminalKey, terminalContextMenu } from "../terminal";
-import { settingsStore } from "../stores/settings";
+import { settingsStore } from "../stores/stores_initializer";
 
 let createOuterTerminalTabFunction = function(p_conn_id = -1, p_alias = 'Terminal', p_details = false) {
 

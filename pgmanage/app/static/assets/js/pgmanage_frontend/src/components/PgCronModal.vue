@@ -148,7 +148,7 @@ import ace from 'ace-builds'
 import axios from 'axios'
 import { showToast } from '../notification_control'
 import moment from 'moment'
-import { settingsStore } from '../stores/settings'
+import { settingsStore } from '../stores/stores_initializer'
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 
 export default {

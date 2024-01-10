@@ -3,10 +3,10 @@
 
   <div ref="bottomToolbar" class="row px-2">
     <div class="tab_actions tab-actions col-12">
-      <button class="btn btn-secondary" title="Indent SQL" @click="indentSQL">
+      <button data-testid='indent-button' class="btn btn-secondary" title="Indent SQL" @click="indentSQL">
         <i class="fas fa-indent mr-2"></i>Indent
       </button>
-      <button class="btn btn-primary" title="Save" @click="saveSnippetText">
+      <button data-testid='save-button' class="btn btn-primary" title="Save" @click="saveSnippetText">
         <i class="fas fa-save mr-2"></i>Save
       </button>
     </div>
@@ -15,7 +15,6 @@
 
 <script>
 import ace from "ace-builds";
-import { settingsStore } from "../stores/settings";
 import { format } from "sql-formatter";
 import { emitter } from "../emitter";
 import ContextMenu from "@imengyu/vue3-context-menu";
@@ -23,7 +22,7 @@ import {
   buildSnippetContextMenuObjects,
   saveSnippetTextConfirm,
 } from "../tree_context_functions/tree_snippets";
-import { snippetsStore } from "../stores/stores_initializer";
+import { snippetsStore, settingsStore } from "../stores/stores_initializer";
 
 export default {
   name: "SnippetTab",

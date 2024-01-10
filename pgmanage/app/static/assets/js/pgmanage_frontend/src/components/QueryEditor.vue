@@ -5,8 +5,7 @@
 
 <script>
 import ContextMenu from "@imengyu/vue3-context-menu";
-import { settingsStore } from "../stores/settings";
-import { snippetsStore } from "../stores/stores_initializer";
+import { snippetsStore, settingsStore } from "../stores/stores_initializer";
 import { buildSnippetContextMenuObjects } from "../tree_context_functions/tree_snippets";
 import { uiCopyTextToClipboard } from "../workspace";
 import {

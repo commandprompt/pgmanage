@@ -187,7 +187,7 @@ import axios from 'axios'
 import { showAlert, showToast } from '../notification_control'
 import moment from 'moment'
 import { emitter } from '../emitter'
-import { settingsStore } from '../stores/settings'
+import { settingsStore } from '../stores/stores_initializer'
 
 import { useVuelidate } from '@vuelidate/core'
 import { required, maxLength } from '@vuelidate/validators'

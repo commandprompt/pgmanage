@@ -59,7 +59,7 @@ import { createRequest } from '../long_polling'
 import { queryRequestCodes } from '../constants'
 import axios from 'axios'
 import { showToast } from '../notification_control'
-import { settingsStore } from '../stores/settings'
+import { settingsStore } from '../stores/stores_initializer'
 
 export default {
   name: "SchemaEditor",

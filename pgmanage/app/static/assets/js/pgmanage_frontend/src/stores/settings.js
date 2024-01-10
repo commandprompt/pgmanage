@@ -23,6 +23,4 @@ const useSettingsStore = defineStore("settings", {
   },
 });
 
-const settingsStore = useSettingsStore();
-
-export { settingsStore };
+export { useSettingsStore };

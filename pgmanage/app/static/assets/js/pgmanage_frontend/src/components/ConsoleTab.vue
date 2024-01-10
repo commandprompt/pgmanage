@@ -87,7 +87,7 @@ import { showToast } from "../notification_control";
 import CommandsHistoryModal from "./CommandsHistoryModal.vue";
 import moment from "moment";
 import { createRequest } from "../long_polling";
-import { settingsStore } from "../stores/settings";
+import { settingsStore } from "../stores/stores_initializer";
 import { connectionsStore } from "../stores/connections";
 import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryEditor from "./QueryEditor.vue";
