@@ -52,7 +52,7 @@ export default {
     };
   },
   computed: {
-    pageSize() {
+    editorSize() {
       return `calc(100vh - ${this.heightSubtract}px)`;
     },
   },
@@ -154,12 +154,12 @@ export default {
       }
     },
     handleResize() {
-      this.heightSubtract =
-        this.$refs.bottomToolbar.getBoundingClientRect().height +
-        this.$refs.editor.getBoundingClientRect().top;
-      if (this.heightSubtract > window.innerHeight) {
-        this.heightSubtract = 100 + settingsStore.fontSize;
-      }
+      // handle case when snippets panel is not visible
+      const top =
+        this.$refs.editor.getBoundingClientRect().top > window.innerHeight
+          ? 55
+          : this.$refs.editor.getBoundingClientRect().top;
+      this.heightSubtract = top + 30 * (settingsStore.fontSize / 10);
     },
   },
 };
@@ -167,7 +167,7 @@ export default {
 
 <style scoped>
 .snippet-editor {
-  height: v-bind(pageSize);
+  height: v-bind(editorSize);
 }
 
 .tab-actions {
