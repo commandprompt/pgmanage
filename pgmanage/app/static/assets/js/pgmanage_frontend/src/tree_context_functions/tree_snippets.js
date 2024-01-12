@@ -15,7 +15,7 @@ function getAllSnippets() {
       });
     })
     .catch((error) => {
-      console.log(error);
+      showToast("error", error);
     });
 }
 
@@ -60,6 +60,9 @@ function saveSnippetTextConfirm(save_object, text, callback) {
       showToast("success", "Snippet saved.");
 
       getAllSnippets();
+    })
+    .catch((error) => {
+      showToast("error", error);
     });
 }
 
@@ -73,6 +76,9 @@ function executeSnippet(id) {
         `${v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_insert_to_editor`,
         resp.data.data
       );
+    })
+    .catch((error) => {
+      showToast("error", error.response?.data?.data ?? error);
     });
 }
 
@@ -163,4 +169,5 @@ export {
   getTreeSnippets,
   getAllSnippets,
   saveSnippetTextConfirm,
+  executeSnippet,
 };

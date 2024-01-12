@@ -69,7 +69,7 @@ def get_node_children(request):
 
 @session_required(include_session=False)
 def get_snippet_text(request):
-    snippet_id = request.data["snippet_id"]
+    snippet_id = request.data.get("snippet_id")
 
     try:
         snippet_text = SnippetFile.objects.get(id=snippet_id).text
@@ -135,10 +135,10 @@ def delete_node_snippet(request):
 @session_required(include_session=False)
 def save_snippet_text(request):
     data = request.data
-    snippet_id = data["id"]
-    name = data["name"]
-    parent_id = data["parent_id"]
-    text = data["text"]
+    snippet_id = data.get("id")
+    name = data.get("name")
+    parent_id = data.get("parent_id")
+    text = data.get("text")
 
     parent = SnippetFolder.objects.filter(id=parent_id).first()
 
