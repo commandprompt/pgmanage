@@ -86,7 +86,7 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
   let elements = [];
   const isSaveMode = mode === "save";
 
-  const handleSaveConfirmation = (file) => {
+  const handleSaveConfirmation = (file, folder) => {
     showConfirm(
       `<b>WARNING</b>, are you sure you want to overwrite file ${file.name}?`,
       () => {
@@ -94,7 +94,7 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
           {
             id: file.id,
             name: null,
-            parent: null,
+            parent: folder.id,
           },
           snippetText,
           callback
@@ -143,7 +143,7 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
       label: isSaveMode ? `Overwrite ${file.name}` : file.name,
       icon: "fas cm-all fa-align-left",
       onClick: isSaveMode
-        ? () => handleSaveConfirmation(file)
+        ? () => handleSaveConfirmation(file, object)
         : () => executeSnippet(file.id),
     });
   });

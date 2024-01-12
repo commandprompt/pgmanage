@@ -147,17 +147,7 @@ export default {
     emitter.on(
       `${this.snippetTag.tab_id}_refresh_snippet_tree`,
       (parent_id = null) => {
-        let root_node = this.getRootNode();
-        let node = null;
-        if (parent_id === null) {
-          node = root_node;
-        } else {
-          node = this.snippetTreeFindNode(parent_id, root_node);
-        }
-
-        if (!!node) {
-          this.refreshTree(node);
-        }
+        this.refreshTreeRecursive(parent_id);
       }
     );
   },
@@ -260,7 +250,7 @@ export default {
             showToast("error", "Name cannot be empty.");
             return;
           }
-          
+
           this.api
             .post("/rename_node_snippet/", {
               id: node.data.id,
@@ -324,19 +314,24 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    snippetTreeFindNode(id, current_node) {
-      let node = null;
+    refreshTreeRecursive(parent_id) {
+      const rootNode = this.getRootNode();
 
-      current_node.children.forEach((node) => {
-        if (node.data.id === id) {
-          return node;
-        } else {
-          node = this.snippetTreeFindNode(id, node);
-          if (node !== null) return node;
+      const getInnerNode = (node, parent_id) => {
+        if (node.data.id === parent_id && node.data.type === "folder") {
+          this.refreshTree(node);
+          this.expandNode(node);
         }
-      });
+        if (!!node.children.length) {
+          node.children.forEach((childNode) => {
+            getInnerNode(childNode, parent_id);
+          });
+        }
+      };
 
-      return node;
+      rootNode.children.forEach((childNode) => {
+        getInnerNode(childNode, parent_id);
+      });
     },
   },
 };
