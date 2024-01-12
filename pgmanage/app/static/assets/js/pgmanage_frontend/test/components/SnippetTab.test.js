@@ -1,27 +1,49 @@
 import { mount } from "@vue/test-utils";
-import { describe, expect, test, vi } from "vitest";
+import {
+  beforeAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from "vitest";
 import SnippetTab from "../../src/components/SnippetTab.vue";
 import "ace-builds/src-noconflict/mode-sql";
 import "../../src/ace_themes/theme-omnidb.js";
+import { emitter } from "../../src/emitter.js";
 
 import { useSettingsStore } from "../../src/stores/settings.js";
 
 describe("SnippetTab", () => {
-  const settings = useSettingsStore();
-  settings.setEditorTheme("omnidb");
+  let wrapper;
+  let settingsStore;
+  const tabId = "uniqueTabID";
 
-  const wrapper = mount(SnippetTab, {
-    props: {
-      tabId: "uniqueTabID",
-    },
+  beforeAll(() => {
+    settingsStore = useSettingsStore();
+    settingsStore.setEditorTheme("omnidb");
   });
 
-  test("should mount SnippetTab component", () => {
+  beforeEach(() => {
+    wrapper = mount(SnippetTab, {
+      props: {
+        tabId: tabId,
+      },
+      attachTo: document.body,
+    });
+  });
+
+  afterEach(() => {
+    wrapper.unmount();
+  });
+
+  test("should render SnippetTab component with expected elements", () => {
     expect(wrapper.html()).toContain("Indent");
     expect(wrapper.html()).toContain("Save");
   });
 
-  test("should set up Ace editor with correct configuration", () => {
+  test("should initialize Ace editor with correct configuration", () => {
     const editorInstance = wrapper.vm.editor;
 
     expect(editorInstance).toBeDefined();
@@ -46,11 +68,48 @@ describe("SnippetTab", () => {
     expect(saveSnippetTextMock).toHaveBeenCalled();
   });
 
-  test("should cleanup events on unmount", () => {
-    const clearEventsSpy = vi.spyOn(wrapper.vm, "clearEvents");
+  describe("Events", () => {
+    test("should focus editor on focus event", async () => {
+      const editorInstance = wrapper.vm.editor;
 
-    wrapper.unmount();
+      emitter.emit(`${tabId}_editor_focus`);
 
-    expect(clearEventsSpy).toHaveBeenCalled();
+      expect(editorInstance.isFocused()).toBeTruthy();
+    });
+    test("should copy snippet to editor on copy event", async () => {
+      const editorInstance = wrapper.vm.editor;
+
+      emitter.emit(`${tabId}_copy_to_editor`, "SELECT * FROM table");
+
+      expect(editorInstance.getValue()).toEqual("SELECT * FROM table");
+    });
+    test("should call handleResize method on resize event", async () => {
+      const handleResizeSpy = vi.spyOn(wrapper.vm, "handleResize");
+
+      emitter.emit(`${tabId}_resize`);
+
+      expect(handleResizeSpy).toHaveBeenCalledOnce();
+    });
+    test("should call handleResize on settingsStore fontsize change", async () => {
+      const handleResizeSpy = vi.spyOn(wrapper.vm, "handleResize");
+      const editorSetFontSizeSpy = vi.spyOn(wrapper.vm.editor, "setFontSize");
+      const fontSize = 14;
+
+      settingsStore.setFontSize(fontSize);
+
+      expect(handleResizeSpy).toHaveBeenCalledOnce();
+
+      expect(editorSetFontSizeSpy).toHaveBeenCalledOnce();
+      expect(editorSetFontSizeSpy).toHaveBeenCalledWith(fontSize);
+      expect(wrapper.vm.editor.getFontSize()).toEqual(fontSize);
+    });
+
+    test("should cleanup events on unmount", () => {
+      const clearEventsSpy = vi.spyOn(wrapper.vm, "clearEvents");
+
+      wrapper.unmount();
+
+      expect(clearEventsSpy).toHaveBeenCalled();
+    });
   });
 });

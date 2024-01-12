@@ -52,7 +52,7 @@ def build_snippets_object_recursive(
 
 @session_required(include_session=False)
 def get_node_children(request):
-    snippet_id = request.data["snippet_id"]
+    snippet_id = request.data.get("snippet_id")
 
     data = {"folders": [], "snippets": []}
 
@@ -81,9 +81,9 @@ def get_snippet_text(request):
 @session_required(include_session=False)
 def new_node_snippet(request):
     data = request.data
-    snippet_id = data["snippet_id"]
-    mode = data["mode"]
-    name = data["name"]
+    snippet_id = data.get("snippet_id")
+    mode = data.get("mode")
+    name = data.get("name")
 
     parent = SnippetFolder.objects.filter(id=snippet_id).first()
 
@@ -116,8 +116,8 @@ def new_node_snippet(request):
 @session_required(include_session=False)
 def delete_node_snippet(request):
     data = request.data
-    snippet_id = data["id"]
-    mode = data["mode"]
+    snippet_id = data.get("id")
+    mode = data.get("mode")
 
     try:
         if mode == "folder":
@@ -177,9 +177,9 @@ def save_snippet_text(request):
 @session_required(include_session=False)
 def rename_node_snippet(request):
     data = request.data
-    node_id = data["id"]
-    name = data["name"]
-    mode = data["mode"]
+    node_id = data.get("id")
+    name = data.get("name")
+    mode = data.get("mode")
 
     try:
         if mode == "folder":
