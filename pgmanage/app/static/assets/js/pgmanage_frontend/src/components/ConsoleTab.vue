@@ -318,7 +318,7 @@ export default {
       this.terminal.write(this.consoleHelp);
     },
     indentSQL() {
-      emitter.emit(`${this.connId}_indent_sql`);
+      emitter.emit(`${this.tabId}_indent_sql`);
     },
     cancelConsoleTab() {
       this.readOnlyEditor = false;

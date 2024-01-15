@@ -391,7 +391,7 @@ export default {
       this.cancelled = true;
     },
     indentSQL() {
-      emitter.emit(`${this.connId}_indent_sql`);
+      emitter.emit(`${this.tabId}_indent_sql`);
     },
     updateEditorContent(newContent) {
       this.editorContent = newContent;
