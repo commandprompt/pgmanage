@@ -3,10 +3,10 @@
 
   <div ref="bottomToolbar" class="row px-2">
     <div class="tab_actions tab-actions col-12">
-      <button data-testid='indent-button' class="btn btn-secondary" title="Indent SQL" @click="indentSQL">
+      <button data-testid="snippet-tab-indent-button" class="btn btn-secondary" title="Indent SQL" @click="indentSQL">
         <i class="fas fa-indent mr-2"></i>Indent
       </button>
-      <button data-testid='save-button' class="btn btn-primary" title="Save" @click="saveSnippetText">
+      <button data-testid="snippet-tab-save-button" class="btn btn-primary" title="Save" @click="saveSnippetText">
         <i class="fas fa-save mr-2"></i>Save
       </button>
     </div>

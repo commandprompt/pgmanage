@@ -55,7 +55,7 @@ describe("SnippetTab", () => {
     const editorInstance = wrapper.vm.editor;
     editorInstance.setValue("SELECT * FROM table");
 
-    await wrapper.find("[data-testid='indent-button']").trigger("click");
+    await wrapper.find("[data-testid='snippet-tab-indent-button']").trigger("click");
 
     expect(editorInstance.getValue()).toContain("SELECT\n  *");
   });
@@ -63,7 +63,7 @@ describe("SnippetTab", () => {
   test("should call saveSnippetText method when 'Save' button is clicked", async () => {
     const saveSnippetTextMock = vi.spyOn(wrapper.vm, "saveSnippetText");
 
-    await wrapper.find("[data-testid='save-button']").trigger("click");
+    await wrapper.find("[data-testid='snippet-tab-save-button']").trigger("click");
 
     expect(saveSnippetTextMock).toHaveBeenCalled();
   });
