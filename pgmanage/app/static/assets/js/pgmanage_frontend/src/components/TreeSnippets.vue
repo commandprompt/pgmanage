@@ -265,6 +265,11 @@ export default {
             .catch((error) => {
               this.nodeOpenError(error, node);
             });
+        },
+        null,
+        () => {
+          let input = document.getElementById("element_name");
+          input.focus();
         }
       );
     },

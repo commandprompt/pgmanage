@@ -338,20 +338,8 @@ var resizeSnippetPanel = async function(p_left_pos_x = false) {
       // Updating the max top position considering if a tab is selected.
       if (v_connTabControl.selectedTab && v_connTabControl.selectedTab !== null) {
         if (v_connTabControl.selectedTab.tag.tabControl) {
-          var v_target_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-          let current_query_tab = v_target_tag.currQueryTab;
-          if (current_query_tab === 'data') {
-            v_target_tag_div_result_top = v_target_tag.div_result.getBoundingClientRect().height - 25;
-          }
-          else if (current_query_tab === 'explain') {
-            v_target_tag_div_result_top = v_target_tag.div_explain.getBoundingClientRect().height - 25;
-          }
-          else if (current_query_tab === 'message') {
-            v_target_tag_div_result_top = v_target_tag.div_notices.getBoundingClientRect().height - 25;
-          }
-          else {
-            v_target_tag_div_result_top = document.getElementsByClassName('omnidb__main')[0].getBoundingClientRect().height - 25;
-          }
+          let heightSubtract = v_selected_tab.tag.divRight.getElementsByClassName('omnidb__tab-menu border-bottom')[0].getBoundingClientRect().height;
+          v_target_tag_div_result_top = document.getElementsByClassName('omnidb__main')[0].getBoundingClientRect().height - heightSubtract;
         }
         else {
           v_target_tag_div_result_top = document.getElementsByClassName('omnidb__main')[0].getBoundingClientRect().height - 25;
@@ -408,20 +396,8 @@ var resizeSnippetPanel = async function(p_left_pos_x = false) {
         // Updating the max top position considering if a tab is selected.
         if (v_connTabControl.selectedTab && v_connTabControl.selectedTab !== null) {
           if (v_connTabControl.selectedTab.tag.tabControl) {
-            var v_target_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
-            let current_query_tab = v_target_tag.currQueryTab;
-            if (current_query_tab === 'data') {
-              v_target_tag_div_result_top = v_target_tag.div_result.getBoundingClientRect().height - 25;
-            }
-            else if (current_query_tab === 'explain') {
-              v_target_tag_div_result_top = v_target_tag.div_explain.getBoundingClientRect().height - 25;
-            }
-            else if (current_query_tab === 'message') {
-              v_target_tag_div_result_top = v_target_tag.div_notices.getBoundingClientRect().height - 25;
-            }
-            else {
-              v_target_tag_div_result_top = document.getElementsByClassName('omnidb__main')[0].getBoundingClientRect().height - 25;
-            }
+            let heightSubtract = v_connTabControl.selectedTab.tag.divRight.getElementsByClassName('omnidb__tab-menu border-bottom')[0].getBoundingClientRect().height;
+            v_target_tag_div_result_top = document.getElementsByClassName('omnidb__main')[0].getBoundingClientRect().height - heightSubtract;
           }
           else {
             v_target_tag_div_result_top = document.getElementsByClassName('omnidb__main')[0].getBoundingClientRect().height - 25;
