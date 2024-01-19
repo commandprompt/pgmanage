@@ -1036,6 +1036,13 @@ function showMenuNewTab(e) {
 					v_connTabControl.tag.createMonitorDashboardTab();
 					startMonitorDashboard();
 				}
+			},
+      {
+				label: 'Monitoring Dashboard New',
+				icon: 'fas cm-all fa-chart-line',
+				onClick: function() {
+					v_connTabControl.tag.createMonitoringDashboardTab();
+				}
 			}
 		);
 	}

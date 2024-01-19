@@ -1,34 +1,13 @@
-from django.http import HttpResponse
-from django.template import loader
-from django.http import JsonResponse
-from django.core import serializers
-
-import sys
-import io
-from contextlib import redirect_stdout
-
-import app.include.Spartacus as Spartacus
-import app.include.Spartacus.Database as Database
-import app.include.Spartacus.Utils as Utils
-import app.include.OmniDatabase as OmniDatabase
-from app.include.Session import Session
-from datetime import datetime
-
-from RestrictedPython import compile_restricted
-from RestrictedPython.Guards import safe_builtins, full_write_guard, \
-        guarded_iter_unpack_sequence, guarded_unpack_sequence
-from RestrictedPython.Utilities import utility_builtins
-from RestrictedPython.Eval import default_guarded_getitem
-from RestrictedPython.Eval import RestrictionCapableEval
-
-from app.models.main import *
-from django.contrib.auth.models import User
-from django.db.models import Q
-
-from app.utils.decorators import user_authenticated, database_required, session_required
+from app.models.main import (Connection, MonUnits, MonUnitsConnections,
+                             Technology)
+from app.utils.decorators import (database_required, database_required_new,
+                                  session_required, user_authenticated)
 from app.utils.response_helpers import create_response_template, error_response
-from app.views.monitoring_units import postgresql as postgresql_units
 from app.views.monitoring_units import mysql as mysql_units
+from app.views.monitoring_units import postgresql as postgresql_units
+from django.http import HttpResponse, JsonResponse
+from RestrictedPython import compile_restricted, safe_builtins
+from RestrictedPython.Eval import default_guarded_getitem
 
 monitoring_units_database = {}
 monitoring_units = {}
@@ -203,6 +182,87 @@ def get_monitor_units(request, v_database):
 
     return JsonResponse(v_return)
 
+
+@user_authenticated
+@database_required_new(check_timeout=False, open_connection=False)
+def get_monitor_widgets(request, database):
+    database_index = request.data.get("database_index")
+    widgets = []
+    try:
+        user_widgets = MonUnitsConnections.objects.filter(
+            user=request.user, connection=database_index
+        )
+
+        # There are no units for this user/connection pair, create defaults
+
+        if not len(user_widgets):
+            conn_object = Connection.objects.get(id=database_index)
+
+            for _, mon_unit in monitoring_units.items():
+                if (
+                    mon_unit.get("default") is True
+                    and mon_unit.get("dbms") == database.v_db_type
+                ):
+                    user_widget = MonUnitsConnections(
+                        unit=mon_unit.get("id"),
+                        user=request.user,
+                        connection=conn_object,
+                        interval=mon_unit.get("interval"),
+                        plugin_name=mon_unit.get("plugin_name"),
+                    )
+                    user_widget.save()
+
+            # Retrieve user units again
+            user_widgets = MonUnitsConnections.objects.filter(
+                user=request.user, connection=database_index
+            )
+
+        for user_widget in user_widgets:
+            if user_widget.plugin_name == "":
+                try:
+                    default_widget = MonUnits.objects.get(id=user_widget.unit)
+                    widget = {
+                        "saved_id": user_widget.id,
+                        "id": default_widget.id,
+                        "title": default_widget.title,
+                        "plugin_name": "",
+                        "interval": user_widget.interval,
+                        "type": default_widget.type,
+                        "widget_data": None,
+                    }
+                    widgets.append(widget)
+                except Exception:
+                    user_widget.delete()
+            else:
+                # search plugin data
+                found = False
+
+                for _, mon_unit in monitoring_units.items():
+                    if (
+                        mon_unit.get("id") == user_widget.unit
+                        and mon_unit.get("plugin_name") == user_widget.plugin_name
+                        and mon_unit.get("dbms") == database.v_db_type
+                    ):
+                        found = True
+                        widget = {
+                            "saved_id": user_widget.id,
+                            "id": user_widget.unit,
+                            "title": mon_unit.get("title"),
+                            "plugin_name": user_widget.plugin_name,
+                            "interval": user_widget.interval,
+                            "type": mon_unit.get("type"),
+                            "widget_data": None,
+                        }
+                        widgets.append(widget)
+                        break
+                if not found:
+                    user_widget.delete()
+    # No mon widgets connections
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data={"widgets": widgets})
+
+
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def get_monitor_unit_template(request):
@@ -321,6 +381,19 @@ def remove_saved_monitor_unit(request):
 
     return JsonResponse(v_return)
 
+
+@user_authenticated
+@session_required(include_session=False)
+def remove_saved_monitor_widget(request):
+    saved_id = request.data.get("saved_id")
+
+    try:
+        MonUnitsConnections.objects.get(id=saved_id).delete()
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return HttpResponse(status=204)
+
+
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def update_saved_monitor_unit_interval(request):
@@ -338,6 +411,23 @@ def update_saved_monitor_unit_interval(request):
         return error_response(message=str(exc))
 
     return JsonResponse(v_return)
+
+
+@user_authenticated
+@session_required(include_session=False)
+def update_saved_monitor_widget_interval(request):
+    data = request.data
+    saved_id = data.get("saved_id")
+    interval = data.get("interval")
+
+    try:
+        unit = MonUnitsConnections.objects.get(id=saved_id)
+        unit.interval = interval
+        unit.save()
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return HttpResponse(status=204)
+
 
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
@@ -481,6 +571,137 @@ def refresh_monitor_units(request, v_database):
 
         return JsonResponse(v_return)
 
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def refresh_monitor_widget(request, database):
+    widget = request.data.get('widget')
+
+    conn_object = Connection.objects.get(id=database.v_conn_id)
+
+    #save new user/connection unit
+    if widget.get("saved_id") == -1:
+        try:
+            user_unit = MonUnitsConnections(
+                unit=widget.get("id"),
+                user=request.user,
+                connection=conn_object,
+                interval=widget.get("interval"),
+                plugin_name=widget.get("plugin_name")
+            )
+            user_unit.save()
+            widget["saved_id"] = user_unit.id
+        except Exception as exc:
+            return JsonResponse(data={"data": str(exc)}, status=400)
+
+    if widget.get("plugin_name") == "":
+        unit_data = monitoring_units_database.get(widget.get("id"))
+
+        script_data = unit_data.script_data
+        script_chart = unit_data.script_chart
+
+        unit_data = {
+            'saved_id': widget.get('saved_id'),
+            'id': widget.get('id'),
+            # 'sequence': widget['sequence'],
+            'type': unit_data.type,
+            'title': unit_data.title,
+            'interval': unit_data.interval,
+            # 'object': None,
+            # 'error': False
+        }
+
+    # plugin unit
+    else:
+        # search plugin data
+
+        unit_data = None
+
+        for _, mon_unit in monitoring_units.items():
+            if mon_unit.get('id') == widget.get('id') and mon_unit.get('plugin_name') == widget.get('plugin_name'):
+                unit_data = mon_unit
+                break
+        
+        script_data = unit_data['script_data']
+        script_chart = unit_data['script_chart']
+
+        unit_data = {
+            'saved_id': widget['saved_id'],
+            'id': unit_data['id'],
+            # 'sequence': v_id['sequence'],
+            'type': unit_data['type'],
+            'title': unit_data['title'],
+            'interval': unit_data['interval'],
+            # 'object': None,
+            # 'error': False
+        }
+
+    try:
+        unit_data = {
+                    'saved_id': widget['saved_id'],
+                    'id': unit_data['id'],
+                    # 'sequence': unit_data['sequence'],
+                    'type': unit_data['type'],
+                    'title': unit_data['title'],
+                    'interval': unit_data['interval'],
+                    # 'object': None,
+                    # 'error': False
+                }
+
+        loc1 = {
+            "connection": database,
+            "previous_data": widget.get('object_data')
+        }
+
+        loc2 = {
+            "connection": database,
+            "previous_data": widget.get('object_data')
+        }
+
+        restricted_globals = dict(__builtins__=safe_builtins)
+        restricted_globals['_getiter_'] = iter
+        restricted_globals['_getattr_'] = getattr
+        restricted_globals['_getitem_'] = default_guarded_getitem
+        restricted_globals['__builtins__']['__import__'] = _hook_import
+
+        byte_code = compile_restricted(script_data, '<inline>', 'exec')
+        exec(byte_code, restricted_globals, loc1)
+        data = loc1['result']
+
+        if widget.get("rendered") == 1 and unit_data["type"] != "grid":
+            unit_data["object"] = data
+        elif unit_data["type"]  == "grid":
+            unit_data["data"] = [dict(row) for row in data.get("data", [])]
+        elif unit_data['type'] == 'graph':
+            byte_code = compile_restricted(script_chart, '<inline>', 'exec')
+            exec(byte_code, restricted_globals, loc2)
+            result = loc2['result']
+            result['elements'] = data
+            unit_data['object'] = result
+        else:
+            byte_code = compile_restricted(script_chart, '<inline>', 'exec')
+            exec(byte_code, restricted_globals, loc2)
+            result = loc2['result']
+            result['data'] = data
+            unit_data['object'] = result
+
+    except Exception as exc:
+        # unit_data = {
+        # 'saved_id': widget['saved_id'],
+        # 'id': unit_data['id'],
+        # 'v_sequence': unit_data['sequence'],
+        # 'type': unit_data['type'],
+        # 'title': unit_data['title'],
+        # 'interval': unit_data['interval'],
+        # 'object': None,
+        # 'error': True,
+        # 'message': str(exc)
+    # }
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    
+    return JsonResponse(unit_data)
+
+
 @user_authenticated
 @database_required(p_check_timeout = True, p_open_connection = True)
 def test_monitor_script(request, v_database):
@@ -507,8 +728,6 @@ def test_monitor_script(request, v_database):
             "connection": v_database,
             "previous_data": None
         }
-
-        from RestrictedPython import safe_globals
 
         restricted_globals = dict(__builtins__=safe_builtins)
         restricted_globals['_getiter_'] = iter

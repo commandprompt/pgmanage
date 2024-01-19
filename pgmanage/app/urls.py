@@ -298,12 +298,16 @@ base_urlpatterns = [
     re_path(r'^get_monitor_unit_list/', views.monitor_dashboard.get_monitor_unit_list, name='get_monitor_unit_list'),
     re_path(r'^get_monitor_unit_details/', views.monitor_dashboard.get_monitor_unit_details, name='get_monitor_unit_details'),
     re_path(r'^get_monitor_units/', views.monitor_dashboard.get_monitor_units, name='get_monitor_units'),
+    re_path(r'^get_monitor_widgets/', views.monitor_dashboard.get_monitor_widgets, name='get_monitor_units'),
     re_path(r'^refresh_monitor_units/', views.monitor_dashboard.refresh_monitor_units, name='refresh_monitor_units'),
+    re_path(r'^refresh_monitor_widget/', views.monitor_dashboard.refresh_monitor_widget, name='refresh_monitor_widget'),
     re_path(r'^get_monitor_unit_template/', views.monitor_dashboard.get_monitor_unit_template, name='get_monitor_unit_template'),
     re_path(r'^save_monitor_unit/', views.monitor_dashboard.save_monitor_unit, name='save_monitor_unit'),
     re_path(r'^delete_monitor_unit/', views.monitor_dashboard.delete_monitor_unit, name='delete_monitor_unit'),
     re_path(r'^remove_saved_monitor_unit/', views.monitor_dashboard.remove_saved_monitor_unit, name='remove_saved_monitor_unit'),
+    re_path(r'^remove_saved_monitor_widget/', views.monitor_dashboard.remove_saved_monitor_widget),
     re_path(r'^update_saved_monitor_unit_interval/', views.monitor_dashboard.update_saved_monitor_unit_interval, name='update_saved_monitor_unit_interval'),
+    re_path(r'^update_saved_monitor_widget_interval/', views.monitor_dashboard.update_saved_monitor_widget_interval),
 
     # Configuration
     path('configuration/<int:config_id>/', views.configuration.delete_config, name="delete_configuration"),
