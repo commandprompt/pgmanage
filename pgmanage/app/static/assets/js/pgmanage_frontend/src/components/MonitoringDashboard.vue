@@ -1,5 +1,5 @@
 <template>
-  <div class="monitoring-dashboard">
+  <div>
     <div class="container-fluid">
       <button class="btn btn-primary btn-sm my-2 mr-2" @click="refreshWidgets">
         <i class="fas fa-sync-alt mr-2"></i>
@@ -98,10 +98,6 @@ export default {
 </script>
 
 <style scoped>
-.monitoring-dashboard {
-  border: 1px solid #43464e;
-}
-
 .monitoring-widgets {
   overflow: auto;
   height: 90vh;

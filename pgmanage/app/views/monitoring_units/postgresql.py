@@ -1659,6 +1659,9 @@ result = {
     "type": "pie",
     "data": None,
     "options": {
+        "legend": {
+            "position": "bottom",
+        },
         "responsive": True,
         "title":{
             "display":True,
@@ -1721,6 +1724,9 @@ result = {
     "type": "pie",
     "data": None,
     "options": {
+        "legend": {
+            "position": "bottom",
+        },
         "responsive": True,
         "title":{
             "display":True,

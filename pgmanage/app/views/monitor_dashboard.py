@@ -579,7 +579,7 @@ def refresh_monitor_widget(request, database):
 
     conn_object = Connection.objects.get(id=database.v_conn_id)
 
-    #save new user/connection unit
+    # save new user/connection unit
     if widget.get("saved_id") == -1:
         try:
             user_unit = MonUnitsConnections(
@@ -603,12 +603,9 @@ def refresh_monitor_widget(request, database):
         unit_data = {
             'saved_id': widget.get('saved_id'),
             'id': widget.get('id'),
-            # 'sequence': widget['sequence'],
             'type': unit_data.type,
             'title': unit_data.title,
             'interval': unit_data.interval,
-            # 'object': None,
-            # 'error': False
         }
 
     # plugin unit
@@ -628,34 +625,28 @@ def refresh_monitor_widget(request, database):
         unit_data = {
             'saved_id': widget['saved_id'],
             'id': unit_data['id'],
-            # 'sequence': v_id['sequence'],
             'type': unit_data['type'],
             'title': unit_data['title'],
             'interval': unit_data['interval'],
-            # 'object': None,
-            # 'error': False
         }
 
     try:
         unit_data = {
                     'saved_id': widget['saved_id'],
                     'id': unit_data['id'],
-                    # 'sequence': unit_data['sequence'],
                     'type': unit_data['type'],
                     'title': unit_data['title'],
                     'interval': unit_data['interval'],
-                    # 'object': None,
-                    # 'error': False
                 }
 
         loc1 = {
             "connection": database,
-            "previous_data": widget.get('object_data')
+            "previous_data": widget.get('widget_data')
         }
 
         loc2 = {
             "connection": database,
-            "previous_data": widget.get('object_data')
+            "previous_data": widget.get('widget_data')
         }
 
         restricted_globals = dict(__builtins__=safe_builtins)
@@ -668,7 +659,7 @@ def refresh_monitor_widget(request, database):
         exec(byte_code, restricted_globals, loc1)
         data = loc1['result']
 
-        if widget.get("rendered") == 1 and unit_data["type"] != "grid":
+        if not widget.get("initial") and unit_data["type"] in ["chart", "timeseries"]:
             unit_data["object"] = data
         elif unit_data["type"]  == "grid":
             unit_data["data"] = [dict(row) for row in data.get("data", [])]
@@ -686,17 +677,6 @@ def refresh_monitor_widget(request, database):
             unit_data['object'] = result
 
     except Exception as exc:
-        # unit_data = {
-        # 'saved_id': widget['saved_id'],
-        # 'id': unit_data['id'],
-        # 'v_sequence': unit_data['sequence'],
-        # 'type': unit_data['type'],
-        # 'title': unit_data['title'],
-        # 'interval': unit_data['interval'],
-        # 'object': None,
-        # 'error': True,
-        # 'message': str(exc)
-    # }
         return JsonResponse(data={"data": str(exc)}, status=400)
     
     return JsonResponse(unit_data)
