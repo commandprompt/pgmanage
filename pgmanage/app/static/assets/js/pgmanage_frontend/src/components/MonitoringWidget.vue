@@ -106,7 +106,12 @@ export default {
     databaseIndex: Number,
     refreshWidget: Boolean,
   },
-  emits: ["widgetRefreshed", "widgetClose", "intervalUpdated"],
+  emits: [
+    "widgetRefreshed",
+    "widgetClose",
+    "intervalUpdated",
+    "updateWidgetId",
+  ],
   data() {
     return {
       showLoading: true,
@@ -140,6 +145,7 @@ export default {
   },
   unmounted() {
     emitter.all.delete(`${this.tabId}_redraw_widget_grid`);
+    clearTimeout(this.timeoutObject);
   },
   watch: {
     refreshWidget(newValue, oldValue) {
@@ -165,6 +171,9 @@ export default {
           },
         })
         .then((resp) => {
+          if (this.monitoringWidget.saved_id === -1) {
+            this.$emit("updateWidgetId", resp.data.saved_id);
+          }
           this.buildMonitorWidget(resp.data);
           this.showLoading = false;
         })

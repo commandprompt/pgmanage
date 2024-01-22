@@ -296,6 +296,7 @@ base_urlpatterns = [
     #MONITORING SYSTEM
     re_path(r'^test_monitor_script/', views.monitor_dashboard.test_monitor_script, name='test_monitor_script'),
     re_path(r'^get_monitor_unit_list/', views.monitor_dashboard.get_monitor_unit_list, name='get_monitor_unit_list'),
+    re_path(r'^get_monitor_widget_list/', views.monitor_dashboard.get_monitor_widget_list, name='get_monitor_unit_list'),
     re_path(r'^get_monitor_unit_details/', views.monitor_dashboard.get_monitor_unit_details, name='get_monitor_unit_details'),
     re_path(r'^get_monitor_units/', views.monitor_dashboard.get_monitor_units, name='get_monitor_units'),
     re_path(r'^get_monitor_widgets/', views.monitor_dashboard.get_monitor_widgets, name='get_monitor_units'),

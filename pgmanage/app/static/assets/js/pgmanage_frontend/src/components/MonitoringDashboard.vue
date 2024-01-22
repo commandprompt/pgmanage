@@ -5,7 +5,10 @@
         <i class="fas fa-sync-alt mr-2"></i>
         Refresh All
       </button>
-      <button class="btn btn-primary btn-sm my-2" @click="showMonitorUnitList">
+      <button
+        class="btn btn-primary btn-sm my-2"
+        @click="showMonitoringWidgetsList"
+      >
         Manage Units
       </button>
 
@@ -21,22 +24,35 @@
           @widget-refreshed="waitForAllAndRefreshCounter"
           @widget-close="closeWidget"
           @interval-updated="updateWidgetInterval"
-        ></MonitoringWidget>
+          @update-widget-id="updateWidgetId"
+        />
       </div>
     </div>
   </div>
+
+  <Teleport to="body">
+    <MonitoringWidgetsModal
+      :widgets="widgets"
+      :conn-id="connId"
+      :database-index="databaseIndex"
+      :widgets-modal-visible="monitoringModalVisible"
+      @modal-hide="monitoringModalVisible = false"
+      @toggle-widget="toggleWidget"
+    />
+  </Teleport>
 </template>
 
 <script>
-import { showMonitorUnitList } from "../monitoring";
 import axios from "axios";
 import MonitoringWidget from "./MonitoringWidget.vue";
 import { showToast } from "../notification_control";
+import MonitoringWidgetsModal from "./MonitoringWidgetsModal.vue";
 
 export default {
   name: "MonitoringDashboard",
   components: {
     MonitoringWidget,
+    MonitoringWidgetsModal,
   },
   props: {
     connId: String,
@@ -48,6 +64,7 @@ export default {
       widgets: [],
       refreshWidget: false,
       counter: 0,
+      monitoringModalVisible: false,
     };
   },
   mounted() {
@@ -92,6 +109,34 @@ export default {
     updateWidgetInterval({ saved_id, interval }) {
       let widget = this.widgets.find((widget) => widget.saved_id === saved_id);
       widget.interval = interval;
+    },
+    updateWidgetId(widgetId) {
+      let widget = this.widgets.find((widget) => widget.saved_id === -1);
+      widget.saved_id = widgetId;
+    },
+    showMonitoringWidgetsList() {
+      this.monitoringModalVisible = true;
+    },
+    toggleWidget(widgetData) {
+      let widgetIdx = this.widgets.findIndex(
+        (widget) => widget.id === widgetData.id
+      );
+
+      if (widgetIdx === -1) {
+        let newWidget = {
+          saved_id: -1,
+          id: widgetData.id,
+          title: widgetData.title,
+          interval: widgetData.interval,
+          plugin_name: widgetData.plugin_name ?? "",
+          type: widgetData.type,
+        };
+
+        this.widgets.unshift(newWidget);
+      } else {
+        let widget = this.widgets[widgetIdx];
+        this.closeWidget(widget.saved_id);
+      }
     },
   },
 };

@@ -97,6 +97,35 @@ def get_monitor_unit_list(request, v_database):
 
     return JsonResponse(v_return)
 
+
+@user_authenticated
+@database_required_new(check_timeout=False, open_connection=False)
+def get_monitor_widget_list(request, database):
+    widget_list = []
+    try:
+        # plugins units
+        for _, mon_unit in monitoring_units.items():
+            if mon_unit.get('dbms') == database.v_db_type:
+                widget_list.append({
+                    "id": mon_unit.get('id'),
+                    "actions": False,
+                    "title": mon_unit.get('title'),
+                    'type': mon_unit.get('type'),
+                    "interval": mon_unit.get("interval"),
+                    "plugin_name": mon_unit.get("plugin_name"),
+                })
+
+        for _, mon_unit in monitoring_units_database.items():
+            widget_list.append({"id": mon_unit.id,
+                         "actions": True,
+                         "title": mon_unit.title,
+                         "type": mon_unit.type,
+                         "interval": mon_unit.interval})
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data={"data": widget_list})
+
+
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def get_monitor_unit_details(request):
