@@ -42,6 +42,7 @@
 <script>
 import axios from "axios";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import { createMessageModal, showToast } from "../notification_control";
 
 export default {
   name: "MonitoringWidgetsModal",
@@ -80,7 +81,6 @@ export default {
           tab_id: this.connId,
         })
         .then((resp) => {
-          console.log(resp);
           this.table = new Tabulator(this.$refs.tabulator, {
             layout: "fitDataStretch",
             data: resp.data.data,
@@ -138,8 +138,8 @@ export default {
         deleteIcon.title = "Delete";
         deleteIcon.className =
           "fas fa-times action-grid action-close text-danger";
-        deleteIcon.onclick = function () {
-          //   deleteMonitorUnit(sourceDataRow.id);
+        deleteIcon.onclick = () => {
+          this.deleteMonitorWidget(sourceDataRow.id);
         };
 
         cellWrapper.appendChild(editIcon);
@@ -148,6 +148,25 @@ export default {
         return cellWrapper;
       }
       return input;
+    },
+    deleteMonitorWidget(widgetId) {
+      createMessageModal(
+        "Are you sure you want to delete this monitor widget?",
+        () => {
+          let widget = this.widgets.find((widget) => widget.id === widgetId);
+          if (!!widget) {
+            this.$emit("toggleWidget", widget);
+          }
+          axios
+            .post("/delete_monitor_widget/", { widget_id: widgetId })
+            .then((resp) => {
+              this.getMonitorWidgetList();
+            })
+            .catch((error) => {
+              showToast("error", error);
+            });
+        }
+      );
     },
   },
 };

@@ -87,15 +87,11 @@
 import axios from "axios";
 import { cellDataModal, adjustChartTheme } from "../header_actions";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-import { Transition } from "vue";
 import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
 
 export default {
   name: "MonitoringWidget",
-  components: {
-    Transition,
-  },
   props: {
     monitoringWidget: {
       type: Object,

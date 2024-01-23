@@ -73,7 +73,7 @@ export let createMonitorDashboardTabFunction = function () {
 
   let tag = {
     tab_id: tab.id,
-    mode: "monitor_dashboard",
+    mode: "monitor_dashboard_vue",
     tab_title_span: tab_title_span,
     tab_loading_span: tab_loading_span,
     tab_check_span: tab_check_span,

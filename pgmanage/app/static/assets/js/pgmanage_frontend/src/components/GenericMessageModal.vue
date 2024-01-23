@@ -1,4 +1,5 @@
 <template>
+  <Teleport to="body">
   <div class="modal show" id="generic_modal_message" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -26,6 +27,7 @@
       </div>
     </div>
   </div>
+</Teleport>
 </template>
 
 

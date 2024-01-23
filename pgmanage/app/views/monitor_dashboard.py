@@ -115,6 +115,8 @@ def get_monitor_widget_list(request, database):
                     "plugin_name": mon_unit.get("plugin_name"),
                 })
 
+        # isn't better to remove monitoring_units_database and use
+        # direct query from database MonUnits.objects.all() filtered by user
         for _, mon_unit in monitoring_units_database.items():
             widget_list.append({"id": mon_unit.id,
                          "actions": True,
@@ -395,6 +397,22 @@ def delete_monitor_unit(request):
         return error_response(message=str(exc))
 
     return JsonResponse(v_return)
+
+
+@user_authenticated
+@session_required(include_session=False)
+def delete_monitor_widget(request):
+    widget_id = request.data.get("widget_id")
+
+    try:
+        MonUnits.objects.get(id=widget_id).delete()
+        del monitoring_units_database[widget_id]
+    
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return HttpResponse(status=204)
+
 
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
