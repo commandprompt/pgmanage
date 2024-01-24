@@ -1,0 +1,250 @@
+<template>
+  <Teleport to="body">
+    <div ref="editWidgetModal" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <h2 class="modal-title font-weight-bold">Monitoring Widget</h2>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-row mt-3">
+              <div class="form-group col-3">
+                <label for="widgetName" class="font-weight-bold mb-2"
+                  >Name</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="widgetName"
+                  placeholder="Widget name"
+                  v-model="widgetName"
+                />
+              </div>
+
+              <div class="form-group col-2">
+                <label for="widgetType" class="font-weight-bold mb-2"
+                  >Type</label
+                >
+                <select
+                  id="widgetType"
+                  class="form-control"
+                  placeholder="Widget type"
+                  v-model="selectedType"
+                >
+                  <option
+                    v-for="(widgetType, index) in widgetTypes"
+                    :key="index"
+                    :value="widgetType"
+                  >
+                    {{ widgetType }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group col-2">
+                <label for="refreshInterval" class="font-weight-bold mb-2"
+                  >Refresh Interval</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="refreshInterval"
+                  placeholder="Widget Interval"
+                  v-model.number="widgetInterval"
+                />
+              </div>
+
+              <div class="form-group col-5">
+                <label for="widgetTemplates" class="font-weight-bold mb-2"
+                  >Template</label
+                >
+                <select
+                  id="widgetTemplates"
+                  class="form-control"
+                  v-model="selectedWidget"
+                  @change="changeTemplate"
+                >
+                  <option value="" disabled>Select Template</option>
+                  <option
+                    v-for="(widget, index) in widgets"
+                    :key="index"
+                    :value="widget"
+                  >
+                    ({{ widget.type }}) {{ widget.title }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="col-6">
+                <div ref="dataEditor" class="custom-editor"></div>
+              </div>
+
+              <div class="col-6">
+                <div ref="scriptEditor" class="custom-editor"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary">Test</button>
+            <button type="button" class="btn btn-primary">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<script>
+import ace from "ace-builds";
+import { settingsStore } from "../stores/stores_initializer";
+import axios from "axios";
+import { showToast } from "../notification_control";
+
+export default {
+  name: "MonitoringWidgetEditModal",
+  props: {
+    connId: String,
+    databaseIndex: Number,
+    modalVisible: Boolean,
+    widgetId: Number,
+  },
+  emits: ["modalHide"],
+  data() {
+    return {
+      widgetTypes: ["timeseries", "chart", "grid"],
+      widgets: [],
+      dataEditor: null,
+      scriptEditor: null,
+      selectedWidget: "",
+      widgetTemplate: null,
+      selectedType: "timeseries",
+      widgetName: "",
+      widgetInterval: "",
+    };
+  },
+  mounted() {
+    $(this.$refs.editWidgetModal).on("hide.bs.modal", () => {
+      this.resetToDefault();
+      this.$emit("modalHide");
+    });
+
+    $(this.$refs.editWidgetModal).on("show.bs.modal", () => {
+      this.dataEditor = this.setupEditor(this.$refs.dataEditor);
+      this.scriptEditor = this.setupEditor(this.$refs.scriptEditor);
+      this.getMonitoringWidgetList();
+      if (this.widgetId) {
+        this.getMonitoringWidgetDetails();
+      }
+    });
+  },
+  watch: {
+    modalVisible(newValue, oldValue) {
+      if (newValue) {
+        $(this.$refs.editWidgetModal).modal("show");
+      }
+    },
+  },
+  methods: {
+    getMonitoringWidgetList() {
+      axios
+        .post("/get_monitoring_widget_list/", {
+          tab_id: this.connId,
+          database_index: this.databaseIndex,
+        })
+        .then((resp) => {
+          this.widgets = resp.data.data;
+        })
+        .catch((error) => {
+          showToast("error", error);
+        });
+    },
+    getMonitoringWidgetDetails() {
+      axios
+        .get(`/monitoring_widgets/${this.widgetId}/`)
+        .then((resp) => {
+          this.widgetName = resp.data.title;
+          this.widgetInterval = resp.data.interval;
+          this.selectedType = resp.data.type;
+          this.setDataEditorValue(resp.data.script_data);
+          this.setScriptEditorValue(resp.data.script_chart);
+        })
+        .catch((error) => {
+          showToast("error", error);
+        });
+    },
+    setupEditor(editorDiv) {
+      const editor = ace.edit(editorDiv);
+      editor.setShowPrintMargin(false);
+      editor.$blockScrolling = Infinity;
+      editor.setTheme(`ace/theme/${settingsStore.editorTheme}`);
+      editor.session.setMode("ace/mode/python");
+      editor.setFontSize(settingsStore.fontSize);
+      editor.commands.bindKey("ctrl-space", null);
+      editor.commands.bindKey("Cmd-,", null);
+      editor.commands.bindKey("Ctrl-,", null);
+      editor.commands.bindKey("Cmd-Delete", null);
+      editor.commands.bindKey("Ctrl-Delete", null);
+      editor.commands.bindKey("Ctrl-Up", null);
+      editor.commands.bindKey("Ctrl-Down", null);
+      return editor;
+    },
+    setScriptEditorValue(value) {
+      this.scriptEditor.setValue(value);
+      this.scriptEditor.clearSelection();
+      this.scriptEditor.gotoLine(0, 0, true);
+    },
+    setDataEditorValue(value) {
+      this.dataEditor.setValue(value);
+      this.dataEditor.clearSelection();
+      this.dataEditor.gotoLine(0, 0, true);
+    },
+    changeTemplate() {
+      axios
+        .post(`/monitoring_widgets/${this.selectedWidget.id}/template/`, {
+          plugin_name: this.selectedWidget.plugin_name,
+        })
+        .then((resp) => {
+          this.widgetInterval = resp.data.interval;
+          this.selectedType = resp.data.type;
+          this.setDataEditorValue(resp.data.script_data);
+          this.setScriptEditorValue(resp.data.script_chart);
+        })
+        .catch((error) => {
+          showToast("error", error);
+        });
+    },
+    resetToDefault() {
+      this.scriptEditor.destroy();
+      this.dataEditor.destroy();
+      this.selectedWidget = "";
+      this.widgetTemplate = null;
+      this.widgetName = "";
+      this.widgetInterval = "";
+      this.selectedType = "timeseries";
+    },
+  },
+};
+</script>
+
+<style scoped>
+.modal-content {
+  min-height: calc(100vh - 100px);
+}
+
+.custom-editor {
+  width: 100%;
+  height: calc(100vh - 300px);
+}
+</style>

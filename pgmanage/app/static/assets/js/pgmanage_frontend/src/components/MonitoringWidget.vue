@@ -174,6 +174,9 @@ export default {
           this.showLoading = false;
         })
         .catch((error) => {
+          if (this.monitoringWidget.saved_id === -1) {
+            this.$emit("updateWidgetId", error.response.data.saved_id)
+          }
           this.errorText = error.response.data.data;
           this.showLoading = false;
         });

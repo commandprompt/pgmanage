@@ -6,6 +6,7 @@ from app.utils.response_helpers import create_response_template, error_response
 from app.views.monitoring_units import mysql as mysql_units
 from app.views.monitoring_units import postgresql as postgresql_units
 from django.http import HttpResponse, JsonResponse
+from django.forms.models import model_to_dict
 from RestrictedPython import compile_restricted, safe_builtins
 from RestrictedPython.Eval import default_guarded_getitem
 
@@ -100,7 +101,7 @@ def get_monitor_unit_list(request, v_database):
 
 @user_authenticated
 @database_required_new(check_timeout=False, open_connection=False)
-def get_monitor_widget_list(request, database):
+def get_monitoring_widget_list(request, database):
     widget_list = []
     try:
         # plugins units
@@ -143,6 +144,15 @@ def get_monitor_unit_details(request):
         return error_response(message=str(exc))
 
     return JsonResponse(v_return)
+
+@user_authenticated
+@session_required(include_session=False)
+def detail(request, widget_id):
+    widget = MonUnits.objects.filter(id=widget_id).first()
+    if not widget:
+        return JsonResponse(data={"data": "Widget not found."}, status=404)
+    return JsonResponse(model_to_dict(widget))
+
 
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
@@ -332,6 +342,40 @@ def get_monitor_unit_template(request):
                 break
 
     return JsonResponse(v_return)
+
+
+@user_authenticated
+@session_required(include_session=False)
+def widget_template(request, widget_id):
+    data = request.data
+
+    widget_plugin_name = data.get("plugin_name")
+    widget_data = {}
+
+    if widget_plugin_name == "":
+        widget = MonUnits.objects.filter(id=widget_id).first()
+
+        if widget:
+            widget_data = {
+                "script_chart": widget.script_chart,
+                "script_data": widget.script_data,
+                "type": widget.type,
+                "interval": widget.interval
+            }
+
+    else:
+        # search plugin data
+        mon_widget = monitoring_units.get((widget_plugin_name, widget_id))
+
+        if mon_widget:
+                widget_data = {
+                    'interval': mon_widget.get("interval"),
+                    'script_chart': mon_widget.get("script_chart"),
+                    'script_data': mon_widget.get("script_data"),
+                    'type': mon_widget.get("type")
+                }
+    return JsonResponse(data=widget_data)
+
 
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
@@ -724,7 +768,11 @@ def refresh_monitor_widget(request, database):
             unit_data['object'] = result
 
     except Exception as exc:
-        return JsonResponse(data={"data": str(exc)}, status=400)
+        response = {
+            "data": str(exc),
+            "saved_id": unit_data.get("saved_id")
+        }
+        return JsonResponse(data=response, status=400)
     
     return JsonResponse(unit_data)
 

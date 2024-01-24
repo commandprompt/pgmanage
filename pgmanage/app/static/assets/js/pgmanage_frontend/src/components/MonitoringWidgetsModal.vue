@@ -28,7 +28,7 @@
         </div>
         <div class="modal-footer">
           <button
-            @click="editMonitorWidget"
+            @click="editMonitorWidget(null)"
             class="btn btn-primary btn-sm mr-3"
           >
             New Unit
@@ -37,15 +37,26 @@
       </div>
     </div>
   </div>
+  <MonitoringWidgetEditModal
+    :conn-id="connId"
+    :database-index="databaseIndex"
+    :modal-visible="editModalVisible"
+    :widget-id="editWidgetId"
+    @modal-hide="onEditHide"
+  />
 </template>
 
 <script>
 import axios from "axios";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { createMessageModal, showToast } from "../notification_control";
+import MonitoringWidgetEditModal from "./MonitoringWidgetEditModal.vue";
 
 export default {
   name: "MonitoringWidgetsModal",
+  components: {
+    MonitoringWidgetEditModal,
+  },
   props: {
     widgetsModalVisible: Boolean,
     connId: String,
@@ -56,6 +67,8 @@ export default {
   data() {
     return {
       table: null,
+      editModalVisible: false,
+      editWidgetId: null,
     };
   },
   mounted() {
@@ -67,16 +80,16 @@ export default {
     widgetsModalVisible(newVal, oldVal) {
       if (newVal) {
         $(this.$refs.monitoringWidgetsModal).modal("show");
-        this.getMonitorWidgetList();
+        this.getMonitoringWidgetList();
       } else {
         if (!!this.table) this.table.destroy();
       }
     },
   },
   methods: {
-    getMonitorWidgetList() {
+    getMonitoringWidgetList() {
       axios
-        .post("/get_monitor_widget_list/", {
+        .post("/get_monitoring_widget_list/", {
           database_index: this.databaseIndex,
           tab_id: this.connId,
         })
@@ -130,8 +143,8 @@ export default {
         const editIcon = document.createElement("i");
         editIcon.title = "Edit";
         editIcon.className = "fas fa-edit action-grid action-edit-monitor";
-        editIcon.onclick = function () {
-          //   editMonitorUnit(sourceDataRow.id);
+        editIcon.onclick = () => {
+          this.editMonitorWidget(sourceDataRow.id);
         };
 
         const deleteIcon = document.createElement("i");
@@ -160,13 +173,22 @@ export default {
           axios
             .post("/delete_monitor_widget/", { widget_id: widgetId })
             .then((resp) => {
-              this.getMonitorWidgetList();
+              this.getMonitoringWidgetList();
             })
             .catch((error) => {
               showToast("error", error);
             });
         }
       );
+    },
+    editMonitorWidget(widgetId = null) {
+      $(this.$refs.monitoringWidgetsModal).modal("hide");
+      this.editModalVisible = true;
+      this.editWidgetId = widgetId;
+    },
+    onEditHide() {
+      this.editModalVisible = false;
+      this.editWidgetId = null;
     },
   },
 };
