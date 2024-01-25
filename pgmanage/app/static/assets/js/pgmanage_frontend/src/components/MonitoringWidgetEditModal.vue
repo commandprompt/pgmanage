@@ -159,7 +159,7 @@ export default {
   methods: {
     getMonitoringWidgetList() {
       axios
-        .post("/get_monitoring_widget_list/", {
+        .post("/monitoring-widgets/list", {
           tab_id: this.connId,
           database_index: this.databaseIndex,
         })
@@ -172,7 +172,7 @@ export default {
     },
     getMonitoringWidgetDetails() {
       axios
-        .get(`/monitoring_widgets/${this.widgetId}/`)
+        .get(`/monitoring-widgets/${this.widgetId}`)
         .then((resp) => {
           this.widgetName = resp.data.title;
           this.widgetInterval = resp.data.interval;
@@ -212,7 +212,7 @@ export default {
     },
     changeTemplate() {
       axios
-        .post(`/monitoring_widgets/${this.selectedWidget.id}/template/`, {
+        .post(`/monitoring-widgets/${this.selectedWidget.id}/template`, {
           plugin_name: this.selectedWidget.plugin_name,
         })
         .then((resp) => {

@@ -1,3 +1,4 @@
+import json
 from app.models.main import (Connection, MonUnits, MonUnitsConnections,
                              Technology)
 from app.utils.decorators import (database_required, database_required_new,
@@ -7,6 +8,7 @@ from app.views.monitoring_units import mysql as mysql_units
 from app.views.monitoring_units import postgresql as postgresql_units
 from django.http import HttpResponse, JsonResponse
 from django.forms.models import model_to_dict
+from django.views.decorators.http import require_http_methods
 from RestrictedPython import compile_restricted, safe_builtins
 from RestrictedPython.Eval import default_guarded_getitem
 
@@ -101,7 +103,7 @@ def get_monitor_unit_list(request, v_database):
 
 @user_authenticated
 @database_required_new(check_timeout=False, open_connection=False)
-def get_monitoring_widget_list(request, database):
+def monitoring_widgets_list(request, database):
     widget_list = []
     try:
         # plugins units
@@ -145,14 +147,25 @@ def get_monitor_unit_details(request):
 
     return JsonResponse(v_return)
 
+@require_http_methods(["GET", "DELETE"])
 @user_authenticated
 @session_required(include_session=False)
-def detail(request, widget_id):
-    widget = MonUnits.objects.filter(id=widget_id).first()
-    if not widget:
-        return JsonResponse(data={"data": "Widget not found."}, status=404)
-    return JsonResponse(model_to_dict(widget))
+def user_created_widget_detail(request, widget_id):
+    if request.method == "GET":
+        widget = MonUnits.objects.filter(id=widget_id).first()
+        if not widget:
+            return JsonResponse(data={"data": "Widget not found."}, status=404)
+        return JsonResponse(model_to_dict(widget))
+    if request.method == "DELETE":
+        widget = MonUnits.objects.filter(id=widget_id).first()
 
+        if widget:
+            widget.delete()
+
+        del monitoring_units_database[widget_id]
+
+        return HttpResponse(status=204)
+    # add save on post
 
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
@@ -226,7 +239,7 @@ def get_monitor_units(request, v_database):
 
 @user_authenticated
 @database_required_new(check_timeout=False, open_connection=False)
-def get_monitor_widgets(request, database):
+def monitoring_widgets(request, database):
     database_index = request.data.get("database_index")
     widgets = []
     try:
@@ -236,7 +249,7 @@ def get_monitor_widgets(request, database):
 
         # There are no units for this user/connection pair, create defaults
 
-        if not len(user_widgets):
+        if not user_widgets:
             conn_object = Connection.objects.get(id=database_index)
 
             for _, mon_unit in monitoring_units.items():
@@ -444,21 +457,6 @@ def delete_monitor_unit(request):
 
 
 @user_authenticated
-@session_required(include_session=False)
-def delete_monitor_widget(request):
-    widget_id = request.data.get("widget_id")
-
-    try:
-        MonUnits.objects.get(id=widget_id).delete()
-        del monitoring_units_database[widget_id]
-    
-    except Exception as exc:
-        return JsonResponse(data={"data": str(exc)}, status=400)
-
-    return HttpResponse(status=204)
-
-
-@user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
 def remove_saved_monitor_unit(request):
     v_return = create_response_template()
@@ -473,17 +471,28 @@ def remove_saved_monitor_unit(request):
     return JsonResponse(v_return)
 
 
+@require_http_methods(["DELETE", "PATCH"])
 @user_authenticated
 @session_required(include_session=False)
-def remove_saved_monitor_widget(request):
-    saved_id = request.data.get("saved_id")
+def widget_detail(request, widget_id):
+    if request.method == "DELETE":
+        widget = MonUnitsConnections.objects.filter(user=request.user, id=widget_id).first()
+        if not widget:
+            return JsonResponse(data={"data": "Widget not found."}, status=404)
+        widget.delete()
 
-    try:
-        MonUnitsConnections.objects.get(id=saved_id).delete()
-    except Exception as exc:
-        return JsonResponse(data={"data": str(exc)}, status=400)
-    return HttpResponse(status=204)
+        return HttpResponse(status=204)
+    if request.method == "PATCH":
+        data = json.loads(request.body or '{}')
+        interval = data.get("interval")
+        widget = MonUnitsConnections.objects.filter(user=request.user, id=widget_id).first()
+        if not widget:
+            return JsonResponse(data={"data": "Widget not found."}, status=404)
+        
+        widget.interval = interval or 5
+        widget.save()
 
+        return HttpResponse(status=204)
 
 @user_authenticated
 @session_required(use_old_error_format=True, include_session=False)
@@ -503,21 +512,6 @@ def update_saved_monitor_unit_interval(request):
 
     return JsonResponse(v_return)
 
-
-@user_authenticated
-@session_required(include_session=False)
-def update_saved_monitor_widget_interval(request):
-    data = request.data
-    saved_id = data.get("saved_id")
-    interval = data.get("interval")
-
-    try:
-        unit = MonUnitsConnections.objects.get(id=saved_id)
-        unit.interval = interval
-        unit.save()
-    except Exception as exc:
-        return JsonResponse(data={"data": str(exc)}, status=400)
-    return HttpResponse(status=204)
 
 
 @user_authenticated

@@ -89,7 +89,7 @@ export default {
   methods: {
     getMonitoringWidgetList() {
       axios
-        .post("/get_monitoring_widget_list/", {
+        .post("/monitoring-widgets/list", {
           database_index: this.databaseIndex,
           tab_id: this.connId,
         })
@@ -171,7 +171,7 @@ export default {
             this.$emit("toggleWidget", widget);
           }
           axios
-            .post("/delete_monitor_widget/", { widget_id: widgetId })
+            .delete(`/monitoring-widgets/user-created/${widgetId}`)
             .then((resp) => {
               this.getMonitoringWidgetList();
             })

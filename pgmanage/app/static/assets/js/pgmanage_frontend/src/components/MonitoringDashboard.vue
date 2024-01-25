@@ -9,7 +9,7 @@
         class="btn btn-primary btn-sm my-2"
         @click="showMonitoringWidgetsList"
       >
-        Manage Units
+        Manage Widgets
       </button>
 
       <div class="monitoring-widgets row">
@@ -68,19 +68,20 @@ export default {
     };
   },
   mounted() {
-    this.getMonitorUnits();
+    this.getMonitoringWidges();
   },
   methods: {
-    getMonitorUnits() {
+    getMonitoringWidges() {
       axios
-        .post("/get_monitor_widgets/", {
+        .post("/monitoring-widgets", {
           tab_id: this.connId,
           database_index: this.databaseIndex,
         })
         .then((resp) => {
-          resp.data.widgets.forEach((widget) => {
-            this.widgets.push(widget);
-          });
+          this.widgets = resp.data.widgets;
+        })
+        .catch((error) => {
+          showToast("error", error);
         });
     },
     refreshWidgets() {
@@ -93,14 +94,14 @@ export default {
         this.counter = 0;
       }
     },
-    closeWidget(widget_saved_id) {
-      let widget_id = this.widgets.findIndex(
-        (widget) => widget.saved_id === widget_saved_id
+    closeWidget(widgetSavedId) {
+      let widgetIdx = this.widgets.findIndex(
+        (widget) => widget.saved_id === widgetSavedId
       );
       axios
-        .post("/remove_saved_monitor_widget/", { saved_id: widget_saved_id })
+        .delete(`/monitoring-widgets/${widgetSavedId}`)
         .then(() => {
-          this.widgets.splice(widget_id, 1);
+          this.widgets.splice(widgetIdx, 1);
         })
         .catch((error) => {
           showToast("error", error);
@@ -110,9 +111,9 @@ export default {
       let widget = this.widgets.find((widget) => widget.saved_id === saved_id);
       widget.interval = interval;
     },
-    updateWidgetId(widgetId) {
+    updateWidgetId(widgetSavedId) {
       let widget = this.widgets.find((widget) => widget.saved_id === -1);
-      widget.saved_id = widgetId;
+      widget.saved_id = widgetSavedId;
     },
     showMonitoringWidgetsList() {
       this.monitoringModalVisible = true;

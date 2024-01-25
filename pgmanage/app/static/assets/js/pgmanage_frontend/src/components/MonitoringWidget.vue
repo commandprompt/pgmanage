@@ -2,7 +2,7 @@
   <div class="col-md-6 my-2">
     <div class="card">
       <div class="card-body">
-        <button class="close" @click="closeMonitorWidget">
+        <button class="close" @click="closeMonitoringWidget">
           <span aria-hidden="true">&times;</span>
         </button>
 
@@ -15,8 +15,7 @@
             <div class="div_loading_cover"></div>
             <div class="div_loading_content">
               <div
-                class="spinner-border text-primary"
-                style="width: 4rem; height: 4rem"
+                class="spinner-border spinner-size text-primary"
                 role="status"
               >
                 <span class="sr-only">Loading...</span>
@@ -32,7 +31,7 @@
           <button
             class="btn btn-secondary btn-sm mr-1"
             title="Refresh"
-            @click="refreshMonitorWidget"
+            @click="refreshMonitoringWidget"
           >
             <i class="fas fa-sync-alt fa-light"></i>
           </button>
@@ -41,7 +40,7 @@
             v-if="!isActive"
             class="btn btn-secondary btn-sm my-2 mr-1"
             title="Play"
-            @click="playMonitorWidget"
+            @click="playMonitoringWidget"
           >
             <i class="fas fa-play-circle fa-light"></i>
           </button>
@@ -50,7 +49,7 @@
             v-else
             class="btn btn-secondary btn-sm my-2 mr-1"
             title="Pause"
-            @click="pauseMonitorWidget"
+            @click="pauseMonitoringWidget"
           >
             <i class="fas fa-pause-circle fa-light"></i>
           </button>
@@ -61,13 +60,11 @@
             class="form-control form-control-sm mr-2"
             style="width: 60px"
           />
-          <span class="unit_header_element">seconds</span>
-          <span v-if="isGrid" class="unit_header_element ml-2">
-            {{ gridRows }} rows
-          </span>
+          <span>seconds</span>
+          <span v-if="isGrid" class="ml-2"> {{ gridRows }} rows </span>
         </div>
 
-        <div class="dashboard_unit_content_group">
+        <div class="widget-content">
           <div v-if="errorText" class="error_text">
             {{ this.errorText }}
           </div>
@@ -131,7 +128,7 @@ export default {
     },
   },
   mounted() {
-    this.refreshMonitorWidget();
+    this.refreshMonitoringWidget();
 
     emitter.on(`${this.tabId}_redraw_widget_grid`, () => {
       if (this.isGrid) {
@@ -146,13 +143,13 @@ export default {
   watch: {
     refreshWidget(newValue, oldValue) {
       if (!!newValue) {
-        this.refreshMonitorWidget();
+        this.refreshMonitoringWidget();
         this.$emit("widgetRefreshed");
       }
     },
   },
   methods: {
-    refreshMonitorWidget(showLoading = true) {
+    refreshMonitoringWidget(showLoading = true) {
       clearTimeout(this.timeoutObject);
       if (showLoading) this.showLoading = true;
       this.errorText = "";
@@ -175,14 +172,14 @@ export default {
         })
         .catch((error) => {
           if (this.monitoringWidget.saved_id === -1) {
-            this.$emit("updateWidgetId", error.response.data.saved_id)
+            this.$emit("updateWidgetId", error.response.data.saved_id);
           }
           this.errorText = error.response.data.data;
           this.showLoading = false;
         });
 
       this.timeoutObject = setTimeout(() => {
-        this.refreshMonitorWidget(false);
+        this.refreshMonitoringWidget(false);
       }, this.monitoringWidget.interval * 1000);
     },
     buildGrid(data) {
@@ -200,12 +197,11 @@ export default {
             label:
               '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
             action: (e, cell) => {
-              // can we use vue component here?
+              //TODO: check changing this to use vue component cellDataModal
               cellDataModal(null, null, null, cell.getValue(), false);
             },
           },
         ];
-        this.$refs.widgetContent.classList.add("unit_grid");
         this.$refs.widgetContent.classList.add("tabulator-custom");
         let tabulator = new Tabulator(this.$refs.widgetContent, {
           data: data.data,
@@ -404,9 +400,6 @@ export default {
         }
       }
     },
-    buildGraph(data) {
-      console.log("Not implemented");
-    },
     buildMonitorWidget(data, showLoading = true) {
       switch (this.monitoringWidget.type) {
         case "grid":
@@ -417,29 +410,25 @@ export default {
         case "chart_append":
           this.buildChart(data);
           break;
-        case "graph":
-          this.buildGraph(data);
-          break;
         default:
           break;
       }
     },
-    closeMonitorWidget() {
+    closeMonitoringWidget() {
       clearTimeout(this.timeoutObject);
       this.$emit("widgetClose", this.monitoringWidget.saved_id);
     },
-    pauseMonitorWidget() {
+    pauseMonitoringWidget() {
       clearTimeout(this.timeoutObject);
       this.isActive = false;
     },
-    playMonitorWidget() {
+    playMonitoringWidget() {
       this.isActive = true;
-      this.refreshMonitorWidget();
+      this.refreshMonitoringWidget();
     },
     updateInterval() {
       axios
-        .post("/update_saved_monitor_widget_interval/", {
-          saved_id: this.monitoringWidget.saved_id,
+        .patch(`/monitoring-widgets/${this.monitoringWidget.saved_id}`, {
           interval: this.widgetInterval,
         })
         .then((resp) => {
@@ -455,3 +444,15 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.spinner-size {
+  width: 4rem;
+  height: 4rem;
+}
+
+.widget-content {
+  overflow: auto;
+  height: 300px;
+}
+</style>
