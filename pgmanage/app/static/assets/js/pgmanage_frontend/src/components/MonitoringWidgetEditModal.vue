@@ -97,8 +97,10 @@
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary">Test</button>
-            <button type="button" class="btn btn-primary">Save</button>
+            <button class="btn btn-secondary">Test</button>
+            <button class="btn btn-primary" @click="saveMonitoringWidget">
+              Save
+            </button>
           </div>
         </div>
       </div>
@@ -172,7 +174,7 @@ export default {
     },
     getMonitoringWidgetDetails() {
       axios
-        .get(`/monitoring-widgets/${this.widgetId}`)
+        .get(`/monitoring-widgets/user-created/${this.widgetId}`)
         .then((resp) => {
           this.widgetName = resp.data.title;
           this.widgetInterval = resp.data.interval;
@@ -233,6 +235,49 @@ export default {
       this.widgetName = "";
       this.widgetInterval = "";
       this.selectedType = "timeseries";
+    },
+    saveMonitoringWidget() {
+      if (this.widgetId) {
+        this.updateMonitoringWidget();
+      } else {
+        this.createMonitoringWidget();
+      }
+    },
+    createMonitoringWidget() {
+      axios
+        .post("/monitoring-widgets/user-created", {
+          tab_id: this.connId,
+          database_index: this.databaseIndex,
+          widget_name: this.widgetName,
+          widget_type: this.selectedType,
+          widget_interval: this.widgetInterval,
+          widget_script_data: this.dataEditor.getValue(),
+          widget_script_chart: this.scriptEditor.getValue(),
+        })
+        .then((resp) => {
+          $(this.$refs.editWidgetModal).modal("hide");
+          showToast("success", "Monitoring widget created.");
+        })
+        .catch((error) => {
+          showToast("error", error);
+        });
+    },
+    updateMonitoringWidget() {
+      axios
+        .put(`/monitoring-widgets/user-created/${this.widgetId}`, {
+          widget_name: this.widgetName,
+          widget_type: this.selectedType,
+          widget_interval: this.widgetInterval,
+          widget_script_data: this.dataEditor.getValue(),
+          widget_script_chart: this.scriptEditor.getValue(),
+        })
+        .then((resp) => {
+          $(this.$refs.editWidgetModal).modal("hide");
+          showToast("success", "Monitoring widget updated.");
+        })
+        .catch((error) => {
+          showToast("error", error);
+        });
     },
   },
 };

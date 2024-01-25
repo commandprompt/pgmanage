@@ -106,26 +106,23 @@ def get_monitor_unit_list(request, v_database):
 def monitoring_widgets_list(request, database):
     widget_list = []
     try:
-        # plugins units
+        # default widgets
         for _, mon_unit in monitoring_units.items():
             if mon_unit.get('dbms') == database.v_db_type:
                 widget_list.append({
                     "id": mon_unit.get('id'),
-                    "actions": False,
+                    "is_default": True,
                     "title": mon_unit.get('title'),
                     'type': mon_unit.get('type'),
                     "interval": mon_unit.get("interval"),
                     "plugin_name": mon_unit.get("plugin_name"),
                 })
 
-        # isn't better to remove monitoring_units_database and use
-        # direct query from database MonUnits.objects.all() filtered by user
-        for _, mon_unit in monitoring_units_database.items():
-            widget_list.append({"id": mon_unit.id,
-                         "actions": True,
-                         "title": mon_unit.title,
-                         "type": mon_unit.type,
-                         "interval": mon_unit.interval})
+        custom_monitoring_widgets = MonUnits.objects.filter(user=request.user)
+
+        custom_monitoring_widgets_list = [model_to_dict(widget, fields=["id", "is_default","type", "interval", "title"]) for widget in custom_monitoring_widgets]
+
+        widget_list.extend(custom_monitoring_widgets_list)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data={"data": widget_list})
@@ -147,25 +144,66 @@ def get_monitor_unit_details(request):
 
     return JsonResponse(v_return)
 
-@require_http_methods(["GET", "DELETE"])
+
+@require_http_methods(["GET", "DELETE", "PUT"])
 @user_authenticated
 @session_required(include_session=False)
 def user_created_widget_detail(request, widget_id):
     if request.method == "GET":
-        widget = MonUnits.objects.filter(id=widget_id).first()
+        widget = MonUnits.objects.filter(user=request.user, id=widget_id).first()
         if not widget:
             return JsonResponse(data={"data": "Widget not found."}, status=404)
+        return JsonResponse(model_to_dict(widget, exclude=["user", "technology", "is_default"]))
+    if request.method == "PUT":
+        data = json.loads(request.body or '{}')
+        widget = MonUnits.objects.filter(user=request.user, id=widget_id).first()
+        if not widget:
+            return JsonResponse(data={"data": "Widget not found."}, status=404)
+
+        widget.script_chart = data.get("widget_script_chart")
+        widget.script_data = data.get("widget_script_data")
+        widget.type = data.get("widget_type")
+        widget.title = data.get("widget_name")
+        widget.interval = data.get("widget_interval")
+        widget.save()
+
         return JsonResponse(model_to_dict(widget))
     if request.method == "DELETE":
-        widget = MonUnits.objects.filter(id=widget_id).first()
+        widget = MonUnits.objects.filter(user=request.user, id=widget_id).first()
 
         if widget:
             widget.delete()
 
-        del monitoring_units_database[widget_id]
-
         return HttpResponse(status=204)
-    # add save on post
+
+
+
+@user_authenticated
+@database_required_new(check_timeout=False, open_connection=False)
+def create_widget(request, database):
+    data = request.data
+
+    widget_name = data.get("widget_name")
+    widget_type = data.get("widget_type")
+    widget_interval = data.get("widget_interval")
+    widget_script_chart = data.get("widget_script_chart")
+    widget_script_data = data.get("widget_script_data")
+
+    widget = MonUnits(
+        user=request.user,
+        technology=Technology.objects.filter(name=database.v_db_type).first(),
+        script_chart=widget_script_chart,
+        script_data=widget_script_data,
+        type=widget_type,
+        title=widget_name,
+        is_default=False,
+        interval=widget_interval
+    )
+
+    widget.save()
+
+    return JsonResponse(data=model_to_dict(widget), status=201)
+
 
 @user_authenticated
 @database_required(p_check_timeout = False, p_open_connection = False)
@@ -667,61 +705,60 @@ def refresh_monitor_widget(request, database):
     # save new user/connection unit
     if widget.get("saved_id") == -1:
         try:
-            user_unit = MonUnitsConnections(
+            user_widget = MonUnitsConnections(
                 unit=widget.get("id"),
                 user=request.user,
                 connection=conn_object,
                 interval=widget.get("interval"),
                 plugin_name=widget.get("plugin_name")
             )
-            user_unit.save()
-            widget["saved_id"] = user_unit.id
+            user_widget.save()
+            widget["saved_id"] = user_widget.id
         except Exception as exc:
             return JsonResponse(data={"data": str(exc)}, status=400)
 
     if widget.get("plugin_name") == "":
-        unit_data = monitoring_units_database.get(widget.get("id"))
+        widget_data = MonUnits.objects.get(id=widget.get("id"))
 
-        script_data = unit_data.script_data
-        script_chart = unit_data.script_chart
+        script_data = widget_data.script_data
+        script_chart = widget_data.script_chart
 
-        unit_data = {
+        widget_data = {
             'saved_id': widget.get('saved_id'),
             'id': widget.get('id'),
-            'type': unit_data.type,
-            'title': unit_data.title,
-            'interval': unit_data.interval,
+            'type': widget_data.type,
+            'title': widget_data.title,
+            'interval': widget_data.interval,
         }
 
-    # plugin unit
     else:
-        # search plugin data
+        # default widget
 
-        unit_data = None
+        widget_data = None
 
         for _, mon_unit in monitoring_units.items():
             if mon_unit.get('id') == widget.get('id') and mon_unit.get('plugin_name') == widget.get('plugin_name'):
-                unit_data = mon_unit
+                widget_data = mon_unit
                 break
         
-        script_data = unit_data['script_data']
-        script_chart = unit_data['script_chart']
+        script_data = widget_data['script_data']
+        script_chart = widget_data['script_chart']
 
-        unit_data = {
+        widget_data = {
             'saved_id': widget['saved_id'],
-            'id': unit_data['id'],
-            'type': unit_data['type'],
-            'title': unit_data['title'],
-            'interval': unit_data['interval'],
+            'id': widget_data['id'],
+            'type': widget_data['type'],
+            'title': widget_data['title'],
+            'interval': widget_data['interval'],
         }
 
     try:
-        unit_data = {
+        widget_data = {
                     'saved_id': widget['saved_id'],
-                    'id': unit_data['id'],
-                    'type': unit_data['type'],
-                    'title': unit_data['title'],
-                    'interval': unit_data['interval'],
+                    'id': widget_data['id'],
+                    'type': widget_data['type'],
+                    'title': widget_data['title'],
+                    'interval': widget_data['interval'],
                 }
 
         loc1 = {
@@ -744,31 +781,31 @@ def refresh_monitor_widget(request, database):
         exec(byte_code, restricted_globals, loc1)
         data = loc1['result']
 
-        if not widget.get("initial") and unit_data["type"] in ["chart", "timeseries"]:
-            unit_data["object"] = data
-        elif unit_data["type"]  == "grid":
-            unit_data["data"] = [dict(row) for row in data.get("data", [])]
-        elif unit_data['type'] == 'graph':
+        if not widget.get("initial") and widget_data["type"] in ["chart", "timeseries"]:
+            widget_data["object"] = data
+        elif widget_data["type"]  == "grid":
+            widget_data["data"] = [dict(row) for row in data.get("data", [])]
+        elif widget_data['type'] == 'graph':
             byte_code = compile_restricted(script_chart, '<inline>', 'exec')
             exec(byte_code, restricted_globals, loc2)
             result = loc2['result']
             result['elements'] = data
-            unit_data['object'] = result
+            widget_data['object'] = result
         else:
             byte_code = compile_restricted(script_chart, '<inline>', 'exec')
             exec(byte_code, restricted_globals, loc2)
             result = loc2['result']
             result['data'] = data
-            unit_data['object'] = result
+            widget_data['object'] = result
 
     except Exception as exc:
         response = {
             "data": str(exc),
-            "saved_id": unit_data.get("saved_id")
+            "saved_id": widget_data.get("saved_id")
         }
         return JsonResponse(data=response, status=400)
     
-    return JsonResponse(unit_data)
+    return JsonResponse(widget_data)
 
 
 @user_authenticated

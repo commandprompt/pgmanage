@@ -104,7 +104,7 @@ export default {
             columns: [
               {
                 title: "Show",
-                field: "actions",
+                field: "is_default",
                 hozAlign: "center",
                 formatter: this.actionsFormatter,
               },
@@ -133,7 +133,7 @@ export default {
         this.$emit("toggleWidget", sourceDataRow);
       };
 
-      if (!!cell.getValue()) {
+      if (!cell.getValue()) {
         const cellWrapper = document.createElement("div");
         cellWrapper.className =
           "d-flex justify-content-between align-items-center";
