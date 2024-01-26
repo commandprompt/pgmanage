@@ -118,7 +118,9 @@ def monitoring_widgets_list(request, database):
                     "plugin_name": mon_unit.get("plugin_name"),
                 })
 
-        custom_monitoring_widgets = MonUnits.objects.filter(user=request.user)
+        technology = Technology.objects.filter(name=database.v_db_type).first()
+        
+        custom_monitoring_widgets = MonUnits.objects.filter(user=request.user, technology=technology.id)
 
         custom_monitoring_widgets_list = [model_to_dict(widget, fields=["id", "is_default","type", "interval", "title"]) for widget in custom_monitoring_widgets]
 
