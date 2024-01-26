@@ -27,6 +27,7 @@
                   id="widgetName"
                   placeholder="Widget name"
                   v-model="widgetName"
+                  :disabled="showTestWidget"
                 />
               </div>
 
@@ -39,6 +40,7 @@
                   class="form-control"
                   placeholder="Widget type"
                   v-model="selectedType"
+                  :disabled="showTestWidget"
                 >
                   <option
                     v-for="(widgetType, index) in widgetTypes"
@@ -60,6 +62,7 @@
                   id="refreshInterval"
                   placeholder="Widget Interval"
                   v-model.number="widgetInterval"
+                  :disabled="showTestWidget"
                 />
               </div>
 
@@ -72,6 +75,7 @@
                   class="form-control"
                   v-model="selectedWidget"
                   @change="changeTemplate"
+                  :disabled="showTestWidget"
                 >
                   <option value="" disabled>Select Template</option>
                   <option
@@ -85,19 +89,47 @@
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="col-6">
-                <div ref="dataEditor" class="custom-editor"></div>
-              </div>
+            <Transition>
+              <div class="form-row">
+                <div
+                  v-if="showTestWidget"
+                  class="col d-flex justify-content-center"
+                >
+                  <MonitoringWidget
+                    :conn-id="connId"
+                    :tab-id="tabId"
+                    :database-index="databaseIndex"
+                    :monitoring-widget="testWidgetData"
+                    :is-test-widget="true"
+                  />
+                </div>
 
-              <div class="col-6">
-                <div ref="scriptEditor" class="custom-editor"></div>
+                <div v-show="!showTestWidget" class="col-6">
+                  <div ref="dataEditor" class="custom-editor"></div>
+                </div>
+
+                <div v-show="!showTestWidget" class="col-6">
+                  <div ref="scriptEditor" class="custom-editor"></div>
+                </div>
               </div>
-            </div>
+            </Transition>
           </div>
 
           <div class="modal-footer">
-            <button class="btn btn-secondary">Test</button>
+            <button
+              v-if="!showTestWidget"
+              class="btn btn-secondary"
+              @click="showTestWidget = true"
+            >
+              Test
+            </button>
+            <button
+              v-else
+              class="btn btn-secondary"
+              @click="showTestWidget = false"
+            >
+              Done
+            </button>
             <button class="btn btn-primary" @click="saveMonitoringWidget">
               Save
             </button>
@@ -113,14 +145,19 @@ import ace from "ace-builds";
 import { settingsStore } from "../stores/stores_initializer";
 import axios from "axios";
 import { showToast } from "../notification_control";
+import MonitoringWidget from "./MonitoringWidget.vue";
 
 export default {
   name: "MonitoringWidgetEditModal",
+  components: {
+    MonitoringWidget,
+  },
   props: {
     connId: String,
     databaseIndex: Number,
     modalVisible: Boolean,
     widgetId: Number,
+    tabId: String,
   },
   emits: ["modalHide"],
   data() {
@@ -134,6 +171,8 @@ export default {
       selectedType: "timeseries",
       widgetName: "",
       widgetInterval: "",
+      showTestWidget: false,
+      testWidgetData: {},
     };
   },
   mounted() {
@@ -154,7 +193,19 @@ export default {
   watch: {
     modalVisible(newValue, oldValue) {
       if (newValue) {
-        $(this.$refs.editWidgetModal).modal("show");
+        $(this.$refs.editWidgetModal).modal({
+          backdrop: "static",
+          keyboard: false,
+        });
+      }
+    },
+    showTestWidget(newValue, oldValue) {
+      if (newValue) {
+        this.testWidgetData = {
+          script_chart: this.scriptEditor.getValue(),
+          script_data: this.dataEditor.getValue(),
+          type: this.selectedType,
+        };
       }
     },
   },
@@ -235,6 +286,7 @@ export default {
       this.widgetName = "";
       this.widgetInterval = "";
       this.selectedType = "timeseries";
+      this.showTestWidget = false;
     },
     saveMonitoringWidget() {
       if (this.widgetId) {
@@ -290,6 +342,6 @@ export default {
 
 .custom-editor {
   width: 100%;
-  height: calc(100vh - 300px);
+  height: calc(100vh - 400px);
 }
 </style>

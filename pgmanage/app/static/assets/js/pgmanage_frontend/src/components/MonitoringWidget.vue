@@ -2,7 +2,11 @@
   <div class="col-md-6 my-2">
     <div class="card">
       <div class="card-body">
-        <button class="close" @click="closeMonitoringWidget">
+        <button
+          v-if="!isTestWidget"
+          class="close"
+          @click="closeMonitoringWidget"
+        >
           <span aria-hidden="true">&times;</span>
         </button>
 
@@ -24,7 +28,7 @@
           </div>
         </Transition>
 
-        <div class="form-inline mb-1">
+        <div v-if="!isTestWidget" class="form-inline mb-1">
           <span class="mr-1">
             {{ monitoringWidget.title }}
           </span>
@@ -63,13 +67,16 @@
           <span>seconds</span>
           <span v-if="isGrid" class="ml-2"> {{ gridRows }} rows </span>
         </div>
+        <template v-else>
+          <h2 class="text-center pb-1">Monitoring test widget</h2>
+        </template>
 
         <div class="widget-content">
           <div v-if="errorText" class="error_text">
             {{ this.errorText }}
           </div>
 
-          <div v-else-if="isGrid" ref="widgetContent"></div>
+          <div v-else-if="isGrid" ref="gridContent"></div>
 
           <div v-else-if="isChart">
             <canvas ref="canvas" class="w-100" style="height: 250px"></canvas>
@@ -98,6 +105,10 @@ export default {
     tabId: String,
     databaseIndex: Number,
     refreshWidget: Boolean,
+    isTestWidget: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: [
     "widgetRefreshed",
@@ -128,7 +139,11 @@ export default {
     },
   },
   mounted() {
-    this.refreshMonitoringWidget();
+    if (!this.isTestWidget) {
+      this.refreshMonitoringWidget();
+    } else {
+      this.testMonitoringWidget();
+    }
 
     emitter.on(`${this.tabId}_redraw_widget_grid`, () => {
       if (this.isGrid) {
@@ -167,7 +182,7 @@ export default {
           if (this.monitoringWidget.saved_id === -1) {
             this.$emit("updateWidgetId", resp.data.saved_id);
           }
-          this.buildMonitorWidget(resp.data);
+          this.buildMonitoringWidget(resp.data);
           this.showLoading = false;
         })
         .catch((error) => {
@@ -202,8 +217,8 @@ export default {
             },
           },
         ];
-        this.$refs.widgetContent.classList.add("tabulator-custom");
-        let tabulator = new Tabulator(this.$refs.widgetContent, {
+        this.$refs.gridContent.classList.add("tabulator-custom");
+        let tabulator = new Tabulator(this.$refs.gridContent, {
           data: data.data,
           height: "100%",
           layout: "fitDataStretch",
@@ -246,7 +261,10 @@ export default {
 
       if (!this.visualizationObject) {
         let ctx = this.$refs.canvas.getContext("2d");
-        chartData.options.maintainAspectRatio = false;
+
+        if (chartData?.options?.maintainAspectRatio) {
+          chartData.options.maintainAspectRatio = false;
+        }
 
         //TODO: upgrade chart.js from 2.7.2 to latest
         //TODO: upgrade chartjs-plugin-annotation from 0.5.7 to latest
@@ -400,7 +418,7 @@ export default {
         }
       }
     },
-    buildMonitorWidget(data, showLoading = true) {
+    buildMonitoringWidget(data) {
       switch (this.monitoringWidget.type) {
         case "grid":
           this.buildGrid(data);
@@ -439,6 +457,22 @@ export default {
         })
         .catch((error) => {
           showToast("error", error);
+        });
+    },
+    testMonitoringWidget() {
+      axios
+        .post("/monitoring-widgets/user-created/test", {
+          tab_id: this.connId,
+          database_index: this.databaseIndex,
+          widget: this.monitoringWidget,
+        })
+        .then((resp) => {
+          this.buildMonitoringWidget(resp.data);
+          this.showLoading = false;
+        })
+        .catch((error) => {
+          this.errorText = error.response.data.data;
+          this.showLoading = false;
         });
     },
   },

@@ -870,3 +870,48 @@ def test_monitor_script(request, v_database):
 
 
     return JsonResponse(v_return)
+
+
+@user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def test_monitoring_widget(request, database):
+    widget = request.data.get('widget')
+    script_chart = widget.get("script_chart")
+    script_data = widget.get("script_data")
+    widget_type = widget.get("type")
+    widget_data = {}
+    try:
+        loc1 = {
+            "connection": database,
+            "previous_data": None
+        }
+
+        loc2 = {
+            "connection": database,
+            "previous_data": None
+        }
+
+        restricted_globals = dict(__builtins__=safe_builtins)
+        restricted_globals['_getiter_'] = iter
+        restricted_globals['_getattr_'] = getattr
+        restricted_globals['_getitem_'] = default_guarded_getitem
+        restricted_globals['__builtins__']['__import__'] = _hook_import
+
+        byte_code = compile_restricted(script_data, '<inline>', 'exec')
+        exec(byte_code, restricted_globals, loc1)
+        data = loc1['result']
+
+        if widget_type  == 'grid':
+            widget_data["data"] = [dict(row) for row in data.get("data", [])]
+        else:
+            byte_code = compile_restricted(script_chart, '<inline>', 'exec')
+            exec(byte_code, restricted_globals, loc2)
+            result = loc2['result']
+            result['data'] = data
+            widget_data['object'] = result
+    except Exception as exc:
+        response = {
+            "data": str(exc),
+        }
+        return JsonResponse(data=response, status=400)
+    return JsonResponse(widget_data)

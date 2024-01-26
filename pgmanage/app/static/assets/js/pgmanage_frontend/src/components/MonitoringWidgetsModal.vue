@@ -9,7 +9,7 @@
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header align-items-center">
-          <h2 class="modal-title font-weight-bold">Monitoring Units</h2>
+          <h2 class="modal-title font-weight-bold">Monitoring Widgets</h2>
           <button
             type="button"
             class="close"
@@ -28,10 +28,10 @@
         </div>
         <div class="modal-footer">
           <button
-            @click="editMonitorWidget(null)"
+            @click="editMonitoringWidget(null)"
             class="btn btn-primary btn-sm mr-3"
           >
-            New Unit
+            New Widget
           </button>
         </div>
       </div>
@@ -39,6 +39,7 @@
   </div>
   <MonitoringWidgetEditModal
     :conn-id="connId"
+    :tab-id="tabId"
     :database-index="databaseIndex"
     :modal-visible="editModalVisible"
     :widget-id="editWidgetId"
@@ -60,6 +61,7 @@ export default {
   props: {
     widgetsModalVisible: Boolean,
     connId: String,
+    tabId: String,
     databaseIndex: Number,
     widgets: Array,
   },
@@ -144,7 +146,7 @@ export default {
         editIcon.title = "Edit";
         editIcon.className = "fas fa-edit action-grid action-edit-monitor";
         editIcon.onclick = () => {
-          this.editMonitorWidget(sourceDataRow.id);
+          this.editMonitoringWidget(sourceDataRow.id);
         };
 
         const deleteIcon = document.createElement("i");
@@ -181,7 +183,7 @@ export default {
         }
       );
     },
-    editMonitorWidget(widgetId = null) {
+    editMonitoringWidget(widgetId = null) {
       $(this.$refs.monitoringWidgetsModal).modal("hide");
       this.editModalVisible = true;
       this.editWidgetId = widgetId;

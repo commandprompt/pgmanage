@@ -34,6 +34,7 @@
     <MonitoringWidgetsModal
       :widgets="widgets"
       :conn-id="connId"
+      :tab-id="tabId"
       :database-index="databaseIndex"
       :widgets-modal-visible="monitoringModalVisible"
       @modal-hide="monitoringModalVisible = false"
