@@ -679,8 +679,7 @@ function getTreeDetailsOracle(node) {
                             text: 'Dashboard',
                             icon: 'fas cm-all fa-chart-line',
                             action: function(node) {
-                                v_connTabControl.tag.createMonitorDashboardTab();
-                                startMonitorDashboard();
+                                v_connTabControl.tag.createMonitoringDashboardTab();
                             }
                         }, */{
                             text: 'Sessions',
@@ -707,8 +706,7 @@ function getTreeDetailsOracle(node) {
                             text: 'Dashboard',
                             icon: 'fas cm-all fa-chart-line',
                             action: function(node) {
-                                v_connTabControl.tag.createMonitorDashboardTab();
-                                startMonitorDashboard();
+                                v_connTabControl.tag.createMonitoringDashboardTab();
                             }
                         }]
                     }
@@ -791,8 +789,7 @@ function getTreeDetailsOracle(node) {
 
             if (v_connTabControl.selectedTab.tag.firstTimeOpen) {
               v_connTabControl.selectedTab.tag.firstTimeOpen = false;
-              //v_connTabControl.tag.createMonitorDashboardTab();
-              //startMonitorDashboard();
+              //v_connTabControl.tag.createMonitoringDashboardTab();
             }
 
         },

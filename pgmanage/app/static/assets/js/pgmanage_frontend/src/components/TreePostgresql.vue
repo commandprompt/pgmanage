@@ -41,7 +41,6 @@ import { createUtilityTab } from "../tab_functions/postgresql_utility_tab";
 import { createExtensionModal, createPgCronModal } from "./postgresql_modals";
 import { createMessageModal } from "../notification_control";
 import { getProperties, clearProperties } from "../properties";
-import { startMonitorDashboard } from "../monitoring";
 import { showConfirm, showToast } from "../notification_control";
 import { addDbTreeHeader } from "../tab_functions/outer_connection_tab";
 
@@ -3414,8 +3413,7 @@ export default {
                   label: "Dashboard",
                   icon: "fas cm-all fa-chart-line",
                   onClick: () => {
-                    v_connTabControl.tag.createMonitorDashboardTab();
-                    startMonitorDashboard();
+                    v_connTabControl.tag.createMonitoringDashboardTab();
                   },
                 },
                 {

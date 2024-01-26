@@ -93,6 +93,7 @@ import { cellDataModal, adjustChartTheme } from "../header_actions";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
+import Chart from "chart.js";
 
 export default {
   name: "MonitoringWidget",
@@ -110,11 +111,7 @@ export default {
       default: false,
     },
   },
-  emits: [
-    "widgetRefreshed",
-    "widgetClose",
-    "intervalUpdated",
-  ],
+  emits: ["widgetRefreshed", "widgetClose", "intervalUpdated"],
   data() {
     return {
       showLoading: true,

@@ -29,7 +29,6 @@ import { createSnippetTabFunction } from './tab_functions/inner_snippet_tab'
 import { v_createConnTabFunction } from './tab_functions/outer_connection_tab'
 import { v_createSnippetPanelFunction } from './panel_functions/outer_snippet_panel'
 import { v_createMonitoringTabFunction } from './tab_functions/inner_monitoring_tab'
-import { v_createMonitorDashboardTabFunction, v_createNewMonitorUnitTabFunction } from './tab_functions/inner_monitoring_dashboard_tab'
 import { createOuterTerminalTabFunction } from './tab_functions/outer_terminal_tab'
 import { v_createGraphTabFunction } from './tab_functions/inner_graph_tab'
 import { createERDTabFunction } from './tab_functions/erd_tab'
@@ -38,7 +37,7 @@ import { createDebuggerTabFunction } from './tab_functions/inner_debugger_tab'
 import { showConfirm } from './notification_control'
 import { createConsoleTabFunction } from './tab_functions/inner_console_tab'
 import { createQueryTabFunction } from './tab_functions/inner_query_tab'
-import { createMonitorDashboardTabFunction } from './tab_functions/monitoring_dashboard_tab'
+import { createMonitoringDashboardTabFunction } from './tab_functions/monitoring_dashboard_tab'
 
 function initCreateTabFunctions() {
 
@@ -420,9 +419,7 @@ function initCreateTabFunctions() {
   v_connTabControl.tag.createConsoleTab = createConsoleTabFunction;
 
 //   v_connTabControl.tag.createWebsiteTab = v_createWebsiteTabFunction;
-  v_connTabControl.tag.createNewMonitorUnitTab = v_createNewMonitorUnitTabFunction;
-  v_connTabControl.tag.createMonitorDashboardTab = v_createMonitorDashboardTabFunction;
-  v_connTabControl.tag.createMonitoringDashboardTab = createMonitorDashboardTabFunction;
+  v_connTabControl.tag.createMonitoringDashboardTab = createMonitoringDashboardTabFunction;
   v_connTabControl.tag.openWebSite  = function (_, p_site) {
 	window.open(p_site, '_blank');
   };

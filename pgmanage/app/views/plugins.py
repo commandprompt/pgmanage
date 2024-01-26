@@ -18,7 +18,7 @@ import os
 from django import forms
 
 from app.utils.decorators import user_authenticated, database_required, session_required, superuser_required
-from app.views.monitor_dashboard import monitoring_units
+from app.views.monitoring_dashboard import builtin_monitoring_widgets
 from app.utils.response_helpers import create_response_template, error_response
 
 class UploadFileForm(forms.Form):
@@ -121,10 +121,10 @@ def load_plugin(plugin_folder, p_load):
             shutil.copytree(join(complete_plugin_folder,'backend'),join(loaded_folder_complete_backend_name,plugin_name))
             module = importlib.import_module('app.plugins.temp_loaded.{0}.{1}.plugin'.format(loaded_folder_name,plugin_name))
             try:
-                mon_units = getattr(module, 'monitoring_units')
+                mon_units = getattr(module, 'monitoring_widgets')
                 for mon_unit in mon_units:
                     mon_unit['plugin_name'] = plugin_name
-                    monitoring_units[(mon_unit['plugin_name'],mon_unit['id'])] = mon_unit
+                    builtin_monitoring_widgets[(mon_unit['plugin_name'],mon_unit['id'])] = mon_unit
             except Exception as exc:
                 None
 

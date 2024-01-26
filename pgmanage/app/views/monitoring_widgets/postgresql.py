@@ -1,4 +1,4 @@
-monitoring_units = [{
+monitoring_widgets = [{
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
 'id': 0,

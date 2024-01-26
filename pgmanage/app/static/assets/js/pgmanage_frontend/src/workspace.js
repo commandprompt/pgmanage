@@ -42,7 +42,6 @@ import ContextMenu from '@imengyu/vue3-context-menu'
 import { createRequest } from './long_polling'
 import { queryRequestCodes } from './constants'
 import { checkDebugStatus } from './debug'
-import { startMonitorDashboard } from './monitoring'
 import { createTabControl } from './tabs'
 import { startLoading } from './ajax_control'
 import axios from 'axios'
@@ -219,7 +218,7 @@ function checkBeforeChangeDatabase(p_cancel_function, p_ok_function) {
 
 		var v_tab = v_connTabControl.selectedTab.tag.tabControl.tabList[i];
 		if (v_tab.tag!=null) {
-      if (v_tab.tag.mode=='edit' || v_tab.tag.mode=='alter' || v_tab.tag.mode=='debug' || v_tab.tag.mode=='monitor_dashboard' || v_tab.tag.mode=='data_mining') {
+      if (v_tab.tag.mode=='edit' || v_tab.tag.mode=='alter' || v_tab.tag.mode=='debug' || v_tab.tag.mode=='monitoring_dashboard' || v_tab.tag.mode=='data_mining') {
         showAlert('Before changing connection please close any tab that belongs to the following types: <br/><br/><b>Edit Data<br/><br/>Alter Table<br/><br/>Function Debugging<br/><br/>Monitoring Dashboard<br/><br/>Advanced Object Search');
         //v_connTabControl.selectedTab.tag.dd_object.set("selectedIndex",v_connTabControl.selectedTab.tag.dd_selected_index);
         if (p_cancel_function!=null) {
@@ -710,7 +709,7 @@ function refreshHeights(p_all) {
     if (v_connTabControl.selectedTab.tag.tabControl != null && v_connTabControl.selectedTab.tag.tabControl.selectedTab) {
       var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
 
-      if (v_tab_tag.mode=='debug' || v_tab_tag.mode=='edit' || v_tab_tag.mode=='graph' || v_tab_tag.mode=='monitor_dashboard' || v_tab_tag.mode=='monitor_grid' || v_tab_tag.mode=='monitor_unit' || v_tab_tag.mode=='website' || v_tab_tag.mode=='website_outer') {
+      if (v_tab_tag.mode=='debug' || v_tab_tag.mode=='edit' || v_tab_tag.mode=='graph' || v_tab_tag.mode=='monitor_grid' || v_tab_tag.mode=='monitor_unit' || v_tab_tag.mode=='website' || v_tab_tag.mode=='website_outer') {
           v_tab_tag.resize();
       }
       else if (v_tab_tag.mode === 'console') {
@@ -1033,17 +1032,9 @@ function showMenuNewTab(e) {
 				label: 'Monitoring Dashboard',
 				icon: 'fas cm-all fa-chart-line',
 				onClick: function() {
-					v_connTabControl.tag.createMonitorDashboardTab();
-					startMonitorDashboard();
-				}
-			},
-      {
-				label: 'Monitoring Dashboard New',
-				icon: 'fas cm-all fa-chart-line',
-				onClick: function() {
 					v_connTabControl.tag.createMonitoringDashboardTab();
 				}
-			}
+			},
 		);
 	}
 

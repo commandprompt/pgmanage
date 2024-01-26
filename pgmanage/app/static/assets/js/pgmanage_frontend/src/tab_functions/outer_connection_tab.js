@@ -41,7 +41,6 @@ import { beforeCloseTab } from "../create_tab_functions";
 import { connectionsStore } from "../stores/connections.js";
 import { createRequest } from "../long_polling";
 import { queryRequestCodes } from "../constants";
-import { cancelMonitorUnits } from "../monitoring";
 import { createTabControl } from "../tabs";
 import ace from 'ace-builds'
 import moment from "moment";
@@ -142,9 +141,8 @@ var v_createConnTabFunction = function(p_index,p_create_query_tab = true, p_name
                   }
                   v_tabs_to_remove.push(v_message_data);
                 }
-                else if (v_tab.tag.mode=='monitor_dashboard') {
-                  v_tab.tag.tab_active = false;
-                  cancelMonitorUnits(v_tab.tag);
+                else if (v_tab.tag.mode ==='monitoring_dashboard' && !!v_tab.app) {
+                  v_tab.app.unmount()
                 }
               }
 

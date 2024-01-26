@@ -4,13 +4,13 @@ import { createApp } from "vue";
 import { beforeCloseTab } from "../create_tab_functions";
 import { emitter } from "../emitter";
 
-export let createMonitorDashboardTabFunction = function () {
+export let createMonitoringDashboardTabFunction = function () {
   // Removing last tab of the inner tab list
   v_connTabControl.selectedTab.tag.tabControl.removeLastTab();
 
   let name_html = `
   <span id="tab_title">
-  Monitoring Vue
+  Monitoring
   </span>
   <span id="tab_loading" style="visibility:hidden;">
     <i class="tab-icon node-spin"></i>
@@ -27,7 +27,6 @@ export let createMonitorDashboardTabFunction = function () {
     p_closeFunction: function (e, tab) {
       let current_tab = tab;
       beforeCloseTab(e, function () {
-        // closeMonitorDashboardTab(current_tab);
         removeTab(current_tab);
         current_tab.app.unmount();
       });
@@ -73,11 +72,10 @@ export let createMonitorDashboardTabFunction = function () {
 
   let tag = {
     tab_id: tab.id,
-    mode: "monitor_dashboard_vue",
+    mode: "monitoring_dashboard",
     tab_title_span: tab_title_span,
     tab_loading_span: tab_loading_span,
     tab_check_span: tab_check_span,
-    resize: () => {},
   };
 
   tab.tag = tag;
