@@ -697,13 +697,13 @@ def refresh_monitor_units(request, v_database):
 
 @user_authenticated
 @database_required_new(check_timeout=True, open_connection=True)
-def refresh_monitor_widget(request, database):
+def refresh_monitoring_widget(request, database, widget_saved_id):
     widget = request.data.get('widget')
 
     conn_object = Connection.objects.get(id=database.v_conn_id)
 
     # save new user/connection unit
-    if widget.get("saved_id") == -1:
+    if widget_saved_id == 0:
         try:
             user_widget = MonUnitsConnections(
                 unit=widget.get("id"),
@@ -713,7 +713,7 @@ def refresh_monitor_widget(request, database):
                 plugin_name=widget.get("plugin_name")
             )
             user_widget.save()
-            widget["saved_id"] = user_widget.id
+            widget_saved_id = user_widget.id
         except Exception as exc:
             return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -724,7 +724,7 @@ def refresh_monitor_widget(request, database):
         script_chart = widget_data.script_chart
 
         widget_data = {
-            'saved_id': widget.get('saved_id'),
+            'saved_id': widget_saved_id,
             'id': widget.get('id'),
             'type': widget_data.type,
             'title': widget_data.title,
@@ -745,7 +745,7 @@ def refresh_monitor_widget(request, database):
         script_chart = widget_data['script_chart']
 
         widget_data = {
-            'saved_id': widget['saved_id'],
+            'saved_id': widget_saved_id,
             'id': widget_data['id'],
             'type': widget_data['type'],
             'title': widget_data['title'],
@@ -754,7 +754,7 @@ def refresh_monitor_widget(request, database):
 
     try:
         widget_data = {
-                    'saved_id': widget['saved_id'],
+                    'saved_id': widget_saved_id,
                     'id': widget_data['id'],
                     'type': widget_data['type'],
                     'title': widget_data['title'],

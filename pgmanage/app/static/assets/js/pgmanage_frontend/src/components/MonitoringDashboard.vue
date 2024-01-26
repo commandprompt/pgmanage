@@ -113,7 +113,7 @@ export default {
       widget.interval = interval;
     },
     updateWidgetId(widgetSavedId) {
-      let widget = this.widgets.find((widget) => widget.saved_id === -1);
+      let widget = this.widgets.find((widget) => widget.saved_id === 0);
       widget.saved_id = widgetSavedId;
     },
     showMonitoringWidgetsList() {
@@ -126,7 +126,7 @@ export default {
 
       if (widgetIdx === -1) {
         let newWidget = {
-          saved_id: -1,
+          saved_id: 0,
           id: widgetData.id,
           title: widgetData.title,
           interval: widgetData.interval,

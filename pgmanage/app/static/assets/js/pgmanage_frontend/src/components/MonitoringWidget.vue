@@ -169,7 +169,7 @@ export default {
       if (showLoading) this.showLoading = true;
       this.errorText = "";
       axios
-        .post("/refresh_monitor_widget/", {
+        .post(`/monitoring-widgets/${this.monitoringWidget.saved_id}/refresh`, {
           database_index: this.databaseIndex,
           tab_id: this.connId,
           widget: {
@@ -179,14 +179,14 @@ export default {
           },
         })
         .then((resp) => {
-          if (this.monitoringWidget.saved_id === -1) {
+          if (this.monitoringWidget.saved_id === 0) {
             this.$emit("updateWidgetId", resp.data.saved_id);
           }
           this.buildMonitoringWidget(resp.data);
           this.showLoading = false;
         })
         .catch((error) => {
-          if (this.monitoringWidget.saved_id === -1) {
+          if (this.monitoringWidget.saved_id === 0) {
             this.$emit("updateWidgetId", error.response.data.saved_id);
           }
           this.errorText = error.response.data.data;
