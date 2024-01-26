@@ -119,7 +119,7 @@ def monitoring_widgets_list(request, database):
                 })
 
         technology = Technology.objects.filter(name=database.v_db_type).first()
-        
+
         custom_monitoring_widgets = MonUnits.objects.filter(user=request.user, technology=technology.id)
 
         custom_monitoring_widgets_list = [model_to_dict(widget, fields=["id", "is_default","type", "interval", "title"]) for widget in custom_monitoring_widgets]
@@ -702,23 +702,6 @@ def refresh_monitor_units(request, v_database):
 def refresh_monitoring_widget(request, database, widget_saved_id):
     widget = request.data.get('widget')
 
-    conn_object = Connection.objects.get(id=database.v_conn_id)
-
-    # save new user/connection unit
-    if widget_saved_id == 0:
-        try:
-            user_widget = MonUnitsConnections(
-                unit=widget.get("id"),
-                user=request.user,
-                connection=conn_object,
-                interval=widget.get("interval"),
-                plugin_name=widget.get("plugin_name")
-            )
-            user_widget.save()
-            widget_saved_id = user_widget.id
-        except Exception as exc:
-            return JsonResponse(data={"data": str(exc)}, status=400)
-
     if widget.get("plugin_name") == "":
         widget_data = MonUnits.objects.get(id=widget.get("id"))
 
@@ -808,6 +791,28 @@ def refresh_monitoring_widget(request, database, widget_saved_id):
         return JsonResponse(data=response, status=400)
     
     return JsonResponse(widget_data)
+
+
+@user_authenticated
+@database_required_new(check_timeout=False, open_connection=False)
+def create_dashboard_monitoring_widget(request, database):
+    widget_data = request.data.get('widget_data')
+
+    conn_object = Connection.objects.get(id=database.v_conn_id)
+
+    try:
+        user_widget = MonUnitsConnections(
+            unit=widget_data.get("id"),
+            user=request.user,
+            connection=conn_object,
+            interval=widget_data.get("interval"),
+            plugin_name=widget_data.get("plugin_name")
+        )
+        user_widget.save()
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data={"user_widget": model_to_dict(user_widget)}, status=201)
 
 
 @user_authenticated

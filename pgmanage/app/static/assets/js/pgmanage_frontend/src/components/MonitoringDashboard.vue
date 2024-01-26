@@ -24,7 +24,6 @@
           @widget-refreshed="waitForAllAndRefreshCounter"
           @widget-close="closeWidget"
           @interval-updated="updateWidgetInterval"
-          @update-widget-id="updateWidgetId"
         />
       </div>
     </div>
@@ -112,10 +111,6 @@ export default {
       let widget = this.widgets.find((widget) => widget.saved_id === saved_id);
       widget.interval = interval;
     },
-    updateWidgetId(widgetSavedId) {
-      let widget = this.widgets.find((widget) => widget.saved_id === 0);
-      widget.saved_id = widgetSavedId;
-    },
     showMonitoringWidgetsList() {
       this.monitoringModalVisible = true;
     },
@@ -126,19 +121,33 @@ export default {
 
       if (widgetIdx === -1) {
         let newWidget = {
-          saved_id: 0,
           id: widgetData.id,
           title: widgetData.title,
           interval: widgetData.interval,
           plugin_name: widgetData.plugin_name ?? "",
           type: widgetData.type,
         };
-
-        this.widgets.unshift(newWidget);
+        this.saveWidgetToDatabaseAndShow(newWidget);
       } else {
         let widget = this.widgets[widgetIdx];
         this.closeWidget(widget.saved_id);
       }
+    },
+    saveWidgetToDatabaseAndShow(newWidget) {
+      axios
+        .post("/monitoring-widgets/create", {
+          tab_id: this.connId,
+          database_index: this.databaseIndex,
+          widget_data: newWidget,
+        })
+        .then((resp) => {
+          newWidget.saved_id = resp.data.user_widget.id;
+
+          this.widgets.unshift(newWidget);
+        })
+        .catch((error) => {
+          showToast("error", error);
+        });
     },
   },
 };

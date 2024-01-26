@@ -114,7 +114,6 @@ export default {
     "widgetRefreshed",
     "widgetClose",
     "intervalUpdated",
-    "updateWidgetId",
   ],
   data() {
     return {
@@ -179,16 +178,10 @@ export default {
           },
         })
         .then((resp) => {
-          if (this.monitoringWidget.saved_id === 0) {
-            this.$emit("updateWidgetId", resp.data.saved_id);
-          }
           this.buildMonitoringWidget(resp.data);
           this.showLoading = false;
         })
         .catch((error) => {
-          if (this.monitoringWidget.saved_id === 0) {
-            this.$emit("updateWidgetId", error.response.data.saved_id);
-          }
           this.errorText = error.response.data.data;
           this.showLoading = false;
         });
@@ -461,7 +454,7 @@ export default {
     },
     testMonitoringWidget() {
       axios
-        .post("/monitoring-widgets/user-created/test", {
+        .post("/monitoring-widgets/test", {
           tab_id: this.connId,
           database_index: this.databaseIndex,
           widget: this.monitoringWidget,

@@ -296,11 +296,12 @@ base_urlpatterns = [
     #MONITORING SYSTEM
     path("monitoring-widgets", views.monitor_dashboard.monitoring_widgets, name="monitoring_widgets"),
     path("monitoring-widgets/list", views.monitor_dashboard.monitoring_widgets_list,),
+    path("monitoring-widgets/test", views.monitor_dashboard.test_monitoring_widget),
+    path("monitoring-widgets/create", views.monitor_dashboard.create_dashboard_monitoring_widget),
     path("monitoring-widgets/<int:widget_id>", views.monitor_dashboard.widget_detail),
     path("monitoring-widgets/<int:widget_id>/template", views.monitor_dashboard.widget_template,),
     path("monitoring-widgets/<int:widget_saved_id>/refresh", views.monitor_dashboard.refresh_monitoring_widget),
     path("monitoring-widgets/user-created", views.monitor_dashboard.create_widget),
-    path("monitoring-widgets/user-created/test", views.monitor_dashboard.test_monitoring_widget),
     path("monitoring-widgets/user-created/<int:widget_id>", views.monitor_dashboard.user_created_widget_detail,),
     re_path(r'^test_monitor_script/', views.monitor_dashboard.test_monitor_script, name='test_monitor_script'),
     re_path(r'^get_monitor_unit_list/', views.monitor_dashboard.get_monitor_unit_list, name='get_monitor_unit_list'),
