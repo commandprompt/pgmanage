@@ -4,6 +4,7 @@
       <div class="card-body">
         <button
           v-if="!isTestWidget"
+          data-testid="widget-close-button"
           class="close"
           @click="closeMonitoringWidget"
         >
@@ -33,6 +34,7 @@
             {{ monitoringWidget.title }}
           </span>
           <button
+            data-testid="widget-refresh-button"
             class="btn btn-secondary btn-sm mr-1"
             title="Refresh"
             @click="refreshMonitoringWidget"
@@ -42,6 +44,7 @@
 
           <button
             v-if="!isActive"
+            data-testid="widget-play-button"
             class="btn btn-secondary btn-sm my-2 mr-1"
             title="Play"
             @click="playMonitoringWidget"
@@ -51,6 +54,7 @@
 
           <button
             v-else
+            data-testid="widget-pause-button"
             class="btn btn-secondary btn-sm my-2 mr-1"
             title="Pause"
             @click="pauseMonitoringWidget"
@@ -59,6 +63,7 @@
           </button>
           <div>
             <input
+              data-testid="widget-interval-input"
               v-model.number="v$.widgetInterval.$model"
               @change="updateInterval"
               :class="[
@@ -98,20 +103,29 @@
       </div>
     </div>
   </div>
+  <CellDataModal
+    :cell-content="cellContent"
+    :show-modal="cellModalVisible"
+    @modal-hide="cellModalVisible = false"
+  />
 </template>
 
 <script>
 import axios from "axios";
-import { cellDataModal, adjustChartTheme } from "../header_actions";
+import CellDataModal from "./CellDataModal.vue";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
 import Chart from "chart.js";
 import { useVuelidate } from "@vuelidate/core";
 import { minValue } from "@vuelidate/validators";
+import { settingsStore } from "../stores/stores_initializer";
 
 export default {
   name: "MonitoringWidget",
+  components: {
+    CellDataModal,
+  },
   setup() {
     return {
       v$: useVuelidate({ $lazy: true }),
@@ -142,6 +156,8 @@ export default {
       timeoutObject: null,
       widgetInterval: this.monitoringWidget.interval,
       widgetData: null,
+      cellContent: "",
+      cellModalVisible: false,
     };
   },
   computed: {
@@ -173,6 +189,16 @@ export default {
         this.visualizationObject.redraw(true);
       }
     });
+
+    if (this.isChart) {
+      settingsStore.$onAction((action) => {
+        if (action.name === "setTheme") {
+          action.after(() => {
+            this.changeChartTheme();
+          });
+        }
+      });
+    }
   },
   unmounted() {
     emitter.all.delete(`${this.tabId}_redraw_widget_grid`);
@@ -229,8 +255,8 @@ export default {
             label:
               '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
             action: (e, cell) => {
-              //TODO: check changing this to use vue component cellDataModal
-              cellDataModal(null, null, null, cell.getValue(), false);
+              this.cellContent = cell.getValue();
+              this.cellModalVisible = true;
             },
           },
         ];
@@ -286,8 +312,6 @@ export default {
         //TODO: upgrade chart.js from 2.7.2 to latest
         //TODO: upgrade chartjs-plugin-annotation from 0.5.7 to latest
         this.visualizationObject = new Chart(ctx, chartData);
-        //TODO: need to add proper font style changing instead of this function
-        adjustChartTheme(this.visualizationObject);
       } else {
         //TODO this part of code still needs refactoring
         if (this.monitoringWidget.type === "chart") {
@@ -493,6 +517,40 @@ export default {
           this.errorText = error.response.data.data;
           this.showLoading = false;
         });
+    },
+    changeChartTheme() {
+      let chartFontColor, chartGridColor;
+
+      if (settingsStore.theme == "light") {
+        chartFontColor = "#666666";
+        chartGridColor = "rgba(0, 0, 0, 0.1)";
+      } else {
+        chartFontColor = "#DCDDDE";
+        chartGridColor = "rgba(100, 100, 100, 0.3)";
+      }
+
+      try {
+        this.visualizationObject.legend.options.labels.fontColor =
+          chartFontColor;
+        this.visualizationObject.options.title.fontColor = chartFontColor;
+        this.visualizationObject.scales["y-axis-0"].options.gridLines.color =
+          chartGridColor;
+        this.visualizationObject.scales["x-axis-0"].options.gridLines.color =
+          chartGridColor;
+        this.visualizationObject.scales[
+          "y-axis-0"
+        ].options.ticks.minor.fontColor = chartFontColor;
+        this.visualizationObject.scales[
+          "y-axis-0"
+        ].options.scaleLabel.fontColor = chartFontColor;
+        this.visualizationObject.scales[
+          "x-axis-0"
+        ].options.ticks.minor.fontColor = chartFontColor;
+        this.visualizationObject.scales[
+          "x-axis-0"
+        ].options.scaleLabel.fontColor = chartFontColor;
+      } catch (err) {}
+      this.visualizationObject.update();
     },
   },
 };

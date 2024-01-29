@@ -169,10 +169,6 @@ function changeTheme() {
 			ace.edit(el).setTheme(`ace/theme/${settingsStore.editorTheme}`);
 	});
 
-	Chart.helpers.each(Chart.instances, function(instance){
-		adjustChartTheme(instance.chart);
-	})
-
 	//Adjusting terminal themes
 	for (var i=0; i < v_connTabControl.tabList.length; i++) {
 		var v_tab = v_connTabControl.tabList[i];
