@@ -106,7 +106,7 @@ export default {
             columns: [
               {
                 title: "Show",
-                field: "is_default",
+                field: "editable",
                 hozAlign: "center",
                 formatter: this.actionsFormatter,
               },
@@ -135,7 +135,7 @@ export default {
         this.$emit("toggleWidget", sourceDataRow);
       };
 
-      if (!cell.getValue()) {
+      if (!!cell.getValue()) {
         const cellWrapper = document.createElement("div");
         cellWrapper.className =
           "d-flex justify-content-between align-items-center";

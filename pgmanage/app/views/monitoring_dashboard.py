@@ -1,6 +1,6 @@
 import json
 
-from app.models.main import Connection, MonUnits, MonUnitsConnections, Technology
+from app.models.main import Connection, MonWidgets, MonWidgetsConnections, Technology
 from app.utils.decorators import (
     database_required_new,
     session_required,
@@ -55,7 +55,7 @@ def monitoring_widgets_list(request, database):
                 widget_list.append(
                     {
                         "id": mon_widget.get("id"),
-                        "is_default": True,
+                        "editable": False,
                         "title": mon_widget.get("title"),
                         "type": mon_widget.get("type"),
                         "interval": mon_widget.get("interval"),
@@ -65,13 +65,13 @@ def monitoring_widgets_list(request, database):
 
         technology = Technology.objects.filter(name=database.v_db_type).first()
 
-        custom_monitoring_widgets = MonUnits.objects.filter(
+        custom_monitoring_widgets = MonWidgets.objects.filter(
             user=request.user, technology=technology.id
         )
 
         custom_monitoring_widgets_list = [
             model_to_dict(
-                widget, fields=["id", "is_default", "type", "interval", "title"]
+                widget, fields=["id", "editable", "type", "interval", "title"]
             )
             for widget in custom_monitoring_widgets
         ]
@@ -87,15 +87,15 @@ def monitoring_widgets_list(request, database):
 @session_required(include_session=False)
 def user_created_widget_detail(request, widget_id):
     if request.method == "GET":
-        widget = MonUnits.objects.filter(user=request.user, id=widget_id).first()
+        widget = MonWidgets.objects.filter(user=request.user, id=widget_id).first()
         if not widget:
             return JsonResponse(data={"data": "Widget not found."}, status=404)
         return JsonResponse(
-            model_to_dict(widget, exclude=["user", "technology", "is_default"])
+            model_to_dict(widget, exclude=["user", "technology", "editable"])
         )
     if request.method == "PUT":
         data = json.loads(request.body or "{}")
-        widget = MonUnits.objects.filter(user=request.user, id=widget_id).first()
+        widget = MonWidgets.objects.filter(user=request.user, id=widget_id).first()
         if not widget:
             return JsonResponse(data={"data": "Widget not found."}, status=404)
 
@@ -108,7 +108,7 @@ def user_created_widget_detail(request, widget_id):
 
         return JsonResponse(model_to_dict(widget))
     if request.method == "DELETE":
-        widget = MonUnits.objects.filter(user=request.user, id=widget_id).first()
+        widget = MonWidgets.objects.filter(user=request.user, id=widget_id).first()
 
         if widget:
             widget.delete()
@@ -127,14 +127,13 @@ def create_widget(request, database):
     widget_script_chart = data.get("widget_script_chart")
     widget_script_data = data.get("widget_script_data")
 
-    widget = MonUnits(
+    widget = MonWidgets(
         user=request.user,
         technology=Technology.objects.filter(name=database.v_db_type).first(),
         script_chart=widget_script_chart,
         script_data=widget_script_data,
         type=widget_type,
         title=widget_name,
-        is_default=False,
         interval=widget_interval,
     )
 
@@ -149,7 +148,7 @@ def monitoring_widgets(request, database):
     database_index = request.data.get("database_index")
     widgets = []
     try:
-        user_widgets = MonUnitsConnections.objects.filter(
+        user_widgets = MonWidgetsConnections.objects.filter(
             user=request.user, connection=database_index
         )
 
@@ -163,7 +162,7 @@ def monitoring_widgets(request, database):
                     mon_widget.get("default") is True
                     and mon_widget.get("dbms") == database.v_db_type
                 ):
-                    user_widget = MonUnitsConnections(
+                    user_widget = MonWidgetsConnections(
                         unit=mon_widget.get("id"),
                         user=request.user,
                         connection=conn_object,
@@ -173,14 +172,14 @@ def monitoring_widgets(request, database):
                     user_widget.save()
 
             # Retrieve user units again
-            user_widgets = MonUnitsConnections.objects.filter(
+            user_widgets = MonWidgetsConnections.objects.filter(
                 user=request.user, connection=database_index
             )
 
         for user_widget in user_widgets:
             if user_widget.plugin_name == "":
                 try:
-                    default_widget = MonUnits.objects.get(id=user_widget.unit)
+                    default_widget = MonWidgets.objects.get(id=user_widget.unit)
                     widget = {
                         "saved_id": user_widget.id,
                         "id": default_widget.id,
@@ -232,7 +231,7 @@ def widget_template(request, widget_id):
     widget_data = {}
 
     if widget_plugin_name == "":
-        widget = MonUnits.objects.filter(id=widget_id).first()
+        widget = MonWidgets.objects.filter(id=widget_id).first()
 
         if widget:
             widget_data = {
@@ -262,7 +261,7 @@ def remove_saved_monitor_unit(request):
 
     v_saved_id = request.data["p_saved_id"]
     try:
-        MonUnitsConnections.objects.get(id=v_saved_id).delete()
+        MonWidgetsConnections.objects.get(id=v_saved_id).delete()
 
     except Exception as exc:
         return error_response(message=str(exc))
@@ -275,7 +274,7 @@ def remove_saved_monitor_unit(request):
 @session_required(include_session=False)
 def widget_detail(request, widget_id):
     if request.method == "DELETE":
-        widget = MonUnitsConnections.objects.filter(
+        widget = MonWidgetsConnections.objects.filter(
             user=request.user, id=widget_id
         ).first()
         if not widget:
@@ -286,7 +285,7 @@ def widget_detail(request, widget_id):
     if request.method == "PATCH":
         data = json.loads(request.body or "{}")
         interval = data.get("interval")
-        widget = MonUnitsConnections.objects.filter(
+        widget = MonWidgetsConnections.objects.filter(
             user=request.user, id=widget_id
         ).first()
         if not widget:
@@ -304,7 +303,7 @@ def refresh_monitoring_widget(request, database, widget_saved_id):
     widget = request.data.get("widget")
 
     if widget.get("plugin_name") == "":
-        widget_data = MonUnits.objects.get(id=widget.get("id"))
+        widget_data = MonWidgets.objects.get(id=widget.get("id"))
 
         script_data = widget_data.script_data
         script_chart = widget_data.script_chart
@@ -395,7 +394,7 @@ def create_dashboard_monitoring_widget(request, database):
     conn_object = Connection.objects.get(id=database.v_conn_id)
 
     try:
-        user_widget = MonUnitsConnections(
+        user_widget = MonWidgetsConnections(
             unit=widget_data.get("id"),
             user=request.user,
             connection=conn_object,
