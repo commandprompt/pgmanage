@@ -57,14 +57,27 @@
           >
             <i class="fas fa-pause-circle fa-light"></i>
           </button>
+          <div>
+            <input
+              v-model.number="v$.widgetInterval.$model"
+              @change="updateInterval"
+              :class="[
+                'form-control',
+                'form-control-sm',
+                'mr-2',
+                { 'is-invalid': v$.widgetInterval.$invalid },
+              ]"
+              style="width: 60px"
+            />
+            <span>seconds</span>
+            <div class="invalid-feedback">
+              <a v-for="error of v$.widgetInterval.$errors" :key="error.$uid">
+                {{ error.$message }}
+                <br />
+              </a>
+            </div>
+          </div>
 
-          <input
-            v-model.number="widgetInterval"
-            @change="updateInterval"
-            class="form-control form-control-sm mr-2"
-            style="width: 60px"
-          />
-          <span>seconds</span>
           <span v-if="isGrid" class="ml-2"> {{ gridRows }} rows </span>
         </div>
         <template v-else>
@@ -94,9 +107,16 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
 import Chart from "chart.js";
+import { useVuelidate } from "@vuelidate/core";
+import { minValue } from "@vuelidate/validators";
 
 export default {
   name: "MonitoringWidget",
+  setup() {
+    return {
+      v$: useVuelidate({ $lazy: true }),
+    };
+  },
   props: {
     monitoringWidget: {
       type: Object,
@@ -133,6 +153,13 @@ export default {
         this.monitoringWidget.type
       );
     },
+  },
+  validations() {
+    return {
+      widgetInterval: {
+        minValue: minValue(5),
+      },
+    };
   },
   mounted() {
     if (!this.isTestWidget) {
@@ -435,6 +462,8 @@ export default {
       this.refreshMonitoringWidget();
     },
     updateInterval() {
+      this.v$.$validate();
+      if (this.v$.$invalid) return;
       axios
         .patch(`/monitoring-widgets/${this.monitoringWidget.saved_id}`, {
           interval: this.widgetInterval,

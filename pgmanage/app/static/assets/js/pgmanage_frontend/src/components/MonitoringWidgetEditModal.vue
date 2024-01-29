@@ -23,12 +23,21 @@
                 >
                 <input
                   type="text"
-                  class="form-control"
+                  :class="[
+                    'form-control',
+                    { 'is-invalid': v$.widgetName.$invalid },
+                  ]"
                   id="widgetName"
                   placeholder="Widget name"
-                  v-model="widgetName"
+                  v-model="v$.widgetName.$model"
                   :disabled="showTestWidget"
                 />
+                <div class="invalid-feedback">
+                  <a v-for="error of v$.widgetName.$errors" :key="error.$uid">
+                    {{ error.$message }}
+                    <br />
+                  </a>
+                </div>
               </div>
 
               <div class="form-group col-2">
@@ -58,12 +67,24 @@
                 >
                 <input
                   type="text"
-                  class="form-control"
+                  :class="[
+                    'form-control',
+                    { 'is-invalid': v$.widgetInterval.$invalid },
+                  ]"
                   id="refreshInterval"
                   placeholder="Widget Interval"
-                  v-model.number="widgetInterval"
+                  v-model.number="v$.widgetInterval.$model"
                   :disabled="showTestWidget"
                 />
+                <div class="invalid-feedback">
+                  <a
+                    v-for="error of v$.widgetInterval.$errors"
+                    :key="error.$uid"
+                  >
+                    {{ error.$message }}
+                    <br />
+                  </a>
+                </div>
               </div>
 
               <div class="form-group col-5">
@@ -130,7 +151,7 @@
             >
               Done
             </button>
-            <button class="btn btn-primary" @click="saveMonitoringWidget">
+            <button class="btn btn-primary" @click="saveMonitoringWidget" :disabled="v$.$invalid">
               Save
             </button>
           </div>
@@ -146,11 +167,18 @@ import { settingsStore } from "../stores/stores_initializer";
 import axios from "axios";
 import { showToast } from "../notification_control";
 import MonitoringWidget from "./MonitoringWidget.vue";
+import { useVuelidate } from "@vuelidate/core";
+import { required, minValue, minLength } from "@vuelidate/validators";
 
 export default {
   name: "MonitoringWidgetEditModal",
   components: {
     MonitoringWidget,
+  },
+  setup() {
+    return {
+      v$: useVuelidate({ $lazy: true }),
+    };
   },
   props: {
     connId: String,
@@ -173,6 +201,18 @@ export default {
       widgetInterval: "",
       showTestWidget: false,
       testWidgetData: {},
+    };
+  },
+  validations() {
+    return {
+      widgetName: {
+        required,
+        minLength: minLength(1),
+      },
+      widgetInterval: {
+        required,
+        minValue: minValue(5),
+      },
     };
   },
   mounted() {
@@ -279,6 +319,7 @@ export default {
         });
     },
     resetToDefault() {
+      this.v$.$reset();
       this.scriptEditor.destroy();
       this.dataEditor.destroy();
       this.selectedWidget = "";
@@ -289,6 +330,9 @@ export default {
       this.showTestWidget = false;
     },
     saveMonitoringWidget() {
+      this.v$.$validate();
+      if (this.v$.$invalid) return;
+
       if (this.widgetId) {
         this.updateMonitoringWidget();
       } else {
