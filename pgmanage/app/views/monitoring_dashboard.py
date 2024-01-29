@@ -6,7 +6,6 @@ from app.utils.decorators import (
     session_required,
     user_authenticated,
 )
-from app.utils.response_helpers import create_response_template, error_response
 from app.views.monitoring_widgets import mysql as mysql_widgets
 from app.views.monitoring_widgets import postgresql as postgresql_widgets
 from django.forms.models import model_to_dict
@@ -18,7 +17,7 @@ from RestrictedPython.Eval import default_guarded_getitem
 builtin_monitoring_widgets = {}
 
 
-def get_units_data():
+def get_widgets_data():
     try:
         for mon_widget in postgresql_widgets.monitoring_widgets:
             builtin_monitoring_widgets[
@@ -36,7 +35,7 @@ def get_units_data():
         pass
 
 
-get_units_data()
+get_widgets_data()
 
 
 def _hook_import(name, *args, **kwargs):
@@ -152,7 +151,7 @@ def monitoring_widgets(request, database):
             user=request.user, connection=database_index
         )
 
-        # There are no units for this user/connection pair, create defaults
+        # There are no widgets for this user/connection pair, create defaults
 
         if not user_widgets:
             conn_object = Connection.objects.get(id=database_index)
@@ -171,7 +170,7 @@ def monitoring_widgets(request, database):
                     )
                     user_widget.save()
 
-            # Retrieve user units again
+            # Retrieve user widgets again
             user_widgets = MonWidgetsConnections.objects.filter(
                 user=request.user, connection=database_index
             )
@@ -254,21 +253,6 @@ def widget_template(request, widget_id):
     return JsonResponse(data=widget_data)
 
 
-@user_authenticated
-@session_required(use_old_error_format=True, include_session=False)
-def remove_saved_monitor_unit(request):
-    v_return = create_response_template()
-
-    v_saved_id = request.data["p_saved_id"]
-    try:
-        MonWidgetsConnections.objects.get(id=v_saved_id).delete()
-
-    except Exception as exc:
-        return error_response(message=str(exc))
-
-    return JsonResponse(v_return)
-
-
 @require_http_methods(["DELETE", "PATCH"])
 @user_authenticated
 @session_required(include_session=False)
@@ -318,15 +302,9 @@ def refresh_monitoring_widget(request, database, widget_saved_id):
 
     else:
         # default widget
-
-        widget_data = None
-
-        for _, mon_widget in builtin_monitoring_widgets.items():
-            if mon_widget.get("id") == widget.get("id") and mon_widget.get(
-                "plugin_name"
-            ) == widget.get("plugin_name"):
-                widget_data = mon_widget
-                break
+        widget_data = builtin_monitoring_widgets.get(
+            (widget.get("plugin_name"), widget.get("id"))
+        )
 
         script_data = widget_data["script_data"]
         script_chart = widget_data["script_chart"]
@@ -340,14 +318,6 @@ def refresh_monitoring_widget(request, database, widget_saved_id):
         }
 
     try:
-        widget_data = {
-            "saved_id": widget_saved_id,
-            "id": widget_data["id"],
-            "type": widget_data["type"],
-            "title": widget_data["title"],
-            "interval": widget_data["interval"],
-        }
-
         loc1 = {"connection": database, "previous_data": widget.get("widget_data")}
 
         loc2 = {"connection": database, "previous_data": widget.get("widget_data")}
