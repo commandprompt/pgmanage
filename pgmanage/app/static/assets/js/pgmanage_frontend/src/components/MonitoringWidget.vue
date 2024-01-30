@@ -30,7 +30,7 @@
         </Transition>
 
         <div v-if="!isTestWidget" class="form-inline mb-1">
-          <span class="mr-1">
+          <span data-testid="widget-title" class="mr-1">
             {{ monitoringWidget.title }}
           </span>
           <button
@@ -118,7 +118,7 @@ import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
 import Chart from "chart.js";
 import { useVuelidate } from "@vuelidate/core";
-import { minValue } from "@vuelidate/validators";
+import { minValue, required } from "@vuelidate/validators";
 import { settingsStore } from "../stores/stores_initializer";
 
 export default {
@@ -173,6 +173,7 @@ export default {
   validations() {
     return {
       widgetInterval: {
+        required,
         minValue: minValue(5),
       },
     };
@@ -201,8 +202,7 @@ export default {
     }
   },
   unmounted() {
-    emitter.all.delete(`${this.tabId}_redraw_widget_grid`);
-    clearTimeout(this.timeoutObject);
+    this.clearEventsAndTimeout();
   },
   watch: {
     refreshWidget(newValue, oldValue) {
@@ -312,6 +312,7 @@ export default {
         //TODO: upgrade chart.js from 2.7.2 to latest
         //TODO: upgrade chartjs-plugin-annotation from 0.5.7 to latest
         this.visualizationObject = new Chart(ctx, chartData);
+        this.changeChartTheme();
       } else {
         //TODO this part of code still needs refactoring
         if (this.monitoringWidget.type === "chart") {
@@ -551,6 +552,10 @@ export default {
         ].options.scaleLabel.fontColor = chartFontColor;
       } catch (err) {}
       this.visualizationObject.update();
+    },
+    clearEventsAndTimeout() {
+      emitter.all.delete(`${this.tabId}_redraw_widget_grid`);
+      clearTimeout(this.timeoutObject);
     },
   },
 };
