@@ -1,15 +1,27 @@
 <template>
   <Teleport to="body">
-    <div ref="editWidgetModal" class="modal" tabindex="-1" role="dialog">
+    <div
+      data-testid="widget-edit-modal"
+      ref="editWidgetModal"
+      class="modal"
+      tabindex="-1"
+      role="dialog"
+    >
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header align-items-center">
-            <h2 class="modal-title font-weight-bold">Monitoring Widget</h2>
+            <h2
+              data-testid="widget-edit-header-title"
+              class="modal-title font-weight-bold"
+            >
+              Monitoring Widget
+            </h2>
             <button
               type="button"
               class="close"
               data-dismiss="modal"
               aria-label="Close"
+              @click="closeModal"
             >
               <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
             </button>
@@ -28,6 +40,7 @@
                     { 'is-invalid': v$.widgetName.$invalid },
                   ]"
                   id="widgetName"
+                  data-testid="widget-edit-name"
                   placeholder="Widget name"
                   v-model="v$.widgetName.$model"
                   :disabled="showTestWidget"
@@ -72,6 +85,7 @@
                     { 'is-invalid': v$.widgetInterval.$invalid },
                   ]"
                   id="refreshInterval"
+                  data-testid="widget-edit-refresh-interval"
                   placeholder="Widget Interval"
                   v-model.number="v$.widgetInterval.$model"
                   :disabled="showTestWidget"
@@ -93,6 +107,7 @@
                 >
                 <select
                   id="widgetTemplates"
+                  data-testid="widget-edit-template-select"
                   class="form-control"
                   v-model="selectedWidget"
                   @change="changeTemplate"
@@ -114,6 +129,7 @@
               <div class="form-row">
                 <div
                   v-if="showTestWidget"
+                  data-testid="widget-edit-test-wrapper"
                   class="col d-flex justify-content-center"
                 >
                   <MonitoringWidget
@@ -139,6 +155,7 @@
           <div class="modal-footer">
             <button
               v-if="!showTestWidget"
+              data-testid="widget-edit-test-button"
               class="btn btn-secondary"
               @click="showTestWidget = true"
             >
@@ -151,7 +168,12 @@
             >
               Done
             </button>
-            <button class="btn btn-primary" @click="saveMonitoringWidget" :disabled="v$.$invalid">
+            <button
+              data-testid="widget-edit-save-button"
+              class="btn btn-primary"
+              @click="saveMonitoringWidget"
+              :disabled="v$.$invalid"
+            >
               Save
             </button>
           </div>
@@ -215,21 +237,6 @@ export default {
       },
     };
   },
-  mounted() {
-    $(this.$refs.editWidgetModal).on("hide.bs.modal", () => {
-      this.resetToDefault();
-      this.$emit("modalHide");
-    });
-
-    $(this.$refs.editWidgetModal).on("show.bs.modal", () => {
-      this.dataEditor = this.setupEditor(this.$refs.dataEditor);
-      this.scriptEditor = this.setupEditor(this.$refs.scriptEditor);
-      this.getMonitoringWidgetList();
-      if (this.widgetId) {
-        this.getMonitoringWidgetDetails();
-      }
-    });
-  },
   watch: {
     modalVisible(newValue, oldValue) {
       if (newValue) {
@@ -237,6 +244,7 @@ export default {
           backdrop: "static",
           keyboard: false,
         });
+        this.setupModal();
       }
     },
     showTestWidget(newValue, oldValue) {
@@ -374,6 +382,18 @@ export default {
         .catch((error) => {
           showToast("error", error);
         });
+    },
+    closeModal() {
+      this.resetToDefault();
+      this.$emit("modalHide");
+    },
+    setupModal() {
+      this.dataEditor = this.setupEditor(this.$refs.dataEditor);
+      this.scriptEditor = this.setupEditor(this.$refs.scriptEditor);
+      this.getMonitoringWidgetList();
+      if (this.widgetId) {
+        this.getMonitoringWidgetDetails();
+      }
     },
   },
 };
