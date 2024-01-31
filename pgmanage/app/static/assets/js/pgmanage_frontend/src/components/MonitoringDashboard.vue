@@ -1,7 +1,11 @@
 <template>
   <div>
     <div class="container-fluid">
-      <button class="btn btn-primary btn-sm my-2 mr-2" @click="refreshWidgets">
+      <button
+        data-testid="refresh-all-widgets-button"
+        class="btn btn-primary btn-sm my-2 mr-2"
+        @click="refreshWidgets"
+      >
         <i class="fas fa-sync-alt mr-2"></i>
         Refresh All
       </button>

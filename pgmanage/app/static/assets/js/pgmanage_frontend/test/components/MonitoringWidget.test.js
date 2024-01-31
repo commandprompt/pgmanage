@@ -10,7 +10,6 @@ import {
 } from "vitest";
 import MonitoringWidget from "../../src/components/MonitoringWidget.vue";
 import axios from "axios";
-import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../../src/emitter";
 
 vi.mock("axios");
@@ -201,7 +200,6 @@ describe("MonitoringWidget", () => {
       ]);
     });
     test("should redraw widget grid on redraw_widget_grid event", () => {
-      console.log(wrapper.vm.visualizationObject);
       const redrawSpy = vi.spyOn(wrapper.vm.visualizationObject, "redraw");
 
       emitter.emit(`${tabId}_redraw_widget_grid`);
