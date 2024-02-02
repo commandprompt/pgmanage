@@ -20,6 +20,7 @@ import {
 } from "../autocomplete";
 import { emitter } from "../emitter";
 import { format } from "sql-formatter";
+import { setupAceDragDrop } from "../file_drop";
 
 export default {
   props: {
@@ -72,32 +73,6 @@ export default {
       }, 200);
     });
 
-    this.editor.container.addEventListener("dragover", (e) => {
-      let types = e.dataTransfer.types;
-      if (types && Array.prototype.indexOf.call(types, "Files") !== -1) {
-        return e.preventDefault(e);
-      }
-    });
-
-    this.editor.container.addEventListener("drop", (e) => {
-      let file;
-      try {
-        file = e.dataTransfer.files[0];
-        if (window.FileReader) {
-          let reader = new FileReader();
-          reader.onload = () => {
-            this.editor.session.setValue(reader.result);
-          };
-          reader.readAsText(file);
-        }
-        return e.preventDefault();
-      } catch (err) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-    });
-
     settingsStore.$subscribe((mutation, state) => {
       this.editor.setTheme(`ace/theme/${state.editorTheme}`);
       this.editor.setFontSize(state.fontSize);
@@ -130,6 +105,8 @@ export default {
 
       this.editor.focus();
       this.editor.resize();
+
+      setupAceDragDrop(this.editor);
     },
     getQueryEditorValue(raw_query) {
       if (raw_query) return this.editor.getValue().trim();

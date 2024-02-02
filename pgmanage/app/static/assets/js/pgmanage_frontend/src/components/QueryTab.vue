@@ -20,7 +20,7 @@
           </button>
 
           <button :id="`bt_open_file_${tabId}`" class="btn btn-sm btn-secondary" title="Open File" @click="openFileManagerModal">
-            <i class="fas fa-file-upload fa-light"></i>
+            <i class="fas fa-folder-open fa-light"></i>
           </button>
 
           <button :id="`bt_indent_${tabId}`" class="btn btn-sm btn-secondary" title="Indent SQL" @click="indentSQL()">
@@ -136,7 +136,7 @@ import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryResultTabs from "./QueryResultTabs.vue";
 import { connectionsStore } from '../stores/connections.js'
 import FileManager from "./FileManager.vue";
-import { settingsStore } from '../stores/stores_initializer'
+import FileInputChangeMixin from '../mixins/file_input_mixin'
 
 
 export default {
@@ -151,6 +151,7 @@ export default {
     QueryResultTabs,
     FileManager
   },
+  mixins: [FileInputChangeMixin],
   props: {
     connId: String,
     tabId: String,
@@ -466,26 +467,8 @@ export default {
     showCommandsHistory() {
       this.commandsModalVisible = true
     },
-    onFile(e) {
-      const [file] = e.target.files;
-      try {
-        if (window.FileReader) {
-          let reader = new FileReader();
-          reader.onload = () => {
-            emitter.emit(`${this.tabId}_copy_to_editor`, reader.result);
-          };
-          reader.readAsText(file);
-        }
-      } catch (err) {
-        console.log(err);
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    },
     openFileManagerModal() {
-      if (!settingsStore.desktopMode)
-        return showToast("info", "Not implemented in server mode.");
-      this.$refs.fileManager.show(settingsStore.desktopMode, this.onFile);
+      this.$refs.fileManager.show(true, this.handleFileInputChange);
     },
   },
 };

@@ -59,10 +59,13 @@ const queryResponseCodes = {
   Pong: 13,
 };
 
+const allowedFileTypes = ["application/sql", "text/csv", "text/plain", "Text"];
+
 export {
   requestState,
   tabStatusMap,
   queryModes,
   queryRequestCodes,
   queryResponseCodes,
+  allowedFileTypes,
 };

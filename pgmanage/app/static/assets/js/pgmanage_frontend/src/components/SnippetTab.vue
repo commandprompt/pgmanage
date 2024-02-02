@@ -25,7 +25,7 @@
         title="Open file"
         @click="openFileManagerModal"
       >
-        <i class="fas fa-file-upload mr-2"></i>Open file
+        <i class="fas fa-folder-open mr-2"></i>Open file
       </button>
     </div>
   </div>
@@ -42,13 +42,15 @@ import {
 } from "../tree_context_functions/tree_snippets";
 import { snippetsStore, settingsStore } from "../stores/stores_initializer";
 import FileManager from "./FileManager.vue";
-import { showToast } from "../notification_control";
+import { setupAceDragDrop } from '../file_drop'
+import FileInputChangeMixin from '../mixins/file_input_mixin'
 
 export default {
   name: "SnippetTab",
   components: {
     FileManager
   },
+  mixins: [FileInputChangeMixin],
   props: {
     tabId: String,
     snippet: {
@@ -82,31 +84,6 @@ export default {
     this.setupEditor();
     this.handleResize();
     this.setupEvents();
-    this.editor.container.addEventListener("dragover", (e) => {
-      let types = e.dataTransfer.types;
-      if (types && Array.prototype.indexOf.call(types, "Files") !== -1) {
-        return e.preventDefault(e);
-      }
-    });
-
-    this.editor.container.addEventListener("drop", (e) => {
-      let file;
-      try {
-        file = e.dataTransfer.files[0];
-        if (window.FileReader) {
-          let reader = new FileReader();
-          reader.onload = () => {
-            this.editor.session.setValue(reader.result);
-          };
-          reader.readAsText(file);
-        }
-        return e.preventDefault();
-      } catch (err) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-    });
   },
   unmounted() {
     this.clearEvents();
@@ -132,6 +109,8 @@ export default {
       this.editor.commands.bindKey("Ctrl-Down", null);
 
       this.editor.focus();
+
+      setupAceDragDrop(this.editor)
     },
     setupEvents() {
       emitter.on(`${this.tabId}_editor_focus`, () => {
@@ -208,26 +187,8 @@ export default {
           : this.$refs.editor.getBoundingClientRect().top;
       this.heightSubtract = top + 30 * (settingsStore.fontSize / 10);
     },
-    onFile(e) {
-      const [file] = e.target.files;
-      try {
-        if (window.FileReader) {
-          let reader = new FileReader();
-          reader.onload = () => {
-            emitter.emit(`${this.tabId}_copy_to_editor`, reader.result);
-          };
-          reader.readAsText(file);
-        }
-      } catch (err) {
-        console.log(err);
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    },
     openFileManagerModal() {
-      if (!settingsStore.desktopMode)
-        return showToast("info", "Not implemented in server mode.");
-      this.$refs.fileManager.show(settingsStore.desktopMode, this.onFile);
+      this.$refs.fileManager.show(true, this.handleFileInputChange);
     },
   },
 };
