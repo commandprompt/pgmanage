@@ -22,7 +22,6 @@
 </template>
 
 <script>
-import ace from "ace-builds";
 import { settingsStore } from "../stores/stores_initializer";
 
 export default {

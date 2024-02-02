@@ -1,5 +1,3 @@
-import ace from 'ace-builds'
-
 ace.define("ace/theme/omnidb",["require","exports","module","ace/lib/dom"], function(require, exports, module) {
 
 exports.isDark = false;
