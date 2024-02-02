@@ -1,5 +1,5 @@
 <template>
-  <div class="modal" :id="modalId" tabindex="-1">
+  <div ref="fileManagerModal" class="modal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-file-manager">
       <div class="modal-content">
         <div class="modal-header align-items-center">
@@ -111,7 +111,6 @@ export default {
       selectedFile: {},
       action: '',
       currentView: 'grid',
-      modalId: `${v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_filemanager`
     }
   },
   emits: ['changeFile'],
@@ -177,13 +176,13 @@ export default {
       this.$emit('changeFile', {
         filePath: this.selectedFile.file_path
       })
-      $(`#${this.modalId}`).modal('hide')
+      $(this.$refs.fileManagerModal).modal('hide')
     },
     show(desktop_mode, onChange, dialog_type) {
       if (desktop_mode) {
         this.showNative(onChange, dialog_type)
       } else {
-        $(`#${this.modalId}`).modal('show')
+        $(this.$refs.fileManagerModal).modal('show')
       }
     },
     showNative(onChange, dialog_type) {

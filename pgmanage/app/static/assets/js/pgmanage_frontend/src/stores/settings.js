@@ -6,6 +6,7 @@ const useSettingsStore = defineStore("settings", {
     theme: window.v_theme,
     editorTheme: window.v_editor_theme,
     terminalTheme: "",
+    desktopMode: window.gv_desktopMode,
   }),
   actions: {
     setFontSize(fontSize) {

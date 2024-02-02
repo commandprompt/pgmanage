@@ -9,6 +9,10 @@
         <button class="btn btn-sm btn-primary" title="Run" @click="consoleSQL(false)">
           <i class="fas fa-play fa-light"></i>
         </button>
+        
+        <button class="btn btn-sm btn-secondary" title="Open File" @click="openFileManagerModal">
+            <i class="fas fa-file-upload fa-light"></i>
+        </button>
 
         <button class="btn btn-sm btn-secondary" title="Indent SQL" @click="indentSQL()">
           <i class="fas fa-indent fa-ligth"></i>
@@ -77,6 +81,7 @@
   </splitpanes>
 
   <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Console" :commands-modal-visible="commandsModalVisible" @modal-hide="commandsModalVisible=false"/>
+  <FileManager ref="fileManager"/>
 </template>
 
 <script>
@@ -94,6 +99,7 @@ import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryEditor from "./QueryEditor.vue";
 import CancelButton from "./CancelSQLButton.vue";
 import { tabStatusMap, requestState, queryRequestCodes } from "../constants";
+import FileManager from "./FileManager.vue";
 
 export default {
   name: "ConsoleTab",
@@ -104,6 +110,7 @@ export default {
     TabStatusIndicator,
     QueryEditor,
     CancelButton,
+    FileManager
   },
   props: {
     connId: String,
@@ -341,6 +348,27 @@ export default {
     },
     showCommandsHistory() {
       this.commandsModalVisible = true
+    },
+    onFile(e) {
+      const [file] = e.target.files;
+      try {
+        if (window.FileReader) {
+          let reader = new FileReader();
+          reader.onload = () => {
+            emitter.emit(`${this.tabId}_copy_to_editor`, reader.result);
+          };
+          reader.readAsText(file);
+        }
+      } catch (err) {
+        console.log(err);
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+    openFileManagerModal() {
+      if (!settingsStore.desktopMode)
+        return showToast("info", "Not implemented in server mode.");
+      this.$refs.fileManager.show(settingsStore.desktopMode, this.onFile);
     },
   },
 };

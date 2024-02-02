@@ -1,6 +1,10 @@
 <template>
-  <div ref="editor" @contextmenu.stop.prevent="contextMenu" @keyup="autocompleteStart" @keydown="autocompleteKeyDown">
-  </div>
+  <div
+    ref="editor"
+    @contextmenu.stop.prevent="contextMenu"
+    @keyup="autocompleteStart"
+    @keydown="autocompleteKeyDown"
+  ></div>
 </template>
 
 <script>
@@ -12,7 +16,7 @@ import {
   autocomplete_start,
   autocomplete_keydown,
   autocomplete_update_editor_cursor,
-  close_autocomplete
+  close_autocomplete,
 } from "../autocomplete";
 import { emitter } from "../emitter";
 import { format } from "sql-formatter";
@@ -64,9 +68,35 @@ export default {
 
     this.editor.on("blur", () => {
       setTimeout(() => {
-        close_autocomplete()
+        close_autocomplete();
       }, 200);
-    })
+    });
+
+    this.editor.container.addEventListener("dragover", (e) => {
+      let types = e.dataTransfer.types;
+      if (types && Array.prototype.indexOf.call(types, "Files") !== -1) {
+        return e.preventDefault(e);
+      }
+    });
+
+    this.editor.container.addEventListener("drop", (e) => {
+      let file;
+      try {
+        file = e.dataTransfer.files[0];
+        if (window.FileReader) {
+          let reader = new FileReader();
+          reader.onload = () => {
+            this.editor.session.setValue(reader.result);
+          };
+          reader.readAsText(file);
+        }
+        return e.preventDefault();
+      } catch (err) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    });
 
     settingsStore.$subscribe((mutation, state) => {
       this.editor.setTheme(`ace/theme/${state.editorTheme}`);
@@ -83,7 +113,7 @@ export default {
       this.editor.setTheme(`ace/theme/${settingsStore.editorTheme}`);
       this.editor.session.setMode("ace/mode/sql");
       this.editor.setFontSize(settingsStore.fontSize);
-      this.editor.setShowPrintMargin(false)
+      this.editor.setShowPrintMargin(false);
 
       // Remove shortcuts from ace in order to avoid conflict with pgmanage shortcuts
       this.editor.commands.bindKey("ctrl-space", null);
@@ -102,10 +132,12 @@ export default {
       this.editor.resize();
     },
     getQueryEditorValue(raw_query) {
-      if (raw_query) return this.editor.getValue().trim()
-      let selectedText = this.editor.getSelectedText()
-      let lineAtCursor = this.editor.session.getLine(this.editor.getCursorPosition().row)
-      return !!selectedText ? selectedText : lineAtCursor
+      if (raw_query) return this.editor.getValue().trim();
+      let selectedText = this.editor.getSelectedText();
+      let lineAtCursor = this.editor.session.getLine(
+        this.editor.getCursorPosition().row
+      );
+      return !!selectedText ? selectedText : lineAtCursor;
     },
     contextMenu(event) {
       let option_list = [
@@ -191,9 +223,9 @@ export default {
       });
 
       emitter.on(`${this.tabId}_insert_to_editor`, (command) => {
-        this.editor.insert(command)
+        this.editor.insert(command);
         this.editor.clearSelection();
-        });
+      });
 
       emitter.on(`${this.tabId}_indent_sql`, () => {
         this.indentSQL();

@@ -8,12 +8,19 @@ import {
   test,
   vi,
 } from "vitest";
+import "ace-builds";
+import "ace-builds/esm-resolver";
 import SnippetTab from "../../src/components/SnippetTab.vue";
-import "ace-builds/src-noconflict/mode-sql";
 import "../../src/ace_themes/theme-omnidb.js";
 import { emitter } from "../../src/emitter.js";
 
 import { useSettingsStore } from "../../src/stores/settings.js";
+
+window.$ = vi.fn().mockImplementation(() => {
+  return {
+    on: vi.fn(),
+  };
+});
 
 describe("SnippetTab", () => {
   let wrapper;
@@ -55,7 +62,9 @@ describe("SnippetTab", () => {
     const editorInstance = wrapper.vm.editor;
     editorInstance.setValue("SELECT * FROM table");
 
-    await wrapper.find("[data-testid='snippet-tab-indent-button']").trigger("click");
+    await wrapper
+      .find("[data-testid='snippet-tab-indent-button']")
+      .trigger("click");
 
     expect(editorInstance.getValue()).toContain("SELECT\n  *");
   });
@@ -63,7 +72,9 @@ describe("SnippetTab", () => {
   test("should call saveSnippetText method when 'Save' button is clicked", async () => {
     const saveSnippetTextMock = vi.spyOn(wrapper.vm, "saveSnippetText");
 
-    await wrapper.find("[data-testid='snippet-tab-save-button']").trigger("click");
+    await wrapper
+      .find("[data-testid='snippet-tab-save-button']")
+      .trigger("click");
 
     expect(saveSnippetTextMock).toHaveBeenCalled();
   });

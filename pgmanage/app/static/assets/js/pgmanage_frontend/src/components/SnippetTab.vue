@@ -3,18 +3,36 @@
 
   <div ref="bottomToolbar" class="row px-2">
     <div class="tab_actions tab-actions col-12">
-      <button data-testid="snippet-tab-indent-button" class="btn btn-secondary" title="Indent SQL" @click="indentSQL">
+      <button
+        data-testid="snippet-tab-indent-button"
+        class="btn btn-secondary"
+        title="Indent SQL"
+        @click="indentSQL"
+      >
         <i class="fas fa-indent mr-2"></i>Indent
       </button>
-      <button data-testid="snippet-tab-save-button" class="btn btn-primary" title="Save" @click="saveSnippetText">
+      <button
+        data-testid="snippet-tab-save-button"
+        class="btn btn-primary"
+        title="Save"
+        @click="saveSnippetText"
+      >
         <i class="fas fa-save mr-2"></i>Save
+      </button>
+      <button
+        data-testid="snippet-tab-save-file-button"
+        class="btn btn-primary"
+        title="Open file"
+        @click="openFileManagerModal"
+      >
+        <i class="fas fa-file-upload mr-2"></i>Open file
       </button>
     </div>
   </div>
+  <FileManager ref="fileManager" />
 </template>
 
 <script>
-import ace from "ace-builds";
 import { format } from "sql-formatter";
 import { emitter } from "../emitter";
 import ContextMenu from "@imengyu/vue3-context-menu";
@@ -23,9 +41,14 @@ import {
   saveSnippetTextConfirm,
 } from "../tree_context_functions/tree_snippets";
 import { snippetsStore, settingsStore } from "../stores/stores_initializer";
+import FileManager from "./FileManager.vue";
+import { showToast } from "../notification_control";
 
 export default {
   name: "SnippetTab",
+  components: {
+    FileManager
+  },
   props: {
     tabId: String,
     snippet: {
@@ -59,6 +82,31 @@ export default {
     this.setupEditor();
     this.handleResize();
     this.setupEvents();
+    this.editor.container.addEventListener("dragover", (e) => {
+      let types = e.dataTransfer.types;
+      if (types && Array.prototype.indexOf.call(types, "Files") !== -1) {
+        return e.preventDefault(e);
+      }
+    });
+
+    this.editor.container.addEventListener("drop", (e) => {
+      let file;
+      try {
+        file = e.dataTransfer.files[0];
+        if (window.FileReader) {
+          let reader = new FileReader();
+          reader.onload = () => {
+            this.editor.session.setValue(reader.result);
+          };
+          reader.readAsText(file);
+        }
+        return e.preventDefault();
+      } catch (err) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    });
   },
   unmounted() {
     this.clearEvents();
@@ -160,6 +208,27 @@ export default {
           : this.$refs.editor.getBoundingClientRect().top;
       this.heightSubtract = top + 30 * (settingsStore.fontSize / 10);
     },
+    onFile(e) {
+      const [file] = e.target.files;
+      try {
+        if (window.FileReader) {
+          let reader = new FileReader();
+          reader.onload = () => {
+            emitter.emit(`${this.tabId}_copy_to_editor`, reader.result);
+          };
+          reader.readAsText(file);
+        }
+      } catch (err) {
+        console.log(err);
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+    openFileManagerModal() {
+      if (!settingsStore.desktopMode)
+        return showToast("info", "Not implemented in server mode.");
+      this.$refs.fileManager.show(settingsStore.desktopMode, this.onFile);
+    },
   },
 };
 </script>
@@ -176,7 +245,7 @@ export default {
   min-height: 35px;
 }
 
-.tab-actions>button {
+.tab-actions > button {
   margin-right: 5px;
 }
 </style>

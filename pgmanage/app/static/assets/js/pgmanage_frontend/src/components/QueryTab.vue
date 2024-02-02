@@ -19,6 +19,10 @@
             ]
           </button>
 
+          <button :id="`bt_open_file_${tabId}`" class="btn btn-sm btn-secondary" title="Open File" @click="openFileManagerModal">
+            <i class="fas fa-file-upload fa-light"></i>
+          </button>
+
           <button :id="`bt_indent_${tabId}`" class="btn btn-sm btn-secondary" title="Indent SQL" @click="indentSQL()">
             <i class="fas fa-indent fa-light"></i>
           </button>
@@ -114,6 +118,8 @@
   </splitpanes>
 
   <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Query" :commands-modal-visible="commandsModalVisible" @modal-hide="commandsModalVisible=false"/>
+  <FileManager ref="fileManager"/>
+
 </template>
 
 <script>
@@ -129,6 +135,8 @@ import CommandsHistoryModal from "./CommandsHistoryModal.vue";
 import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryResultTabs from "./QueryResultTabs.vue";
 import { connectionsStore } from '../stores/connections.js'
+import FileManager from "./FileManager.vue";
+import { settingsStore } from '../stores/stores_initializer'
 
 
 export default {
@@ -141,6 +149,7 @@ export default {
     CommandsHistoryModal,
     TabStatusIndicator,
     QueryResultTabs,
+    FileManager
   },
   props: {
     connId: String,
@@ -175,7 +184,7 @@ export default {
       editorContent: "",
       longQuery: false,
       commandsModalVisible: false,
-      lastQuery: null
+      lastQuery: null,
     };
   },
   computed: {
@@ -456,7 +465,28 @@ export default {
     },
     showCommandsHistory() {
       this.commandsModalVisible = true
-    }
+    },
+    onFile(e) {
+      const [file] = e.target.files;
+      try {
+        if (window.FileReader) {
+          let reader = new FileReader();
+          reader.onload = () => {
+            emitter.emit(`${this.tabId}_copy_to_editor`, reader.result);
+          };
+          reader.readAsText(file);
+        }
+      } catch (err) {
+        console.log(err);
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+    openFileManagerModal() {
+      if (!settingsStore.desktopMode)
+        return showToast("info", "Not implemented in server mode.");
+      this.$refs.fileManager.show(settingsStore.desktopMode, this.onFile);
+    },
   },
 };
 </script>
