@@ -51,6 +51,7 @@ function setupAceDragDrop(editor) {
       }
       return e.preventDefault();
     } catch (err) {
+      showToast("error", err);
       e.preventDefault();
       e.stopPropagation();
       return false;
