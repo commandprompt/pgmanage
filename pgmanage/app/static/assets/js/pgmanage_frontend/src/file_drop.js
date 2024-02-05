@@ -1,5 +1,9 @@
 import { showToast } from "./notification_control";
-import { allowedFileTypes } from "./constants";
+import {
+  allowedFileTypes,
+  maxFileSizeInMB,
+  maxFileSizeInKB,
+} from "./constants";
 
 function setupAceDragDrop(editor) {
   editor.container.addEventListener("dragover", (e) => {
@@ -20,8 +24,19 @@ function setupAceDragDrop(editor) {
       }
 
       file = e.dataTransfer.files[0];
+
       if (!file?.type || !allowedFileTypes.includes(file.type)) {
         showToast("error", `File with type '${file.type}' is not supported.`);
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      if (file.size > maxFileSizeInKB) {
+        showToast(
+          "error",
+          `Please drop a file that is ${maxFileSizeInMB}MB or less.`
+        );
         e.preventDefault();
         e.stopPropagation();
         return false;

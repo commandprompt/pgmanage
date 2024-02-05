@@ -61,6 +61,10 @@ const queryResponseCodes = {
 
 const allowedFileTypes = ["application/sql", "text/csv", "text/plain", "Text"];
 
+const maxFileSizeInMB = 75;
+
+const maxFileSizeInKB = 1024 ** 2 * maxFileSizeInMB;
+
 export {
   requestState,
   tabStatusMap,
@@ -68,4 +72,6 @@ export {
   queryRequestCodes,
   queryResponseCodes,
   allowedFileTypes,
+  maxFileSizeInMB,
+  maxFileSizeInKB
 };

@@ -1,4 +1,8 @@
-import { allowedFileTypes } from "../constants";
+import {
+  allowedFileTypes,
+  maxFileSizeInKB,
+  maxFileSizeInMB,
+} from "../constants";
 import { showToast } from "../notification_control";
 import { emitter } from "../emitter";
 
@@ -6,11 +10,18 @@ export default {
   methods: {
     handleFileInputChange(e) {
       const [file] = e.target.files;
-      if (!file?.type || !allowedFileTypes.includes(file.type))
-        return showToast(
+      if (!file?.type || !allowedFileTypes.includes(file.type)) {
+        showToast("error", `File with type '${file.type}' is not supported.`);
+        return;
+      }
+
+      if (file.size > maxFileSizeInKB) {
+        showToast(
           "error",
-          `File with type '${file.type}' is not supported.`
+          `Please select a file that is ${maxFileSizeInMB}MB or less.`
         );
+        return;
+      }
       try {
         if (window.FileReader) {
           let reader = new FileReader();
