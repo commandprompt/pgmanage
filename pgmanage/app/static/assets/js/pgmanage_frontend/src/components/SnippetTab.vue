@@ -42,13 +42,14 @@ import {
 } from "../tree_context_functions/tree_snippets";
 import { snippetsStore, settingsStore } from "../stores/stores_initializer";
 import FileManager from "./FileManager.vue";
-import { setupAceDragDrop } from '../file_drop'
-import FileInputChangeMixin from '../mixins/file_input_mixin'
+import { setupAceDragDrop } from "../file_drop";
+import FileInputChangeMixin from "../mixins/file_input_mixin";
+import { maxLinesForIndentSQL } from "../constants";
 
 export default {
   name: "SnippetTab",
   components: {
-    FileManager
+    FileManager,
   },
   mixins: [FileInputChangeMixin],
   props: {
@@ -110,7 +111,7 @@ export default {
 
       this.editor.focus();
 
-      setupAceDragDrop(this.editor)
+      setupAceDragDrop(this.editor);
     },
     setupEvents() {
       emitter.on(`${this.tabId}_editor_focus`, () => {
@@ -143,6 +144,15 @@ export default {
     },
     indentSQL() {
       let editor_value = this.editor.getValue();
+
+      if (this.editor.session.getLength() > maxLinesForIndentSQL) {
+        showToast(
+          "error",
+          `Max lines(${maxLinesForIndentSQL}) for indentSQL exceeded.`
+        );
+        return;
+      }
+
       let formatted = format(editor_value, this.formatOptions);
       if (formatted.length) {
         this.editor.setValue(formatted);

@@ -21,6 +21,8 @@ import {
 import { emitter } from "../emitter";
 import { format } from "sql-formatter";
 import { setupAceDragDrop } from "../file_drop";
+import { maxLinesForIndentSQL } from "../constants";
+import { showToast } from "../notification_control";
 
 export default {
   props: {
@@ -178,6 +180,15 @@ export default {
     },
     indentSQL() {
       let editor_value = this.editor.getValue();
+
+      if (this.editor.session.getLength() > maxLinesForIndentSQL) {
+        showToast(
+          "error",
+          `Max lines(${maxLinesForIndentSQL}) for indentSQL exceeded.`
+        );
+        return;
+      }
+
       let formatted = format(editor_value, this.formatOptions);
       if (formatted.length) {
         this.editor.setValue(formatted);
