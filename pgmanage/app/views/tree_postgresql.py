@@ -246,11 +246,11 @@ def get_columns(request, database):
 @database_required_new(check_timeout=True, open_connection=True)
 def get_table_definition(request, v_database):
     data = request.data
-    table = data["table"]
-    schema = data["schema"]
-
     columns = []
     try:
+        table = data["table"]
+        schema = data["schema"]
+
         q_primaries = v_database.QueryTablePKColumns(table, schema)
         pk_column_names = [x[0] for x in q_primaries.Rows]
         q_definition = v_database.QueryTableDefinition(table, schema)
