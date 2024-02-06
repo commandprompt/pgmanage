@@ -42,7 +42,6 @@ import { connectionsStore } from "../stores/connections.js";
 import { createRequest } from "../long_polling";
 import { queryRequestCodes } from "../constants";
 import { createTabControl } from "../tabs";
-import ace from 'ace-builds'
 import moment from "moment";
 import { endLoading } from "../ajax_control";
 import { showToast } from "../notification_control";

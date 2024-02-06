@@ -8,15 +8,24 @@ import {
   test,
   vi,
 } from "vitest";
+import "ace-builds";
+import "ace-builds/esm-resolver";
 import SnippetTab from "../../src/components/SnippetTab.vue";
-import "ace-builds/src-noconflict/mode-sql";
 import "../../src/ace_themes/theme-omnidb.js";
 import { emitter } from "../../src/emitter.js";
 
 import { useSettingsStore } from "../../src/stores/settings.js";
+import * as notificatonModule from "../../src/notification_control";
+import { maxFileSizeInKB, maxFileSizeInMB } from "../../src/constants.js";
+
+window.$ = vi.fn().mockImplementation(() => {
+  return {
+    on: vi.fn(),
+  };
+});
 
 describe("SnippetTab", () => {
-  let wrapper;
+  let wrapper, fileMock, showToastSpy, eventMock;
   let settingsStore;
   const tabId = "uniqueTabID";
 
@@ -32,6 +41,14 @@ describe("SnippetTab", () => {
       },
       attachTo: document.body,
     });
+
+    fileMock = new File(["content"], "example.txt", {
+      type: "text/plain",
+    });
+
+    showToastSpy = vi.spyOn(notificatonModule, "showToast");
+
+    eventMock = new Event("drop");
   });
 
   afterEach(() => {
@@ -55,7 +72,9 @@ describe("SnippetTab", () => {
     const editorInstance = wrapper.vm.editor;
     editorInstance.setValue("SELECT * FROM table");
 
-    await wrapper.find("[data-testid='snippet-tab-indent-button']").trigger("click");
+    await wrapper
+      .find("[data-testid='snippet-tab-indent-button']")
+      .trigger("click");
 
     expect(editorInstance.getValue()).toContain("SELECT\n  *");
   });
@@ -63,7 +82,9 @@ describe("SnippetTab", () => {
   test("should call saveSnippetText method when 'Save' button is clicked", async () => {
     const saveSnippetTextMock = vi.spyOn(wrapper.vm, "saveSnippetText");
 
-    await wrapper.find("[data-testid='snippet-tab-save-button']").trigger("click");
+    await wrapper
+      .find("[data-testid='snippet-tab-save-button']")
+      .trigger("click");
 
     expect(saveSnippetTextMock).toHaveBeenCalled();
   });
@@ -110,6 +131,132 @@ describe("SnippetTab", () => {
       wrapper.unmount();
 
       expect(clearEventsSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe("File upload", async () => {
+    test("prevents default action for dragover event", () => {
+      eventMock = new Event("dragover");
+      const preventDefaultSpy = vi.spyOn(eventMock, "preventDefault");
+
+      Object.defineProperty(eventMock, "dataTransfer", {
+        value: { types: ["Files"] },
+      });
+      wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
+      expect(preventDefaultSpy).toHaveBeenCalled();
+    });
+
+    test("prevents default action and handles drop event", () => {
+      const preventDefaultSpy = vi.spyOn(eventMock, "preventDefault");
+      const readerMock = { readAsText: vi.fn(), result: "fileContent" };
+
+      Object.defineProperty(eventMock, "dataTransfer", {
+        value: { files: [fileMock], types: ["Files"] },
+      });
+      Object.defineProperty(window, "FileReader", {
+        value: vi.fn(() => readerMock),
+      });
+
+      wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
+
+      expect(preventDefaultSpy).toHaveBeenCalled();
+      expect(readerMock.readAsText).toHaveBeenCalledWith(fileMock);
+    });
+
+    test("handles drop event with invalid file type", () => {
+      fileMock = new File(["content"], "example.jpg", {
+        type: "image/jpeg",
+      });
+
+      Object.defineProperty(eventMock, "dataTransfer", {
+        value: { files: [fileMock], types: ["Files"] },
+      });
+
+      wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
+
+      expect(showToastSpy).toHaveBeenCalledWith(
+        "error",
+        "File with type 'image/jpeg' is not supported."
+      );
+    });
+
+    test("handles drop event with file size exceeding the limit", () => {
+      Object.defineProperty(fileMock, "size", {
+        value: maxFileSizeInKB + 1024,
+      });
+
+      Object.defineProperty(eventMock, "dataTransfer", {
+        value: { files: [fileMock], types: ["Files"] },
+      });
+
+      wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
+
+      expect(showToastSpy).toHaveBeenCalledWith(
+        "error",
+        `Please drop a file that is ${maxFileSizeInMB}MB or less.`
+      );
+    });
+
+    test("handles drop event with more than 1 file", () => {
+      Object.defineProperty(eventMock, "dataTransfer", {
+        value: { files: [fileMock, fileMock], types: ["Files"] },
+      });
+
+      wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
+
+      expect(showToastSpy).toHaveBeenCalledWith(
+        "error",
+        "Only one file at a time is possible to drop"
+      );
+    });
+
+    test("handles exceptions", () => {
+      const preventDefault = vi.fn();
+      const stopPropagation = vi.fn();
+      eventMock.preventDefault = preventDefault;
+      eventMock.stopPropagation = stopPropagation;
+      const error = new Error("An error occurred");
+
+      const readerMock = {
+        readAsText: vi.fn(() => {
+          throw error;
+        }),
+        result: "fileContent",
+      };
+
+      Object.defineProperty(eventMock, "dataTransfer", {
+        value: { files: [fileMock], types: ["Files"] },
+      });
+
+      Object.defineProperty(window, "FileReader", {
+        value: vi.fn(() => readerMock),
+      });
+
+      wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
+
+      expect(showToastSpy).toHaveBeenCalledWith("error", error);
+      expect(preventDefault).toHaveBeenCalled();
+      expect(stopPropagation).toHaveBeenCalled();
+    });
+
+    test("handles drop event when ace editor is not empty", () => {
+      wrapper.vm.editor.setValue("test data");
+      const messageModalSpy = vi
+        .spyOn(notificatonModule, "createMessageModal")
+        .mockImplementation(() => null);
+
+      const readerMock = { readAsText: vi.fn(), result: "fileContent" };
+
+      Object.defineProperty(eventMock, "dataTransfer", {
+        value: { files: [fileMock], types: ["Files"] },
+      });
+      Object.defineProperty(window, "FileReader", {
+        value: vi.fn(() => readerMock),
+      });
+
+      wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
+
+      expect(messageModalSpy).toBeCalled();
     });
   });
 });

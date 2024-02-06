@@ -3,18 +3,36 @@
 
   <div ref="bottomToolbar" class="row px-2">
     <div class="tab_actions tab-actions col-12">
-      <button data-testid="snippet-tab-indent-button" class="btn btn-secondary" title="Indent SQL" @click="indentSQL">
+      <button
+        data-testid="snippet-tab-indent-button"
+        class="btn btn-secondary"
+        title="Indent SQL"
+        @click="indentSQL"
+      >
         <i class="fas fa-indent mr-2"></i>Indent
       </button>
-      <button data-testid="snippet-tab-save-button" class="btn btn-primary" title="Save" @click="saveSnippetText">
+      <button
+        data-testid="snippet-tab-save-button"
+        class="btn btn-primary"
+        title="Save"
+        @click="saveSnippetText"
+      >
         <i class="fas fa-save mr-2"></i>Save
+      </button>
+      <button
+        data-testid="snippet-tab-save-file-button"
+        class="btn btn-primary"
+        title="Open file"
+        @click="openFileManagerModal"
+      >
+        <i class="fas fa-folder-open mr-2"></i>Open file
       </button>
     </div>
   </div>
+  <FileManager ref="fileManager" />
 </template>
 
 <script>
-import ace from "ace-builds";
 import { format } from "sql-formatter";
 import { emitter } from "../emitter";
 import ContextMenu from "@imengyu/vue3-context-menu";
@@ -23,9 +41,19 @@ import {
   saveSnippetTextConfirm,
 } from "../tree_context_functions/tree_snippets";
 import { snippetsStore, settingsStore } from "../stores/stores_initializer";
+import FileManager from "./FileManager.vue";
+import { setupAceDragDrop } from "../file_drop";
+import FileInputChangeMixin from "../mixins/file_input_mixin";
+import { maxLinesForIndentSQL } from "../constants";
+import { createMessageModal } from "../notification_control";
+
 
 export default {
   name: "SnippetTab",
+  components: {
+    FileManager,
+  },
+  mixins: [FileInputChangeMixin],
   props: {
     tabId: String,
     snippet: {
@@ -84,6 +112,8 @@ export default {
       this.editor.commands.bindKey("Ctrl-Down", null);
 
       this.editor.focus();
+
+      setupAceDragDrop(this.editor);
     },
     setupEvents() {
       emitter.on(`${this.tabId}_editor_focus`, () => {
@@ -116,6 +146,15 @@ export default {
     },
     indentSQL() {
       let editor_value = this.editor.getValue();
+
+      if (this.editor.session.getLength() > maxLinesForIndentSQL) {
+        showToast(
+          "error",
+          `Max lines(${maxLinesForIndentSQL}) for indentSQL exceeded.`
+        );
+        return;
+      }
+
       let formatted = format(editor_value, this.formatOptions);
       if (formatted.length) {
         this.editor.setValue(formatted);
@@ -160,6 +199,20 @@ export default {
           : this.$refs.editor.getBoundingClientRect().top;
       this.heightSubtract = top + 30 * (settingsStore.fontSize / 10);
     },
+    openFileManagerModal() {
+      const editorContent = this.editor.getValue()
+      if (!!editorContent) {
+        createMessageModal(
+          "Are you sure you wish to discard the current changes?",
+          () => {
+            this.$refs.fileManager.show(true, this.handleFileInputChange);
+          },
+          null
+        );
+      } else {
+        this.$refs.fileManager.show(true, this.handleFileInputChange);
+      }
+    },
   },
 };
 </script>
@@ -176,7 +229,7 @@ export default {
   min-height: 35px;
 }
 
-.tab-actions>button {
+.tab-actions > button {
   margin-right: 5px;
 }
 </style>

@@ -19,6 +19,10 @@
             ]
           </button>
 
+          <button :id="`bt_open_file_${tabId}`" class="btn btn-sm btn-secondary" title="Open File" @click="openFileManagerModal">
+            <i class="fas fa-folder-open fa-light"></i>
+          </button>
+
           <button :id="`bt_indent_${tabId}`" class="btn btn-sm btn-secondary" title="Indent SQL" @click="indentSQL()">
             <i class="fas fa-indent fa-light"></i>
           </button>
@@ -114,11 +118,13 @@
   </splitpanes>
 
   <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Query" :commands-modal-visible="commandsModalVisible" @modal-hide="commandsModalVisible=false"/>
+  <FileManager ref="fileManager"/>
+
 </template>
 
 <script>
 import { Splitpanes, Pane } from "splitpanes";
-import { showToast } from "../notification_control";
+import { createMessageModal, showToast } from "../notification_control";
 import moment from "moment";
 import { createRequest } from "../long_polling";
 import { queryModes, requestState, tabStatusMap, queryRequestCodes } from "../constants";
@@ -129,6 +135,8 @@ import CommandsHistoryModal from "./CommandsHistoryModal.vue";
 import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryResultTabs from "./QueryResultTabs.vue";
 import { connectionsStore } from '../stores/connections.js'
+import FileManager from "./FileManager.vue";
+import FileInputChangeMixin from '../mixins/file_input_mixin'
 
 
 export default {
@@ -141,7 +149,9 @@ export default {
     CommandsHistoryModal,
     TabStatusIndicator,
     QueryResultTabs,
+    FileManager
   },
+  mixins: [FileInputChangeMixin],
   props: {
     connId: String,
     tabId: String,
@@ -175,7 +185,7 @@ export default {
       editorContent: "",
       longQuery: false,
       commandsModalVisible: false,
-      lastQuery: null
+      lastQuery: null,
     };
   },
   computed: {
@@ -456,7 +466,20 @@ export default {
     },
     showCommandsHistory() {
       this.commandsModalVisible = true
-    }
+    },
+    openFileManagerModal() {
+      if (!!this.editorContent) {
+        createMessageModal(
+          "Are you sure you wish to discard the current changes?",
+          () => {
+            this.$refs.fileManager.show(true, this.handleFileInputChange);
+          },
+          null
+        );
+      } else {
+        this.$refs.fileManager.show(true, this.handleFileInputChange);
+      }
+    },
   },
 };
 </script>

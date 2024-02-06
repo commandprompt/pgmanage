@@ -1,5 +1,5 @@
 <template>
-  <div class="modal fade" :id="modalId" tabindex="-1" role="dialog" aria-hidden="true">
+  <div ref="fileManagerActionsModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header text-center pt-2">
@@ -65,7 +65,6 @@ export default {
   data() {
     return {
       name: '',
-      modalId: `${v_connTabControl.selectedTab.tag.tabControl.selectedTab.id}_filemanager_actions_modal`
     }
   },
   emits: ['actionDone'],
@@ -97,7 +96,7 @@ export default {
     }
   },
   mounted() {
-    $(`#${this.modalId}`).on('hidden.bs.modal', () => {
+    $(this.$refs.fileManagerActionsModal).on('hidden.bs.modal', () => {
       this.name = ''
     })
   },

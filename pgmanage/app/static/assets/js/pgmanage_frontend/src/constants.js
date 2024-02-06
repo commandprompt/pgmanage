@@ -59,10 +59,22 @@ const queryResponseCodes = {
   Pong: 13,
 };
 
+const allowedFileTypes = ["application/sql", "text/csv", "text/plain", "Text"];
+
+const maxFileSizeInMB = 50;
+
+const maxFileSizeInKB = 1024 ** 2 * maxFileSizeInMB;
+
+const maxLinesForIndentSQL = 7 * 1000;
+
 export {
   requestState,
   tabStatusMap,
   queryModes,
   queryRequestCodes,
   queryResponseCodes,
+  allowedFileTypes,
+  maxFileSizeInMB,
+  maxFileSizeInKB,
+  maxLinesForIndentSQL,
 };

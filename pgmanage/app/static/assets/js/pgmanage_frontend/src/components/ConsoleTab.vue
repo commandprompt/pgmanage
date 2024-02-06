@@ -9,6 +9,10 @@
         <button class="btn btn-sm btn-primary" title="Run" @click="consoleSQL(false)">
           <i class="fas fa-play fa-light"></i>
         </button>
+        
+        <button class="btn btn-sm btn-secondary" title="Open File" @click="openFileManagerModal">
+            <i class="fas fa-folder-open fa-light"></i>
+        </button>
 
         <button class="btn btn-sm btn-secondary" title="Indent SQL" @click="indentSQL()">
           <i class="fas fa-indent fa-ligth"></i>
@@ -70,12 +74,14 @@
           </span>
         </div>
       </div>
-      <QueryEditor ref="editor" class="h-100 mr-2" :read-only="readOnlyEditor" :tab-id="tabId" tab-mode="console"
-        :dialect="dialect" @editor-change="updateEditorContent" :autocomplete="autocomplete"/>
+      <!--FIXME: add proper editor height recalculation-->
+        <QueryEditor ref="editor" class="custom-editor mr-2" :read-only="readOnlyEditor" :tab-id="tabId" tab-mode="console"
+          :dialect="dialect" @editor-change="updateEditorContent" :autocomplete="autocomplete"/>
     </pane>
   </splitpanes>
 
   <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Console" :commands-modal-visible="commandsModalVisible" @modal-hide="commandsModalVisible=false"/>
+  <FileManager ref="fileManager"/>
 </template>
 
 <script>
@@ -83,7 +89,7 @@ import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { Splitpanes, Pane } from "splitpanes";
 import { emitter } from "../emitter";
-import { showToast } from "../notification_control";
+import { showToast, createMessageModal } from "../notification_control";
 import CommandsHistoryModal from "./CommandsHistoryModal.vue";
 import moment from "moment";
 import { createRequest } from "../long_polling";
@@ -93,6 +99,8 @@ import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryEditor from "./QueryEditor.vue";
 import CancelButton from "./CancelSQLButton.vue";
 import { tabStatusMap, requestState, queryRequestCodes } from "../constants";
+import FileManager from "./FileManager.vue";
+import FileInputChangeMixin from '../mixins/file_input_mixin'
 
 export default {
   name: "ConsoleTab",
@@ -103,7 +111,9 @@ export default {
     TabStatusIndicator,
     QueryEditor,
     CancelButton,
+    FileManager
   },
+  mixins: [FileInputChangeMixin],
   props: {
     connId: String,
     tabId: String,
@@ -341,11 +351,27 @@ export default {
     showCommandsHistory() {
       this.commandsModalVisible = true
     },
+    openFileManagerModal() {
+      if (!!this.editorContent) {
+        createMessageModal(
+          "Are you sure you wish to discard the current changes?",
+          () => {
+            this.$refs.fileManager.show(true, this.handleFileInputChange);
+          },
+          null
+        );
+      } else {
+        this.$refs.fileManager.show(true, this.handleFileInputChange);
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
+.custom-editor {
+  height: calc(100% - 50px);
+}
 .console-body {
   height: calc(100vh - 60px);
 }
