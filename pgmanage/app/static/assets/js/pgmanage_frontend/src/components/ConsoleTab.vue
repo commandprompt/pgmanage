@@ -89,7 +89,7 @@ import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { Splitpanes, Pane } from "splitpanes";
 import { emitter } from "../emitter";
-import { showToast } from "../notification_control";
+import { showToast, createMessageModal } from "../notification_control";
 import CommandsHistoryModal from "./CommandsHistoryModal.vue";
 import moment from "moment";
 import { createRequest } from "../long_polling";
@@ -352,7 +352,17 @@ export default {
       this.commandsModalVisible = true
     },
     openFileManagerModal() {
-      this.$refs.fileManager.show(true, this.handleFileInputChange);
+      if (!!this.editorContent) {
+        createMessageModal(
+          "Are you sure you wish to discard the current changes?",
+          () => {
+            this.$refs.fileManager.show(true, this.handleFileInputChange);
+          },
+          null
+        );
+      } else {
+        this.$refs.fileManager.show(true, this.handleFileInputChange);
+      }
     },
   },
 };

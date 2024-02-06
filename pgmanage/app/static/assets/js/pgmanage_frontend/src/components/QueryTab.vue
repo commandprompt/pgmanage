@@ -124,7 +124,7 @@
 
 <script>
 import { Splitpanes, Pane } from "splitpanes";
-import { showToast } from "../notification_control";
+import { createMessageModal, showToast } from "../notification_control";
 import moment from "moment";
 import { createRequest } from "../long_polling";
 import { queryModes, requestState, tabStatusMap, queryRequestCodes } from "../constants";
@@ -468,7 +468,17 @@ export default {
       this.commandsModalVisible = true
     },
     openFileManagerModal() {
-      this.$refs.fileManager.show(true, this.handleFileInputChange);
+      if (!!this.editorContent) {
+        createMessageModal(
+          "Are you sure you wish to discard the current changes?",
+          () => {
+            this.$refs.fileManager.show(true, this.handleFileInputChange);
+          },
+          null
+        );
+      } else {
+        this.$refs.fileManager.show(true, this.handleFileInputChange);
+      }
     },
   },
 };

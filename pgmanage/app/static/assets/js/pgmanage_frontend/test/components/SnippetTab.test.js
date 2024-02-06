@@ -238,5 +238,25 @@ describe("SnippetTab", () => {
       expect(preventDefault).toHaveBeenCalled();
       expect(stopPropagation).toHaveBeenCalled();
     });
+
+    test("handles drop event when ace editor is not empty", () => {
+      wrapper.vm.editor.setValue("test data");
+      const messageModalSpy = vi
+        .spyOn(notificatonModule, "createMessageModal")
+        .mockImplementation(() => null);
+
+      const readerMock = { readAsText: vi.fn(), result: "fileContent" };
+
+      Object.defineProperty(eventMock, "dataTransfer", {
+        value: { files: [fileMock], types: ["Files"] },
+      });
+      Object.defineProperty(window, "FileReader", {
+        value: vi.fn(() => readerMock),
+      });
+
+      wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
+
+      expect(messageModalSpy).toBeCalled();
+    });
   });
 });

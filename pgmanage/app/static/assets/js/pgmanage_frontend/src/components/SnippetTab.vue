@@ -45,6 +45,8 @@ import FileManager from "./FileManager.vue";
 import { setupAceDragDrop } from "../file_drop";
 import FileInputChangeMixin from "../mixins/file_input_mixin";
 import { maxLinesForIndentSQL } from "../constants";
+import { createMessageModal } from "../notification_control";
+
 
 export default {
   name: "SnippetTab",
@@ -198,7 +200,18 @@ export default {
       this.heightSubtract = top + 30 * (settingsStore.fontSize / 10);
     },
     openFileManagerModal() {
-      this.$refs.fileManager.show(true, this.handleFileInputChange);
+      const editorContent = this.editor.getValue()
+      if (!!editorContent) {
+        createMessageModal(
+          "Are you sure you wish to discard the current changes?",
+          () => {
+            this.$refs.fileManager.show(true, this.handleFileInputChange);
+          },
+          null
+        );
+      } else {
+        this.$refs.fileManager.show(true, this.handleFileInputChange);
+      }
     },
   },
 };
