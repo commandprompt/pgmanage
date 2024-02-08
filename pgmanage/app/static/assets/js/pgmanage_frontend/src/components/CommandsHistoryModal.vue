@@ -133,12 +133,10 @@ export default {
           {
             title: "Duration",
             field: "duration",
-            width: 100,
           },
           {
             title: "Status",
             field: "status",
-            width: 50,
             hozAlign: "center",
             formatter: function (cell, formatterParams, onRendered) {
               if (cell.getValue() === "success") {
@@ -151,7 +149,6 @@ export default {
           {
             title: "Command",
             field: "snippet",
-            widthGrow: 4,
             contextMenu: [
               {
                 label: "Copy Content To Query Tab",
@@ -172,7 +169,6 @@ export default {
         {
           title: "Command",
           field: "snippet",
-          widthGrow: 4,
           contextMenu: [
             {
               label:
@@ -305,7 +301,8 @@ export default {
       this.table = new Tabulator(`#${this.tabId}_commands_history_table`, {
         placeholder: "No Data Available",
         selectable: true,
-        layout: "fitColumns",
+        layout: "fitDataStretch",
+        width: '100%',
         clipboard: "copy",
         clipboardCopyConfig: {
           columnHeaders: false, //do not include column headers in clipboard output
