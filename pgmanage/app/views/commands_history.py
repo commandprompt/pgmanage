@@ -90,11 +90,13 @@ def get_commands_history(request):
                 "duration": command.duration,
                 "status": command.status,
                 "snippet": command.snippet,
+                "database": command.database
             }
         elif command_type == "Console":
             command_data = {
                 "start_time": command.start_time,
                 "snippet": command.snippet,
+                "database": command.database
             }
         command_list.append(command_data)
 

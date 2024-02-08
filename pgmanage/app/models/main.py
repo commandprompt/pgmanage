@@ -103,12 +103,14 @@ class QueryHistory(models.Model):
     duration = models.TextField(blank=False, default='')
     status = models.TextField(blank=False, default='')
     snippet = models.TextField(blank=False, default='')
+    database = models.CharField(max_length=200, null=True)
 
 class ConsoleHistory(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     connection = models.ForeignKey(Connection,on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     snippet = models.TextField(blank=False, default='')
+    database = models.CharField(max_length=200, null=True)
 
 class Group(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)

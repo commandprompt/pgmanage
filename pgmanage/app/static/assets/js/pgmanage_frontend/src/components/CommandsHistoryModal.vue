@@ -147,6 +147,10 @@ export default {
             },
           },
           {
+            title: "Database",
+            field: "database",
+          },
+          {
             title: "Command",
             field: "snippet",
             contextMenu: [
@@ -165,6 +169,10 @@ export default {
         {
           title: "Date",
           field: "start_time",
+        },
+        {
+          title: "Database",
+          field: "database",
         },
         {
           title: "Command",
@@ -339,6 +347,7 @@ export default {
             if (el.end_time) el.end_time = moment(el.end_time).format();
           });
           this.table.setData(resp.data.command_list);
+          this.table.redraw();
         })
         .catch((error) => {
           showToast("error", error.response.data.data);
