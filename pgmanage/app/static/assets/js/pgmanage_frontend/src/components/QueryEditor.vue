@@ -11,7 +11,6 @@
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { snippetsStore, settingsStore } from "../stores/stores_initializer";
 import { buildSnippetContextMenuObjects } from "../tree_context_functions/tree_snippets";
-import { uiCopyTextToClipboard } from "../workspace";
 import {
   autocomplete_start,
   autocomplete_keydown,
@@ -130,10 +129,9 @@ export default {
         {
           label: "Copy",
           icon: "fas cm-all fa-terminal",
+          disabled: !this.editor.getSelectedText(),
           onClick: () => {
-            let copy_text = this.getQueryEditorValue(true);
-
-            uiCopyTextToClipboard(copy_text);
+            document.execCommand("copy");
           },
         },
         {

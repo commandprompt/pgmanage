@@ -1213,23 +1213,6 @@ function monitoringAction(row_data, p_function) {
   }
 }
 
-function uiCopyTextToClipboard(p_value) {
-  // Create temporary invisible textarea.
-  var v_text_area = document.createElement('textarea');
-  v_text_area.styleList = {'height':'0px','overflow':'hidden'}
-  document.body.appendChild(v_text_area);
-  // Updating the temporary textarea and selecting the values.
-  v_text_area.value = p_value;
-  v_text_area.select();
-  v_text_area.setSelectionRange(0, 9999999);
-  // Copying the text inside the temporary textarea.
-  document.execCommand("copy");
-  // Remove and delete the temporary textarea.
-  document.body.removeChild(v_text_area);
-  v_text_area = null
-  // Prompting an alert.
-  showAlert('<b>Text copied:</b> \n<div class="mt-2 p-2 border-1 omnidb__theme-bg--light"><code>' + p_value + '</code></div>');
-}
 
 function toggleConnectionAutocomplete(toggler_id, conn_id) {
   let checked = document.getElementById(toggler_id).checked;
@@ -1262,5 +1245,4 @@ export {
   resizeSnippetHorizontal,
   toggleConnectionAutocomplete,
   toggleTreeContainer,
-  uiCopyTextToClipboard
 };
