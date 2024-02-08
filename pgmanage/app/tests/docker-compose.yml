@@ -1,0 +1,16 @@
+version: '3.1'
+
+services:
+
+  test_db:
+    image: postgres:15.5
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dellstore
+    ports:
+      - 5433:5432
+    volumes:
+      - ./dellstore2-normal-1.0.sql:/docker-entrypoint-initdb.d/db.sql
+      - ./test-db.sh:/docker-entrypoint-initdb.d/initdb.sh

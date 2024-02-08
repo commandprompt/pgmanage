@@ -8,6 +8,7 @@ from app.utils.decorators import (
 )
 from app.views.monitoring_widgets import mysql as mysql_widgets
 from app.views.monitoring_widgets import postgresql as postgresql_widgets
+from django.core.exceptions import ValidationError
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -103,14 +104,21 @@ def user_created_widget_detail(request, widget_id):
         widget.type = data.get("widget_type")
         widget.title = data.get("widget_name")
         widget.interval = data.get("widget_interval")
+        try:
+            widget.full_clean()
+        except ValidationError as exc:
+            return JsonResponse(data={"data": str(exc)}, status=400)
+
         widget.save()
 
         return JsonResponse(model_to_dict(widget))
     if request.method == "DELETE":
         widget = MonWidgets.objects.filter(user=request.user, id=widget_id).first()
 
-        if widget:
-            widget.delete()
+        if not widget:
+            return JsonResponse(data={"data": "Widget not found."}, status=404)
+
+        widget.delete()
 
         return HttpResponse(status=204)
 
@@ -135,6 +143,11 @@ def create_widget(request, database):
         title=widget_name,
         interval=widget_interval,
     )
+
+    try:
+        widget.full_clean()
+    except ValidationError as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
     widget.save()
 
@@ -368,9 +381,10 @@ def create_dashboard_monitoring_widget(request, database):
             unit=widget_data.get("id"),
             user=request.user,
             connection=conn_object,
-            interval=widget_data.get("interval"),
+            interval=widget_data.get("interval", 5),
             plugin_name=widget_data.get("plugin_name"),
         )
+        user_widget.full_clean(exclude=["plugin_name"])
         user_widget.save()
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)

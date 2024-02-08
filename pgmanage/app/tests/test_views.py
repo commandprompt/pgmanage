@@ -4,6 +4,7 @@ from collections import OrderedDict
 import json
 
 from pgmanage import settings
+from django.contrib.auth.models import User
 
 import app.include.Spartacus.Utils
 from .utils_testing import (
@@ -11,7 +12,6 @@ from .utils_testing import (
     execute_client_login,
     get_client_ajax_response_content,
     get_client_omnidb_session,
-    get_omnidb_database_connection,
     get_session_alert_message,
     USERS
 )
@@ -339,34 +339,11 @@ class LoginSession(TestCase):
         app_session = get_client_omnidb_session(p_client=self.client)
         self.assertIsNotNone(app_session)
 
-        app_database = get_omnidb_database_connection()
+        user_db = User.objects.get(username=self.user['user'])
 
-        user_table = app_database.v_connection.Query(
-            p_sql='''
-                SELECT t.id
-                    , t.password
-                    , t.last_login
-                    , t.is_superuser
-                    , t.username
-                    , t.last_name
-                    , t.email
-                    , t.is_staff
-                    , t.is_active
-                    , t.date_joined
-                    , t.first_name
-                FROM 'auth_user' t
-                WHERE t.username = '{p_user}'
-                ORDER BY t.id
-            '''.format(
-                p_user=self.user['user']
-            )
-        )
-
-        self.assertEqual(len(user_table.Rows), 1)
-        user_row = user_table.Rows[0]
-        self.assertEqual(app_session.v_user_id, user_row['id'])
-        self.assertEqual(app_session.v_user_name, user_row['username'])
-        self.assertEqual(app_session.v_super_user, bool(user_row['is_superuser']))
+        self.assertEqual(app_session.v_user_id, user_db.id)
+        self.assertEqual(app_session.v_user_name, user_db.username)
+        self.assertEqual(app_session.v_super_user, user_db.is_superuser)
         self.assertIsInstance(app_session.v_database_index, int)
         self.assertTrue(isinstance(app_session.v_databases, OrderedDict) or isinstance(app_session.v_databases, dict))
         self.assertEqual(app_session.v_user_key, self.client.session.session_key)

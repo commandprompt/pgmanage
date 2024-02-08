@@ -294,15 +294,15 @@ base_urlpatterns = [
     re_path(r'^get_table_definition_sqlite/', views.tree_sqlite.get_table_definition, name="get_table_definition_sqlite"),
 
     #MONITORING SYSTEM
-    path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets,),
-    path("monitoring-widgets/list", views.monitoring_dashboard.monitoring_widgets_list,),
-    path("monitoring-widgets/test", views.monitoring_dashboard.test_monitoring_widget),
-    path("monitoring-widgets/create", views.monitoring_dashboard.create_dashboard_monitoring_widget),
-    path("monitoring-widgets/<int:widget_id>", views.monitoring_dashboard.widget_detail),
-    path("monitoring-widgets/<int:widget_id>/template", views.monitoring_dashboard.widget_template,),
-    path("monitoring-widgets/<int:widget_saved_id>/refresh", views.monitoring_dashboard.refresh_monitoring_widget),
-    path("monitoring-widgets/user-created", views.monitoring_dashboard.create_widget),
-    path("monitoring-widgets/user-created/<int:widget_id>", views.monitoring_dashboard.user_created_widget_detail,),
+    path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
+    path("monitoring-widgets/list", views.monitoring_dashboard.monitoring_widgets_list, name="monitoring-widgets-list"),
+    path("monitoring-widgets/test", views.monitoring_dashboard.test_monitoring_widget, name="test-monitoring-widget"),
+    path("monitoring-widgets/create", views.monitoring_dashboard.create_dashboard_monitoring_widget, name="create-dashboard-widget"),
+    path("monitoring-widgets/<int:widget_id>", views.monitoring_dashboard.widget_detail, name="dashboard-widget-detail"),
+    path("monitoring-widgets/<int:widget_id>/template", views.monitoring_dashboard.widget_template, name="widget-template"),
+    path("monitoring-widgets/<int:widget_saved_id>/refresh", views.monitoring_dashboard.refresh_monitoring_widget, name="refresh-monitoring-widget"),
+    path("monitoring-widgets/user-created", views.monitoring_dashboard.create_widget, name="create-custom-widget"),
+    path("monitoring-widgets/user-created/<int:widget_id>", views.monitoring_dashboard.user_created_widget_detail, name="widget-detail"),
     
     # Configuration
     path('configuration/<int:config_id>/', views.configuration.delete_config, name="delete_configuration"),

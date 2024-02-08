@@ -52,7 +52,7 @@ class PostgreSQL(TestCase):
             'prompt_timeout': datetime.now() + timedelta(0,60000)
         }]
         session['pgmanage_session'].v_tab_connections = {0: self.database}
-        session['pgmanage_session'].v_tabs_databases = {0: 'pgmanage_test'}
+        session['pgmanage_session'].v_tabs_databases = {0: 'dellstore'}
         session.save()
 
     @classmethod
