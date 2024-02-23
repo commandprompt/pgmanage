@@ -494,20 +494,25 @@ export default {
       })
 
       if(window.showSaveFilePicker) {
-        const handle = await showSaveFilePicker(
-          { suggestedName: file.name,
-            types: [{
-              description: 'SQL Script',
-              accept: {
-                'application/sql': ['.sql'],
-              }
-            }],
-          }
-        )
+        try {
+          const handle = await showSaveFilePicker(
+            { suggestedName: file.name,
+              types: [{
+                description: 'SQL Script',
+                accept: {
+                  'application/sql': ['.sql'],
+                }
+              }],
+            }
+          )
 
-        const writable = await handle.createWritable()
-        await writable.write(file)
-        writable.close()
+          const writable = await handle.createWritable()
+          await writable.write(file)
+          writable.close()
+        } catch(e) {
+          console.log(e)
+        }
+
       } else {
         const downloadLink = document.createElement("a")
         downloadLink.href = URL.createObjectURL(file)

@@ -233,25 +233,30 @@ export default {
       const today = new Date
       const nameSuffix = this.$props.snippet?.name ? this.$props.snippet?.name : `${today.getHours()}${today.getMinutes()}`
 
-      const file = new File([this.editorContent], `pgmanage-snippet-${nameSuffix}.sql`, {
+      const file = new File([this.editor.getValue()], `pgmanage-snippet-${nameSuffix}.sql`, {
         type: "application/sql",
       })
 
       if(window.showSaveFilePicker) {
-        const handle = await showSaveFilePicker(
-          { suggestedName: file.name,
-            types: [{
-              description: 'SQL Script',
-              accept: {
-                'application/sql': ['.sql'],
-              }
-            }],
-          }
-        )
+        try {
+          const handle = await showSaveFilePicker(
+            { suggestedName: file.name,
+              types: [{
+                description: 'SQL Script',
+                accept: {
+                  'application/sql': ['.sql'],
+                }
+              }],
+            }
+          )
 
-        const writable = await handle.createWritable()
-        await writable.write(file)
-        writable.close()
+          const writable = await handle.createWritable()
+          await writable.write(file)
+          writable.close()
+        } catch(e) {
+          console.log(e)
+        }
+
       }
       else {
         const downloadLink = document.createElement("a")
