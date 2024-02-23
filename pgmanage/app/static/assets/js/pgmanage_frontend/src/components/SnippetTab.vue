@@ -20,7 +20,7 @@
         <i class="fas fa-save mr-2"></i>Save
       </button>
       <button
-        data-testid="snippet-tab-save-file-button"
+        data-testid="snippet-tab-open-file-button"
         class="btn btn-primary"
         title="Open file"
         @click="openFileManagerModal"
@@ -32,7 +32,7 @@
         :disabled="fileSaveDisabled"
         data-testid="snippet-tab-save-file-button"
         class="btn btn-primary"
-        title="Open file"
+        title="Save to File"
         @click="saveFile"
       >
         <i class="fas fa-download mr-2"></i>Save to File
