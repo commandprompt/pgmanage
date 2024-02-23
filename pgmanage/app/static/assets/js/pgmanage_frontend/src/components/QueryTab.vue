@@ -214,7 +214,7 @@ export default {
       return connectionsStore.getConnection(this.databaseIndex).autocomplete
     },
     fileSaveDisabled() {
-      return !!!this.editorContent;
+      return !this.editorContent;
     }
   },
   mounted() {

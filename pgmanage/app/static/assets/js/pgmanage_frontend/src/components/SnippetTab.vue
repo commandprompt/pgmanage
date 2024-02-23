@@ -124,7 +124,7 @@ export default {
       this.editor.commands.bindKey("Ctrl-Down", null);
 
       this.editor.on("change", () => {
-        this.fileSaveDisabled = !!!this.editor.getValue()
+        this.fileSaveDisabled = !this.editor.getValue()
       });
       this.fileSaveDisabled = !!!this.editor.getValue()
 
