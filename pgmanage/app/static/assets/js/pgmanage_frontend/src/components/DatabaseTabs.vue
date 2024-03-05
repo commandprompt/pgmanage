@@ -188,7 +188,6 @@ export default {
               if (!!lastTab) {
                 setTimeout(() => {
                   lastTab.scrollIntoView({
-                    block: "end",
                     inline: "end",
                     behavior: "smooth",
                   });
