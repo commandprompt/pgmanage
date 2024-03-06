@@ -13,7 +13,7 @@
         <div class="modal-body">
           <div class="mb-3">
             <div class="form-row">
-              <div class="form-group col-5">
+              <div class="form-group col-2">
                 <p class="font-weight-bold mb-2">Select a daterange:</p>
                 <input v-model="startedFrom" type="text" class="form-control form-control-sm d-none"
                   placeholder="Start Time" />
@@ -25,7 +25,19 @@
                 </button>
               </div>
 
-              <div class="form-group col-7 d-flex justify-content-end align-items-end">
+              <div class="form-group col-2">
+                <label class="font-weight-bold mb-2">Filter by database:</label>
+                <select v-model="databaseFilter" @change="getCommandsHistory()" id="databaseFilter" class="form-control" placeholder="Filter database">
+                    <option value="" selected>All Databases</option>
+                    <option v-for="(name, index) in databaseNames"
+                      :key=index
+                      :value="name">
+                        {{name}}
+                    </option>
+                </select>
+              </div>
+
+              <div class="form-group col-8 d-flex justify-content-end align-items-end">
                 <div>
                   <label class="font-weight-bold mb-2">Command contains:</label>
                   <input v-model="commandContains" @change="getCommandsHistory()" type="text" class="form-control" />
@@ -116,6 +128,8 @@ export default {
       timeRangeLabel: "Last 6 Hours",
       cellContent: "",
       cellModalVisible: false,
+      databaseNames: [],
+      databaseFilter: ''
     };
   },
   computed: {
@@ -336,10 +350,12 @@ export default {
           command_contains: this.commandContains,
           command_type: this.tabType,
           current_page: this.currentPage,
+          database_filter: this.databaseFilter,
           database_index: this.databaseIndex,
         })
         .then((resp) => {
           this.pages = resp.data.pages;
+          this.databaseNames = resp.data.database_names;
           if (this.currentPage > resp.data.pages) this.currentPage = 1;
 
           resp.data.command_list.forEach((el) => {
@@ -359,6 +375,7 @@ export default {
           command_from: this.startedFrom,
           command_to: this.startedTo,
           command_contains: this.commandContains,
+          database_filter: this.databaseFilter,
           database_index: this.databaseIndex,
           command_type: this.tabType,
         })

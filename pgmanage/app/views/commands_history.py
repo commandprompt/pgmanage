@@ -13,6 +13,7 @@ def clear_commands_history(request):
     data = request.data
 
     database_index: int = data["database_index"]
+    database_filter: Optional[str] = data["database_filter"]
     command_contains: str = data["command_contains"]
     command_from: Optional[str] = data["command_from"]
     command_to: Optional[str] = data["command_to"]
@@ -28,6 +29,9 @@ def clear_commands_history(request):
             query = ConsoleHistory.objects.filter(
                 user=request.user, connection=conn, snippet__icontains=command_contains
             ).order_by("-start_time")
+
+        if database_filter:
+            query = query.filter(database=database_filter)
 
         if command_from:
             query = query.filter(start_time__gte=command_from)
@@ -48,6 +52,7 @@ def get_commands_history(request):
 
     current_page: int = data["current_page"]
     database_index: int = data["database_index"]
+    database_filter: Optional[str] = data["database_filter"]
     command_contains: str = data["command_contains"]
     command_from: Optional[str] = data["command_from"]
     command_to: Optional[str] = data["command_to"]
@@ -55,15 +60,24 @@ def get_commands_history(request):
 
     try:
         conn = Connection.objects.get(id=database_index)
-
         if command_type == "Query":
             query = QueryHistory.objects.filter(
                 user=request.user, connection=conn, snippet__icontains=command_contains
             ).order_by("-start_time")
+            query_dbnames = QueryHistory.objects.filter(
+                user=request.user, connection=conn).exclude(database__isnull=True).values('database').distinct()
+
         elif command_type == "Console":
             query = ConsoleHistory.objects.filter(
                 user=request.user, connection=conn, snippet__icontains=command_contains
             ).order_by("-start_time")
+            query_dbnames = ConsoleHistory.objects.filter(
+                user=request.user, connection=conn).exclude(database__isnull=True).values('database').distinct()
+
+        database_names = [x['database'] for x in query_dbnames]
+
+        if database_filter:
+            query = query.filter(database=database_filter)
 
         if command_from:
             query = query.filter(start_time__gte=command_from)
@@ -100,4 +114,4 @@ def get_commands_history(request):
             }
         command_list.append(command_data)
 
-    return JsonResponse(data={"command_list": command_list, "pages": p.num_pages})
+    return JsonResponse(data={"command_list": command_list, "pages": p.num_pages, "database_names": database_names})
