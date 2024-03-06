@@ -13,7 +13,7 @@
         <div class="modal-body">
           <div class="mb-3">
             <div class="form-row">
-              <div class="form-group col-2">
+              <div class="form-group col-lg-3 col-xl-2 col-sm-4">
                 <p class="font-weight-bold mb-2">Select a daterange:</p>
                 <input v-model="startedFrom" type="text" class="form-control form-control-sm d-none"
                   placeholder="Start Time" />
@@ -25,7 +25,7 @@
                 </button>
               </div>
 
-              <div class="form-group col-2">
+              <div class="form-group col-lg-3 col-xl-2 col-sm-4">
                 <label class="font-weight-bold mb-2">Filter by database:</label>
                 <select v-model="databaseFilter" @change="getCommandsHistory()" id="databaseFilter" class="form-control" placeholder="Filter database">
                     <option value="" selected>All Databases</option>
@@ -37,7 +37,7 @@
                 </select>
               </div>
 
-              <div class="form-group col-8 d-flex justify-content-end align-items-end">
+              <div class="form-group col-lg-6 col-md-12 col-xl-8 d-flex justify-content-end align-items-end">
                 <div>
                   <label class="font-weight-bold mb-2">Command contains:</label>
                   <input v-model="commandContains" @change="getCommandsHistory()" type="text" class="form-control" />
@@ -419,6 +419,7 @@ export default {
       this.startedTo = moment().toISOString();
       this.timeRangeLabel = "Last 6 Hours";
       this.commandContains = "";
+      this.databaseFilter = "";
     },
   },
 };
