@@ -82,7 +82,7 @@ export default {
             label: "ER Diagram",
             icon: "fab cm-all fa-hubspot",
             onClick: () => {
-              emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_erd_tab`, this.selectedNode.data.database)
+              tabsStore.createERDTab(this.selectedNode.data.database)
             },
           },
           {
@@ -148,10 +148,7 @@ export default {
                 label: "Edit Data",
                 icon: "fas cm-all fa-table",
                 onClick: () => {
-                  emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_data_editor_tab`, {
-                    table: this.selectedNode.title,
-                    schema: this.getParentNodeDeep(this.selectedNode, 2).title
-                  })
+                  tabsStore.createDataEditorTab(this.selectedNode.title, this.getParentNodeDeep(this.selectedNode, 2).title)
                 },
               },
               {
@@ -444,14 +441,7 @@ export default {
                 }.${this.selectedNode.title}`;
 
               let command = `-- Querying Data\nselect t.*\nfrom ${table_name} t`
-              
-              emitter.emit(
-                `${tabsStore.selectedPrimaryTab.id}_create_query_tab`,
-                    {
-                      name: this.selectedNode.title,
-                      initialQuery: command,
-                    }
-                  );
+              tabsStore.createQueryTab(this.selectedNode.title, null, null, command)
                 
               setTimeout(() => {
                 emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_run_query`)
@@ -1161,13 +1151,7 @@ export default {
           schema: this.getParentNodeDeep(node, 2).title,
         })
         .then((resp) => {
-          emitter.emit(
-                  `${tabsStore.selectedPrimaryTab.id}_create_query_tab`,
-                  {
-                    name: this.selectedNode.title,
-                    initialQuery: resp.data.data,
-                  }
-                );
+          tabsStore.createQueryTab(this.selectedNode.title, null, null, resp.data.data)
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -1248,13 +1232,7 @@ export default {
           function: node.data.id,
         })
         .then((resp) => {
-          emitter.emit(
-                  `${tabsStore.selectedPrimaryTab.id}_create_query_tab`,
-                  {
-                    name: this.selectedNode.title,
-                    initialQuery: resp.data.data,
-                  }
-          );
+          tabsStore.createQueryTab(this.selectedNode.title, null, null, resp.data.data)
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -1335,13 +1313,7 @@ export default {
           procedure: node.data.id,
         })
         .then((resp) => {
-          emitter.emit(
-                  `${tabsStore.selectedPrimaryTab.id}_create_query_tab`,
-                  {
-                    name: this.selectedNode.title,
-                    initialQuery: resp.data.data,
-                  }
-            );
+          tabsStore.createQueryTab(this.selectedNode.title, null, null, resp.data.data)
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

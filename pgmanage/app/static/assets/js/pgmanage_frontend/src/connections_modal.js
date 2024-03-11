@@ -2,7 +2,6 @@ import { createApp } from 'vue'
 import { tabsStore, connectionsStore } from './stores/stores_initializer.js'
 import ConnectionsModal from './components/ConnectionsModal.vue'
 import moment from 'moment'
-import { emitter } from './emitter.js'
 
 const conn_app = createApp({
     components: {
@@ -25,10 +24,10 @@ function connectionsModalInit() {
         $('#connections-modal').modal('hide')
         if (connection.technology === 'terminal') {
             let details = `${connection.tunnel.user}@${connection.tunnel.server}:${connection.tunnel.port}`
-            emitter.emit(`${tabsStore.id}_create_terminal_tab`, {index: connection.id, alias: connection.alias, details: details})
+            tabsStore.createTerminalTab(connection.id, connection.alias, details)
         }
         else {
-            emitter.emit(`${tabsStore.id}_create_conn_tab`, ({index: connection.id}))
+            tabsStore.createConnectionTab(connection.id)
         }
     })
 }

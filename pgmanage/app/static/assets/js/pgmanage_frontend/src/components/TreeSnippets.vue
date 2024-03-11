@@ -300,7 +300,7 @@ export default {
       if (existing_tab) {
         tabsStore.selectTab(existing_tab);
       } else {
-        emitter.emit("create_snippet_tab", node.data);
+        tabsStore.createSnippetTab(this.tabId, node.data)
       }
 
       this.api

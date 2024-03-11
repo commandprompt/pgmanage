@@ -73,7 +73,7 @@ export default {
             label: "ER Diagram",
             icon: "fab cm-all fa-hubspot",
             onClick: () => {
-              emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_erd_tab`)
+              tabsStore.createERDTab()
             },
           },
           {
@@ -106,10 +106,7 @@ export default {
                 label: "Edit Data",
                 icon: "fas cm-all fa-table",
                 onClick: () => {
-                  emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_data_editor_tab`, {
-                    table: this.selectedNode.title,
-                    schema: null
-                  })
+                  tabsStore.createDataEditorTab(this.selectedNode.title, null)
                 },
               },
               {

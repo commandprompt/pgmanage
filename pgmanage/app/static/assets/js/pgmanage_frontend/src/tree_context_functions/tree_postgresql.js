@@ -37,13 +37,7 @@ import { emitter } from "../emitter";
 import { tabsStore } from "../stores/stores_initializer";
 
 function tabSQLTemplate(tab_name, template, showTip=true) {
-    emitter.emit(
-        `${tabsStore.selectedPrimaryTab.id}_create_query_tab`,
-        {
-          name: tab_name,
-          initialQuery:  template,
-        }
-      );
+    tabsStore.createQueryTab(tab_name, null, null, template)
 }
 
 function tabAdvancedObjectSearch(node) {
@@ -1072,14 +1066,7 @@ function TemplateSelectPostgresql(schema, table, kind) {
         }),
         function(p_return) {
             let tab_name = `${tabsStore.selectedPrimaryTab.metaData.selectedDatabase}@${schema}.${table}`
-
-            emitter.emit(
-                `${tabsStore.selectedPrimaryTab.id}_create_query_tab`,
-                {
-                  name: tab_name,
-                  initialQuery:  p_return.v_data.v_template,
-                }
-              );
+            tabsStore.createQueryTab(tab_name, null, null, p_return.v_data.v_template)
             setTimeout(() => {
                 emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_run_query`)
             }, 200)

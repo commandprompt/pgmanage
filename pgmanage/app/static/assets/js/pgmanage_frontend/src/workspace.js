@@ -187,15 +187,11 @@ function showMenuNewTabOuter(e) {
         let onClick;
         if (conn.technology == "terminal") {
           onClick = () => {
-            emitter.emit(`${tabsStore.id}_create_terminal_tab`, {index: conn.id, alias: conn.alias, details: conn.details1})
+            tabsStore.createTerminalTab(conn.id, conn.alias, conn.details1)
           };
         } else {
           onClick = () => {
-            emitter.emit(`${tabsStore.id}_create_conn_tab`, {
-              index: conn.id,
-              createInitialTabs: true,
-              name: name,
-              tooltipName: tooltip_name})
+            tabsStore.createConnectionTab(conn.id, true, name, tooltip_name)
           };
         }
         return {
@@ -263,7 +259,7 @@ function showMenuNewTabOuter(e) {
             label: term_name,
             icon: "fas cm-all fa-terminal",
             onClick: () => {
-              emitter.emit(`${tabsStore.id}_create_terminal_tab`, {index: id, alias: alias, details: details1})
+              tabsStore.createTerminalTab(id, alias, details1)
             },
           };
         }
@@ -298,7 +294,7 @@ function showMenuNewTabOuter(e) {
     } else {
       startLoading();
       setTimeout(function () {
-        emitter.emit(`${tabsStore.id}_create_conn_tab`)
+        tabsStore.createConnectionTab()
       }, 0);
     }
   }

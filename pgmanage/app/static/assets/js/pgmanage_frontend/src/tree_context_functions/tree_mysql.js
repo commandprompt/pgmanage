@@ -497,13 +497,8 @@ function TemplateSelectMysql(p_schema, p_table) {
     }),
     function (p_return) {
       let tab_name = `${p_schema}.${p_table}`
-      emitter.emit(
-        `${tabsStore.selectedPrimaryTab.id}_create_query_tab`,
-        {
-          name: tab_name,
-          initialQuery:  p_return.v_data.v_template,
-        }
-      );
+      tabsStore.createQueryTab(tab_name, null, null, p_return.v_data.v_template)
+
       setTimeout(() => {
           emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_run_query`)
       }, 200)

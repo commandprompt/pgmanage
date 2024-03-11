@@ -286,46 +286,9 @@ export default {
     },
     setupEvents() {
       if (this.isSnippetsPanel) {
-        emitter.on("create_snippet_tab", (snippet) => {
-          this.createSnippetTab(snippet);
-        });
-        this.createSnippetTab();
+        tabsStore.createSnippetTab(this.tabId);
       }
 
-      emitter.on(`${this.tabId}_create_console_tab`, () => {
-        this.createConsoleTab();
-      });
-
-      emitter.on(`${this.tabId}_create_query_tab`, (data) => {
-        this.createQueryTab(
-          data?.name,
-          data?.tabDbId,
-          data?.tabDbName,
-          data?.initialQuery
-        );
-      });
-
-      emitter.on(`${this.tabId}_create_conf_tab`, () => {
-        this.createConfigurationTab();
-      });
-
-      emitter.on(
-        `${this.tabId}_create_utility_tab`,
-        ({ node, utility, backupType = "objects" }) => {
-          this.createUtilityTab(node, utility, backupType);
-        }
-      );
-
-      emitter.on(`${this.tabId}_create_erd_tab`, (schema) => {
-        this.createERDTab(schema);
-      });
-
-      emitter.on(
-        `${this.tabId}_create_data_editor_tab`,
-        ({ table, schema = "" }) => {
-          this.createDataEditorTab(table, schema);
-        }
-      );
 
       emitter.on(
         `${this.tabId}_create_schema_editor_tab`,
@@ -338,249 +301,17 @@ export default {
         this.createMonitoringTab(name, query);
       });
 
-      emitter.on(`${this.tabId}_create_monitoring_dashboard_tab`, () => {
-        this.createMonitoringDashboardTab();
-      });
     },
     clearEvents() {
-      emitter.all.delete(`${this.tabId}_create_console_tab`);
-      emitter.all.delete(`${this.tabId}_create_query_tab`);
-      emitter.all.delete(`${this.tabId}_create_utility_tab`);
-      emitter.all.delete(`${this.tabId}_create_erd_tab`);
-      emitter.all.delete(`${this.tabId}_create_data_editor_tab`);
       emitter.all.delete(`${this.tabId}_create_schema_editor_tab`);
       emitter.all.delete(`${this.tabId}_create_monitoring_tab`);
-      emitter.all.delete(`${this.tabId}_create_monitoring_dashboard_tab`);
-      emitter.all.delete("create_snippet_tab");
     },
     addTab(event) {
       if (tabsStore.getPrimaryTabById(this.tabId).name === "Snippets") {
-        this.createSnippetTab();
+        tabsStore.createSnippetTab(this.tabId);
       } else {
         this.showMenuNewTab(event);
       }
-    },
-    createSnippetTab(snippet) {
-      let snippetName = "New Snippet";
-
-      let snippetDetails = {
-        id: null,
-        name: null,
-        parent: null,
-        type: "snippet",
-      };
-
-      if (snippet) {
-        snippetName = snippet.name;
-        snippetDetails = {
-          id: snippet.id,
-          name: snippetName,
-          parent: snippet.id_parent,
-          type: "snippet",
-        };
-      }
-
-      let tab = tabsStore.addTab({
-        name: snippetName,
-        parentId: this.tabId,
-        component: "SnippetTab",
-        mode: "snippet",
-        selectFunction: function () {
-          emitter.emit(`${this.id}_editor_focus`);
-          emitter.emit(`${this.id}_resize`);
-        },
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, function () {
-            tabsStore.removeTab(tab);
-          });
-        },
-      });
-
-      tab.metaData.snippetObject = snippetDetails;
-
-      tabsStore.selectTab(tab);
-    },
-    createConsoleTab() {
-      const tab = tabsStore.addTab({
-        parentId: this.tabId,
-        name: "Console",
-        component: "ConsoleTab",
-        icon: "<i class='fas fa-terminal icon-tab-title'></i>",
-        mode: "console",
-        selectFunction: function () {
-          emitter.emit(`${this.id}_resize`);
-          emitter.emit(`${this.id}_check_console_status`);
-        },
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, function () {
-            tabsStore.removeTab(tab);
-          });
-        },
-      });
-
-      tab.metaData.consoleHelp = this.primaryTab?.metaData?.consoleHelp;
-      tab.metaData.databaseIndex =
-        this.primaryTab?.metaData?.selectedDatabaseIndex;
-      tab.metaData.dialect = this.primaryTab?.metaData?.selectedDBMS;
-
-      tabsStore.selectTab(tab);
-    },
-    createMonitoringDashboardTab() {
-      const tab = tabsStore.addTab({
-        parentId: this.tabId,
-        name: "Monitoring",
-        icon: '<i class="fas fa-chart-bar icon-tab-title"></i>',
-        component: "MonitoringDashboard",
-        mode: "monitoring_dashboard",
-        selectFunction: function () {
-          emitter.emit(`${this.id}_redraw_widget_grid`);
-        },
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
-        },
-        dblClickFunction: renameTab,
-      });
-      tab.metaData.databaseIndex =
-        this.primaryTab?.metaData?.selectedDatabaseIndex;
-      tabsStore.selectTab(tab);
-    },
-    createQueryTab(
-      name = "Query",
-      tabDbId = null,
-      tabDbName = null,
-      initialQuery = null
-    ) {
-      const tab = tabsStore.addTab({
-        parentId: this.tabId,
-        name: name,
-        component: "QueryTab",
-        mode: "query",
-        selectFunction: function () {
-          emitter.emit(`${this.id}_check_query_status`);
-        },
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
-        },
-        dblClickFunction: renameTab,
-      });
-
-      tab.metaData.databaseName =
-        tabDbName ?? this.primaryTab?.metaData?.selectedDatabase;
-      tab.metaData.initTabDatabaseId = tabDbId;
-      tab.metaData.initialQuery = initialQuery;
-      tab.metaData.databaseIndex =
-        this.primaryTab?.metaData?.selectedDatabaseIndex;
-      tab.metaData.dialect = this.primaryTab?.metaData?.selectedDBMS;
-
-      tabsStore.selectTab(tab);
-    },
-    createConfigurationTab() {
-      const tab = tabsStore.addTab({
-        parentId: this.tabId,
-        name: "Configuration",
-        component: "ConfigTab",
-        mode: "configuration",
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
-        },
-      });
-
-      tab.metaData.databaseIndex =
-        this.primaryTab?.metaData?.selectedDatabaseIndex;
-      tabsStore.selectTab(tab);
-    },
-    createUtilityTab(node, utility, backupType = "objects") {
-      let utilityTitle =
-        backupType === "objects"
-          ? `(${node.data.type}:${node.title})`
-          : backupType;
-      let tabName = `${utility} ${utilityTitle}`;
-      let mode = utility.toLowerCase();
-
-      const tab = tabsStore.addTab({
-        parentId: this.tabId,
-        name: tabName,
-        mode: mode,
-        component: `${utility}Tab`,
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
-        },
-      });
-
-      tab.metaData.treeNode = node;
-      tab.metaData.backupType = backupType;
-      tab.metaData.databaseIndex =
-        this.primaryTab?.metaData?.selectedDatabaseIndex;
-
-      tabsStore.selectTab(tab);
-    },
-    createERDTab(schema = "") {
-      let tabName = schema ? `ERD: ${schema}` : "ERD";
-
-      const tab = tabsStore.addTab({
-        parentId: this.tabId,
-        name: tabName,
-        component: "ERDTab",
-        icon: '<i class="fab fa-hubspot icon-tab-title"></i>',
-        selectFunction: function () {
-          document.title = "PgManage";
-        },
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
-        },
-      });
-
-      tab.metaData.schema = schema;
-      tab.metaData.databaseIndex =
-        this.primaryTab?.metaData?.selectedDatabaseIndex;
-      tab.metaData.databaseName = this.primaryTab?.metaData?.selectedDatabase;
-
-      tabsStore.selectTab(tab);
-    },
-    createDataEditorTab(table, schema = "") {
-      let tabName = schema
-        ? `Edit data: ${schema}.${table}`
-        : `Edit data: ${table}`;
-
-      const tab = tabsStore.addTab({
-        icon: '<i class="fas fa-table icon-tab-title"></i>',
-        parentId: this.tabId,
-        name: tabName,
-        component: "DataEditorTab",
-        mode: "edit",
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
-        },
-      });
-
-      const DIALECT_MAP = {
-        oracle: "oracledb",
-        mariadb: "mysql",
-      };
-      let dialect = tabsStore.selectedPrimaryTab.metaData.selectedDBMS;
-      let mappedDialect = DIALECT_MAP[dialect] || dialect;
-
-      tab.metaData.dialect = mappedDialect;
-      tab.metaData.table = table;
-      tab.metaData.schema = schema;
-      tab.metaData.query_filter = ""; //to be used in the future for passing extra filters when tab is opened
-      tab.metaData.databaseIndex =
-        this.primaryTab?.metaData?.selectedDatabaseIndex;
-      tab.metaData.databaseName = this.primaryTab?.metaData?.selectedDatabase;
-
-      tabsStore.selectTab(tab);
     },
     createSchemaEditorTab(node, mode, dialect) {
       let tableName = node.title.replace(/^"(.*)"$/, "$1");
@@ -640,14 +371,14 @@ export default {
           label: "Query Tab",
           icon: "fas cm-all fa-search",
           onClick: () => {
-            this.createQueryTab();
+            tabsStore.createQueryTab();
           },
         },
         {
           label: "Console Tab",
           icon: "fas cm-all fa-terminal",
           onClick: () => {
-            this.createConsoleTab();
+            tabsStore.createConsoleTab();
           },
         },
       ];
@@ -661,7 +392,7 @@ export default {
           label: "Monitoring Dashboard",
           icon: "fas cm-all fa-chart-line",
           onClick: () => {
-            this.createMonitoringDashboardTab();
+            tabsStore.createMonitoringDashboardTab();
           },
         });
       }
@@ -671,7 +402,7 @@ export default {
           label: "Backends",
           icon: "fas cm-all fa-tasks",
           onClick: () => {
-            this.createMonitoringTab(
+            tabsStore.createMonitoringTab(
               "Backends",
               "select * from pg_stat_activity"
             );
@@ -686,7 +417,7 @@ export default {
           label: "Process List",
           icon: "fas cm-all fa-tasks",
           onClick: () => {
-            this.createMonitoringTab(
+            tabsStore.createMonitoringTab(
               "Process List",
               "select * from information_schema.processlist"
             );
