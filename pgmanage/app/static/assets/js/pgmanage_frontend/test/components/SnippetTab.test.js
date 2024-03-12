@@ -24,6 +24,12 @@ window.$ = vi.fn().mockImplementation(() => {
   };
 });
 
+vi.mock("@/workspace.js", () => {
+  const renameTab = vi.fn();
+  const showMenuNewTabOuter = vi.fn();
+  return { renameTab, showMenuNewTabOuter };
+});
+
 describe("SnippetTab", () => {
   let wrapper, fileMock, showToastSpy, eventMock;
   let settingsStore;
@@ -40,7 +46,7 @@ describe("SnippetTab", () => {
         tabId: tabId,
       },
       attachTo: document.body,
-      shallow: true
+      shallow: true,
     });
 
     fileMock = new File(["content"], "example.txt", {

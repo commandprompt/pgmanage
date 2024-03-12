@@ -21,6 +21,12 @@ vi.mock("tabulator-tables", () => {
   return { TabulatorFull };
 });
 
+vi.mock("@/workspace.js", () => {
+  const renameTab = vi.fn();
+  const showMenuNewTabOuter = vi.fn();
+  return { renameTab, showMenuNewTabOuter };
+});
+
 const mockWidgetsData = [
   {
     saved_id: 1,

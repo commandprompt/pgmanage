@@ -19,6 +19,12 @@ window.$ = vi.fn().mockImplementation(() => {
   };
 });
 
+vi.mock("@/workspace.js", () => {
+  const renameTab = vi.fn();
+  const showMenuNewTabOuter = vi.fn();
+  return { renameTab, showMenuNewTabOuter };
+});
+
 describe("TreePropertiesDDL.vue", () => {
   let settingsStore;
   beforeAll(() => {

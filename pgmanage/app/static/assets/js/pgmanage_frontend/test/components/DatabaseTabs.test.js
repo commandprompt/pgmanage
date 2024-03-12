@@ -40,31 +40,6 @@ describe("DatabaseTabs.vue", () => {
     expect(wrapper.html()).toContain("omnidb__tab-content--secondary");
   });
 
-  test("calls setupEvents method on mounted", () => {
-    const setupEventsSpy = vi.spyOn(DatabaseTabs.methods, "setupEvents");
-    const wrapper = mount(DatabaseTabs, {
-      props: {
-        tabId: connTab.id,
-      },
-      shallow: true,
-    });
-
-    expect(setupEventsSpy).toHaveBeenCalledOnce();
-  });
-  test("calls clearEvents method on unmounted", () => {
-    const wrapper = mount(DatabaseTabs, {
-      props: {
-        tabId: connTab.id,
-      },
-      shallow: true,
-    });
-
-    const clearEventsSpy = vi.spyOn(wrapper.vm, "clearEvents");
-
-    wrapper.unmount();
-
-    expect(clearEventsSpy).toHaveBeenCalledOnce();
-  });
   test("calls addTab method on add button click", async () => {
     const wrapper = mount(DatabaseTabs, {
       props: {
@@ -88,7 +63,7 @@ describe("DatabaseTabs.vue", () => {
     });
 
     const addTabSpy = vi.spyOn(wrapper.vm, "addTab");
-    const createSnippetTabSpy = vi.spyOn(wrapper.vm, "createSnippetTab");
+    const createSnippetTabSpy = vi.spyOn(tabsStore, "createSnippetTab");
 
     await wrapper.find('[data-testid="add-tab-button"]').trigger("click");
 
@@ -110,19 +85,5 @@ describe("DatabaseTabs.vue", () => {
 
     expect(addTabSpy).toHaveBeenCalledOnce();
     expect(showMenuNewTabSpy).toHaveBeenCalledOnce();
-  });
-  test("call createSnippetTab method on emit event when sideBarTab is 'Snippets'", async () => {
-    const wrapper = mount(DatabaseTabs, {
-      props: {
-        tabId: snippetTab.id,
-      },
-      shallow: true,
-    });
-
-    const createSnippetTabSpy = vi.spyOn(wrapper.vm, "createSnippetTab");
-
-    emitter.emit("create_snippet_tab");
-
-    expect(createSnippetTabSpy).toHaveBeenCalledOnce();
   });
 });
