@@ -764,10 +764,7 @@ export default {
                   label: "Sessions",
                   icon: "fas cm-all fa-chart-line",
                   onClick: () => {
-                    emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_monitoring_tab`, {
-                      name: "Sessions",
-                      query: "select * from v$session"
-                    })
+                    tabsStore.createMonitoringTab("Sessions", "select * from v$session")
                   },
                 },
               ],

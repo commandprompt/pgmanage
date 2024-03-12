@@ -278,7 +278,8 @@ export default {
       this.selectedGroup = undefined
     },
     getExistingTabs() {
-      axios.post('/get_existing_tabs/')
+      axios
+        .post("/get_existing_tabs/")
         .then((response) => {
           if (connectionsStore.connections.length > 0) {
             // Create existing tabs
@@ -286,59 +287,56 @@ export default {
 
             response.data.existing_tabs.forEach((tab, index) => {
               setTimeout(() => {
-              let tooltip_name = "";
-              if (currentParent !== tab.index) {
-                startLoading();
-                const conn = connectionsStore.connections.find((c) => c.id === tab.index)
+                let tooltip_name = "";
+                if (currentParent !== tab.index) {
+                  startLoading();
+                  const conn = connectionsStore.connections.find(
+                    (c) => c.id === tab.index
+                  );
 
-                if (conn) {
-                  if (conn.alias) {
-                    tooltip_name +=
-                      `<h5 class="mb-1">${conn.alias}</h5>`;
-                  }
-                  if (conn.details1) {
-                    tooltip_name +=
-                      `<div class="mb-1">${conn.details1}</div>`;
-                  }
-                  if (conn.details2) {
-                    tooltip_name +=
-                      `<div class="mb-1">${conn.details2}</div>`;
-                  }
-                  emitter.emit(`${tabsStore.id}_create_conn_tab`, (
-                    {
-                      index: tab.index, 
-                      createInitialTabs: false,
-                      name: conn.alias,
-                      tooltipName: tooltip_name
-                    }))
+                  if (conn) {
+                    if (conn.alias) {
+                      tooltip_name += `<h5 class="mb-1">${conn.alias}</h5>`;
+                    }
+                    if (conn.details1) {
+                      tooltip_name += `<div class="mb-1">${conn.details1}</div>`;
+                    }
+                    if (conn.details2) {
+                      tooltip_name += `<div class="mb-1">${conn.details2}</div>`;
+                    }
+                    currentParent = tab.index;
+                    tabsStore
+                      .createConnectionTab(
+                        tab.index,
+                        false,
+                        conn.alias,
+                        tooltip_name
+                      )
+                      .then(() => {
+                        tabsStore.createConsoleTab();
 
-                  setTimeout(() => {
-                    emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_console_tab`)
-                  }, 100) 
+                        response.data.existing_tabs
+                          .filter((tab) => tab.index == currentParent)
+                          .forEach((tab) => {
+                            tabsStore.createQueryTab(
+                              tab.title,
+                              tab.tab_db_id,
+                              tab.database_name,
+                              tab.snippet
+                            );
+                          });
+                      });
+                  }
                 }
-
-              }
-              currentParent = tab.index
-              setTimeout(() => {
-                emitter.emit(
-                  `${tabsStore.selectedPrimaryTab.id}_create_query_tab`,
-                  {
-                    name: tab.title,
-                    tabDbId: tab.tab_db_id,
-                    tabDbName: tab.database_name,
-                    initialQuery: tab.snippet,
-                  }
-                );
-              }, 100);
-              endLoading();
-            }, 200 * index);
-            })
+                endLoading();
+              }, 100 * index);
+            });
           }
         })
         .catch((response) => {
-          console.log(response)
-        })
-    }
+          console.log(response);
+        });
+    },
   },
   mounted() {
     this.loadData(settingsStore.restoreTabs)

@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import { defineAsyncComponent, h } from "vue";
+import { defineAsyncComponent } from "vue";
 import { tabsStore } from "../stores/stores_initializer";
 import WelcomeScreen from "./WelcomeScreen.vue";
 import SnippetPanel from "./SnippetPanel.vue";

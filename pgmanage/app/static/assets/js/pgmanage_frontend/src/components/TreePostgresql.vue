@@ -240,11 +240,7 @@ export default {
             label: "Create Table",
             icon: "fas cm-all fa-plus",
             onClick: () => {
-              emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_schema_editor_tab`, {
-                node: this.selectedNode,
-                mode: "create",
-                dialect: "postgres"
-              })
+              tabsStore.createSchemaEditorTab(this.selectedNode, "create", "postgres")
             },
           },
           {
@@ -387,11 +383,7 @@ export default {
                 label: "Alter Table",
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
-                  emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_schema_editor_tab`, {
-                    node: this.selectedNode,
-                    mode: "alter",
-                    dialect: "postgres"
-                  })
+                  tabsStore.createSchemaEditorTab(this.selectedNode, "alter", "postgres")
                 },
               },
               {
@@ -3411,10 +3403,7 @@ export default {
                   label: "Backends",
                   icon: "fas cm-all fa-tasks",
                   onClick: () => {
-                    emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_monitoring_tab`, {
-                      name: "Backends",
-                      query: "SELECT * FROM pg_stat_activity"
-                    })
+                    tabsStore.createMonitoringTab("Backends", "SELECT * FROM pg_stat_activity")
                   },
                 },
               ],

@@ -114,8 +114,6 @@
 <script>
 import { defineAsyncComponent } from "vue";
 import { tabsStore } from "../stores/stores_initializer";
-import { emitter } from "../emitter";
-import { renameTab } from "../workspace.js";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import SnippetTab from "./SnippetTab.vue";
 import TabsUtils from "../mixins/tabs_utils_mixin";
@@ -163,9 +161,6 @@ export default {
       let primaryTab = tabsStore.getPrimaryTabById(this.tabId);
       return primaryTab?.name === "Snippets";
     },
-    primaryTab() {
-      return tabsStore.getPrimaryTabById(this.tabId);
-    },
   },
   updated() {
     this.$nextTick(() => {
@@ -173,7 +168,9 @@ export default {
     });
   },
   mounted() {
-    this.setupEvents();
+    if (this.isSnippetsPanel) {
+      tabsStore.createSnippetTab(this.tabId);
+    }
 
     tabsStore.$onAction((action) => {
       if (action.name === "addTab") {
@@ -198,9 +195,6 @@ export default {
         });
       }
     });
-  },
-  unmounted() {
-    this.clearEvents();
   },
   methods: {
     getCurrentProps(tab) {
@@ -284,86 +278,12 @@ export default {
       };
       return componentsProps[tab.component];
     },
-    setupEvents() {
-      if (this.isSnippetsPanel) {
-        tabsStore.createSnippetTab(this.tabId);
-      }
-
-
-      emitter.on(
-        `${this.tabId}_create_schema_editor_tab`,
-        ({ node, mode, dialect }) => {
-          this.createSchemaEditorTab(node, mode, dialect);
-        }
-      );
-
-      emitter.on(`${this.tabId}_create_monitoring_tab`, ({ name, query }) => {
-        this.createMonitoringTab(name, query);
-      });
-
-    },
-    clearEvents() {
-      emitter.all.delete(`${this.tabId}_create_schema_editor_tab`);
-      emitter.all.delete(`${this.tabId}_create_monitoring_tab`);
-    },
     addTab(event) {
       if (tabsStore.getPrimaryTabById(this.tabId).name === "Snippets") {
         tabsStore.createSnippetTab(this.tabId);
       } else {
         this.showMenuNewTab(event);
       }
-    },
-    createSchemaEditorTab(node, mode, dialect) {
-      let tableName = node.title.replace(/^"(.*)"$/, "$1");
-      let tabTitle = mode === "alter" ? `Alter: ${tableName}` : "New Table";
-
-      const tab = tabsStore.addTab({
-        parentId: this.tabId,
-        name: tabTitle,
-        component: "SchemaEditorTab",
-        mode: "alter",
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
-        },
-      });
-
-      tab.metaData.dialect = dialect || "postgres";
-      tab.metaData.editMode = mode;
-      tab.metaData.schema = node.data.schema;
-      tab.metaData.table = mode === "alter" ? tableName : null;
-      tab.metaData.treeNode = node;
-      tab.metaData.databaseIndex =
-        this.primaryTab?.metaData?.selectedDatabaseIndex;
-      tab.metaData.databaseName = this.primaryTab?.metaData?.selectedDatabase;
-
-      tabsStore.selectTab(tab);
-    },
-    createMonitoringTab(name = "Backends", query) {
-      const tab = tabsStore.addTab({
-        parentId: this.tabId,
-        name: name,
-        component: "MonitoringTab",
-        icon: `<i class="fas fa-desktop icon-tab-title"></i>`,
-        mode: "monitor_grid",
-        selectFunction: () => {
-          document.title = "PgManage";
-        },
-        closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
-        },
-        dblClickFunction: renameTab,
-      });
-
-      tab.metaData.query = query;
-      tab.metaData.databaseIndex =
-        this.primaryTab?.metaData?.selectedDatabaseIndex;
-      tab.metaData.dialect = this.primaryTab?.metaData?.selectedDBMS;
-
-      tabsStore.selectTab(tab);
     },
     showMenuNewTab(e) {
       let optionList = [

@@ -647,6 +647,59 @@ const useTabsStore = defineStore("tabs", {
 
       this.selectTab(tab);
     },
+    createSchemaEditorTab(node, mode, dialect) {
+      let tableName = node.title.replace(/^"(.*)"$/, "$1");
+      let tabTitle = mode === "alter" ? `Alter: ${tableName}` : "New Table";
+
+      const tab = this.addTab({
+        parentId: this.selectedPrimaryTab.id,
+        name: tabTitle,
+        component: "SchemaEditorTab",
+        mode: "alter",
+        closeFunction: (e, tab) => {
+          this.beforeCloseTab(e, () => {
+            this.closeTab(tab);
+          });
+        },
+      });
+
+      tab.metaData.dialect = dialect || "postgres";
+      tab.metaData.editMode = mode;
+      tab.metaData.schema = node.data.schema;
+      tab.metaData.table = mode === "alter" ? tableName : null;
+      tab.metaData.treeNode = node;
+      tab.metaData.databaseIndex =
+        this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
+      tab.metaData.databaseName =
+        this.selectedPrimaryTab?.metaData?.selectedDatabase;
+
+      this.selectTab(tab);
+    },
+    createMonitoringTab(name = "Backends", query) {
+      const tab = this.addTab({
+        parentId: this.selectedPrimaryTab.id,
+        name: name,
+        component: "MonitoringTab",
+        icon: `<i class="fas fa-desktop icon-tab-title"></i>`,
+        mode: "monitor_grid",
+        selectFunction: () => {
+          document.title = "PgManage";
+        },
+        closeFunction: (e, tab) => {
+          this.beforeCloseTab(e, () => {
+            this.closeTab(tab);
+          });
+        },
+        dblClickFunction: renameTab,
+      });
+
+      tab.metaData.query = query;
+      tab.metaData.databaseIndex =
+        this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
+      tab.metaData.dialect = this.selectedPrimaryTab?.metaData?.selectedDBMS;
+
+      this.selectTab(tab);
+    },
     checkTabStatus() {
       const tab = this.selectedPrimaryTab.metaData.selectedTab;
       switch (tab?.metaData?.mode) {

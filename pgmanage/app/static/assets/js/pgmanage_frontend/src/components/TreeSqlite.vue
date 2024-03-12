@@ -80,12 +80,7 @@ export default {
             label: "Create Table",
             icon: "fas cm-all fa-plus",
             onClick: () => {
-              emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_schema_editor_tab`, {
-                node: this.selectedNode,
-                mode: "create",
-                dialect: "sqlite3"
-              })
-              
+              tabsStore.createSchemaEditorTab(this.selectedNode, "create", "sqlite3")
             },
           },
         ],
@@ -146,11 +141,7 @@ export default {
                 label: "Alter Table",
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
-                  emitter.emit(`${tabsStore.selectedPrimaryTab.id}_create_schema_editor_tab`, {
-                    node: this.selectedNode,
-                    mode: "alter",
-                    dialect: "sqlite3"
-                  })
+                  tabsStore.createSchemaEditorTab(this.selectedNode, "alter", "sqlite3")
                 },
               },
               {
