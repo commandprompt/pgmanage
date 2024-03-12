@@ -50,6 +50,7 @@
                         :database-index="databaseIndex"
                         @tree-tabs-update="getProperties"
                         @clear-tabs="clearTreeTabsData = true"
+                        v-if="initialized"
                       ></component>
                     </div>
                   </pane>
@@ -122,6 +123,10 @@ export default {
   mixins: [TabTitleUpdateMixin],
   props: {
     connTabId: String,
+    selected: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -131,6 +136,7 @@ export default {
       lastTreeTabsPaneSize: null,
       showTreeTabsLoading: false,
       clearTreeTabsData: false,
+      initialized: false,
     };
   },
   computed: {
@@ -175,14 +181,23 @@ export default {
       return this.treeTabsPaneSize !== 2;
     },
   },
+  watch: {
+    selected(newVal, oldVal) {
+      if (!!newVal && !this.initialized) {
+        this.changeDatabase(this.connectionTab.metaData.selectedDatabaseIndex);
+      }
+    },
+  },
   mounted() {
+    if (this.selected) {
+      this.changeDatabase(this.connectionTab.metaData.selectedDatabaseIndex);
+    }
     this.subscribeToConnectionChanges(this.connTabId, this.databaseIndex);
-    this.changeDatabase(this.connectionTab.metaData.selectedDatabaseIndex);
     $('[data-toggle="tooltip"]').tooltip({ animation: true }); // Loads or Updates all tooltips
     this.$nextTick(() => {
       if (this.connectionTab.metaData.createInitialTabs) {
-        tabsStore.createConsoleTab()
-        tabsStore.createQueryTab()
+        tabsStore.createConsoleTab();
+        tabsStore.createQueryTab();
       }
     });
   },
@@ -232,6 +247,7 @@ export default {
       axios
         .post("/change_active_database/", data)
         .then((resp) => {
+          this.initialized = true;
           this.connectionTab.metaData.change_active_database_call_running = false;
           if (
             this.connectionTab.metaData.change_active_database_call_list

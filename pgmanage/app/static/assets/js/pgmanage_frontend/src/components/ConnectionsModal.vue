@@ -286,7 +286,6 @@ export default {
             let currentParent = null;
 
             response.data.existing_tabs.forEach((tab, index) => {
-              setTimeout(() => {
                 let tooltip_name = "";
                 if (currentParent !== tab.index) {
                   startLoading();
@@ -312,24 +311,24 @@ export default {
                         conn.alias,
                         tooltip_name
                       )
-                      .then(() => {
-                        tabsStore.createConsoleTab();
+                      .then((connTab) => {
+                        tabsStore.createConsoleTab(connTab.id);
 
                         response.data.existing_tabs
-                          .filter((tab) => tab.index == currentParent)
-                          .forEach((tab) => {
+                          .filter((databaseTab) => databaseTab.index === tab.index)
+                          .forEach((databaseTab) => {
                             tabsStore.createQueryTab(
-                              tab.title,
-                              tab.tab_db_id,
-                              tab.database_name,
-                              tab.snippet
+                              databaseTab.title,
+                              databaseTab.tab_db_id,
+                              databaseTab.database_name,
+                              databaseTab.snippet,
+                              connTab.id
                             );
                           });
                       });
                   }
                 }
                 endLoading();
-              }, 100 * index);
             });
           }
         })

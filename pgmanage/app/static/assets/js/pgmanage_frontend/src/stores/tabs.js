@@ -423,9 +423,9 @@ const useTabsStore = defineStore("tabs", {
 
       this.selectTab(tab);
     },
-    createConsoleTab() {
+    createConsoleTab(parentId) {
       const tab = this.addTab({
-        parentId: this.selectedPrimaryTab.id,
+        parentId: parentId ?? this.selectedPrimaryTab.id,
         name: "Console",
         component: "ConsoleTab",
         icon: "<i class='fas fa-terminal icon-tab-title'></i>",
@@ -440,11 +440,12 @@ const useTabsStore = defineStore("tabs", {
           });
         },
       });
-
-      tab.metaData.consoleHelp = this.selectedPrimaryTab?.metaData?.consoleHelp;
-      tab.metaData.databaseIndex =
-        this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
-      tab.metaData.dialect = this.selectedPrimaryTab?.metaData?.selectedDBMS;
+      const primaryTab = !!parentId
+        ? this.getPrimaryTabById(parentId)
+        : this.selectedPrimaryTab;
+      tab.metaData.consoleHelp = primaryTab.metaData?.consoleHelp;
+      tab.metaData.databaseIndex = primaryTab.metaData?.selectedDatabaseIndex;
+      tab.metaData.dialect = primaryTab.metaData?.selectedDBMS;
 
       this.selectTab(tab);
     },
@@ -452,10 +453,11 @@ const useTabsStore = defineStore("tabs", {
       name = "Query",
       tabDbId = null,
       tabDbName = null,
-      initialQuery = null
+      initialQuery = null,
+      parentId = null
     ) {
       const tab = this.addTab({
-        parentId: this.selectedPrimaryTab.id,
+        parentId: parentId ?? this.selectedPrimaryTab.id,
         name: name,
         component: "QueryTab",
         mode: "query",
@@ -469,14 +471,15 @@ const useTabsStore = defineStore("tabs", {
         },
         dblClickFunction: renameTab,
       });
-
+      const primaryTab = !!parentId
+        ? this.getPrimaryTabById(parentId)
+        : this.selectedPrimaryTab;
       tab.metaData.databaseName =
-        tabDbName ?? this.selectedPrimaryTab?.metaData?.selectedDatabase;
+        tabDbName ?? primaryTab.metaData?.selectedDatabase;
       tab.metaData.initTabDatabaseId = tabDbId;
       tab.metaData.initialQuery = initialQuery;
-      tab.metaData.databaseIndex =
-        this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
-      tab.metaData.dialect = this.selectedPrimaryTab?.metaData?.selectedDBMS;
+      tab.metaData.databaseIndex = primaryTab.metaData?.selectedDatabaseIndex;
+      tab.metaData.dialect = primaryTab.metaData?.selectedDBMS;
 
       this.selectTab(tab);
     },
