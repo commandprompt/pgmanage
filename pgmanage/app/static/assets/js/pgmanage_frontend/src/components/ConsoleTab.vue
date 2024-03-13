@@ -298,8 +298,10 @@ export default {
       }
     },
     consoleReturnRender(data, context) {
-      this.consoleState = requestState.Idle;
+      clearInterval(this.queryInterval)
+      this.queryInterval = null;
 
+      this.consoleState = requestState.Idle;
       this.tabStatus = data.v_data.v_con_status;
       this.readOnlyEditor = false;
 

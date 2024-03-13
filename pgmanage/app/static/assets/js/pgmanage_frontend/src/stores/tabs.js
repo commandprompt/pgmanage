@@ -457,6 +457,7 @@ const useTabsStore = defineStore("tabs", {
       const tab = this.addTab({
         parentId: parentId ?? this.selectedPrimaryTab.id,
         name: name,
+        icon: '<i class="fas fa-database icon-tab-title"></i>',
         component: "QueryTab",
         mode: "query",
         selectFunction: function () {
@@ -525,7 +526,7 @@ const useTabsStore = defineStore("tabs", {
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
         name: "Monitoring",
-        icon: '<i class="fas fa-chart-bar icon-tab-title"></i>',
+        icon: '<i class="fas fa-chart-line icon-tab-title"></i>',
         component: "MonitoringDashboard",
         mode: "monitoring_dashboard",
         selectFunction: function () {
@@ -681,7 +682,7 @@ const useTabsStore = defineStore("tabs", {
         parentId: this.selectedPrimaryTab.id,
         name: name,
         component: "MonitoringTab",
-        icon: `<i class="fas fa-desktop icon-tab-title"></i>`,
+        icon: `<i class="fas fa-tasks icon-tab-title"></i>`,
         mode: "monitor_grid",
         selectFunction: () => {
           document.title = "PgManage";

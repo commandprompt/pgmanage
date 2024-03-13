@@ -292,7 +292,11 @@ export default {
           label: "Query Tab",
           icon: "fas cm-all fa-search",
           onClick: () => {
-            tabsStore.createQueryTab();
+            let name = tabsStore.selectedPrimaryTab.metaData.selectedDatabase
+              .replace("\\", "/")
+              .split("/")
+              .pop();
+            tabsStore.createQueryTab(name);
           },
         },
         {
