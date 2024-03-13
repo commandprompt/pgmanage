@@ -55,7 +55,6 @@
         :key="tab.id"
         :is="tab.component"
         :id="`${tab.id}_content`"
-        :selected="tab.id === selectedTab.id"
         v-show="tab.id === selectedTab.id || tab.name === 'Snippets'"
         v-bind="getCurrentProps(tab)"
         role="tabpanel"

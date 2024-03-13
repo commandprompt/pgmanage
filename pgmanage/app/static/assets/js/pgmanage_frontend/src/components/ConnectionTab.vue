@@ -50,7 +50,6 @@
                         :database-index="databaseIndex"
                         @tree-tabs-update="getProperties"
                         @clear-tabs="clearTreeTabsData = true"
-                        v-if="initialized"
                       ></component>
                     </div>
                   </pane>
@@ -123,10 +122,6 @@ export default {
   mixins: [TabTitleUpdateMixin],
   props: {
     connTabId: String,
-    selected: {
-      type: Boolean,
-      default: false,
-    },
   },
   data() {
     return {
@@ -136,7 +131,6 @@ export default {
       lastTreeTabsPaneSize: null,
       showTreeTabsLoading: false,
       clearTreeTabsData: false,
-      initialized: false,
     };
   },
   computed: {
@@ -181,17 +175,8 @@ export default {
       return this.treeTabsPaneSize !== 2;
     },
   },
-  watch: {
-    selected(newVal, oldVal) {
-      if (!!newVal && !this.initialized) {
-        this.changeDatabase(this.connectionTab.metaData.selectedDatabaseIndex);
-      }
-    },
-  },
   mounted() {
-    if (this.selected) {
-      this.changeDatabase(this.connectionTab.metaData.selectedDatabaseIndex);
-    }
+    this.changeDatabase(this.connectionTab.metaData.selectedDatabaseIndex);
     this.subscribeToConnectionChanges(this.connTabId, this.databaseIndex);
     $('[data-toggle="tooltip"]').tooltip({ animation: true }); // Loads or Updates all tooltips
     this.$nextTick(() => {
@@ -228,38 +213,11 @@ export default {
         connObject.last_used_database || connObject.service;
       tabData.metaData.selectedTitle = connObject.alias;
 
-      this.queueChangeActiveDatabaseThreadSafe({
+      connectionsStore.queueChangeActiveDatabaseThreadSafe({
         database_index: value,
         tab_id: this.connTabId,
         database: tabData.metaData.selectedDatabase,
       });
-    },
-    queueChangeActiveDatabaseThreadSafe(data) {
-      this.connectionTab.metaData.change_active_database_call_list.push(data);
-      if (!this.connectionTab.metaData.change_active_database_call_running) {
-        this.changeActiveDatabaseThreadSafe(
-          this.connectionTab.metaData.change_active_database_call_list.pop()
-        );
-      }
-    },
-    changeActiveDatabaseThreadSafe(data) {
-      this.connectionTab.metaData.change_active_database_call_running = true;
-      axios
-        .post("/change_active_database/", data)
-        .then((resp) => {
-          this.initialized = true;
-          this.connectionTab.metaData.change_active_database_call_running = false;
-          if (
-            this.connectionTab.metaData.change_active_database_call_list
-              .length > 0
-          )
-            this.changeActiveDatabaseThreadSafe(
-              this.connectionTab.metaData.change_active_database_call_list.pop()
-            );
-        })
-        .catch((error) => {
-          console.log(error);
-        });
     },
     emitConnectionSave() {
       let connection = connectionsStore.getConnection(this.databaseIndex);

@@ -387,8 +387,6 @@ const useTabsStore = defineStore("tabs", {
           connTab.metaData.selectedDatabase =
             v_conn.last_used_database || v_conn.service;
           connTab.metaData.createInitialTabs = createInitialTabs;
-          connTab.metaData.change_active_database_call_list = [];
-          connTab.metaData.change_active_database_call_running = false;
 
           this.selectTab(connTab);
           resolve(connTab);
