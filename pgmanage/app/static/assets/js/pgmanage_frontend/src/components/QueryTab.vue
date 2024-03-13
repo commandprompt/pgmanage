@@ -327,6 +327,8 @@ export default {
 
       if (!this.idleState && (data.v_data.last_block || data.v_data.file_name || data.v_error )) {
         data.v_data.data = this.tempData;
+        this.readOnlyEditor = false;
+        this.tabStatus = data.v_data.con_status;
 
         if (
           this.connId === tabsStore.selectedPrimaryTab.id &&
@@ -334,12 +336,10 @@ export default {
         ) {
           this.context = "";
           this.data = "";
-          this.readOnlyEditor = false;
-          this.queryState = requestState.Idle;
 
+          this.queryState = requestState.Idle;
           this.$refs.queryResults.renderResult(data, context);
 
-          this.tabStatus = data.v_data.con_status;
           this.queryDuration = data.v_data.duration;
 
           context.tab.metaData.isReady = false;
@@ -449,6 +449,7 @@ export default {
         if (this.queryState === requestState.Ready) {
           this.context.tab.metaData.isReady = false;
           this.context.tab.metaData.isLoading = false;
+          this.queryState = requestState.Idle;
 
           this.$refs.queryResults.renderResult(this.data, this.context);
         }
