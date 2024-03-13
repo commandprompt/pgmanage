@@ -10,11 +10,11 @@
       <!-- ACTION BUTTONS-->
       <div class="py-2 pr-1 d-flex align-items-center">
         <div class="tab-actions d-flex w-100">
-          <button :id="`bt_start_${tabId}`" class="btn btn-sm btn-primary btn-run" title="Run" @click="queryRunOrExplain()">
+          <button :id="`bt_start_${tabId}`" class="btn btn-sm btn-primary btn-run" title="Run" @click="queryRunOrExplain()" :disabled="executingState">
             <i class="fas fa-play fa-light"></i>
           </button>
 
-          <button :id="`bt_start_${tabId}`" class="btn btn-sm btn-primary btn-run" title="Run Selection" @click="queryRunOrExplain(false)">
+          <button :id="`bt_start_${tabId}`" class="btn btn-sm btn-primary btn-run" title="Run Selection" @click="queryRunOrExplain(false)" :disabled="executingState">
             [
             <i class="fas fa-play fa-light"></i>
             ]
@@ -242,20 +242,20 @@ export default {
       save_query = this.editorContent,
       clear_data = false
     ) {
-      let tab = tabsStore.getSelectedSecondaryTab(this.connId);
-      this.queryDuration = "";
-      this.cancelled = false;
-      this.showFetchButtons = false;
-      this.longQuery = false;
-      this.tempData = [];
-      this.lastQuery = query
-
       if (!this.idleState) {
         showToast("info", "Tab with activity in progress.");
       } else {
         if (!query) {
           showToast("info", "Please provide a string.");
         } else {
+          let tab = tabsStore.getSelectedSecondaryTab(this.connId);
+          this.queryDuration = "";
+          this.cancelled = false;
+          this.showFetchButtons = false;
+          this.longQuery = false;
+          this.tempData = [];
+          this.lastQuery = query
+
           let message_data = {
             sql_cmd: query,
             mode: mode,

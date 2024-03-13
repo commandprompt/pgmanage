@@ -7,7 +7,7 @@
 
     <pane size="20" class="pl-2 border-top">
       <div class="tab-actions py-2 d-flex align-items-center">
-        <button class="btn btn-sm btn-primary" title="Run" @click="consoleSQL(false)">
+        <button class="btn btn-sm btn-primary" title="Run" @click="consoleSQL(false)" :disabled="executingState">
           <i class="fas fa-play fa-light"></i>
         </button>
 
@@ -213,11 +213,6 @@ export default {
     },
     consoleSQL(check_command = true, mode = 0) {
       const command = this.editorContent.trim();
-      let tab = tabsStore.getSelectedSecondaryTab(this.connId)
-      this.queryDuration = "";
-      this.cancelled = false;
-      this.longQuery = false;
-
       if (!check_command || command[0] === "\\") {
         if (!this.idleState) {
           showToast("info", "Tab with activity in progres.");
@@ -226,6 +221,10 @@ export default {
           if (command === "" && mode === 0) {
             showToast("info", "Please provide a string.");
           } else {
+            let tab = tabsStore.getSelectedSecondaryTab(this.connId)
+            this.queryDuration = "";
+            this.cancelled = false;
+            this.longQuery = false;
             emitter.emit(`${this.tabId}_copy_to_editor`, "");
             this.lastCommand = command;
 
