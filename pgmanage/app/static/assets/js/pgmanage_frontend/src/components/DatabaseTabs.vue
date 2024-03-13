@@ -11,6 +11,7 @@
             ref="navTabs"
             class="nav nav-tabs text-nowrap flex-nowrap scrollable-inner"
             @wheel="handleNavWheel"
+            @scrollend="updateScrollOptions"
           >
             <a
               :id="tab.id"
@@ -357,28 +358,25 @@ export default {
     handleNavWheel(event) {
       event.deltaY > 0
         ? this.$refs.navTabs.scrollTo({
-            left: this.$refs.navTabs.scrollLeft + 100,
+            left: this.$refs.navTabs.scrollLeft + 150,
             behavior: "smooth",
           })
         : this.$refs.navTabs.scrollTo({
-            left: this.$refs.navTabs.scrollLeft - 100,
+            left: this.$refs.navTabs.scrollLeft - 150,
             behavior: "smooth",
           });
-      this.updateScrollOptions();
     },
-    handleLeftScrollClick(event) {
+    handleLeftScrollClick() {
       this.$refs.navTabs.scrollTo({
-        left: this.$refs.navTabs.scrollLeft - 100,
+        left: this.$refs.navTabs.scrollLeft - 150,
         behavior: "smooth",
       });
-      this.updateScrollOptions();
     },
-    handleRightScrollClick(event) {
+    handleRightScrollClick() {
       this.$refs.navTabs.scrollTo({
-        left: this.$refs.navTabs.scrollLeft + 100,
+        left: this.$refs.navTabs.scrollLeft + 150,
         behavior: "smooth",
       });
-      this.updateScrollOptions();
     },
     updateScrollOptions() {
       if (this.$refs.navTabs.scrollWidth > this.$refs.navTabs.clientWidth) {
