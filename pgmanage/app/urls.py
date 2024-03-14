@@ -329,7 +329,9 @@ base_urlpatterns = [
     path('file_manager/rename/', views.file_manager.rename, name="rename_file_or_directory"),
     path('file_manager/delete/', views.file_manager.delete, name='delete_file_or_directory'),
 
-    path('validate_binary_path/', views.workspace.validate_binary_path, name='validate_binary_path')
+    path('validate_binary_path/', views.workspace.validate_binary_path, name='validate_binary_path'),
+
+    path('log/', views.logging.log_message, name="log_message")
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

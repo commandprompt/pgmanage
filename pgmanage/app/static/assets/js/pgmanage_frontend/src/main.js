@@ -26,27 +26,19 @@ import "tabulator-tables/dist/css/tabulator.min.css"
 import App from './App.vue'
 import { createApp } from 'vue';
 import ToastPlugin from 'vue-toast-notification';
+import { setupLogger } from './logging/logger_setup.js';
 
 window.jQuery = window.$ = $;
 ace.config.setModuleUrl('ace/theme/omnidb', omniURL)
 ace.config.setModuleUrl('ace/theme/omnidb_dark', omniDarkURL)
 
 axios.defaults.headers.common['X-CSRFToken'] = getCookie(v_csrf_cookie_name);
-axios.interceptors.response.use(response => {
-  return response;
-}, error => {
-  if (error.response && error.response.status === 401) {
-    showAlert('User not authenticated, please reload the page.');
-  } else if (error.code === 'ERR_NETWORK') {
-    showAlert(`${error.message}. Try reloading the application if the issue persists.`)
-  }
-  return Promise.reject(error);
-});
 
 moment.defaultFormat = date_format;
 
 
-const app = createApp(App)
+const app = createApp(App);
+setupLogger(app);
 
 app.use(ToastPlugin, {
   duration: 0

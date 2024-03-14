@@ -139,8 +139,20 @@ LOGGING = {
             'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
             'datefmt' : "%m/%d/%Y %H:%M:%S"
         },
+        'frontend_error' : {
+            'format' : "[{asctime}] {levelname} [pid:{process}] [{name}:{lineno}] [request_id:{request_id}] {message} ",
+            'datefmt' : "%m/%d/%Y %H:%M:%S",
+            'style': '{',
+        },
     },
     'handlers': {
+        "logfile_frontend": {
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(HOME_DIR, 'pgmanage.log'),
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter': 'frontend_error',
+        },
         'logfile_pgmanage': {
             'class':'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(HOME_DIR, 'pgmanage.log'),
@@ -167,6 +179,10 @@ LOGGING = {
         },
     },
     'loggers': {
+        'app.views.logging' : {
+            "handlers": ["logfile_frontend"],
+            "propagate": False
+        },
         'django': {
             'handlers':['logfile_django','console_django'],
             'propagate': False,

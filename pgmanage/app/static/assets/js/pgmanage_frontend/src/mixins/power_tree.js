@@ -4,6 +4,8 @@ import { showPasswordPrompt } from "../passwords";
 import axios from "axios";
 import { showAlert, showToast } from "../notification_control";
 import { tabsStore, settingsStore } from "../stores/stores_initializer";
+import { logger } from "../logging/logger_setup";
+import { axiosHooks } from "../logging/service";
 
 export default {
   emits: ["treeTabsUpdate", "clearTabs"],
@@ -41,18 +43,7 @@ export default {
         ...axios.defaults.transformRequest,
       ],
     });
-
-    this.api.interceptors.response.use(
-      (response) => {
-        return response;
-      },
-      (error) => {
-        if (error.response.status === 401) {
-          showAlert("User not authenticated, please reload the page.");
-        }
-        return Promise.reject(error);
-      }
-    );
+    axiosHooks(logger, this.api)
 
     emitter.on(`refreshNode_${this.tabId}`, (e) => {
       this.refreshTree(e.node);
