@@ -1,4 +1,4 @@
-import * as logger from "loglevel";
+import * as log from "loglevel";
 import prefix from "loglevel-plugin-prefix";
 import remote from "loglevel-plugin-remote";
 import { getCookie } from "../ajax_control";
@@ -13,6 +13,7 @@ import {
 
 const DEFAULT_LOGLEVEL = "trace";
 const DEFAULT_LOGLEVEL_REMOTE = "warn";
+const logger = log.noConflict();
 
 logger.setLevel(DEFAULT_LOGLEVEL); // my default log level
 
