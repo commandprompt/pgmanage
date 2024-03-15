@@ -140,7 +140,7 @@ LOGGING = {
             'datefmt' : "%m/%d/%Y %H:%M:%S"
         },
         'frontend_error' : {
-            'format' : "[{asctime}] {levelname} [pid:{process}] [{name}:{lineno}] [request_id:{request_id}] {message} ",
+            'format' : "[{asctime}] {levelname} [pid:{process}] [{name}:{lineno}] [request_id:{request_id}] {message}",
             'datefmt' : "%m/%d/%Y %H:%M:%S",
             'style': '{',
         },
