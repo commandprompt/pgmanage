@@ -268,7 +268,7 @@ def get_indexes_columns(request, database):
 def get_databases(request, database):
     try:
         databases = database.QueryDatabases()
-        list_databases = [db[0] for db in databases.Rows]
+        list_databases = [{"name": db[0]} for db in databases.Rows]
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

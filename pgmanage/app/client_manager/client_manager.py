@@ -386,7 +386,7 @@ class Client:
             The tab's database object.
         """
         main_tab_database = session.v_databases[database_index]["database"]
-        current_tab_database = current_database or session.v_tabs_databases[conn_tab_id]
+        current_tab_database = current_database or session.v_tabs_databases.get(conn_tab_id)
 
         # Updating time
         tab["last_update"] = datetime.now()

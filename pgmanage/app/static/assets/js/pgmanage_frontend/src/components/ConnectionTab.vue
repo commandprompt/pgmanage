@@ -213,11 +213,36 @@ export default {
         connObject.last_used_database || connObject.service;
       tabData.metaData.selectedTitle = connObject.alias;
 
-      connectionsStore.queueChangeActiveDatabaseThreadSafe({
-        database_index: value,
-        tab_id: this.connTabId,
-        database: tabData.metaData.selectedDatabase,
-      });
+      if (["oracle", "sqlite3"].includes(connObject.technology)) {
+        connectionsStore.queueChangeActiveDatabaseThreadSafe({
+          database_index: value,
+          tab_id: this.connTabId,
+          database: tabData.metaData.selectedDatabase,
+        });
+      } else {
+        axios
+          .post(`/get_databases_${connObject.technology}/`, {
+            database_index: value,
+            tab_id: this.connTabId,
+          })
+          .then((resp) => {
+            if (
+              !resp.data
+                .map((database) => database.name)
+                .includes(tabData.metaData.selectedDatabase)
+            ) {
+              tabData.metaData.selectedDatabase = connObject.service;
+            }
+            connectionsStore.queueChangeActiveDatabaseThreadSafe({
+              database_index: value,
+              tab_id: this.connTabId,
+              database: tabData.metaData.selectedDatabase,
+            });
+          })
+          .catch((error) => {
+            showToast("error", error?.response?.data?.data);
+          });
+      }
     },
     emitConnectionSave() {
       let connection = connectionsStore.getConnection(this.databaseIndex);

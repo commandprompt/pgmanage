@@ -82,7 +82,7 @@ export default {
             label: "ER Diagram",
             icon: "fab cm-all fa-hubspot",
             onClick: () => {
-              tabsStore.createERDTab(this.selectedNode.data.database)
+              tabsStore.createERDTab(this.selectedNode.title)
             },
           },
           {
@@ -725,7 +725,7 @@ export default {
           });
 
           resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.name, {
               icon: "fas node-all fa-database node-database",
               type: "database",
               contextMenu: "cm_database",
