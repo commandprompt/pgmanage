@@ -102,7 +102,6 @@ import { emitter } from "../emitter";
 import { truncateText } from "../utils";
 import { Splitpanes, Pane } from "splitpanes";
 import TreePropertiesDDL from "./TreePropertiesDDL.vue";
-import { showPasswordPrompt } from "../passwords";
 import { showToast } from "../notification_control";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 
@@ -264,14 +263,13 @@ export default {
         })
         .catch((error) => {
           if (error.response.data.password_timeout) {
-            showPasswordPrompt(
-              this.databaseIndex,
-              () => {
+            emitter.emit("show_password_prompt", {
+              databaseIndex: this.databaseIndex,
+              successCallback: () => {
                 this.getProperties(view, data);
               },
-              null,
-              error.response.data.data
-            );
+              message: error.response.data.data,
+            });
           } else {
             showToast("error", error.response.data.data);
           }

@@ -20,7 +20,7 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { cellDataModal } from "../header_actions";
 import axios from "axios";
 import { createMessageModal, showToast } from "../notification_control";
-import { showPasswordPrompt } from "../passwords";
+import { emitter } from "../emitter";
 
 export default {
   name: "MonitoringTab",
@@ -161,14 +161,13 @@ export default {
         })
         .catch((error) => {
           if (error.response.data?.password_timeout) {
-            showPasswordPrompt(
-              this.databaseIndex,
-              () => {
+            emitter.emit("show_password_prompt", {
+              databaseIndex: this.databaseIndex,
+              successCallback: () => {
                 this.refreshMonitoring();
               },
-              null,
-              error.response.data.data
-            );
+              message: error.response.data.data,
+            });
           } else {
             showToast("error", error.response.data.data);
           }
@@ -213,14 +212,13 @@ export default {
         })
         .catch((error) => {
           if (error.response.data?.password_timeout) {
-            showPasswordPrompt(
-              this.databaseIndex,
-              () => {
+            emitter.emit("show_password_prompt", {
+              databaseIndex: this.databaseIndex,
+              successCallback: () => {
                 this.terminateBackendConfirm(pid);
               },
-              null,
-              error.response.data.data
-            );
+              message: error.response.data.data,
+            });
           } else {
             showToast("error", error.response.data.data);
           }

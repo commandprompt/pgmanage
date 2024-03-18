@@ -1,6 +1,5 @@
 import { emitter } from "../emitter";
 import ContextMenu from "@imengyu/vue3-context-menu";
-import { showPasswordPrompt } from "../passwords";
 import axios from "axios";
 import { showAlert, showToast } from "../notification_control";
 import { tabsStore, settingsStore } from "../stores/stores_initializer";
@@ -177,15 +176,13 @@ export default {
     },
     nodeOpenError(error_response, node) {
       if (error_response.response.data?.password_timeout) {
-        showPasswordPrompt(
-          this.databaseIndex,
-          () => {
+        emitter.emit('show_password_prompt', {
+          databaseIndex: this.databaseIndex,
+          successCallback: () => {
             this.refreshNode();
           },
-          null,
-          error_response.response.data.data,
-          error_response.response.data.kind
-        );
+          message: error_response.response.data.data,
+          kind: error_response.response.data.kind})
       } else {
         this.removeChildNodes(node);
         showToast("error", error_response.response.data.data);

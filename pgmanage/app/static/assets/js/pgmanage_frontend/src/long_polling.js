@@ -3,9 +3,9 @@ import ShortUniqueId from 'short-unique-id';
 
 import { queryResponseCodes } from "./constants";
 import { debugResponse } from "./debug";
-import { showPasswordPrompt } from "./passwords";
 import { getCookie } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
+import { emitter } from './emitter';
 
 const uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4})
 
@@ -174,30 +174,18 @@ function polling_response(message) {
 }
 
 function QueryPasswordRequired(p_context, p_message) {
-	if (p_context.tab.metaData.mode=='query') {
-		showPasswordPrompt(
-			p_context.database_index,
-			function() {
+  if(["query", "console"].includes(p_context.tab.metaData.mode)) {
+    emitter.emit("show_password_prompt", {
+      databaseIndex: p_context.database_index,
+      successCallback: function() {
         p_context.passwordSuccessCallback(p_context)
-			},
-			function() {
+      },
+      cancelCallback: function() {
         p_context.passwordFailCalback()
 			},
-			p_message
-		);
-	}
-	else if (p_context.tab.metaData.mode=='console') {
-		showPasswordPrompt(
-			p_context.database_index,
-			function() {
-        p_context.passwordSuccessCallback(p_context)
-			},
-			function() {
-        p_context.passwordFailCalback()
-			},
-			p_message
-		);
-	}
+      message: p_message
+    })
+  }
 }
 
 function createContext(context) {

@@ -1,8 +1,5 @@
 // FIXME: this is ugly and needs to be rewritten from scratch ASAP
-var v_modal_password_ok_clicked = false;
 var v_modal_password_ok_function = null;
-var v_modal_password_ok_after_hide_function = null;
-var v_modal_password_cancel_callback = null;
 var v_modal_password_input = null;
 
 import { conn_app } from './connections_modal.js'
@@ -11,33 +8,6 @@ import { showToast } from './notification_control.js';
 import { tabsStore } from './stores/stores_initializer.js';
 
 function passwordModalsInit() {
-
-  $('#modal_password').on('hidden.bs.modal', function (e) {
-    if (v_modal_password_ok_clicked !=true && v_modal_password_cancel_callback!=null) {
-      v_modal_password_cancel_callback();
-    }
-    else if(v_modal_password_ok_clicked == true && v_modal_password_ok_after_hide_function!=null) {
-      v_modal_password_ok_after_hide_function();
-    }
-  });
-
-  $('#modal_password').on('shown.bs.modal', function (e) {
-    if (v_modal_password_input!=null) {
-      v_modal_password_input.focus();
-      v_modal_password_input.onkeydown = function(event) {
-          if (event.keyCode == 13) {
-              v_modal_password_ok_function();
-              $('#modal_password').modal('hide');
-           }
-      };
-    }
-  });
-
-  v_modal_password_ok_clicked = false;
-  v_modal_password_ok_function = null;
-  v_modal_password_ok_after_hide_function = null;
-  v_modal_password_cancel_callback = null;
-  v_modal_password_input = null;
 
   let master_pass_input = document.getElementById('master_password')
   master_pass_input.oninput = function() { checkMasterPassword }
@@ -49,55 +19,6 @@ function passwordModalsInit() {
   password_set.onclick = function() { saveMasterPass() }
 }
 
-function showPasswordPrompt(p_database_index, p_callback_function, p_cancel_callback_function, p_message, p_kind = 'database') {
-  v_modal_password_ok_clicked = false;
-  v_modal_password_cancel_callback = p_cancel_callback_function;
-  var v_content_div = document.getElementById('modal_password_content');
-  var v_button_ok = document.getElementById('modal_password_ok');
-  var v_button_cancel = document.getElementById('modal_password_cancel');
-  v_modal_password_input = document.getElementById('txt_password_prompt');
-
-  if (p_message)
-    v_content_div.innerHTML = p_message;
-
-  $('#modal_password').modal();
-  v_modal_password_ok_function = function() {
-    v_modal_password_ok_clicked = true;
-    checkPasswordPrompt(p_database_index, p_callback_function, p_cancel_callback_function, p_kind);
-  }
-
-  v_button_ok.onclick = v_modal_password_ok_function;
-
-  v_button_cancel.onclick = function() {
-    v_modal_password_ok_clicked = false;
-    if (p_cancel_callback_function)
-      p_cancel_callback_function();
-  }
-
-}
-
-function checkPasswordPrompt(p_database_index, p_callback_function, p_cancel_callback_function, p_kind) {
-  var v_password = document.getElementById('txt_password_prompt').value;
-  v_modal_password_ok_after_hide_function = function() {
-    execAjax('/renew_password/',
-			JSON.stringify({"p_database_index": p_database_index,
-                      "p_tab_id": tabsStore.selectedPrimaryTab.id,
-                      "p_password": v_password,
-                      "password_kind": p_kind
-                    }),
-			function(p_return) {
-
-        if (p_callback_function)
-          p_callback_function();
-
-			},
-			function(p_return) {
-        showPasswordPrompt(p_database_index, p_callback_function, p_cancel_callback_function, p_return.v_data, p_kind);
-      },
-			'box'
-    );
-  }
-}
 
 function showNewMasterPassPrompt(p_message) {
   let v_modal = document.getElementById('modal_password_set')
@@ -231,4 +152,4 @@ function showMasterPassPrompt(p_message) {
   v_button_reset.onclick = v_modal_password_reset_function;
 }
 
-export { passwordModalsInit, showNewMasterPassPrompt, showMasterPassPrompt, showPasswordPrompt }
+export { passwordModalsInit, showNewMasterPassPrompt, showMasterPassPrompt }

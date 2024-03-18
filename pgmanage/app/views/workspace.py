@@ -23,7 +23,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 
 from pgmanage import settings
@@ -204,32 +204,28 @@ def change_active_database(request, session):
 
 
 @user_authenticated
-@session_required(use_old_error_format=True)
+@session_required
 def renew_password(request, session):
-    response_data = create_response_template()
-
     data = request.data
-    database_index = data["p_database_index"]
-    password = data["p_password"]
-    password_kind = data.get('password_kind', 'database')
+    database_index = data.get("database_index")
+    password = data.get("password")
+    password_kind = data.get("password_kind", "database")
 
     database_object = session.v_databases[database_index]
-    if password_kind == 'database':
+    if password_kind == "database":
         database_object["database"].v_connection.v_password = password
     else:
-        database_object['tunnel']['password'] = password
+        database_object["tunnel"]["password"] = password
 
     test = database_object["database"].TestConnection()
 
-    if test == "Connection successful.":
-        database_object["prompt_timeout"] = datetime.now()
-    else:
-        response_data["v_error"] = True
-        response_data["v_data"] = test
+    if test != "Connection successful.":
+        return JsonResponse({"data": test}, status=400)
 
+    database_object["prompt_timeout"] = datetime.now()
     request.session["pgmanage_session"] = session
 
-    return JsonResponse(response_data)
+    return HttpResponse(status=200)
 
 
 @user_authenticated

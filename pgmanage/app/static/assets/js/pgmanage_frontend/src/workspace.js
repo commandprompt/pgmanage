@@ -1,5 +1,5 @@
 import { connectionsModalInit, conn_app} from './connections_modal.js'
-import { passwordModalsInit, showNewMasterPassPrompt, showMasterPassPrompt } from './passwords.js'
+import { showNewMasterPassPrompt, showMasterPassPrompt } from './passwords.js'
 import { format } from 'sql-formatter'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import { createRequest } from './long_polling'
@@ -32,7 +32,6 @@ $(function () {
     startTutorial('getting_started');
   });
 
-  passwordModalsInit()
   // Ask for master password
   if (master_key === 'new') {
     showNewMasterPassPrompt(`Please set your master password. It will be used to secure your connection credentials.`);

@@ -30,7 +30,6 @@ import { execAjax } from "./ajax_control";
 import { emitter } from "./emitter";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { tabsStore } from "./stores/stores_initializer";
-import { showPasswordPrompt } from './passwords'
 
 var v_autocomplete_object;
 
@@ -956,14 +955,13 @@ function autocomplete_get_results(p_sql,p_value,p_pos) {
       },
       function(p_return) {
         if (p_return.v_data.password_timeout) {
-          showPasswordPrompt(
-            tabsStore.selectedPrimaryTab.metaData.selectedDatabaseIndex,
-            function() {
+          emitter.emit("show_password_prompt", {
+            databaseIndex: tabsStore.selectedPrimaryTab.metaData.selectedDatabaseIndex,
+            successCallback: function() {
               autocomplete_get_results(p_sql,p_value,p_pos);
             },
-            null,
-            p_return.v_data.message
-          );
+            message: p_return.v_data.message
+          })
         }
       },
       'box',
