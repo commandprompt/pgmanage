@@ -213,7 +213,7 @@ export default {
         connObject.last_used_database || connObject.service;
       tabData.metaData.selectedTitle = connObject.alias;
 
-      if (["oracle", "sqlite3"].includes(connObject.technology)) {
+      if (["oracle", "sqlite"].includes(connObject.technology)) {
         connectionsStore.queueChangeActiveDatabaseThreadSafe({
           database_index: value,
           tab_id: this.connTabId,

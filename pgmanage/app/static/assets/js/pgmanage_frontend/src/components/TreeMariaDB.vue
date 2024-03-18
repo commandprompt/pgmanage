@@ -81,7 +81,7 @@ export default {
             label: "ER Diagram",
             icon: "fab cm-all fa-hubspot",
             onClick: () => {
-              tabsStore.createERDTab(this.selectedNode.title)
+              tabsStore.createERDTab(this.selectedNode.data.database)
             },
           },
           {
@@ -781,6 +781,7 @@ export default {
               icon: "fas node-all fa-database node-database",
               type: "database",
               contextMenu: "cm_database",
+              database: el.name,
             });
           }, null);
         })
