@@ -618,14 +618,12 @@ def get_autocomplete_results(request, v_database):
 
 
 @user_authenticated
-@session_required(use_old_error_format=True)
+@session_required
 def master_password(request, session):
     """
     Set the master password and store in the memory
     This password will be used to encrypt/decrypt saved server passwords
     """
-
-    response_data = create_response_template()
 
     data = request.data
     master_pass = data["master_password"]
@@ -637,7 +635,7 @@ def master_password(request, session):
     if user_details.masterpass_check and not validate_master_password(
         user_details, master_pass_hash
     ):
-        return error_response(message="Master password is not correct.")
+        return JsonResponse(data={"data": "Master password is not correct."}, status=400)
 
     if data != "" and data.get("master_password", "") != "":
         # store the master pass in the memory
@@ -647,7 +645,7 @@ def master_password(request, session):
         set_masterpass_check_text(user_details, master_pass_hash)
 
     elif data.get("master_password", "") == "":
-        return error_response(message="Master password cannot be empty.")
+        return JsonResponse(data={"data": "Master password cannot be empty."}, status=400)
 
     # refreshing database session list with provided master password
     session.RefreshDatabaseList()
@@ -655,7 +653,7 @@ def master_password(request, session):
     # saving new pgmanage_session
     request.session["pgmanage_session"] = session
 
-    return JsonResponse(response_data)
+    return HttpResponse(status=200)
 
 
 @user_authenticated
@@ -665,13 +663,11 @@ def reset_master_password(request):
     This password will be used to encrypt/decrypt saved server passwords
     """
 
-    response_data = create_response_template()
-
     user_details = UserDetails.objects.get(user=request.user)
 
     reset_master_pass(user_details)
 
-    return JsonResponse(response_data)
+    return HttpResponse(status=200)
 
 
 @user_authenticated

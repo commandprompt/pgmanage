@@ -41,10 +41,10 @@ $(function () {
  * @param {Function} successFunc - The function to call when the success action is triggered.
  * @param {Function} cancelFunc - The function to call when the cancel action is triggered.
  */
-function createMessageModal(message, successFunc, cancelFunc) {
+function createMessageModal(message, successFunc, cancelFunc, closable) {
   const wrap_div = document.getElementById("generic-message-modal-wrap");
 
-  wrap_div.innerHTML = `<generic-modal :message="message" :success-func="successFunc" :cancel-func="cancelFunc"></generic-modal>`;
+  wrap_div.innerHTML = `<generic-modal :message="message" :success-func="successFunc" :cancel-func="cancelFunc" :closable="closable"></generic-modal>`;
 
   const app = createApp({
     components: {
@@ -55,6 +55,7 @@ function createMessageModal(message, successFunc, cancelFunc) {
         message: message,
         successFunc: successFunc,
         cancelFunc: cancelFunc,
+        closable: closable
       };
     },
     mounted() {
@@ -62,7 +63,10 @@ function createMessageModal(message, successFunc, cancelFunc) {
         $("#generic_modal_message").on("hidden.bs.modal", () => {
           app.unmount();
         });
-        $("#generic_modal_message").modal("show");
+        $("#generic_modal_message").modal({
+          backdrop: "static",
+          keyboard: false,
+        });
       }, 500);
     },
   });

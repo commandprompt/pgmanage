@@ -1,5 +1,4 @@
 import { connectionsModalInit, conn_app} from './connections_modal.js'
-import { showNewMasterPassPrompt, showMasterPassPrompt } from './passwords.js'
 import { format } from 'sql-formatter'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import { createRequest } from './long_polling'
@@ -34,9 +33,9 @@ $(function () {
 
   // Ask for master password
   if (master_key === 'new') {
-    showNewMasterPassPrompt(`Please set your master password. It will be used to secure your connection credentials.`);
+    emitter.emit("show_master_pass_prompt", true)
   } else if (master_key == 'False'){
-    showMasterPassPrompt(`Please provide your master password to unlock your connection credentials for this session.`);
+    emitter.emit("show_master_pass_prompt", false)
   } else {
     conn_app.mount("#connections-modal-wrap");
     v_omnis.div.style.opacity = 1

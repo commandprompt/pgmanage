@@ -4,7 +4,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header align-items-center">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button v-if="closable" type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
           </button>
         </div>
@@ -48,6 +48,10 @@ export default {
     checkboxes: {
       type: Array,
       default: () => []
+    },
+    closable: {
+      type: Boolean,
+      default: true
     }
   },
 }
