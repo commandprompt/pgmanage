@@ -22,7 +22,7 @@
         </div>
 
         <div class="modal-body">
-          <div>{{ message }}</div>
+          <div class="mb-3">{{ message }}</div>
           <div class="form-group">
             <input
               ref="passwordInput"
