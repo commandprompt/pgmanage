@@ -14,7 +14,7 @@
         </div>
 
         <div class="modal-body">
-          <div id="modal_password_content">
+          <div id="modal_password_content" class="mb-3">
             <span v-if="isNewPassword">
               Please set your master password. It will be used to secure your
               connection credentials.
