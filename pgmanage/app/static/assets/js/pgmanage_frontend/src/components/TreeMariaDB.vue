@@ -117,13 +117,7 @@ export default {
             label: "Create Table",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              tabSQLTemplate(
-                "Create Table",
-                this.templates.create_table.replace(
-                  "#schema_name#",
-                  this.getParentNode(this.selectedNode).title
-                )
-              );
+              tabsStore.createSchemaEditorTab(this.selectedNode, "create", "mysql")
             },
           },
         ],
@@ -191,17 +185,10 @@ export default {
             icon: "fas cm-all fa-list",
             children: [
               {
-                label: "Alter Table (SQL)",
+                label: "Alter Table",
                 icon: "fas cm-all fa-edit",
                 onClick: () => {
-                  tabSQLTemplate(
-                    "Alter Table",
-                    this.templates.alter_table.replace(
-                      "#table_name#",
-                      `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
-                      }`
-                    )
-                  );
+                  tabsStore.createSchemaEditorTab(this.selectedNode, "alter", "mysql")
                 },
               },
               {
