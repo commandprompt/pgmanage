@@ -236,6 +236,7 @@ base_urlpatterns = [
     re_path(r'^template_select_mysql/', views.tree_mysql.template_select, name='template_select'),
     re_path(r'^template_insert_mysql/', views.tree_mysql.template_insert, name='template_insert'),
     re_path(r'^template_update_mysql/', views.tree_mysql.template_update, name='template_update'),
+    re_path(r'^get_table_definition_mysql/', views.tree_mysql.get_table_definition, name='get_table_definition'),
 
     #TREE_MARIADB
     re_path(r'^get_tree_info_mariadb/', views.tree_mariadb.get_tree_info, name='get_tree_info'),

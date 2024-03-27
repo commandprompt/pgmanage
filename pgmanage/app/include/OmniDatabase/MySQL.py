@@ -1244,3 +1244,6 @@ WHERE condition
 
     def GetAutocompleteValues(self, p_columns, p_filter):
         return None
+    
+    def QueryTableDefinition(self, table=None):
+        return self.v_connection.Query("SHOW FULL COLUMNS FROM {0}".format(table), True)

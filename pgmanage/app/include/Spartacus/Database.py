@@ -54,6 +54,7 @@ except ImportError:
     pass
 try:
     import pymysql
+    from pymysql.constants import CLIENT
     v_supported_rdbms.append('MySQL')
     v_supported_rdbms.append('MariaDB')
 except ImportError:
@@ -1947,6 +1948,7 @@ class MySQL(Generic):
                 password=self.v_password,
                 autocommit=p_autocommit,
                 read_default_file='~/.my.cnf',
+                client_flag=CLIENT.MULTI_STATEMENTS,
                 **self.connection_params
                 )
             self.v_cur = self.v_con.cursor()

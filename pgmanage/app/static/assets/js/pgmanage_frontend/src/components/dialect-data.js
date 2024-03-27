@@ -1,6 +1,8 @@
 import TableCompiler_SQLite3 from 'knex/lib/dialects/sqlite3/schema/sqlite-tablecompiler'
+import TableCompiler_MySQL from 'knex/lib/dialects/mysql/schema/mysql-tablecompiler'
 import { identity, flatten } from 'lodash'
 
+// TODO: Mysql - add PrimaryKey and Comment handling in alter table
 
 export default Object.freeze({
     'postgres': {
@@ -46,6 +48,48 @@ export default Object.freeze({
                     })
                 }
             },
+        ],
+    },
+    'mysql': {
+        dataTypes: [
+          'bit', 'int', 'int unsigned', 'integer', 'integer unsigned', 'tinyint', 'tinyint unsigned',
+          'smallint', 'smallint unsigned', 'mediumint', 'mediumint unsigned', 'bigint', 'bigint unsigned',
+          'float', 'double', 'double precision', 'dec', 'decimal', 'numeric', 'fixed', 'bool', 'boolean', 'date', 'datetime', 'timestamp', 'time', 'year', 'char', 'nchar', 'national char', 'varchar', 'nvarchar', 'national varchar', 'text', 'tinytext', 'mediumtext', 'blob', 'longtext', 'tinyblob', 'mediumblob', 'longblob', 'enum', 'set', 'json', 'binary', 'varbinary', 'geometry', 'point', 'linestring', 'polygon', 'multipoint', 'multilinestring', 'multipolygon', 'geometrycollection',
+        ],
+        hasSchema: false,
+        hasComments: true,
+        formatterDialect: 'mysql',
+        api_endpoints: {
+          table_definition_url: "/get_table_definition_mysql/"
+        },
+        overrides: [
+          () => {
+              TableCompiler_MySQL.prototype._setNullableState = function (
+              column,
+              isNullable
+              ) {
+              const nullability = isNullable ? "NULL" : "NOT NULL";
+              //TODO: figure how we can pass column type after column name for this to work
+              const columnType = "";
+              const sql = `alter table ${this.tableName()} modify ${this.formatter.wrap(
+                  column
+              )} ${columnType} ${nullability}`;
+              return this.pushQuery({
+                  sql: sql,
+              });
+              };
+          },
+          () => {
+              TableCompiler_MySQL.prototype.renameColumn = function (from, to) {
+              const table = this.tableName();
+              const wrapped =
+                  this.formatter.wrap(from) + " TO " + this.formatter.wrap(to);
+              const sql = `ALTER TABLE ${table} RENAME COLUMN ${wrapped};`;
+              this.pushQuery({
+                  sql: sql,
+              });
+              };
+          },
         ],
     },
 

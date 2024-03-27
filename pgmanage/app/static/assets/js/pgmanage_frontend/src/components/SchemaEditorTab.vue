@@ -295,7 +295,7 @@ export default {
           tabledef.columns.forEach((coldef) => {
             // use Knex's magic to create a proper auto-incrementing column in database-agnostic way
             let col = coldef.dataType === 'autoincrement' ?
-              table.increments(coldef.name) :
+              table.increments(coldef.name, {primaryKey: false}) :
               table.specificType(coldef.name, coldef.dataType)
 
             coldef.nullable ? col.nullable() : col.notNullable()

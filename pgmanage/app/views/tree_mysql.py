@@ -525,3 +525,28 @@ def template_update(request, v_database):
     v_return["v_data"] = {"v_template": v_template}
 
     return JsonResponse(v_return)
+
+
+@user_authenticated
+@database_required_new(check_timeout=False, open_connection=True)
+def get_table_definition(request, database):
+    data = request.data
+    table = data["table"]
+
+    columns = []
+    try:
+        q_definition = database.QueryTableDefinition(table)
+        for col in q_definition.Rows:
+            column_data = {
+                "name": col["Field"],
+                "data_type": col["Type"],
+                "default_value": col["Default"],
+                "nullable": col["Null"] == "YES",
+                "is_primary": bool(col["Key"]),
+                "comment": col["Comment"],
+            }
+            columns.append(column_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data={"data": columns})
