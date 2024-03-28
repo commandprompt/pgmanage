@@ -270,7 +270,11 @@ export default {
           })
 
           changes.nullableChanges.forEach((coldef) => {
-            coldef.nullable ? table.setNullable(coldef.name) : table.dropNullable(coldef.name)
+            if (table.client.dialect === "mysql") {
+              coldef.nullable ? table.setNullable(coldef) : table.dropNullable(coldef)
+            } else {
+              coldef.nullable ? table.setNullable(coldef.name) : table.dropNullable(coldef.name)
+            }
           })
 
           // FIXME: commenting generates drop default - how to avoid this?

@@ -69,10 +69,9 @@ export default Object.freeze({
               isNullable
               ) {
               const nullability = isNullable ? "NULL" : "NOT NULL";
-              //TODO: figure how we can pass column type after column name for this to work
-              const columnType = "";
+              const columnType = column.dataType;
               const sql = `alter table ${this.tableName()} modify ${this.formatter.wrap(
-                  column
+                  column.name
               )} ${columnType} ${nullability}`;
               return this.pushQuery({
                   sql: sql,

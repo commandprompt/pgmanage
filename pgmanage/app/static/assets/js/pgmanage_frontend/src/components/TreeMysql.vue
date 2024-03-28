@@ -731,24 +731,28 @@ export default {
         icon: "fas node-all fa-cog node-procedure-list",
         type: "procedure_list",
         contextMenu: "cm_procedures",
+        database: node.data.database
       });
 
       this.insertNode(node, "Functions", {
         icon: "fas node-all fa-cog node-function-list",
         type: "function_list",
         contextMenu: "cm_functions",
+        database: node.data.database
       });
 
       this.insertNode(node, "Views", {
         icon: "fas node-all fa-eye node-view-list",
         type: "view_list",
         contextMenu: "cm_views",
+        database: node.data.database
       });
 
       this.insertNode(node, "Tables", {
         icon: "fas node-all fa-th node-table-list",
         type: "table_list",
         contextMenu: "cm_tables",
+        database: node.data.database
       });
     },
     getTablesMysql(node) {
@@ -768,6 +772,7 @@ export default {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
+              database: node.data.database
             });
           }, null);
         })
@@ -788,29 +793,34 @@ export default {
             icon: "fas node-all fa-thumbtack node-index",
             type: "indexes",
             contextMenu: "cm_indexes",
+            database: node.data.database
           });
 
           this.insertNode(node, "Uniques", {
             icon: "fas node-all fa-key node-unique",
             type: "uniques",
             contextMenu: "cm_uniques",
+            database: node.data.database
           });
 
           this.insertNode(node, "Foreign Keys", {
             icon: "fas node-all fa-key node-fkey",
             type: "foreign_keys",
             contextMenu: "cm_fks",
+            database: node.data.database
           });
           this.insertNode(node, "Primary Key", {
             icon: "fas node-all fa-key node-pkey",
             type: "primary_key",
             contextMenu: "cm_pks",
+            database: node.data.database
           });
 
           this.insertNode(node, `Columns (${resp.data.length})`, {
             icon: "fas node-all fa-columns node-column",
             type: "column_list",
             contextMenu: "cm_columns",
+            database: node.data.database
           });
 
           const columns_node = this.getFirstChildNode(node);
@@ -820,6 +830,7 @@ export default {
               icon: "fas node-all fa-columns node-column",
               type: "table_field",
               contextMenu: "cm_column",
+              database: node.data.database
             });
             const table_field = this.getFirstChildNode(columns_node);
 
@@ -863,6 +874,7 @@ export default {
               icon: "fas node-all fa-key node-pkey",
               type: "pk",
               contextMenu: "cm_pk",
+              database: node.data.database
             });
           });
         })
@@ -913,6 +925,7 @@ export default {
               icon: "fas node-all fa-key node-fkey",
               type: "foreign_key",
               contextMenu: "cm_fk",
+              database: node.data.database
             });
           }, null);
         })
@@ -986,6 +999,7 @@ export default {
               icon: "fas node-all fa-key node-unique",
               type: "unique",
               contextMenu: "cm_unique",
+              database: node.data.database
             });
           });
         })
@@ -1037,6 +1051,7 @@ export default {
               type: "index",
               contextMenu: "cm_index",
               uniqueness: el.uniqueness,
+              database: node.data.database
             });
           });
         })
@@ -1086,6 +1101,7 @@ export default {
               icon: "fas node-all fa-eye node-view",
               type: "view",
               contextMenu: "cm_view",
+              database: node.data.database
             });
           });
         })
@@ -1160,6 +1176,7 @@ export default {
               type: "function",
               id: el.id,
               contextMenu: "cm_function",
+              database: node.data.database
             });
           });
         })
@@ -1241,6 +1258,7 @@ export default {
               type: "procedure",
               contextMenu: "cm_procedure",
               id: el.id,
+              database: node.data.database
             });
           });
         })

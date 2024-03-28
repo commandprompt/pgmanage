@@ -650,7 +650,11 @@ const useTabsStore = defineStore("tabs", {
       this.selectTab(tab);
     },
     createSchemaEditorTab(node, mode, dialect) {
-      let tableName = node.title.replace(/^"(.*)"$/, "$1");
+      let tableName =
+        dialect === "mysql"
+          ? `${node.data.database}.${node.title}`
+          : node.title.replace(/^"(.*)"$/, "$1");
+
       let tabTitle = mode === "alter" ? `Alter: ${tableName}` : "New Table";
 
       const tab = this.addTab({
@@ -672,8 +676,11 @@ const useTabsStore = defineStore("tabs", {
       tab.metaData.treeNode = node;
       tab.metaData.databaseIndex =
         this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
+
       tab.metaData.databaseName =
-        this.selectedPrimaryTab?.metaData?.selectedDatabase;
+        dialect === "mysql"
+          ? node.data.database
+          : this.selectedPrimaryTab?.metaData?.selectedDatabase;
 
       this.selectTab(tab);
     },
