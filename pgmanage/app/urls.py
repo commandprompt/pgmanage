@@ -42,8 +42,6 @@ base_urlpatterns = [
 
     #WORKSPACE
     re_path(r'^workspace/', views.workspace.index, name='workspace'),
-    re_path(r'^save_config_user/', views.workspace.save_config_user, name='save_config_user'),
-    re_path(r'^shortcuts/', views.workspace.shortcuts, name='shortcuts'),
     re_path(r'^renew_password/', views.workspace.renew_password, name='renew_password'),
     re_path(r'^master_password/', views.workspace.master_password, name='master_password'),
     re_path(r'^reset_master_password/', views.workspace.reset_master_password, name='reset_master_password'),
@@ -54,6 +52,10 @@ base_urlpatterns = [
     re_path(r'^refresh_monitoring/', views.workspace.refresh_monitoring, name='refresh_monitoring'),
     re_path(r'^get_autocomplete_results/', views.workspace.get_autocomplete_results, name='get_autocomplete_results'),
     re_path(r'^delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),
+
+    #SETINGS
+    re_path(r'^settings/', views.workspace.SettingsView.as_view(), name="settings"),
+    re_path(r'^save-user-password/', views.workspace.save_user_password, name="save-user-password"),
 
     #COMMANDS HISTORY
     re_path(r'^get_commands_history/', views.commands_history.get_commands_history, name="get_commands_history"),

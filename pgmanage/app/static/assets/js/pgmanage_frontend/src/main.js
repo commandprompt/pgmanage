@@ -22,7 +22,6 @@ import omniDarkURL from './ace_themes/theme-omnidb_dark.js?url'
 import axios from 'axios'
 import { getCookie } from './ajax_control.js';
 import { showAlert } from './notification_control.js';
-import moment from 'moment';
 import "tabulator-tables/dist/css/tabulator.min.css"
 import App from './App.vue'
 import { createApp } from 'vue';
@@ -34,9 +33,6 @@ ace.config.setModuleUrl('ace/theme/omnidb', omniURL)
 ace.config.setModuleUrl('ace/theme/omnidb_dark', omniDarkURL)
 
 axios.defaults.headers.common['X-CSRFToken'] = getCookie(v_csrf_cookie_name);
-
-moment.defaultFormat = date_format;
-
 
 const app = createApp(App);
 setupLogger(app);

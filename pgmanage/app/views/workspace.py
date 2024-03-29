@@ -10,32 +10,29 @@ import sqlparse
 from app.client_manager import client_manager
 from app.models.main import Connection, Shortcut, UserDetails
 from app.utils.crypto import make_hash
-from app.utils.decorators import database_required, database_required_new, user_authenticated
+from app.utils.decorators import (database_required, database_required_new,
+                                  user_authenticated)
 from app.utils.key_manager import key_manager
-from app.utils.master_password import (
-    reset_master_pass,
-    set_masterpass_check_text,
-    validate_master_password,
-)
+from app.utils.master_password import (reset_master_pass,
+                                       set_masterpass_check_text,
+                                       validate_master_password)
 from app.utils.response_helpers import create_response_template, error_response
 from app.views.connections import session_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
+from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.utils.decorators import method_decorator
+from django.views import View
 
 from pgmanage import settings
 
 
 @login_required
 def index(request):
-    try:
-        user_details = UserDetails.objects.get(user=request.user)
-    except ObjectDoesNotExist:
-        user_details = UserDetails(user=request.user)
-        user_details.save()
+    user_details, _ = UserDetails.objects.get_or_create(user=request.user)
 
     # Invalid session
     if not request.session.get("pgmanage_session"):
@@ -45,19 +42,12 @@ def index(request):
     if key_manager.get(request.user):
         session.RefreshDatabaseList()
 
-    theme = "omnidb" if user_details.theme == "light" else "omnidb_dark"
-
     context = {
         "session": None,
-        "editor_theme": theme,
-        "theme": user_details.theme,
-        "font_size": user_details.font_size,
         "user_id": request.user.id,
         "user_key": request.session.session_key,
         "user_name": request.user.username,
         "super_user": request.user.is_superuser,
-        "csv_encoding": user_details.csv_encoding,
-        "csv_delimiter": user_details.csv_delimiter,
         "desktop_mode": settings.DESKTOP_MODE,
         "pgmanage_version": settings.PGMANAGE_VERSION,
         "pgmanage_short_version": settings.PGMANAGE_SHORT_VERSION,
@@ -70,11 +60,6 @@ def index(request):
         "master_key": "new"
         if not bool(user_details.masterpass_check)
         else bool(key_manager.get(request.user)),
-        "binary_path": user_details.get_binary_path(),
-        "pigz_path": user_details.get_pigz_path(),
-        "date_format": user_details.date_format,
-        "restore_tabs": user_details.restore_tabs,
-        "scroll_tree": user_details.scroll_tree,
     }
 
     # wiping saved tabs databases list
@@ -86,63 +71,63 @@ def index(request):
     return render(request, "app/workspace.html", context)
 
 
-@user_authenticated
-@session_required
-def save_config_user(request, session):
-    response_data = {"data": "", "status": "success"}
-
-    data = request.data
-
-    font_size = data["font_size"]
-    theme = data["theme"]
-    password = data["password"]
-    csv_encoding = data["csv_encoding"]
-    csv_delimiter = data["csv_delimiter"]
-    binary_path = data["binary_path"]
-    date_format = data["date_format"]
-    pigz_path = data["pigz_path"]
-    restore_tabs = data["restore_tabs"]
-    scroll_tree = data["scroll_tree"]
-
-    session.v_theme_id = theme
-    session.v_font_size = font_size
-    session.v_csv_encoding = csv_encoding
-    session.v_csv_delimiter = csv_delimiter
-
-    user_details = UserDetails.objects.get(user=request.user)
-    user_details.theme = theme
-    user_details.font_size = font_size
-    user_details.csv_encoding = csv_encoding
-    user_details.csv_delimiter = csv_delimiter
-    user_details.binary_path = binary_path
-    user_details.date_format = date_format
-    user_details.pigz_path = pigz_path
-    user_details.restore_tabs = restore_tabs
-    user_details.scroll_tree = scroll_tree
-    user_details.save()
-
-    request.session["pgmanage_session"] = session
-
-    if password != "":
-        user = User.objects.get(id=request.user.id)
-        user.set_password(password)
-        user.save()
-        update_session_auth_hash(request, user)
-
-    return JsonResponse(response_data)
 
 
-@user_authenticated
-@session_required(include_session=False)
-def shortcuts(request):
-    response_data = {"data": "", "status": "success"}
+@method_decorator([user_authenticated, session_required], name="dispatch")
+class SettingsView(View):
+    def get(self, request, *args, **kwargs):
+        user_details, _ = UserDetails.objects.get_or_create(user=request.user)
 
-    if request.method == "POST":
-        data = request.data
-        shortcut_list = data.get("shortcuts")
-        current_os = data.get("current_os")
+        user_settings = {
+            **model_to_dict(
+                user_details,
+                exclude=[
+                    "id",
+                    "user",
+                    "binary_path",
+                    "pigz_path",
+                    "masterpass_check",
+                    "welcome_closed",
+                ],
+            ),
+            "binary_path": user_details.get_binary_path(),
+            "pigz_path": user_details.get_pigz_path(),
+            "editor_theme": user_details.get_editor_theme(),
+        }
 
+        user_shortcuts = {}
+
+        shortcuts_db = Shortcut.objects.filter(user=request.user)
+
+        for shortcut in shortcuts_db:
+            user_shortcuts[shortcut.code] = {
+                **model_to_dict(shortcut, exclude=["id", "user", "code", "key"]),
+                "shortcut_key": shortcut.key,
+                "shortcut_code": shortcut.code,
+            }
+
+        return JsonResponse(
+            data={"settings": user_settings, "shortcuts": user_shortcuts}
+        )
+
+    def post(self, request, *args, **kwargs):
+        session = kwargs.get("session")
+        settings_data = request.data.get("settings")
+        shortcut_list = request.data.get("shortcuts")
+        current_os = request.data.get("current_os")
+
+        session.v_theme_id = settings_data.get("theme")
+        session.v_font_size = settings_data.get("font_size")
+        session.v_csv_encoding = settings_data.get("csv_encoding")
+        session.v_csv_delimiter = settings_data.get("csv_delimiter")
         try:
+            user_details = UserDetails.objects.get(user=request.user)
+            for attr, value in settings_data.items():
+                setattr(user_details, attr, value)
+            user_details.save()
+
+            request.session["pgmanage_session"] = session
+
             # Delete existing user shortcuts
             Shortcut.objects.filter(user=request.user).delete()
 
@@ -160,27 +145,23 @@ def shortcuts(request):
                 )
                 shortcut_object.save()
         except Exception as exc:
-            response_data["data"] = str(exc)
-            response_data["status"] = "failed"
-            return JsonResponse(response_data, status=400)
+            return JsonResponse(data={"data": str(exc)}, status=400)
+        return HttpResponse(status_code=200)
 
-    if request.method == "GET":
-        data = {}
 
-        user_shortcuts = Shortcut.objects.filter(user=request.user)
-        for shortcut in user_shortcuts:
-            data[shortcut.code] = {
-                "ctrl_pressed": shortcut.ctrl_pressed,
-                "shift_pressed": shortcut.shift_pressed,
-                "alt_pressed": shortcut.alt_pressed,
-                "meta_pressed": shortcut.meta_pressed,
-                "shortcut_key": shortcut.key,
-                "os": shortcut.os,
-                "shortcut_code": shortcut.code,
-            }
-        response_data["data"] = data
+@user_authenticated
+def save_user_password(request):
+    password = request.data.get("password")
 
-    return JsonResponse(response_data)
+    if not password:
+        return JsonResponse(data={"data": "Password can not be empty."}, status=400)
+
+    user = User.objects.get(id=request.user.id)
+    user.set_password(password)
+    user.save()
+    update_session_auth_hash(request, user)
+
+    return HttpResponse(status_code=200)
 
 
 @user_authenticated

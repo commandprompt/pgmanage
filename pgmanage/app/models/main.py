@@ -42,6 +42,12 @@ class UserDetails(models.Model):
             )
         return binary_path
 
+    def get_editor_theme(self):
+        if self.theme == "light":
+            return "omnidb"
+        return "omnidb_dark"
+    
+
 class Shortcut(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     code = models.CharField(max_length=200, blank=False)

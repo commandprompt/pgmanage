@@ -150,9 +150,9 @@ export default {
       document.dispatchEvent(event)
     },
     loadShortcuts() {
-      axios.get('/shortcuts/')
+      axios.get('/settings/')
         .then((resp) => {
-          this.shortcuts = resp.data.data
+          this.shortcuts = resp.data.shortcuts
           let shortcut_keys = Object.keys(this.shortcuts)
           Object.keys(default_shortcuts).forEach((key) => {
             if(!shortcut_keys.includes(key)) {

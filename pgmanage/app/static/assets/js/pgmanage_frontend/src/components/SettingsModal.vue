@@ -31,7 +31,7 @@
                 <div style="position: absolute; top: 50%; width: 100%;">Press key combination... (ESC to cancel)</div>
               </div>
 
-              <div v-for="(shortcut, shortcut_id, index) in shortcutObject.shortcuts" :key="index" class="form-group row">
+              <div v-for="(shortcut, shortcut_id, index) in shortcuts" :key="index" class="form-group row">
                 <label :for="shortcut_id" class="col-sm-6 col-form-label">{{ shortcutLabels[index] }}</label>
                 <div class="col-sm-6">
                   <button :id="shortcut_id" class='btn btn-secondary btn-sm btn-block' @click="startSetShortcut">{{
@@ -41,7 +41,7 @@
               </div>
 
               <div class="text-right">
-                <button class='btn btn-success' @click='saveShortcuts'>Save</button>
+                <button class='btn btn-success' @click='saveSettings'>Save</button>
               </div>
             </div>
 
@@ -57,8 +57,7 @@
                 </div>
                 <div class="form-group col-6">
                   <label for="sel_interface_font_size" class="font-weight-bold mb-2">Font Size</label>
-                  <select id="sel_interface_font_size" class="form-control" @change="changeInterfaceFontSize"
-                    v-model="fontSize">
+                  <select id="sel_interface_font_size" class="form-control" v-model="fontSize">
                     <option v-for="font_size in fontSizeOptions" :key="font_size" :value="font_size">{{ font_size }}
                     </option>
                   </select>
@@ -68,7 +67,7 @@
               <div class="form-row">
                 <div class="form-group col-6">
                   <label for="sel_csv_encoding" class="font-weight-bold mb-2">CSV Encoding</label>
-                  <select id="sel_csv_encoding" class="form-control" v-model="selectedCSVEncoding">
+                  <select id="sel_csv_encoding" class="form-control" v-model="csvEncoding">
                     <option v-for="encoding in encodingValues" :key="encoding" :value="encoding">{{ encoding }}</option>
                   </select>
                 </div>
@@ -162,7 +161,7 @@
               </div>
 
               <div class="text-right">
-                <button class='btn btn-success' @click='saveSettingsUser'>Save</button>
+                <button class='btn btn-success' @click='saveSettings'>Save</button>
               </div>
             </div>
 
@@ -183,7 +182,7 @@
                 </div>
               </div>
               <div class="text-right">
-                <button class='btn btn-success' @click='saveSettingsUser' :disabled="buttonFormDisabled">Save</button>
+                <button class='btn btn-success' @click='saveUserPassword' :disabled="buttonFormDisabled">Save</button>
               </div>
             </div>
           </div>
@@ -225,21 +224,10 @@ export default {
   name: 'SettingsModal',
   data() {
     return {
-      currentOS: '',
-      desktopMode: window.gv_desktopMode,
       shortcutObject: {
-        shortcuts: {},
         button: null,
         actions: null
       },
-      shortcutList: [],
-      selectedCSVEncoding: window.v_csv_encoding,
-      selectedDateFormat: window.date_format,
-      restoreTabs: window.restore_tabs,
-      scrollTree: window.scroll_tree,
-      csvDelimiter: window.v_csv_delimiter,
-      binaryPath: window.binary_path,
-      pigzPath: window.pigz_path,
       buttonFormDisabled: true,
       password: '',
       passwordConfirm: '',
@@ -312,16 +300,85 @@ export default {
         settingsStore.setTheme(value);
       },
     },
+    csvEncoding: {
+      get() {
+        return settingsStore.csvEncoding
+      },
+      set(value) {
+        settingsStore.setCSVEncoding(value)
+      }
+    },
+    csvDelimiter: {
+      get() {
+        return settingsStore.csvDelimiter
+      },
+      set(value) {
+        settingsStore.setCSVDelimiter(value)
+      }
+    },
+    binaryPath: {
+      get() {
+        return settingsStore.binaryPath
+      },
+      set(value) {
+        settingsStore.setBinaryPath(value)
+      }
+    },
+    pigzPath: {
+      get() {
+        return settingsStore.pigzPath
+      },
+      set(value) {
+        settingsStore.setPigzPath(value)
+      }
+    },
+    selectedDateFormat: {
+      get() {
+        return settingsStore.dateFormat
+      },
+      set(value) {
+        settingsStore.setDateFormat(value)
+      }
+    },
+    restoreTabs: {
+      get() {
+        return settingsStore.restoreTabs
+      },
+      set(value) {
+        settingsStore.setRestoreTabs(value)
+      }
+    },
+    scrollTree: {
+      get() {
+        return settingsStore.scrollTree
+      },
+      set(value) {
+        settingsStore.setScrollTree(value)
+      }
+    },
+    shortcuts() {
+      return settingsStore.shortcuts
+    },
+    desktopMode() {
+      return settingsStore.desktopMode
+    }
   },
-  created() {
-    this.getShortcuts();
+  watch: {
+    fontSize(newValue, oldValue) {
+      this.changeInterfaceFontSize()
+    },
+    csvDelimiter(newValue, oldValue) {
+      this.v$.csvDelimiter.$validate()
+    }
+  },
+  beforeCreate() {
+    settingsStore.getSettings();
   },
   mounted() {
-    this.currentOS = "Unknown OS";
-    if (navigator.userAgent.indexOf("Win") != -1) this.currentOS = "windows";
-    if (navigator.userAgent.indexOf("Mac") != -1) this.currentOS = "macos";
-    if (navigator.userAgent.indexOf("X11") != -1) this.currentOS = "linux";
-    if (navigator.userAgent.indexOf("Linux") != -1) this.currentOS = "linux";
+    if (navigator.userAgent.indexOf("Win") != -1) settingsStore.currentOS = "windows";
+    if (navigator.userAgent.indexOf("Mac") != -1) settingsStore.currentOS = "macos";
+    if (navigator.userAgent.indexOf("X11") != -1) settingsStore.currentOS = "linux";
+    if (navigator.userAgent.indexOf("Linux") != -1) settingsStore.currentOS = "linux";
 
     //Shortcut actions
     this.shortcutObject.actions = {
@@ -452,17 +509,17 @@ export default {
         // Find corresponding user defined
         let found = false;
 
-        for (let user_code in this.shortcutObject.shortcuts) {
-          if (this.shortcutObject.shortcuts.hasOwnProperty(user_code)) {
-            if ((default_code == user_code) && (this.currentOS == this.shortcutObject.shortcuts[user_code]['os'])) {
+        for (let user_code in this.shortcuts) {
+          if (this.shortcuts.hasOwnProperty(user_code)) {
+            if ((default_code == user_code) && (settingsStore.currentOS == this.shortcuts[user_code]['os'])) {
               found = true;
               break
             }
           }
         }
         if (!found) {
-          this.shortcutObject.shortcuts[default_code] = default_shortcuts[default_code][this.currentOS]
-          this.shortcutObject.shortcuts[default_code]['shortcut_code'] = default_code
+          settingsStore.shortcuts[default_code] = default_shortcuts[default_code][settingsStore.currentOS]
+          settingsStore.shortcuts[default_code]['shortcut_code'] = default_code
         }
       }
     }
@@ -484,40 +541,9 @@ export default {
     })
 
     this.applyThemes()
-    document.documentElement.style.fontSize = `${this.fontSize}px`
-
   },
   methods: {
-    getShortcuts() {
-      axios.get('/shortcuts')
-        .then((resp) => {
-          this.shortcutObject.shortcuts = Object.assign({}, this.shortcutObject.shortcuts, resp.data.data)
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-    },
-    saveShortcuts() {
 
-      for (let property in this.shortcutObject.shortcuts) {
-        if (this.shortcutObject.shortcuts.hasOwnProperty(property)) {
-          this.shortcutList.push(this.shortcutObject.shortcuts[property]);
-        }
-      }
-
-      axios.post('/shortcuts/', {
-        current_os: this.currentOS,
-        shortcuts: this.shortcutList
-      })
-        .then((resp) => {
-          showToast("success", "Shortcuts saved.")
-          emitter.emit('shortcuts_updated', "")
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-
-    },
     startSetShortcut(event) {
       this.$refs.shortcutBackground.style.display = 'block'
       event.target.style['z-index'] = 1002;
@@ -546,7 +572,7 @@ export default {
       if (event.keyCode == 16 || event.keyCode == 17 || event.keyCode == 18 || event.keyCode == 91)
         return;
 
-      let shortcutElement = this.shortcutObject.shortcuts[this.shortcutObject.button.id];
+      let shortcutElement = settingsStore.shortcuts[this.shortcutObject.button.id];
 
       if (shortcutElement) {
         shortcutElement.ctrl_pressed = event.ctrlKey;
@@ -572,7 +598,7 @@ export default {
       document.body.addEventListener('keydown', this.keyBoardShortcuts);
     },
     changeInterfaceFontSize() {
-      document.getElementsByTagName('html')[0].style['font-size'] = `${this.fontSize}px`;
+      document.documentElement.style.fontSize = `${this.fontSize}px`
       $('.ace_editor').each(function (index) {
         let editor = ace.edit(this);
         editor.setFontSize(`${this.fontSize}px`);
@@ -613,35 +639,27 @@ export default {
       else
         return text + shortcut_object.shortcut_key
     },
-    saveSettingsUser() {
+    saveSettings() {
+      if(!this.v$.$invalid) {
+        settingsStore.saveSettings()
+      }
+    },
+    saveUserPassword() {
       if ((this.passwordConfirm != '' || this.password != '') && (this.password != this.passwordConfirm))
         showToast("error", "New Password and Confirm New Password fields do not match.")
       else if ((this.password === this.passwordConfirm) && (this.password.length < 8 && this.password.length >= 1))
         showToast("error", "New Password and Confirm New Password fields must be longer than 8.")
       else {
-        this.v$.csvDelimiter.$validate()
-        if(!this.v$.$invalid) {
-          axios.post('/save_config_user/', {
-            "font_size": this.fontSize,
-            "theme": this.theme,
+          axios.post("/save-user-password/", {
             "password": this.password,
-            "csv_encoding": this.selectedCSVEncoding,
-            "csv_delimiter": this.csvDelimiter,
-            "binary_path": this.binaryPath,
-            "date_format": this.selectedDateFormat,
-            "pigz_path": this.pigzPath,
-            "restore_tabs": this.restoreTabs,
-            "scroll_tree": this.scrollTree,
           })
-            .then((resp) => {
-              $('#modal_settings').modal('hide');
-              moment.defaultFormat = this.selectedDateFormat
-              showToast("success", "Configuration saved.");
+          .then(() => {
+            $('#modal_settings').modal('hide');
+            showToast("success", "Password saved.");
+          })
+          .catch((error) => {
+              showToast("error", error.response.data.data)
             })
-            .catch((error) => {
-              console.log(error)
-            })
-        }
       }
     },
     checkPassword() {
@@ -672,9 +690,9 @@ export default {
       if (event.keyCode == 16 || event.keyCode == 17 || event.keyCode == 18 || event.keyCode == 91 || event.keyCode == 27)
         return;
 
-      for (let property in this.shortcutObject.shortcuts) {
-        if (this.shortcutObject.shortcuts.hasOwnProperty(property)) {
-          let element = this.shortcutObject.shortcuts[property];
+      for (let property in this.shortcuts) {
+        if (this.shortcuts.hasOwnProperty(property)) {
+          let element = this.shortcuts[property];
           if (this.checkShortcutPressed(event, element)) {
             event.preventDefault();
             event.stopPropagation();

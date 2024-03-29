@@ -157,7 +157,7 @@ def session_required(
             return JsonResponse({"data": "Invalid session"}, status=401)
 
         if include_session:
-            return func(request, session, *args, **kwargs)
+            return func(request, *args, **kwargs, session=session)
         return func(request, *args, **kwargs)
 
     return containing_func
