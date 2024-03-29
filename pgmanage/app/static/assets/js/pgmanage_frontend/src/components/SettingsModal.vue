@@ -371,9 +371,6 @@ export default {
       this.v$.csvDelimiter.$validate()
     }
   },
-  beforeCreate() {
-    settingsStore.getSettings();
-  },
   mounted() {
     if (navigator.userAgent.indexOf("Win") != -1) settingsStore.currentOS = "windows";
     if (navigator.userAgent.indexOf("Mac") != -1) settingsStore.currentOS = "macos";

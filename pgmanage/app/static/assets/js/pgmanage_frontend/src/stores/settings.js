@@ -22,33 +22,35 @@ const useSettingsStore = defineStore("settings", {
     currentOS: "Unknown OS",
   }),
   actions: {
-    getSettings() {
-      axios
-        .get("/settings/")
-        .then((resp) => {
-          const userSettings = resp.data.settings;
-          this.$patch({
-            fontSize: userSettings.font_size,
-            theme: userSettings.theme,
-            editorTheme: userSettings.editor_theme,
-            restoreTabs: userSettings.restore_tabs,
-            scrollTree: userSettings.scroll_tree,
-            binaryPath: userSettings.binary_path,
-            pigzPath: userSettings.pigz_path,
-            csvEncoding: userSettings.csv_encoding,
-            csvDelimiter: userSettings.csv_delimiter,
-            dateFormat: !userSettings.date_format
-              ? "YYYY-MM-DD, HH:mm:ss"
-              : userSettings.date_format,
-          });
+    async getSettings() {
+      try {
+        const response = await axios.get("/settings/");
 
-          this.shortcuts = resp.data.shortcuts;
-          moment.defaultFormat = this.dateFormat;
-          document.documentElement.style.fontSize = `${this.fontSize}px`;
-        })
-        .catch((error) => {
-          showToast("error", error.response.data.data);
+        const userSettings = response.data.settings;
+        this.$patch({
+          fontSize: userSettings.font_size,
+          theme: userSettings.theme,
+          editorTheme: userSettings.editor_theme,
+          restoreTabs: userSettings.restore_tabs,
+          scrollTree: userSettings.scroll_tree,
+          binaryPath: userSettings.binary_path,
+          pigzPath: userSettings.pigz_path,
+          csvEncoding: userSettings.csv_encoding,
+          csvDelimiter: userSettings.csv_delimiter,
+          dateFormat: !userSettings.date_format
+            ? "YYYY-MM-DD, HH:mm:ss"
+            : userSettings.date_format,
         });
+
+        this.shortcuts = response.data.shortcuts;
+        moment.defaultFormat = this.dateFormat;
+        document.documentElement.style.fontSize = `${this.fontSize}px`;
+
+        return response.data;
+      } catch (error) {
+        showToast("error", error.response.data.data);
+        return error;
+      }
     },
     saveSettings() {
       axios

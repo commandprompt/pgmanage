@@ -27,12 +27,15 @@ import App from './App.vue'
 import { createApp } from 'vue';
 import ToastPlugin from 'vue-toast-notification';
 import { setupLogger } from './logging/logger_setup.js';
+import { settingsStore } from './stores/stores_initializer.js';
 
 window.jQuery = window.$ = $;
 ace.config.setModuleUrl('ace/theme/omnidb', omniURL)
 ace.config.setModuleUrl('ace/theme/omnidb_dark', omniDarkURL)
 
 axios.defaults.headers.common['X-CSRFToken'] = getCookie(v_csrf_cookie_name);
+
+await settingsStore.getSettings()
 
 const app = createApp(App);
 setupLogger(app);
