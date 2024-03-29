@@ -390,14 +390,9 @@
     <script type="text/javascript">
   	//Global variables
     var master_key = '{{master_key}}'
-    var v_editor_theme = '{{ editor_theme }}';
-  	var	v_theme = '{{ theme }}';
-    var v_font_size = {{ font_size }};
   	var v_user_id = {{ user_id }};
     var v_user_key = '{{ user_key }}';
     var v_user_name = '{{ user_name }}';
-    var v_csv_encoding = '{{ csv_encoding }}';
-    var v_csv_delimiter = '{{ csv_delimiter }}';
     var v_session_key = v_user_key;
     var v_user_login = v_user_name;
     var v_version = '{{ pgmanage_version }}';
@@ -414,11 +409,6 @@
     var v_editContentObject;
     var v_super_user = {{ super_user|lower }};
     var v_csrf_cookie_name = '{{ csrf_cookie_name }}';
-    var binary_path = '{{ binary_path|addslashes }}';
-    var pigz_path = '{{ pigz_path|addslashes}}';
-    var date_format = '{{ date_format }}' === 'None' ? 'YYYY-MM-DD, HH:mm:ss' : '{{ date_format }}'
-    var restore_tabs = {{ restore_tabs|lower }}
-    var scroll_tree = {{ scroll_tree|lower }}
     </script>
     <script type="text/javascript" src="{{url_folder}}/static/assets/lib/Passtrength/lib/jquery.passtrength.min.js" defer></script>
   </body>
