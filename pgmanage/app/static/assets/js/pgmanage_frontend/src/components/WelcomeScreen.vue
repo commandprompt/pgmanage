@@ -199,7 +199,7 @@ export default {
       settingsStore.$onAction((action) => {
         if ( action.name === 'saveSettings') {
           action.after(() => {
-            this.loadShortcuts
+            this.loadShortcuts();
           })
         }
       })

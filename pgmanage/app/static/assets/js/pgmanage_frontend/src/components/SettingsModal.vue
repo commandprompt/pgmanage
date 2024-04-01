@@ -31,10 +31,10 @@
                 <div style="position: absolute; top: 50%; width: 100%;">Press key combination... (ESC to cancel)</div>
               </div>
 
-              <div v-for="(shortcut, shortcut_id, index) in shortcuts" :key="index" class="form-group row">
-                <label :for="shortcut_id" class="col-sm-6 col-form-label">{{ shortcutLabels[index] }}</label>
+              <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="form-group row">
+                <label :for="idx" class="col-sm-6 col-form-label">{{ shortcutLabel(shortcut) }}</label>
                 <div class="col-sm-6">
-                  <button :id="shortcut_id" class='btn btn-secondary btn-sm btn-block' @click="startSetShortcut">{{
+                  <button :id="idx" class='btn btn-secondary btn-sm btn-block' @click="startSetShortcut">{{
                     buildButtonText(shortcut)
                   }}</button>
                 </div>
@@ -250,11 +250,6 @@ export default {
         "shift-jis", "shift-jis-2004", "shift-jisx0213", "utf-32", "utf-32-be",
         "utf-32-le", "utf-16", "utf-16-be", "utf-16-le", "utf-7", "utf-8",
         "utf-8-sig", "windows-1252"
-      ],
-      shortcutLabels: [
-        "Run Query", "Run Selection", "Cancel Query", "Indent", "Find/Replace", "New Inner Tab",
-        "Remove Current Inner Tab", "Select Left Inner Tab", "Select Right Inner Tab",
-        "Autocomplete", "Run Explain", "Run Explain Analyze",
       ],
       dateFormats: ['YYYY-MM-DD, HH:mm:ss', 'MM/D/YYYY, h:mm:ss A', 'MMM D YYYY, h:mm:ss A']
     }
@@ -538,9 +533,29 @@ export default {
     })
 
     this.applyThemes()
+
+    $('#modal_settings').on("show.bs.modal", () => {
+      settingsStore.getSettings();
+    });
   },
   methods: {
-
+    shortcutLabel(shortcut) {
+      const LABEL_MAP = {
+        'shortcut_run_query': 'Run Query',
+        'shortcut_run_selection': 'Run Selection',
+        'shortcut_cancel_query': 'Cancel Query',
+        'shortcut_indent': 'Indent Code',
+        'shortcut_find_replace': 'Find/Replace',
+        'shortcut_new_inner_tab': 'New Tab',
+        'shortcut_remove_inner_tab': 'Close Tab',
+        'shortcut_left_inner_tab': 'Switch Tab Left',
+        'shortcut_right_inner_tab': 'Switch Tab Right',
+        'shortcut_autocomplete': 'Autocomplete',
+        'shortcut_explain': 'Explain Query',
+        'shortcut_explain_analyze': 'Analyze Query'
+      };
+      return LABEL_MAP[shortcut.shortcut_code] || 'unknown'
+    },
     startSetShortcut(event) {
       this.$refs.shortcutBackground.style.display = 'block'
       event.target.style['z-index'] = 1002;
