@@ -256,10 +256,12 @@ export default {
               table.increments(coldef.name).alter()
             }else {
               table.specificType(coldef.name, coldef.dataType).defaultTo(!!coldef.defaultValue ? coldef.defaultValue : null).alter({alterNullable : false})
+              coldef.skipDefaults = true
             }
           })
 
           changes.defaults.forEach(function(coldef) {
+            if (!!coldef?.skipDefaults) return
             if (coldef.defaultValue !== '') {
               table.specificType(coldef.name, coldef.dataType).alter().defaultTo(table.client.raw(coldef.defaultValue)).alter({alterNullable : false, alterType: false})
             }
