@@ -52,9 +52,9 @@ const useSettingsStore = defineStore("settings", {
         return error;
       }
     },
-    saveSettings() {
-      axios
-        .post("/settings/", {
+    async saveSettings() {
+      try {
+        const response = await axios.post("/settings/", {
           shortcuts: Object.values(this.shortcuts),
           current_os: this.currentOS,
           settings: {
@@ -68,16 +68,15 @@ const useSettingsStore = defineStore("settings", {
             restore_tabs: this.restoreTabs,
             scroll_tree: this.scrollTree,
           },
-        })
-        .then((resp) => {
-          emitter.emit("shortcuts_updated", ""); // change to subscribe to action or smth like that
-          showToast("success", "Configuration saved.");
-          moment.defaultFormat = this.dateFormat;
-          // $('#modal_settings').modal('hide');
-        })
-        .catch((error) => {
-          showToast("error", error.response.data.data);
         });
+
+        moment.defaultFormat = this.dateFormat;
+        showToast("success", "Configuration saved.");
+        return response.data;
+      } catch (error) {
+        showToast("error", error.response.data.data);
+        return error;
+      }
     },
     setFontSize(fontSize) {
       this.fontSize = fontSize;

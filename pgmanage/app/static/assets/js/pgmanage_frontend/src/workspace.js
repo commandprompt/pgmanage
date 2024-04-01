@@ -1,4 +1,3 @@
-import { connectionsModalInit, conn_app} from './connections_modal.js'
 import { format } from 'sql-formatter'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import { createRequest } from './long_polling'
@@ -31,21 +30,9 @@ $(function () {
     startTutorial('getting_started');
   });
 
-  // Ask for master password
-  if (master_key === 'new') {
-    emitter.emit("show_master_pass_prompt", true)
-  } else if (master_key == 'False'){
-    emitter.emit("show_master_pass_prompt", false)
-  } else {
-    conn_app.mount("#connections-modal-wrap");
-    v_omnis.div.style.opacity = 1
-  }
-
-
   // Loads or Updates all tooltips.
   $('[data-toggle="tooltip"]').tooltip({animation:true});
 
-  connectionsModalInit()
 });
 
 

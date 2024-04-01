@@ -146,7 +146,7 @@ class SettingsView(View):
                 shortcut_object.save()
         except Exception as exc:
             return JsonResponse(data={"data": str(exc)}, status=400)
-        return HttpResponse(status_code=200)
+        return HttpResponse(status=200)
 
 
 @user_authenticated
@@ -161,7 +161,7 @@ def save_user_password(request):
     user.save()
     update_session_auth_hash(request, user)
 
-    return HttpResponse(status_code=200)
+    return HttpResponse(status=200)
 
 
 @user_authenticated

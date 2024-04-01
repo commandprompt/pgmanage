@@ -88,10 +88,8 @@
 </template>
 
 <script>
-import axios from 'axios'
 import moment from 'moment'
-import { emitter } from '../emitter'
-import { connectionsStore } from '../stores/stores_initializer'
+import { connectionsStore, settingsStore } from '../stores/stores_initializer'
 import { showConfigUser } from '../header_actions'
 import { startTutorial } from '../tutorial'
 import { endLoading } from "../ajax_control";
@@ -150,20 +148,14 @@ export default {
       document.dispatchEvent(event)
     },
     loadShortcuts() {
-      axios.get('/settings/')
-        .then((resp) => {
-          this.shortcuts = resp.data.shortcuts
-          let shortcut_keys = Object.keys(this.shortcuts)
-          Object.keys(default_shortcuts).forEach((key) => {
-            if(!shortcut_keys.includes(key)) {
-              this.shortcuts[key] = Object.assign({}, default_shortcuts[key][this.currentOS])
-            }
-          })
-          // merge missing shortcuts forom default_shortcuts
-        })
-        .catch((error) => {
-          console.log(error)
-        })
+      this.shortcuts = JSON.parse(JSON.stringify(settingsStore.shortcuts))
+      let shortcut_keys = Object.keys(this.shortcuts)
+      Object.keys(default_shortcuts).forEach((key) => {
+        if(!shortcut_keys.includes(key)) {
+          this.shortcuts[key] = Object.assign({}, default_shortcuts[key][this.currentOS])
+        }
+      })
+        // merge missing shortcuts forom default_shortcuts
     },
     shortcutKeyNames(shortcut) {
       let keys = []
@@ -204,9 +196,13 @@ export default {
       startTutorial('getting_started')
     },
     setupEvents() {
-      emitter.on('shortcuts_updated', (event) => {
-        this.loadShortcuts()
-      });
+      settingsStore.$onAction((action) => {
+        if ( action.name === 'saveSettings') {
+          action.after(() => {
+            this.loadShortcuts
+          })
+        }
+      })
     },
   },
 };

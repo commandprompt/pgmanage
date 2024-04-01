@@ -638,7 +638,9 @@ export default {
     },
     saveSettings() {
       if(!this.v$.$invalid) {
-        settingsStore.saveSettings()
+        settingsStore.saveSettings().then(() => {
+          $('#modal_settings').modal('hide');
+        })
       }
     },
     saveUserPassword() {
