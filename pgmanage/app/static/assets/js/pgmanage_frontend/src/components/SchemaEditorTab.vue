@@ -255,7 +255,7 @@ export default {
             if(coldef.dataType === 'autoincrement') {
               table.increments(coldef.name).alter()
             }else {
-              table.specificType(coldef.name, coldef.dataType).defaultTo(coldef.defaultValue).alter({alterNullable : false})
+              table.specificType(coldef.name, coldef.dataType).defaultTo(!!coldef.defaultValue ? coldef.defaultValue : null).alter({alterNullable : false})
             }
           })
 
