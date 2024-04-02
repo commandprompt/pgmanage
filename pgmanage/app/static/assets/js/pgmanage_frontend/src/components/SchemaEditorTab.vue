@@ -63,7 +63,8 @@ import { settingsStore } from '../stores/stores_initializer'
 
 
 function formatDefaultValue(defaultValue, dataType, table) {
-  if (!defaultValue) return "null"
+  if (!defaultValue) return null
+  if (defaultValue.trim().toLowerCase() == 'null') return null
 
   let textTypesMap = ['CHAR', 'VARCHAR', 'TINYTEXT', 'MEDIUMTEXT', 'LONGTEXT',
     'TEXT', 'CHARACTER', 'NCHAR', 'NVARCHAR',
