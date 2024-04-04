@@ -138,7 +138,9 @@ export default {
       readOnlyEditor: false,
       editorContent: "",
       longQuery: false,
-      commandsModalVisible: false
+      commandsModalVisible: false,
+      terminal: null,
+      fitAddon: null,
     };
   },
   computed: {
@@ -155,8 +157,21 @@ export default {
       return connectionsStore.getConnection(this.databaseIndex).autocomplete
     }
   },
+  updated() { 
+    if (!this.terminal) {
+      this.setupTerminal()
+    }
+    this.onResize()
+  },
   mounted() {
-    this.setupTerminal();
+    if (tabsStore.selectedPrimaryTab.metaData.selectedTab.id === this.tabId) {
+      this.setupTerminal()
+      requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              this.onResize();
+            })
+          })
+    }
     this.setupEvents();
 
     settingsStore.$subscribe((mutation, state) => {
@@ -164,9 +179,6 @@ export default {
       this.terminal.options.fontSize = state.fontSize;
     });
 
-    setTimeout(() => {
-      this.onResize();
-    }, 200);
   },
   unmounted() {
     this.clearEvents();
@@ -186,7 +198,6 @@ export default {
       this.fitAddon = new FitAddon();
 
       this.terminal.loadAddon(this.fitAddon);
-      this.fitAddon.fit();
     },
     setupEvents() {
       emitter.on(`${this.tabId}_resize`, () => {
@@ -209,7 +220,8 @@ export default {
       emitter.all.delete(`${this.tabId}_run_console`);
     },
     onResize() {
-      this.fitAddon.fit();
+      if (this.fitAddon)
+        this.fitAddon.fit();
     },
     consoleSQL(check_command = true, mode = 0) {
       const command = this.editorContent.trim();
@@ -386,5 +398,9 @@ export default {
 
 .tab-actions>button {
   margin-right: 5px;
+}
+
+.splitpanes .splitpanes__pane {
+  transition: none;
 }
 </style>

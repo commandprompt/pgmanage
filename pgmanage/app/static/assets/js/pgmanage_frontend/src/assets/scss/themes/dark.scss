@@ -583,43 +583,6 @@ SOFTWARE.
     color: inherit;
   }
 
-  /* Autocomplete */
-  .omnidb__autocomplete {
-    background: #282A2F;
-
-    .omnidb__autocomplete__row {
-      border-bottom-color: #484A55;
-    }
-
-    .omnidb__autocomplete__data {
-      background-color: #1D1F21;
-    }
-
-    .omnidb__autocomplete__type {
-      border-right: 1px solid #484a55;
-    }
-
-    .omnidb__autocomplete__data-word {
-      background-color: #25282C;
-      border: 1px solid #484a55;
-    }
-
-    .omnidb__autocomplete__data-row {
-      border-bottom: 1px solid #484A55;
-    }
-
-    .omnidb__autocomplete__data-row--selected {
-      background-color: #4e5a6b !important;
-    }
-
-    .omnidb__autocomplete__data-row:hover,
-    .omnidb__autocomplete__data-word:hover,
-    .omnidb__autocomplete__data-row--selected:hover {
-      background-color: #4e5a6b !important;
-    }
-
-  }
-
 
   /* Tree Component */
   .div_left ul.tree {
@@ -1047,42 +1010,6 @@ SOFTWARE.
 
   i.action-test {
       color: #a2b1bf !important;
-  }
-
-
-  #div_autocomplete {
-      box-shadow: none !important;
-      border-top: 1px solid #484a55;
-      border-left: 1px solid #484a55;
-      border-right: 1px solid #484a55;
-  }
-
-  #div_autocomplete .tabulator .tabulator-row {
-      background-color: #1D1F21;
-  }
-
-  #div_autocomplete .tabulator .tabulator-row:nth-of-type(2n) .tabulator-cell {
-      color: #ffffff;
-      border-right: 1px transparent !important;
-      border-bottom: 1px transparent !important;
-  }
-
-  #div_autocomplete .tabulator .tabulator-row:nth-of-type(2n + 1) .tabulator-cell {
-      color: #ffffff;
-      border-right: 1px transparent !important;
-      border-bottom: 1px transparent !important;
-  }
-
-  #div_autocomplete .tabulator .tabulator-row:first-child .tabulator-cell {
-      border-top: 1px transparent !important;
-  }
-
-  #div_autocomplete .tabulator .tabulator-cell:first-of-type, #div_autocomplete .handsontable .htNoFrame + th, #div_autocomplete .handsontable .htNoFrame + td {
-      border-left: 1px transparent !important;
-  }
-
-  #div_autocomplete .tabulator .tabulator-row:hover {
-      background-color: #4e5a6b !important;
   }
 
   div.welcome_release_content h2 {

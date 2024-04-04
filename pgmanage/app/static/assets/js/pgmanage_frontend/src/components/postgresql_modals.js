@@ -1,15 +1,7 @@
 import { createApp, defineAsyncComponent } from "vue";
-import UtilityJobsJobDetail from "./UtilityJobsJobDetail.vue";
 import cronLight from "@vue-js-cron/light";
 import { tabsStore } from "../stores/stores_initializer";
 
-const jobDetailModal = createApp({
-  components: {
-    "job-detail": UtilityJobsJobDetail,
-  },
-});
-
-jobDetailModal.mount("#utility-job-detail-wrap");
 
 function createExtensionModal(node, mode) {
   const wrap_div = document.getElementById("extension-modal-wrap");

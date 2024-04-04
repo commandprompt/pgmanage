@@ -470,19 +470,6 @@ SOFTWARE.
     color: #1560AD;
   }
 
-  /* Autocomplete */
-  .omnidb__autocomplete {
-    background: #FFFFFF;
-
-    &__data {
-      background-color: #FBFBFB;
-    }
-  }
-
-  #div_autocomplete .tabulator .tabulator-row:hover {
-    background-color: #c7d6ff !important;
-    cursor: pointer;
-  }
 
   /* Tree Component */
   span.node_selected span {

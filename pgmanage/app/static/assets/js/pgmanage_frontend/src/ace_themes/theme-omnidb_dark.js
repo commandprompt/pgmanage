@@ -227,6 +227,26 @@ margin-top: 0 !important;\
 padding-top: 5px;\
 font-family: inherit;\
 }\
+.ace_editor.ace_autocomplete {\
+background-color: #161D2D !important;\
+border: 1px solid #162D4E !important;\
+border-radius: 6px !important;\
+color: #F8FAFD !important;\
+box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;\
+}\
+.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {\
+background-color: #162d4e !important;\
+}\
+.ace_editor.ace_autocomplete .ace_marker-layer .ace_line-hover {\
+background-color: rgba(21, 97, 172, 0.25) !important;\
+border: 0 !important;\
+}\
+.ace_dark.ace_editor.ace_autocomplete .ace_completion-highlight {\
+color: #F76707 !important;\
+}\
+.ace_editor .ace_completion-meta {\
+font-style: italic;\
+}\
 }";
 
 var dom = require("../lib/dom");

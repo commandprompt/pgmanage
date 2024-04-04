@@ -405,6 +405,50 @@ def get_table_columns(request, database):
 
 
 @user_authenticated
+@database_required_new(check_timeout=True, open_connection=True)
+def get_database_meta(request, database):
+    response_data = {
+        'schemas': None
+    }
+
+    schema_list = []
+
+    try:
+        if database.v_has_schema:
+            schemas = database.QuerySchemas().Rows
+        else:
+            schemas = [{'schema_name': '-noschema-'}]
+
+        for schema in schemas:
+            schema_data = {
+                "name": schema["schema_name"],
+                "tables": []
+            }
+
+            tables = database.QueryTables(False, schema["schema_name"])
+            for table in tables.Rows:
+                table_data = {
+                    "name": table["table_name"],
+                    "columns": []
+                }
+                table_name = table.get('name_raw') or table["table_name"]
+                table_columns = database.QueryTablesFields(
+                    table_name, False, schema["schema_name"]
+                ).Rows
+
+                table_data['columns'] = list((c['column_name'] for c in table_columns))
+                schema_data['tables'].append(table_data)
+            schema_list.append(schema_data)
+
+        response_data["schemas"] = schema_list
+
+    except Exception as exc:
+        return error_response(message=str(exc), password_timeout=True)
+
+    return JsonResponse(response_data)
+
+
+@user_authenticated
 @database_required(p_check_timeout=True, p_open_connection=True)
 def get_completions_table(request, v_database):
     response_data = create_response_template()
@@ -466,10 +510,10 @@ def refresh_monitoring(request, database):
 
 def get_alias(p_sql, p_pos, p_val):
     try:
-        s = sqlparse.parse(p_sql)
+        parsed = sqlparse.parse(p_sql)
         alias = p_val[:-1]
-        for stmt in s:
-            for item in stmt.tokens:
+        for statement in parsed:
+            for item in statement.tokens:
                 if item.ttype is None:
                     try:
                         cur_alias = item.get_alias()
@@ -503,7 +547,6 @@ def get_autocomplete_results(request, v_database):
     result = []
     max_result_word = ""
     max_complement_word = ""
-
     alias = None
     if value != "" and value[-1] == ".":
         alias = get_alias(sql, pos, value)
@@ -530,7 +573,7 @@ def get_autocomplete_results(request, v_database):
 
                     current_group["elements"].append(
                         {
-                            "value": value + v_type.v_truename,
+                            "value": v_type.v_truename,
                             "select_value": value + v_type.v_truename,
                             "complement": v_type.v_dbtype,
                         }
@@ -545,7 +588,7 @@ def get_autocomplete_results(request, v_database):
         query_columns = "type,sequence,result,select_value,complement"
         if num_dots > 0:
             filter_part = f"where search.result_complete like '{value}%' and search.num_dots <= {num_dots}"
-            query_columns = "type,sequence,result_complete as result,select_value,complement_complete as complement"
+            query_columns = "type,sequence,result,result_complete,select_value,complement_complete as complement"
         elif value == "":
             filter_part = "where search.num_dots = 0 "
 

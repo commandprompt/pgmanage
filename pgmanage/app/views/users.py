@@ -74,33 +74,32 @@ def new_user(request):
 @superuser_required
 @user_authenticated
 def remove_user(request):
-    v_return = create_response_template()
-
-    v_id = request.data['p_id']
+    resp = create_response_template()
+    user_id = request.data['id']
 
     try:
-        user = User.objects.get(id=v_id)
+        user = User.objects.get(id=user_id)
         key_manager.remove(user)
         user.delete()
     except Exception as exc:
-        return error_response(message=str(exc))
+        return error_response(message=str(exc), status=400)
 
-    return JsonResponse(v_return)
+    return JsonResponse(resp)
 
 
 @superuser_required
 @user_authenticated
 def save_users(request):
-    v_return = create_response_template()
+    resp = create_response_template()
 
     data = request.data
 
     try:
-        v_data = data['p_data']
+        changes = data['changes']
 
         # Creating new users.
-        v_data_new = v_data['new']
-        for user_item in v_data_new:
+        new_users = changes['new']
+        for user_item in new_users:
             new_user = User.objects.create_user(
                 username=user_item[0],
                 password=user_item[1],
@@ -114,10 +113,10 @@ def save_users(request):
                 date_joined=timezone.now())
 
         # Editing users.
-        v_data_edited = v_data['edited']
-        v_user_id_list = data['p_user_id_list']
-        for v_index, r in enumerate(v_data_edited):
-            user = User.objects.get(id=v_user_id_list[v_index])
+        edited_users = changes['edited']
+        user_id_list = data['user_id_list']
+        for index, r in enumerate(edited_users):
+            user = User.objects.get(id=user_id_list[index])
             user.username = r[0]
             if r[1]:
                 user.set_password(r[1])
@@ -128,6 +127,6 @@ def save_users(request):
                 update_session_auth_hash(request, user)
 
     except Exception as exc:
-        return error_response(message=str(exc))
+        return error_response(message=str(exc), status=400)
 
-    return JsonResponse(v_return)
+    return JsonResponse(resp)

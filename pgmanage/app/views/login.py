@@ -147,8 +147,8 @@ def sign_in(request):
         return JsonResponse(v_return)
 
     data = request.data
-    username = data['p_username']
-    pwd = data['p_pwd']
+    username = data['username']
+    pwd = data['password']
 
     user = authenticate(username=username, password=pwd)
     if user is not None:

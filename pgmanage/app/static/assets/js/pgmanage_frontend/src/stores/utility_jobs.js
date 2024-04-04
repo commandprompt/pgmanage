@@ -17,6 +17,4 @@ const useUtilityJobsStore = defineStore("utilityJob", {
   },
 });
 
-const utilityJobStore = useUtilityJobsStore();
-
-export { utilityJobStore };
+export { useUtilityJobsStore };

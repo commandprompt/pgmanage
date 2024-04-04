@@ -13229,7 +13229,8 @@ FROM #table_name#
                    quote_ident(datname) as result_complete,
                    quote_ident(datname) as select_value,
                    '' as complement,
-                   '' as complement_complete
+                   '' as complement_complete,
+                   false as is_builtin
             from pg_database) search
             {1}
             LIMIT 500)
@@ -13244,7 +13245,8 @@ FROM #table_name#
                    quote_ident(spcname) as result_complete,
                    quote_ident(spcname) as select_value,
                    '' as complement,
-                   '' as complement_complete
+                   '' as complement_complete,
+                    false as is_builtin
             from pg_tablespace) search
             {1}
             LIMIT 500)
@@ -13259,7 +13261,8 @@ FROM #table_name#
                    quote_ident(rolname) as result_complete,
                    quote_ident(rolname) as select_value,
                    '' as complement,
-                   '' as complement_complete
+                   '' as complement_complete,
+                   false as is_builtin
             from pg_roles) search
             {1}
             LIMIT 500)
@@ -13274,7 +13277,8 @@ FROM #table_name#
                    quote_ident(extname) as result_complete,
                    quote_ident(extname) as select_value,
                    '' as complement,
-                   '' as complement_complete
+                   '' as complement_complete,
+                   false as is_builtin
             from pg_extension) search
             {1}
             LIMIT 500)
@@ -13289,7 +13293,8 @@ FROM #table_name#
                    quote_ident(nspname) as result_complete,
                    quote_ident(nspname) as select_value,
                    '' as complement,
-                   '' as complement_complete
+                   '' as complement_complete,
+                   false as is_builtin
             from pg_catalog.pg_namespace
             where nspname not in ('pg_toast') and nspname not like 'pg%%temp%%') search
             {1}
@@ -13305,13 +13310,14 @@ FROM #table_name#
                    quote_ident(n.nspname) || '.' || quote_ident(c.relname) as result_complete,
                    quote_ident(n.nspname) || '.' || quote_ident(c.relname) as select_value,
                    quote_ident(n.nspname) as complement,
-
-                   '' as complement_complete
+                   '' as complement_complete,
+                    n.nspname IN ('information_schema', 'pg_catalog') as is_builtin
             from pg_class c
             inner join pg_namespace n
             on n.oid = c.relnamespace
             where c.relkind in ('r', 'p')) search
             {1}
+            order by is_builtin ASC, complement, result
             LIMIT 500)
 
             UNION ALL
@@ -13324,7 +13330,8 @@ FROM #table_name#
                    quote_ident(table_schema) || '.' || quote_ident(table_name) as result_complete,
                    quote_ident(table_schema) || '.' || quote_ident(table_name) as select_value,
                    quote_ident(table_schema) as complement,
-                   '' as complement_complete
+                   '' as complement_complete,
+                    false as is_builtin
             from information_schema.views) search
             {1}
             LIMIT 500)
@@ -13339,7 +13346,8 @@ FROM #table_name#
                    quote_ident(n.nspname) || '.' || quote_ident(p.proname) as result_complete,
                    quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' as select_value,
                    quote_ident(n.nspname) as complement,
-                   '' as complement_complete
+                   '' as complement_complete,
+                    false as is_builtin
             from pg_proc p
             join pg_namespace n
             on p.pronamespace = n.oid
@@ -13357,7 +13365,8 @@ FROM #table_name#
                    quote_ident(i.schemaname) || '.' || quote_ident(i.indexname) as result_complete,
                    quote_ident(i.schemaname) || '.' || quote_ident(i.indexname) as select_value,
                    quote_ident(i.schemaname) || '.' || quote_ident(i.tablename) as complement,
-                   quote_ident(i.tablename) as complement_complete
+                   quote_ident(i.tablename) as complement_complete,
+                   false as is_builtin
             from pg_indexes i) search
             {1}
             LIMIT 500 )) search

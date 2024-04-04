@@ -66,6 +66,7 @@ def database_required_new(check_timeout=True, open_connection=True):
         @wraps(function)
         def wrap(request, session, *args, **kwargs):
             data = request.data
+            database_name = data.get("database_name")
             database_index = data.get("database_index")
             tab_id = data.get("tab_id")
             client = client_manager.get_or_create_client(
@@ -90,6 +91,7 @@ def database_required_new(check_timeout=True, open_connection=True):
                         session=session,
                         conn_tab_id=tab_id,
                         database_index=database_index,
+                        database_name=database_name,
                         attempt_to_open_connection=open_connection,
                     )
                 except Exception as exc:

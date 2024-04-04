@@ -215,6 +215,21 @@ margin-top: 0 !important;\
 padding-top: 5px;\
 font-family: inherit;\
 }\
+.ace_editor.ace_autocomplete {\
+border: 1px solid #CAD0D8 !important;\
+border-radius: 6px !important;\
+box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;\
+}\
+.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {\
+background-color: #e9f0f9 !important;\
+}\
+.ace_editor.ace_autocomplete .ace_marker-layer .ace_line-hover {\
+background-color: rgba(21, 97, 172, 0.2) !important;\
+border: 0 !important;\
+}\
+.ace_editor .ace_completion-meta {\
+font-style: italic;\
+}\
 ";
 
 var dom = require("../lib/dom");

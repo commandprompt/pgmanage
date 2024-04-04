@@ -52,6 +52,7 @@ base_urlpatterns = [
     re_path(r'^refresh_monitoring/', views.workspace.refresh_monitoring, name='refresh_monitoring'),
     re_path(r'^get_autocomplete_results/', views.workspace.get_autocomplete_results, name='get_autocomplete_results'),
     re_path(r'^delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),
+    re_path(r'^get_database_meta/', views.workspace.get_database_meta, name='get_database_meta'),
 
     #SETINGS
     re_path(r'^settings/', views.workspace.SettingsView.as_view(), name="settings"),
@@ -306,7 +307,7 @@ base_urlpatterns = [
     path("monitoring-widgets/<int:widget_saved_id>/refresh", views.monitoring_dashboard.refresh_monitoring_widget, name="refresh-monitoring-widget"),
     path("monitoring-widgets/user-created", views.monitoring_dashboard.create_widget, name="create-custom-widget"),
     path("monitoring-widgets/user-created/<int:widget_id>", views.monitoring_dashboard.user_created_widget_detail, name="widget-detail"),
-    
+
     # Configuration
     path('configuration/<int:config_id>/', views.configuration.delete_config, name="delete_configuration"),
     re_path(r'^configuration/$', views.configuration.get_configuration, name='get_configuration'),

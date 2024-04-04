@@ -27,7 +27,7 @@ SOFTWARE.
 */
 import { createRequest } from "./long_polling";
 import { queryRequestCodes } from "./constants";
-import { getDebugFunctionDefinitionPostgresql } from "./tree_context_functions/tree_postgresql";
+// import { getDebugFunctionDefinitionPostgresql } from "./tree_context_functions/tree_postgresql";
 import { Range } from "ace-builds";
 import { execAjax } from "./ajax_control";
 import { showAlert } from "./notification_control";
@@ -45,7 +45,7 @@ var v_debugState = {
 }
 
 function setupDebug(p_node, p_type) {
-	getDebugFunctionDefinitionPostgresql(p_node);
+	// getDebugFunctionDefinitionPostgresql(p_node);
 
   var v_tab_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
 	v_tab_tag.database_index = v_connTabControl.selectedTab.tag.selectedDatabaseIndex;
@@ -439,7 +439,7 @@ function debugResponseRender(p_message, p_context) {
 		if (p_context.tab_tag.state==v_debugState.Ready)
 			p_context.tab_tag.debug_info.innerHTML = '<b>Ready</b>';
 
-		
+
 	  if (p_message.v_data.v_lineno) {
 			p_context.tab_tag.editor.scrollToLine(p_message.v_data.v_lineno, true, true, function () {});
 	    if (p_context.tab_tag.markerId)

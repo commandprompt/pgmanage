@@ -247,6 +247,7 @@ class Client:
         session: Session,
         conn_tab_id: str,
         database_index: int,
+        database_name: str = None,
         attempt_to_open_connection: bool = False,
     ):
         """Retrieves the database for the specified session and connection tab.
@@ -255,6 +256,7 @@ class Client:
             session (Session): The session object.
             conn_tab_id (str): The ID of the connection tab.
             database_index (int): The index of the database.
+            database_name (str, optional): The name of the database.
             attempt_to_open_connection (bool, optional): Specifies whether
             to attempt opening the connection if not already open. Defaults to False.
 
@@ -275,6 +277,7 @@ class Client:
             tab=tab,
             conn_tab_id=conn_tab_id,
             database_index=database_index,
+            current_database = database_name,
             attempt_to_open_connection=attempt_to_open_connection,
             use_lock=True,
         )

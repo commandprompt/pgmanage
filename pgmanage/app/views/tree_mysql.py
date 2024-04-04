@@ -482,7 +482,7 @@ def template_select(request, v_database):
     try:
         v_template = v_database.TemplateSelect(v_schema, v_table).v_text
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return error_response(message=str(exc), password_timeout=True, status=400)
 
     v_return["v_data"] = {"v_template": v_template}
 
@@ -501,7 +501,7 @@ def template_insert(request, v_database):
     try:
         v_template = v_database.TemplateInsert(v_schema, v_table).v_text
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return error_response(message=str(exc), password_timeout=True, status=400)
 
     v_return["v_data"] = {"v_template": v_template}
 
@@ -520,7 +520,7 @@ def template_update(request, v_database):
     try:
         v_template = v_database.TemplateUpdate(v_schema, v_table).v_text
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return error_response(message=str(exc), password_timeout=True, status=400)
 
     v_return["v_data"] = {"v_template": v_template}
 

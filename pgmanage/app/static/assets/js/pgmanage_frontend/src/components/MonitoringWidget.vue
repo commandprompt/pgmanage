@@ -270,7 +270,7 @@ export default {
           data: data.data,
           height: "100%",
           layout: "fitDataStretch",
-          selectable: true,
+          selectableRows: true,
           clipboard: "copy",
           clipboardCopyConfig: {
             columnHeaders: false, //do not include column headers in clipboard output

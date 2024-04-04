@@ -8,7 +8,7 @@ def create_response_template() -> Dict[str, Any]:
 
 
 def error_response(
-    message: str, error_id: int = -1, password_timeout: Optional[bool] = None
+    message: str, error_id: int = -1, password_timeout: Optional[bool] = None, status = 200
 ) -> JsonResponse:
     """
     Creates a JSON error response.
@@ -18,7 +18,7 @@ def error_response(
         error_id (int, optional): The error ID. Defaults to -1.
         password_timeout (bool, optional): The password timeout flag. If None, the
             "password_timeout" key is excluded from the response. Defaults to None.
-
+        status http (int, optional):  status code to be set
     Returns:
         JsonResponse: The JSON error response.
     """
@@ -29,4 +29,4 @@ def error_response(
             "password_timeout": password_timeout,
             "message": message,
         }
-    return JsonResponse({"v_data": error_data, "v_error": True, "v_error_id": error_id})
+    return JsonResponse(data={"v_data": error_data, "v_error": True, "v_error_id": error_id}, status=status)

@@ -99,7 +99,7 @@ export default {
         data: [],
         placeholderHeaderFilter: "No Matching Data",
         autoResize: false,
-        selectable: true,
+        selectableRows: true,
         height: "90%",
         layout: "fitDataStretch",
         columnDefaults: {

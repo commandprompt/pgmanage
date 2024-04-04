@@ -159,7 +159,7 @@ export default {
           },
         ],
         layout: "fitColumns",
-        selectable: false,
+        selectableRows: false,
       });
     },
     setupEditor() {

@@ -3,6 +3,7 @@
   <SideBarTabs />
   <PasswordModal />
   <MasterPasswordModal @check-completed="initialSetup" />
+  <UtilityJobsJobDetail />
   <template v-if="initialized">
     <ConnectionsModal />
   </template>
@@ -13,6 +14,7 @@ import SettingsModal from "./components/SettingsModal.vue";
 import SideBarTabs from "./components/SideBarTabs.vue";
 import PasswordModal from "./components/PasswordModal.vue";
 import MasterPasswordModal from './components/MasterPasswordModal.vue'
+import UtilityJobsJobDetail from "./components/UtilityJobsJobDetail.vue";
 import ConnectionsModal from './components/ConnectionsModal.vue'
 import { emitter } from "./emitter";
 
@@ -23,6 +25,7 @@ export default {
     SideBarTabs,
     PasswordModal,
     MasterPasswordModal,
+    UtilityJobsJobDetail,
     ConnectionsModal
   },
   data() {

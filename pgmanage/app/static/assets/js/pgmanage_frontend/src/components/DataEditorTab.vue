@@ -112,7 +112,7 @@ export default {
           headerHozAlign: "left",
           headerSort: false,
         },
-      selectable: false,
+      selectableRows: false,
       rowFormatter: this.rowFormatter
     })
     this.tabulator.on("cellEdited", this.cellEdited);
@@ -130,7 +130,7 @@ export default {
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               this.handleResize()
-              this.tabulator.redraw(true);
+              this.tabulator.redraw();
             })
           })
         })
@@ -139,7 +139,7 @@ export default {
   },
   updated() {
     this.handleResize()
-    this.tabulator.redraw(true);
+    this.tabulator.redraw();
   },
   methods: {
     actionsFormatter(cell, formatterParams, onRendered) {

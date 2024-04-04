@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import { utilityJobStore } from "../stores/utility_jobs";
+import { utilityJobStore } from "../stores/stores_initializer";
 import axios from "axios";
 import moment from "moment";
 

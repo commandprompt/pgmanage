@@ -95,7 +95,7 @@ export default {
 
           return updatedDefinitions;
         },
-        selectable: true,
+        selectableRows: true,
         clipboard: "copy",
         clipboardCopyConfig: {
           columnHeaders: false, //do not include column headers in clipboard output
