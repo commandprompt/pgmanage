@@ -16,7 +16,7 @@
               <div class="recent-conections">
                 <h2 class="mb-3">Recent Connections</h2>
                 <div class="recent-conections__list d-flex flex-column">
-                  <div v-for="(connection, idx) in recentConnections" :key="idx" @click="dispatchConnectionSelected(connection)" class="recent-conections__item">
+                  <div v-for="(connection, idx) in recentConnections" :key="idx" @click="selectConnection(connection)" class="recent-conections__item">
                     <div class="recent-conections__item_wrap d-flex align-items-center m-0">
                         <div class="recent-conections__item_logo mr-3">
                             <div :class="['icon', 'icon-' + connection.technology]"></div>
@@ -143,9 +143,8 @@ export default {
       if(connection.technology === 'terminal') return `${connection.tunnel.server}:${connection.tunnel.port}`
       return `${connection.server}:${connection.port}/${connection.service}`
     },
-    dispatchConnectionSelected(connection) {
-      let event = new CustomEvent('connection:selected', { detail: connection })
-      document.dispatchEvent(event)
+    selectConnection(connection) {
+      connectionsStore.selectConnection(connection);
     },
     loadShortcuts() {
       this.shortcuts = JSON.parse(JSON.stringify(settingsStore.shortcuts))

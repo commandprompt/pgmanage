@@ -7,7 +7,7 @@
         <h3 class="connection-form__header_title mb-0">{{initialConnection.alias}} {{connectionLocal.locked ? "(Active/Read Only)": ""}}</h3>
           <div>
             <button @click="testConnection(this.connectionLocal)" class="btn btn-outline-primary mr-2" id="connectionTestButton">Test</button>
-            <button v-if="this.connectionLocal.id" @click="dispatchConnectionSelected(this.connectionLocal)" class="btn btn-success">Connect</button>
+            <button v-if="this.connectionLocal.id" @click="selectConnection(this.connectionLocal)" class="btn btn-success">Connect</button>
           </div>
         </div>
 
@@ -466,9 +466,9 @@ import ConfirmableButton from './ConfirmableButton.vue'
       clearPort() {
         this.connectionLocal.port = ''
       },
-      dispatchConnectionSelected(connection) {
-        let event = new CustomEvent('connection:selected', { detail: connection })
-        document.dispatchEvent(event)
+      selectConnection(connection) {
+        $('#connections-modal').modal('hide')
+        connectionsStore.selectConnection(connection)
       },
       trySave() {
         this.v$.connectionLocal.$validate()

@@ -15,7 +15,6 @@ import PasswordModal from "./components/PasswordModal.vue";
 import MasterPasswordModal from './components/MasterPasswordModal.vue'
 import ConnectionsModal from './components/ConnectionsModal.vue'
 import { emitter } from "./emitter";
-import { connectionsModalInit } from "./connections_modal";
 
 export default {
   name: "PgManage",
@@ -43,8 +42,6 @@ export default {
         v_omnis.div.style.opacity = 1
       }, 100)
     }
-
-    connectionsModalInit()
   },
   methods: {
     initialSetup() {

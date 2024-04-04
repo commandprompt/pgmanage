@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import axios from "axios";
+import moment from "moment";
+import { tabsStore } from "./stores_initializer";
 
 const useConnectionsStore = defineStore({
   id: "connections",
@@ -16,6 +18,15 @@ const useConnectionsStore = defineStore({
   actions: {
     getConnection(conn_id) {
       return this.connections.find((conn) => conn.id === conn_id);
+    },
+    selectConnection(connection) {
+      connection.last_access_date = moment.now();
+      if (connection.technology === "terminal") {
+        let details = `${connection.tunnel.user}@${connection.tunnel.server}:${connection.tunnel.port}`;
+        tabsStore.createTerminalTab(connection.id, connection.alias, details);
+      } else {
+        tabsStore.createConnectionTab(connection.id);
+      }
     },
     queueChangeActiveDatabaseThreadSafe(data) {
       this.changeActiveDatabaseCallList.push(data);
