@@ -122,13 +122,13 @@
 import { useVuelidate } from "@vuelidate/core";
 import { required, minLength, sameAs, helpers } from "@vuelidate/validators";
 import axios from "axios";
-import { conn_app } from "../connections_modal.js";
 import { showToast } from "../notification_control.js";
 import { emitter } from "../emitter";
 import { createMessageModal } from "../notification_control.js";
 
 export default {
   name: "MasterPasswordModal",
+  emits: ["checkCompleted"],
   setup() {
     return {
       v$: useVuelidate({ $lazy: true }),
@@ -198,8 +198,7 @@ export default {
           master_password: this.password,
         })
         .then(() => {
-          conn_app.mount("#connections-modal-wrap"); //TODO: Change this behaviour of mouning connections modal
-          v_omnis.div.style.opacity = 1;
+          this.$emit("checkCompleted")
           showToast("success", "Master password created.");
         });
     },
@@ -210,8 +209,7 @@ export default {
           master_password: this.checkPassword,
         })
         .then(() => {
-          conn_app.mount("#connections-modal-wrap"); //TODO: Change this behaviour of mouning connections modal
-          v_omnis.div.style.opacity = 1;
+          this.$emit("checkCompleted")
           this.masterPassConfirmed = true;
         })
         .catch((error) => {

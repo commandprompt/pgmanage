@@ -1,13 +1,7 @@
 import { createApp } from 'vue'
 import { tabsStore, connectionsStore } from './stores/stores_initializer.js'
-import ConnectionsModal from './components/ConnectionsModal.vue'
 import moment from 'moment'
 
-const conn_app = createApp({
-    components: {
-        'connections-modal': ConnectionsModal
-    },
-  })
 
 // this is a temporary supporting code to glue the new vue app and old app code
 // connection manager just emits the event with a selected connection as a payload
@@ -32,4 +26,4 @@ function connectionsModalInit() {
     })
 }
 
-export { connectionsModalInit, conn_app }
+export { connectionsModalInit }
