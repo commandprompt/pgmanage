@@ -120,8 +120,8 @@ def execute_client_login(p_client=None, p_username=None, p_password=None):
         reverse('sign_in'),
         build_client_ajax_request(
             p_data={
-                'p_username': p_username,
-                'p_pwd': p_password
+                'username': p_username,
+                'password': p_password
             }
         )
     )

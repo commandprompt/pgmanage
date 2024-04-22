@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "~3.9.13"
 cryptography = "36.0.2"
-django = "3.2.25"
+django = "4.2.11"
 openpyxl = "2.5.14"
 restrictedpython = "6.0"
 pymysql = "1.0.*"

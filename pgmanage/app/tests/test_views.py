@@ -147,8 +147,8 @@ class LoginNoSession(TestCase):
             reverse('sign_in'),
             build_client_ajax_request(
                 p_data={
-                    'p_username': self.user['user'],
-                    'p_pwd': '{p_password}kkk'.format(p_password=self.user['password'])
+                    'username': self.user['user'],
+                    'password': '{p_password}kkk'.format(p_password=self.user['password'])
                 }
             )
         )
@@ -168,8 +168,8 @@ class LoginNoSession(TestCase):
             reverse('sign_in'),
             build_client_ajax_request(
                 p_data={
-                    'p_username': self.user['user'],
-                    'p_pwd': self.user['password']
+                    'username': self.user['user'],
+                    'password': self.user['password']
                 }
             )
         )
@@ -306,8 +306,8 @@ class LoginSession(TestCase):
             reverse('sign_in'),
             build_client_ajax_request(
                 p_data={
-                    'p_username': self.user['user'],
-                    'p_pwd': '{p_password}kkk'.format(p_password=self.user['password'])
+                    'username': self.user['user'],
+                    'password': '{p_password}kkk'.format(p_password=self.user['password'])
                 }
             )
         )
@@ -326,8 +326,8 @@ class LoginSession(TestCase):
             reverse('sign_in'),
             build_client_ajax_request(
                 p_data={
-                    'p_username': self.user['user'],
-                    'p_pwd': self.user['password']
+                    'username': self.user['user'],
+                    'password': self.user['password']
                 }
             )
         )

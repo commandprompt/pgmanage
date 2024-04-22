@@ -12,10 +12,10 @@ DEBUG = custom_settings.DEV_MODE
 DESKTOP_MODE = custom_settings.DESKTOP_MODE
 BASE_DIR = custom_settings.BASE_DIR
 HOME_DIR = custom_settings.HOME_DIR
-TEMP_DIR = os.path.join(BASE_DIR,'app','static','temp')
-PLUGINS_DIR = os.path.join(BASE_DIR,'app','plugins')
-PLUGINS_STATIC_DIR = os.path.join(BASE_DIR,'app','static','plugins')
-APP_DIR = os.path.join(BASE_DIR,'app')
+TEMP_DIR = BASE_DIR / 'app' / 'static' / 'temp'
+PLUGINS_DIR = BASE_DIR / 'app' / 'plugins'
+PLUGINS_STATIC_DIR = BASE_DIR / 'app' / 'static' / 'plugins'
+APP_DIR = BASE_DIR / 'app'
 
 SESSION_COOKIE_SECURE = custom_settings.SESSION_COOKIE_SECURE
 CSRF_COOKIE_SECURE = custom_settings.CSRF_COOKIE_SECURE
@@ -28,7 +28,7 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(HOME_DIR, 'pgmanage.db')
+        'NAME': HOME_DIR / 'pgmanage.db'
     }
 }
 
@@ -123,9 +123,9 @@ LOGIN_REDIRECT_URL = PATH + '/'
 STATIC_URL = PATH + '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "app/static")
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer' #TODO: remove PickleSerializer and fix upcomming errors
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #PgManage LOGGING
 
