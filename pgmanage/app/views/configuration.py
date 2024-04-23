@@ -2,7 +2,7 @@ import json
 
 from app.models import ConfigHistory, Connection
 from app.utils.conf import get_settings, get_settings_status, post_settings
-from app.utils.decorators import database_required_new, user_authenticated
+from app.utils.decorators import database_required, user_authenticated
 from django.core.exceptions import ValidationError
 from django.db import DatabaseError
 from django.db.models import Q
@@ -11,7 +11,7 @@ from django.views.decorators.http import require_http_methods
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_configuration(request, database):
     data = request.data
     exclude_read_only = data.get("exclude_read_only")
@@ -24,7 +24,7 @@ def get_configuration(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_configuration_categories(request, database):
     try:
         query = database.QueryConfigCategories().Rows
@@ -35,7 +35,7 @@ def get_configuration_categories(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def save_configuration(request, database):
     data = request.data
     update_data = data.get("settings")
@@ -78,7 +78,7 @@ def get_configuration_history(request):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_status(request, database):
     try:
         settings_status = get_settings_status(database)

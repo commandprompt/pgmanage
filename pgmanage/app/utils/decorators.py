@@ -3,7 +3,7 @@ from typing import Any, Callable, Optional
 
 from app.client_manager import client_manager
 from app.utils.response_helpers import error_response
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 
 def user_authenticated(function):
@@ -12,55 +12,12 @@ def user_authenticated(function):
         # User not authenticated
         if request.user.is_authenticated:
             return function(request, *args, **kwargs)
-        return error_response(message="", error_id=1)
+        return HttpResponse(status=401)
 
     return wrap
 
 
-def database_required(p_check_timeout=True, p_open_connection=True):
-    def decorator(function):
-        @session_required(use_old_error_format=True)
-        @wraps(function)
-        def wrap(request, session, *args, **kwargs):
-            data = request.data
-
-            v_database_index = data["p_database_index"]
-            v_tab_id = data["p_tab_id"]
-            client = client_manager.get_or_create_client(
-                client_id=request.session.session_key
-            )
-
-            if v_database_index is not None:
-                try:
-                    if p_check_timeout:
-                        # Check database prompt timeout
-                        v_timeout = session.DatabaseReachPasswordTimeout(
-                            int(v_database_index)
-                        )
-                        if v_timeout["timeout"]:
-                            return error_response(
-                                message=v_timeout["message"], password_timeout=True
-                            )
-
-                    v_database = client.get_main_tab_database(
-                        session=session,
-                        conn_tab_id=v_tab_id,
-                        database_index=v_database_index,
-                        attempt_to_open_connection=p_open_connection,
-                    )
-                except Exception as exc:
-                    return error_response(message=str(exc), password_timeout=False)
-            else:
-                v_database = None
-
-            return function(request, v_database, *args, **kwargs)
-
-        return wrap
-
-    return decorator
-
-
-def database_required_new(check_timeout=True, open_connection=True):
+def database_required(check_timeout=True, open_connection=True):
     def decorator(function):
         @session_required
         @wraps(function)

@@ -1,8 +1,8 @@
 from django.http import JsonResponse
-from app.utils.decorators import database_required_new, user_authenticated
+from app.utils.decorators import database_required, user_authenticated
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_pgcron_jobs(request, database):
     try:
         job_rows = database.QueryPgCronJobs().Rows
@@ -13,7 +13,7 @@ def get_pgcron_jobs(request, database):
     return JsonResponse(data=data)
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_pgcron_job_details(request, database):
     data = request.data
     job_meta = data.get('job_meta', None)
@@ -30,7 +30,7 @@ def get_pgcron_job_details(request, database):
     return JsonResponse(data={'data': 'invalid job details supplied'}, status=400)
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_pgcron_job_logs(request, database):
     data = request.data
     job_meta = data.get('job_meta', None)
@@ -43,7 +43,7 @@ def get_pgcron_job_logs(request, database):
     return JsonResponse(data={'data': 'invalid job details supplied'}, status=400)
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def save_pgcron_job(request, database):
     data = request.data
     try:
@@ -54,7 +54,7 @@ def save_pgcron_job(request, database):
     return JsonResponse({})
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def delete_pgcron_job(request, database):
     data = request.data
     job_meta = data.get('job_meta', None)
@@ -69,7 +69,7 @@ def delete_pgcron_job(request, database):
     return JsonResponse(data={'data': 'invalid job details supplied'}, status=400)
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def delete_pgcron_job_logs(request, database):
     data = request.data
     job_meta = data.get('job_meta', None)

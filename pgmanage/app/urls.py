@@ -43,11 +43,8 @@ base_urlpatterns = [
     path('master_password/', views.workspace.master_password, name='master_password'),
     path('reset_master_password/', views.workspace.reset_master_password, name='reset_master_password'),
     path('draw_graph/', views.workspace.draw_graph, name='draw_graph'),
-    path('start_edit_data/', views.workspace.start_edit_data, name='start_edit_data'),
     path('get_table_columns/', views.workspace.get_table_columns, name='get_table_columns'),
-    path('get_completions_table/', views.workspace.get_completions_table, name='get_completions_table'),
     path('refresh_monitoring/', views.workspace.refresh_monitoring, name='refresh_monitoring'),
-    path('get_autocomplete_results/', views.workspace.get_autocomplete_results, name='get_autocomplete_results'),
     path('delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),
     path('get_database_meta/', views.workspace.get_database_meta, name='get_database_meta'),
 

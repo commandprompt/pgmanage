@@ -2,7 +2,7 @@ import json
 
 from app.models.main import Connection, MonWidgets, MonWidgetsConnections, Technology
 from app.utils.decorators import (
-    database_required_new,
+    database_required,
     session_required,
     user_authenticated,
 )
@@ -46,7 +46,7 @@ def _hook_import(name, *args, **kwargs):
 
 
 @user_authenticated
-@database_required_new(check_timeout=False, open_connection=False)
+@database_required(check_timeout=False, open_connection=False)
 def monitoring_widgets_list(request, database):
     widget_list = []
     try:
@@ -124,7 +124,7 @@ def user_created_widget_detail(request, widget_id):
 
 
 @user_authenticated
-@database_required_new(check_timeout=False, open_connection=False)
+@database_required(check_timeout=False, open_connection=False)
 def create_widget(request, database):
     data = request.data
 
@@ -155,7 +155,7 @@ def create_widget(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=False, open_connection=False)
+@database_required(check_timeout=False, open_connection=False)
 def monitoring_widgets(request, database):
     database_index = request.data.get("database_index")
     widgets = []
@@ -295,7 +295,7 @@ def widget_detail(request, widget_id):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def refresh_monitoring_widget(request, database, widget_saved_id):
     widget = request.data.get("widget")
 
@@ -370,7 +370,7 @@ def refresh_monitoring_widget(request, database, widget_saved_id):
 
 
 @user_authenticated
-@database_required_new(check_timeout=False, open_connection=False)
+@database_required(check_timeout=False, open_connection=False)
 def create_dashboard_monitoring_widget(request, database):
     widget_data = request.data.get("widget_data")
 
@@ -393,7 +393,7 @@ def create_dashboard_monitoring_widget(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def test_monitoring_widget(request, database):
     widget = request.data.get("widget")
     script_chart = widget.get("script_chart")

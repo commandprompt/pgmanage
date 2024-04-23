@@ -6,7 +6,7 @@ from abc import abstractmethod
 from app.bgjob.jobs import BatchJob, IJobDesc, escape_dquotes_process_arg
 from app.file_manager.file_manager import FileManager
 from app.models.main import Connection
-from app.utils.decorators import database_required_new, user_authenticated
+from app.utils.decorators import database_required, user_authenticated
 from app.utils.postgresql_utilities import get_utility_path
 from django.http import JsonResponse
 
@@ -302,7 +302,7 @@ def get_args_params_values(data, conn, backup_obj_type, backup_file):
     return args
 
 
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 @user_authenticated
 def create_backup(request, database):
     """
@@ -386,7 +386,7 @@ def create_backup(request, database):
     )
 
 
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 @user_authenticated
 def preview_command(request, database):
     backup_type_str = request.data.get("backup_type", "objects")

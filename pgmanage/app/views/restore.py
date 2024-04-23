@@ -3,7 +3,7 @@ import os
 from app.bgjob.jobs import BatchJob, IJobDesc
 from app.file_manager.file_manager import FileManager
 from app.models.main import Connection
-from app.utils.decorators import database_required_new, user_authenticated
+from app.utils.decorators import database_required, user_authenticated
 from app.utils.postgresql_utilities import get_utility_path
 from django.http import JsonResponse
 
@@ -153,7 +153,7 @@ def get_args_param_values(data, conn, backup_file, listing_file=None):
     return args
 
 
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 @user_authenticated
 def create_restore(request, database):
     data = request.data.get("data", {})
@@ -206,7 +206,7 @@ def create_restore(request, database):
     )
 
 
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 @user_authenticated
 def preview_command(request, database):
     data = request.data.get("data", {})

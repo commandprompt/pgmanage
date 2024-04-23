@@ -19,7 +19,7 @@ from django import forms
 
 from app.utils.decorators import user_authenticated, database_required, session_required, superuser_required
 from app.views.monitoring_dashboard import builtin_monitoring_widgets
-from app.utils.response_helpers import create_response_template, error_response
+from app.utils.response_helpers import create_response_template
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
@@ -485,10 +485,8 @@ def delete_plugin(request):
     return JsonResponse(v_return)
 
 @user_authenticated
-@database_required(p_check_timeout = True, p_open_connection = True)
-def exec_plugin_function(request, v_database):
-    v_return = create_response_template()
-
+@database_required(check_timeout = True, open_connection = True)
+def exec_plugin_function(request, database):
     v_session = request.session.get('pgmanage_session')
 
     json_object = request.data
@@ -509,12 +507,12 @@ def exec_plugin_function(request, v_database):
     if p_check_database_connection and p_database_index:
         v_timeout = v_session.DatabaseReachPasswordTimeout(int(p_database_index))
         if v_timeout['timeout']:
-            return error_response(message=v_timeout['message'], password_timeout=True)
+            return JsonResponse(data={"password_timeout": True, "data": v_timeout["message"],}, status=400)
 
     try:
         func = getattr(plugins[p_plugin_name]['module'], p_function_name)
-        v_return['v_data'] = func(v_database,p_data)
+        response_data = func(database,p_data)
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
-    return JsonResponse(v_return)
+    return JsonResponse(data={"data": response_data})

@@ -1,14 +1,9 @@
-from app.utils.decorators import (
-    database_required,
-    database_required_new,
-    user_authenticated,
-)
-from app.utils.response_helpers import create_response_template, error_response
+from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_tree_info(request, database):
     try:
         data = {
@@ -64,7 +59,7 @@ def get_tree_info(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_properties(request, database):
     data = request.data["data"]
 
@@ -89,7 +84,7 @@ def get_properties(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_tables(request, database):
     schema = request.data["schema"]
 
@@ -102,7 +97,7 @@ def get_tables(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_columns(request, database):
     data = request.data
     table = data["table"]
@@ -127,7 +122,7 @@ def get_columns(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_pk(request, database):
     table = request.data["table"]
     schema = request.data["schema"]
@@ -141,7 +136,7 @@ def get_pk(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_pk_columns(request, database):
     data = request.data
     v_pkey = data["key"]
@@ -158,7 +153,7 @@ def get_pk_columns(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_fks(request, database):
     data = request.data
     table = data["table"]
@@ -174,7 +169,7 @@ def get_fks(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_fks_columns(request, database):
     data = request.data
     fkey = data["fkey"]
@@ -191,7 +186,7 @@ def get_fks_columns(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_uniques(request, database):
     data = request.data
     table = data["table"]
@@ -207,7 +202,7 @@ def get_uniques(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_uniques_columns(request, database):
     data = request.data
     unique = data["unique"]
@@ -224,7 +219,7 @@ def get_uniques_columns(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_indexes(request, database):
     data = request.data
     table = data["table"]
@@ -247,7 +242,7 @@ def get_indexes(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_indexes_columns(request, database):
     data = request.data
     index = data["index"]
@@ -264,7 +259,7 @@ def get_indexes_columns(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_databases(request, database):
     try:
         databases = database.QueryDatabases()
@@ -276,7 +271,7 @@ def get_databases(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_roles(request, database):
     list_roles = []
 
@@ -292,7 +287,7 @@ def get_roles(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_functions(request, database):
     schema = request.data["schema"]
 
@@ -310,7 +305,7 @@ def get_functions(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_function_fields(request, database):
     data = request.data
     function = data["function"]
@@ -330,7 +325,7 @@ def get_function_fields(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_function_definition(request, database):
     function = request.data["function"]
 
@@ -343,7 +338,7 @@ def get_function_definition(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_procedures(request, database):
     schema = request.data["schema"]
 
@@ -361,7 +356,7 @@ def get_procedures(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_procedure_fields(request, database):
     data = request.data
     function = data["procedure"]
@@ -381,7 +376,7 @@ def get_procedure_fields(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_procedure_definition(request, database):
     procedure = request.data["procedure"]
 
@@ -394,7 +389,7 @@ def get_procedure_definition(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_sequences(request, database):
     schema = request.data.get("schema")
 
@@ -412,7 +407,7 @@ def get_sequences(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_views(request, database):
     schema = request.data["schema"]
 
@@ -432,7 +427,7 @@ def get_views(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_views_columns(request, database):
     data = request.data
     table = data["table"]
@@ -455,7 +450,7 @@ def get_views_columns(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_view_definition(request, database):
     data = request.data
     view = data["view"]
@@ -470,7 +465,7 @@ def get_view_definition(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def kill_backend(request, database):
     pid = request.data["pid"]
 
@@ -483,57 +478,45 @@ def kill_backend(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def template_select(request, v_database):
-    v_return = create_response_template()
-
+@database_required(check_timeout=True, open_connection=True)
+def template_select(request, database):
     data = request.data
-    v_table = data["p_table"]
-    v_schema = data["p_schema"]
+    table = data["table"]
+    schema = data["schema"]
 
     try:
-        v_template = v_database.TemplateSelect(v_schema, v_table).v_text
+        template = database.TemplateSelect(schema, table).v_text
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True, status=400)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
-    v_return["v_data"] = {"v_template": v_template}
-
-    return JsonResponse(v_return)
+    return JsonResponse(data={"template": template})
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def template_insert(request, v_database):
-    v_return = create_response_template()
-
+@database_required(check_timeout=True, open_connection=True)
+def template_insert(request, database):
     data = request.data
-    v_table = data["p_table"]
-    v_schema = data["p_schema"]
+    table = data["table"]
+    schema = data["schema"]
 
     try:
-        v_template = v_database.TemplateInsert(v_schema, v_table).v_text
+        template = database.TemplateInsert(schema, table).v_text
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True, status=400)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
-    v_return["v_data"] = {"v_template": v_template}
-
-    return JsonResponse(v_return)
+    return JsonResponse(data={"template": template})
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def template_update(request, v_database):
-    v_return = create_response_template()
-
+@database_required(check_timeout=True, open_connection=True)
+def template_update(request, database):
     data = request.data
-    v_table = data["p_table"]
-    v_schema = data["p_schema"]
+    table = data["table"]
+    schema = data["schema"]
 
     try:
-        v_template = v_database.TemplateUpdate(v_schema, v_table).v_text
+        template = database.TemplateUpdate(schema, table).v_text
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True, status=400)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
-    v_return["v_data"] = {"v_template": v_template}
-
-    return JsonResponse(v_return)
+    return JsonResponse(data={"template": template})

@@ -68,9 +68,7 @@ class PostgreSQL(TestCase):
 
     def test_get_tree_info_postgresql_nosession(self):
         response = self.client_nosession.post('/get_tree_info_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_tree_info_postgresql_session(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
@@ -881,9 +879,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_tables_postgresql_nosession(self):
         response = self.client_nosession.post('/get_tables_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_tables_postgresql_session(self):
         response = self.client_session.post('/get_tables_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public"}'})
@@ -903,9 +899,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_table_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_table_definition_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_table_definition_postgresql_session(self):
         response = self.client_session.post('/get_table_definition_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public", "table": "inventory"}'})
@@ -916,9 +910,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_schemas_postgresql_nosession(self):
         response = self.client_nosession.post('/get_schemas_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_schemas_postgresql_session(self):
         response = self.client_session.post('/get_schemas_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
@@ -932,9 +924,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_columns_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_columns_postgresql_session(self):
         response = self.client_session.post('/get_columns_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public", "table": "orders"}'})
@@ -951,9 +941,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_pk_postgresql_nosession(self):
         response = self.client_nosession.post('/get_pk_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_pk_postgresql_session(self):
         response = self.client_session.post('/get_pk_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public", "table": "orders"}'})
@@ -963,9 +951,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_pk_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_pk_columns_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_pk_columns_postgresql_session(self):
         response = self.client_session.post('/get_pk_columns_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "key": "orders_pkey", "schema": "public", "table": "orders"}'})
@@ -975,9 +961,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_fks_postgresql_nosession(self):
         response = self.client_nosession.post('/get_fks_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_fks_postgresql_session(self):
         response = self.client_session.post('/get_fks_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public", "table": "orders"}'})
@@ -987,9 +971,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_fks_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_fks_columns_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_fks_columns_postgresql_session(self):
         response = self.client_session.post('/get_fks_columns_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "fkey": "fk_customerid", "schema": "public", "table": "orders"}'})
@@ -999,9 +981,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_uniques_postgresql_nosession(self):
         response = self.client_nosession.post('/get_uniques_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_uniques_postgresql_session(self):
         self.database.v_connection.Execute('alter table public.categories drop constraint if exists un_test')
@@ -1014,9 +994,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_uniques_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_uniques_columns_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_uniques_columns_postgresql_session(self):
         self.database.v_connection.Execute('alter table public.categories drop constraint if exists un_test')
@@ -1029,9 +1007,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_indexes_postgresql_nosession(self):
         response = self.client_nosession.post('/get_indexes_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_indexes_postgresql_session(self):
         response = self.client_session.post('/get_indexes_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public", "table": "orders"}'})
@@ -1041,9 +1017,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_indexes_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_indexes_columns_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_indexes_columns_postgresql_session(self):
         response = self.client_session.post('/get_indexes_columns_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "index": "ix_order_custid", "schema": "public", "table": "orders"}'})
@@ -1053,9 +1027,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_functions_postgresql_nosession(self):
         response = self.client_nosession.post('/get_functions_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_functions_postgresql_session(self):
         response = self.client_session.post('/get_functions_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public"}'})
@@ -1065,9 +1037,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_function_fields_postgresql_nosession(self):
         response = self.client_nosession.post('/get_function_fields_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_function_fields_postgresql_session(self):
         response = self.client_session.post('/get_function_fields_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public", "function": "new_customer(character varying, character varying, character varying, character varying, character varying, character varying, integer, character varying, integer, character varying, character varying, integer, character varying, character varying, character varying, character varying, integer, integer, character varying)"}'})
@@ -1098,9 +1068,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_function_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_function_definition_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_function_definition_postgresql_session(self):
         response = self.client_session.post('/get_function_definition_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public", "function": "new_customer(character varying, character varying, character varying, character varying, character varying, character varying, integer, character varying, integer, character varying, character varying, integer, character varying, character varying, character varying, character varying, integer, integer, character varying)"}'})
@@ -1112,9 +1080,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_sequences_postgresql_nosession(self):
         response = self.client_nosession.post('/get_sequences_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_sequences_postgresql_session(self):
         response = self.client_session.post('/get_sequences_postgresql/', {'data': '{"database_index": 0, "tab_id": 0, "schema": "public"}'})
@@ -1129,9 +1095,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_views_postgresql_nosession(self):
         response = self.client_nosession.post('/get_views_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_views_postgresql_session(self):
         self.database.v_connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
@@ -1143,9 +1107,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_views_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_views_columns_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_views_columns_postgresql_session(self):
         self.database.v_connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
@@ -1162,9 +1124,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_view_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_view_definition_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_view_definition_postgresql_session(self):
         self.database.v_connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
@@ -1183,9 +1143,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_databases_postgresql_nosession(self):
         response = self.client_nosession.post('/get_databases_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_databases_postgresql_session(self):
         response = self.client_session.post('/get_databases_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
@@ -1195,9 +1153,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_tablespaces_postgresql_nosession(self):
         response = self.client_nosession.post('/get_tablespaces_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_tablespaces_postgresql_session(self):
         response = self.client_session.post('/get_tablespaces_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
@@ -1207,9 +1163,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_roles_postgresql_nosession(self):
         response = self.client_nosession.post('/get_roles_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_roles_postgresql_session(self):
         response = self.client_session.post('/get_roles_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
@@ -1219,9 +1173,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_checks_postgresql_nosession(self):
         response = self.client_nosession.post('/get_checks_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_checks_postgresql_session(self):
         self.database.v_connection.Execute('alter table public.categories drop constraint if exists ch_test')
@@ -1234,9 +1186,8 @@ PUBLICATION pub_name [, ...]
 
     def test_get_excludes_postgresql_nosession(self):
         response = self.client_nosession.post('/get_excludes_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
+
 
     def test_get_excludes_postgresql_session(self):
         self.database.v_connection.Execute('alter table public.categories drop constraint if exists ex_test')
@@ -1249,9 +1200,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_rules_postgresql_nosession(self):
         response = self.client_nosession.post('/get_rules_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_rules_postgresql_session(self):
         self.database.v_connection.Execute('create or replace rule ru_test as on delete to public.categories do instead nothing')
@@ -1263,9 +1212,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_rule_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_rule_definition_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_rule_definition_postgresql_session(self):
         self.database.v_connection.Execute('create or replace rule ru_test as on delete to public.categories do instead nothing')
@@ -1278,9 +1225,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_triggerfunctions_postgresql_nosession(self):
         response = self.client_nosession.post('/get_triggerfunctions_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_triggerfunctions_postgresql_session(self):
         self.database.v_connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
@@ -1292,9 +1237,7 @@ PUBLICATION pub_name [, ...]
 
     def test_get_triggerfunction_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_triggerfunction_definition_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_triggerfunction_definition_postgresql_session(self):
         self.database.v_connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
@@ -1308,9 +1251,7 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
 
     def test_get_triggers_postgresql_nosession(self):
         response = self.client_nosession.post('/get_triggers_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_triggers_postgresql_session(self):
         self.database.v_connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
@@ -1324,9 +1265,7 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
 
     def test_get_inheriteds_postgresql_nosession(self):
         response = self.client_nosession.post('/get_inheriteds_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_inheriteds_postgresql_session(self):
         self.database.v_connection.Execute('create table if not exists public.categories_p1 (check ( category < 100 )) inherits (public.categories)')
@@ -1339,9 +1278,7 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
 
     def test_get_mviews_postgresql_nosession(self):
         response = self.client_nosession.post('/get_mviews_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_mviews_postgresql_session(self):
         self.database.v_connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
@@ -1353,9 +1290,7 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
 
     def test_get_mviews_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_mviews_columns_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_mviews_columns_postgresql_session(self):
         self.database.v_connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
@@ -1372,9 +1307,7 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
 
     def test_get_mview_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_mview_definition_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_mview_definition_postgresql_session(self):
         self.database.v_connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
@@ -1396,9 +1329,7 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
 
     def test_get_extensions_postgresql_nosession(self):
         response = self.client_nosession.post('/get_extensions_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_extensions_postgresql_session(self):
         response = self.client_session.post('/get_extensions_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
@@ -1408,9 +1339,7 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
 
     def test_get_physicalreplicationslots_postgresql_nosession(self):
         response = self.client_nosession.post('/get_physicalreplicationslots_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_physicalreplicationslots_postgresql_session(self):
         self.database.v_connection.Execute("select * from pg_create_physical_replication_slot('test_slot')")
@@ -1422,9 +1351,7 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
 
     def test_get_logicalreplicationslots_postgresql_nosession(self):
         response = self.client_nosession.post('/get_logicalreplicationslots_postgresql/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_logicalreplicationslots_postgresql_session(self):
         self.database.v_connection.Execute("select * from pg_create_logical_replication_slot('test_slot', 'pgoutput')")
@@ -1436,9 +1363,7 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
 
     def test_get_extension_details_postgresql_nosession(self):
         response = self.client_nosession.post('/get_extension_details/')
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert 1 == data['v_error_id']
+        assert 401 == response.status_code
 
     def test_get_extension_details_postgresql_session(self):
         response = self.client_session.post('/get_extension_details/', {'data': '{"database_index": 0, "ext_name": "nonexistentextension", "tab_id": 0}'})
@@ -1459,7 +1384,7 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
 
     def test_save_postgresql_extension_nosession(self):
         response = self.client_nosession.post('/save_postgresql_extension/', {'data': '{"database_index": 0, "tab_id": 0}'})
-        assert 200 == response.status_code
+        assert 401 == response.status_code
 
     def test_get_available_extensions_postgresql_session(self):
         response = self.client_session.post('/get_available_extensions_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
@@ -1469,7 +1394,7 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
 
     def test_get_available_extensions_postgresql_nosession(self):
         response = self.client_nosession.post('/get_available_extensions_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
-        assert 200 == response.status_code
+        assert 401 == response.status_code
 
     def test_get_object_description_postgresql_session(self):
         # just get something with a valid oid to run tests on
@@ -1484,4 +1409,4 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
 
     def test_get_object_description_postgresql_nosession(self):
         response = self.client_nosession.post('/get_object_description_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
-        assert 200 == response.status_code
+        assert 401 == response.status_code

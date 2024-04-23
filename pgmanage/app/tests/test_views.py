@@ -114,9 +114,7 @@ class LoginNoSession(TestCase):
             follow=True
         )
 
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode())
-        self.assertEqual(data['v_error'], True)
+        self.assertEqual(response.status_code, 401)
 
     def test_sign_in_no_user_password(self):
         """Test if sign in fails with invalid user and valid password.

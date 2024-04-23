@@ -6,12 +6,10 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-import sqlparse
 from app.client_manager import client_manager
-from app.models.main import Connection, Shortcut, UserDetails, Tab
+from app.models.main import Connection, Shortcut, Tab, UserDetails
 from app.utils.crypto import make_hash
-from app.utils.decorators import (database_required, database_required_new,
-                                  user_authenticated)
+from app.utils.decorators import database_required, user_authenticated
 from app.utils.key_manager import key_manager
 from app.utils.master_password import (reset_master_pass,
                                        set_masterpass_check_text,
@@ -216,7 +214,7 @@ def renew_password(request, session):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def draw_graph(request, database):
     response_data = create_response_template()
     schema = request.data.get("schema", '')
@@ -294,77 +292,9 @@ def draw_graph(request, database):
     return JsonResponse(response_data)
 
 
-@user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def start_edit_data(request, v_database):
-    response_data = create_response_template()
-    response_data["v_data"] = {"v_pk": [], "v_cols": [], "v_ini_orderby": ""}
-    data = request.data
-    table = data["p_table"]
-
-    if v_database.v_has_schema:
-        schema = data["p_schema"]
-
-    try:
-        if v_database.v_has_schema:
-            pk = v_database.QueryTablesPrimaryKeys(table, False, schema)
-            columns = v_database.QueryTablesFields(table, False, schema)
-        else:
-            pk = v_database.QueryTablesPrimaryKeys(table)
-            columns = v_database.QueryTablesFields(table)
-
-        pk_cols = None
-        if pk is not None and len(pk.Rows) > 0:
-            if v_database.v_has_schema:
-                pk_cols = v_database.QueryTablesPrimaryKeysColumns(
-                    pk.Rows[0]["constraint_name"], table, False, schema
-                )
-            else:
-                pk_cols = v_database.QueryTablesPrimaryKeysColumns(table)
-
-            response_data["v_data"]["v_ini_orderby"] = "ORDER BY "
-            first = True
-            for pk_col in pk_cols.Rows:
-                if not first:
-                    response_data["v_data"]["v_ini_orderby"] = (
-                        response_data["v_data"]["v_ini_orderby"] + ", "
-                    )
-                first = False
-                response_data["v_data"]["v_ini_orderby"] = (
-                    response_data["v_data"]["v_ini_orderby"]
-                    + "t."
-                    + pk_col["column_name"]
-                )
-        index = 0
-        for column in columns.Rows:
-            col = {
-                "v_type": column["data_type"],
-                "v_column": column["column_name"],
-                "v_is_pk": False,
-            }
-            # Finding corresponding PK column
-            if pk_cols is not None:
-                for pk_col in pk_cols.Rows:
-                    if pk_col["column_name"].lower() == column["column_name"].lower():
-                        col["v_is_pk"] = True
-                        pk_info = {
-                            "v_column": pk_col["column_name"],
-                            "v_index": index,
-                            "v_type": column["data_type"],
-                        }
-                        response_data["v_data"]["v_pk"].append(pk_info)
-                        break
-            response_data["v_data"]["v_cols"].append(col)
-            index += 1
-
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    return JsonResponse(response_data)
-
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_table_columns(request, database):
     data = request.data
     table = data["table"]
@@ -411,7 +341,7 @@ def get_table_columns(request, database):
 
 
 @user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_database_meta(request, database):
     response_data = {
         'schemas': None
@@ -455,49 +385,7 @@ def get_database_meta(request, database):
 
 
 @user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def get_completions_table(request, v_database):
-    response_data = create_response_template()
-
-    data = request.data
-    table = data["p_table"]
-    schema = data["p_schema"]
-
-    if v_database.v_has_schema:
-        table_name = schema + "." + table
-    else:
-        table_name = table
-
-    fields_list = []
-
-    try:
-        data = v_database.v_connection.GetFields(
-            "select x.* from " + table_name + " x where 1 = 0"
-        )
-    except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
-
-    score = 100
-
-    score -= 100
-
-    for field in data:
-        fields_list.append(
-            {
-                "value": "t." + field.v_truename,
-                "score": score,
-                "meta": field.v_dbtype,
-            }
-        )
-        v_score -= 100
-
-    response_data["v_data"] = fields_list
-
-    return JsonResponse(response_data)
-
-
-@user_authenticated
-@database_required_new(check_timeout=True, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def refresh_monitoring(request, database):
     sql = request.data.get("query")
 
@@ -510,139 +398,6 @@ def refresh_monitoring(request, database):
         }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
-
-    return JsonResponse(response_data)
-
-
-def get_alias(p_sql, p_pos, p_val):
-    try:
-        parsed = sqlparse.parse(p_sql)
-        alias = p_val[:-1]
-        for statement in parsed:
-            for item in statement.tokens:
-                if item.ttype is None:
-                    try:
-                        cur_alias = item.get_alias()
-                        if cur_alias is None:
-                            if item.value == alias:
-                                return item.value
-                        elif cur_alias == alias:
-                            # check if there is punctuation
-                            if str(item.tokens[1].ttype) != "Token.Punctuation":
-                                return item.get_real_name()
-                            return item.tokens[0].value + "." + item.tokens[2].value
-                    except Exception:
-                        pass
-
-    except Exception:
-        return
-    return
-
-
-@user_authenticated
-@database_required(p_check_timeout=True, p_open_connection=True)
-def get_autocomplete_results(request, v_database):
-    response_data = create_response_template()
-
-    data = request.data
-    sql = data["p_sql"]
-    value = data["p_value"]
-    pos = data["p_pos"]
-    num_dots = value.count(".")
-
-    result = []
-    max_result_word = ""
-    max_complement_word = ""
-    alias = None
-    if value != "" and value[-1] == ".":
-        alias = get_alias(sql, pos, value)
-        if alias:
-            try:
-                data = v_database.v_connection.GetFields(
-                    "select x.* from " + alias + " x where 1 = 0"
-                )
-                current_group = {"type": "column", "elements": []}
-                max_result_length = 0
-                max_complement_length = 0
-                for v_type in data:
-                    curr_result_length = len(value + v_type.v_truename)
-                    curr_complement_length = len(v_type.v_dbtype)
-                    curr_result_word = value + v_type.v_truename
-                    curr_complement_word = v_type.v_dbtype
-
-                    if curr_result_length > max_result_length:
-                        max_result_length = curr_result_length
-                        max_result_word = curr_result_word
-                    if curr_complement_length > max_complement_length:
-                        max_complement_length = curr_complement_length
-                        max_complement_word = curr_complement_word
-
-                    current_group["elements"].append(
-                        {
-                            "value": v_type.v_truename,
-                            "select_value": value + v_type.v_truename,
-                            "complement": v_type.v_dbtype,
-                        }
-                    )
-                if len(current_group["elements"]) > 0:
-                    result.append(current_group)
-            except Exception:
-                pass
-
-    if not alias:
-        filter_part = f"where search.result like '{value}%' "
-        query_columns = "type,sequence,result,select_value,complement"
-        if num_dots > 0:
-            filter_part = f"where search.result_complete like '{value}%' and search.num_dots <= {num_dots}"
-            query_columns = "type,sequence,result,result_complete,select_value,complement_complete as complement"
-        elif value == "":
-            filter_part = "where search.num_dots = 0 "
-
-        try:
-            max_result_length = 0
-            max_complement_length = 0
-
-            search = v_database.GetAutocompleteValues(query_columns, filter_part)
-
-            if search is not None:
-                current_group = {"type": "", "elements": []}
-                if len(search.Rows) > 0:
-                    current_group["type"] = search.Rows[0]["type"]
-                for search_row in search.Rows:
-                    if current_group["type"] != search_row["type"]:
-                        result.append(current_group)
-                        current_group = {"type": search_row["type"], "elements": []}
-
-                    curr_result_length = len(search_row["result"])
-                    curr_complement_length = len(search_row["complement"])
-                    curr_result_word = search_row["result"]
-                    curr_complement_word = search_row["complement"]
-                    current_group["elements"].append(
-                        {
-                            "value": search_row["result"],
-                            "select_value": search_row["select_value"],
-                            "complement": search_row["complement"],
-                        }
-                    )
-
-                    if curr_result_length > max_result_length:
-                        max_result_length = curr_result_length
-                        max_result_word = curr_result_word
-                    if curr_complement_length > max_complement_length:
-                        max_complement_length = curr_complement_length
-                        max_complement_word = curr_complement_word
-
-                if len(current_group["elements"]) > 0:
-                    result.append(current_group)
-
-        except Exception as exc:
-            return error_response(message=str(exc), password_timeout=True)
-
-    response_data["v_data"] = {
-        "data": result,
-        "max_result_word": max_result_word,
-        "max_complement_word": max_complement_word,
-    }
 
     return JsonResponse(response_data)
 
