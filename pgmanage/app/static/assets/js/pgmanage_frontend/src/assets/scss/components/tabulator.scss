@@ -12,10 +12,15 @@
             &-header {
                 border: 0 !important;
                 color: $primaryMutedColor;
-                font-size: 0.85rem;
+                font-size: 0.9rem;
+                line-height: 1.1rem;
 
                 @include themify() {
                     background-color: themed($surfaceBg);
+                }
+
+                .subscript {
+                    font-size: 0.7rem;
                 }
 
                 .tabulator-col {

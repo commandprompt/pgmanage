@@ -89,11 +89,14 @@ class DataTable(object):
     def __init__(self, p_name=None, p_alltypesstr=False, p_simple=False):
         self.Name = p_name
         self.Columns = []
+        self.ColumnTypeCodes = []
         self.Rows = []
         self.AllTypesStr = p_alltypesstr
         self.Simple = p_simple
     def AddColumn(self, p_columnname):
         self.Columns.append(p_columnname)
+    def AddColumnTypeCode(self, typecode):
+        self.ColumnTypeCodes.append(typecode)
     def AddRow(self, p_row):
         if len(self.Columns) > 0 and len(p_row) > 0:
             if len(self.Columns) == len(p_row):
@@ -1721,6 +1724,10 @@ class PostgreSQL(Generic):
         except Exception as exc:
             self.v_cursor = None
             return p_sql
+    def ResolveType(self, type_code):
+        res = self.Query('select format_type({0}, NULL)'.format(type_code))
+        return res.Rows[0][0]
+
     def QueryBlock(self, p_sql, p_blocksize, p_alltypesstr=False, p_simple=False):
         try:
             if self.v_con is None:
@@ -1745,6 +1752,7 @@ class PostgreSQL(Generic):
                 if self.v_cur.description:
                     for c in self.v_cur.description:
                         v_table.AddColumn(c[0])
+                        v_table.AddColumnTypeCode(c.type_code)
                     if p_blocksize > 0:
                         v_table.Rows = self.v_cur.fetchmany(p_blocksize)
                     else:
@@ -2139,6 +2147,10 @@ class MySQL(Generic):
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
+
+    def ResolveType(self, type_code):
+        return self.v_types.get(type_code, '???').lower()
+
     def QueryBlock(self, p_sql, p_blocksize, p_alltypesstr=False, p_simple=False):
         try:
             if self.v_con is None:
@@ -2150,6 +2162,7 @@ class MySQL(Generic):
                 if self.v_cur.description:
                     for c in self.v_cur.description:
                         v_table.AddColumn(c[0])
+                        v_table.AddColumnTypeCode(c[1])
                     v_row = self.v_cur.fetchone()
                     if p_blocksize > 0:
                         k = 0
@@ -2527,6 +2540,10 @@ class MariaDB(Generic):
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
+
+    def ResolveType(self, type_code):
+        return self.v_types.get(type_code, '???').lower()
+
     def QueryBlock(self, p_sql, p_blocksize, p_alltypesstr=False, p_simple=False):
         try:
             if self.v_con is None:
@@ -2538,6 +2555,7 @@ class MariaDB(Generic):
                 if self.v_cur.description:
                     for c in self.v_cur.description:
                         v_table.AddColumn(c[0])
+                        v_table.AddColumnTypeCode(c[1])
                     v_row = self.v_cur.fetchone()
                     if p_blocksize > 0:
                         k = 0
@@ -3150,6 +3168,42 @@ class Oracle(Generic):
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
+
+    def ResolveType(self, type_code):
+        TYPEMAP = {
+            2020: 'BFILE',
+            2008: 'DOUBLE',
+            2007: 'FLOAT',
+            2009: 'INTEGER',
+            2019: 'BLOB',
+            2022: 'BOOLEAN',
+            2003: 'CHAR',
+            2017: 'CLOB',
+            2021: 'CURSOR',
+            2011: 'DATE',
+            2015: 'INTERVALDS',
+            2016: 'INTERVALYM',
+            2027: 'LONG NVARCHAR',
+            2025: 'LONG RAW',
+            2024: 'LONG VARCHAR',
+            2004: 'NCHAR',
+            2018: 'NCLOB',
+            2010: 'NUMBER',
+            2002: 'NVARCHAR',
+            2023: 'OBJECT',
+            2006: 'RAW',
+            2005: 'ROWID',
+            2012: 'TIMESTAMP',
+            2014: 'TIMESTAMP LTZ',
+            2013: 'TIMESTAMP TZ',
+            0:    'UNKNOWN',
+            2030: 'UROWID',
+            2001: 'VARCHAR',
+            2033: 'VECTOR',
+            2032: 'XMLTYPE'
+        }
+        return TYPEMAP.get(type_code, 'UNKNOWN').lower()
+
     def QueryBlock(self, p_sql, p_blocksize, p_alltypesstr=False, p_simple=False):
         try:
             if self.v_con is None:
@@ -3161,6 +3215,7 @@ class Oracle(Generic):
                 if self.v_cur.description:
                     for c in self.v_cur.description:
                         v_table.AddColumn(c[0])
+                        v_table.AddColumnTypeCode(c[1].num)
                     v_row = self.v_cur.fetchone()
                     if p_blocksize > 0:
                         k = 0

@@ -856,9 +856,9 @@ def thread_query(self, args):
                 log_end_time = datetime.now(timezone.utc)
                 duration = GetDuration(log_start_time, log_end_time)
 
-
                 response_data['v_data'] = {
                     'col_names': data.Columns,
+                    'col_types': [database.v_connection.ResolveType(c) for c in data.ColumnTypeCodes],
                     'data': data.Rows,
                     'last_block': True,
                     'duration': duration,
@@ -888,6 +888,7 @@ def thread_query(self, args):
 
                     response_data['v_data'] = {
                         'col_names': data.Columns,
+                        'col_types': [database.v_connection.ResolveType(c) for c in data.ColumnTypeCodes],
                         'data': data.Rows,
                         'last_block': False,
                         'duration': duration,
@@ -920,6 +921,7 @@ def thread_query(self, args):
 
                     response_data['v_data'] = {
                         'col_names': data.Columns,
+                        'col_types': [database.v_connection.ResolveType(c) for c in data.ColumnTypeCodes],
                         'data': data.Rows,
                         'last_block': True,
                         'duration': duration,
@@ -940,6 +942,7 @@ def thread_query(self, args):
 
                 response_data['v_data'] = {
                     'col_names': None,
+                    'col_types': data.ColumnTypes,
                     'data': [],
                     'last_block': True,
                     'duration': duration,

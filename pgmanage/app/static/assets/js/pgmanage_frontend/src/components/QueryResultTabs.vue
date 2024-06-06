@@ -301,10 +301,15 @@ export default {
           },
         },
       ];
-
       let columns = data.col_names.map((col, idx) => {
+        let formatTitle = function(col, idx) {
+          if(data.col_types?.length === 0 )
+            return col
+          return `${col}<br><span class='subscript'>${data.col_types[idx]}</span>`
+        }
+
         return {
-          title: col,
+          title: formatTitle(col, idx),
           field: idx.toString(),
           resizable: "header",
           contextMenu: cellContextMenu,
