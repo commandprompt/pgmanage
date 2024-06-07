@@ -10,7 +10,7 @@
           title="Indent SQL"
           @click="indentSQL"
         >
-          <i class="fas fa-indent mr-2"></i>Indent
+          <i class="fas fa-indent me-2"></i>Indent
         </button>
         <button
           data-testid="snippet-tab-save-button"
@@ -18,7 +18,7 @@
           title="Save"
           @click="saveSnippetText"
         >
-          <i class="fas fa-save mr-2"></i>Save
+          <i class="fas fa-save me-2"></i>Save
         </button>
         <button
           data-testid="snippet-tab-open-file-button"
@@ -26,7 +26,7 @@
           title="Open file"
           @click="openFileManagerModal"
         >
-          <i class="fas fa-folder-open mr-2"></i>Open file
+          <i class="fas fa-folder-open me-2"></i>Open file
         </button>
 
         <button
@@ -36,7 +36,7 @@
           title="Save to File"
           @click="saveFile"
         >
-          <i class="fas fa-download mr-2"></i>Save to File
+          <i class="fas fa-download me-2"></i>Save to File
         </button>
       </div>
     </div>

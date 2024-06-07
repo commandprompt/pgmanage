@@ -3,18 +3,16 @@
     <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
         <div class="modal-header align-items-center">
-          <h2 class="modal-title font-weight-bold">
+          <h2 class="modal-title fw-bold">
             {{ tabType }} commands history
           </h2>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <div class="form-row">
+            <div class="row">
               <div class="form-group col-lg-3 col-xl-2 col-sm-4">
-                <p class="font-weight-bold mb-2">Select a daterange:</p>
+                <p class="fw-bold mb-2">Select a daterange:</p>
                 <input v-model="startedFrom" type="text" class="form-control form-control-sm d-none"
                   placeholder="Start Time" />
                 <input v-model="startedTo" type="text" class="form-control form-control-sm d-none"
@@ -26,7 +24,7 @@
               </div>
 
               <div class="form-group col-lg-3 col-xl-2 col-sm-4">
-                <label class="font-weight-bold mb-2">Filter by database:</label>
+                <label class="fw-bold mb-2">Filter by database:</label>
                 <select v-model="databaseFilter" @change="getCommandsHistory(true)" class="form-control" placeholder="Filter database">
                     <option value="" selected>All Databases</option>
                     <option v-for="(name, index) in databaseNames"
@@ -39,17 +37,17 @@
 
               <div class="form-group col-lg-6 col-md-12 col-xl-8 d-flex justify-content-end align-items-end">
                 <div>
-                  <label class="font-weight-bold mb-2">Command contains:</label>
+                  <label class="fw-bold mb-2">Command contains:</label>
                   <input v-model="commandContains" @change="getCommandsHistory(true)" type="text" class="form-control" />
                 </div>
 
-                <button class="bt_execute btn btn-primary ml-1" title="Refresh" @click="getCommandsHistory(true)">
-                  <i class="fas fa-sync-alt mr-1"></i>
+                <button class="bt_execute btn btn-primary ms-1" title="Refresh" @click="getCommandsHistory(true)">
+                  <i class="fas fa-sync-alt me-1"></i>
                   Refresh
                 </button>
                 <ConfirmableButton :confirm-text="`Confirm Clear?`" :callbackFunc="clearCommandsHistory"
-                  class="btn btn-danger ml-1">
-                  <i class="fas fa-broom mr-1"></i>
+                  class="btn btn-danger ms-1">
+                  <i class="fas fa-broom me-1"></i>
                   Clear List
                 </ConfirmableButton>
               </div>
@@ -59,7 +57,7 @@
           <div ref="daterangePicker" class="position-relative"></div>
 
           <div class="pagination d-flex align-items-center mb-3">
-            <button class="pagination__btn mr-2" @click="getFirstPage()">
+            <button class="pagination__btn me-2" @click="getFirstPage()">
               First
             </button>
             <button class="pagination__btn mx-2" @click="getPreviousPage()">
@@ -77,7 +75,7 @@
               <i class="fa-solid fa-arrow-right"></i>
             </button>
 
-            <button class="pagination__btn ml-2" @click="getLastPage()">
+            <button class="pagination__btn ms-2" @click="getLastPage()">
               Last
             </button>
           </div>
@@ -97,6 +95,7 @@ import { emitter } from "../emitter";
 import ConfirmableButton from "./ConfirmableButton.vue";
 import { showToast } from "../notification_control";
 import { cellDataModalStore } from "../stores/stores_initializer.js"
+import { Modal } from "bootstrap";
 
 export default {
   name: "CommandsHistoryModal",
@@ -167,7 +166,7 @@ export default {
                 label: "Copy Content To Query Tab",
                 action: (e, cell) => {
                   emitter.emit(`${this.tabId}_copy_to_editor`, cell.getValue());
-                  $(this.$refs.historyModal).modal("hide");
+                  this.modalInstance.hide()
                 },
               },
             ],
@@ -200,7 +199,7 @@ export default {
                 '<div style="position: absolute;"><i class="fas fa-bolt cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy Content To Console Tab</div>',
               action: (e, cell) => {
                 emitter.emit(`${this.tabId}_copy_to_editor`, cell.getValue());
-                $(this.$refs.historyModal).modal("hide");
+                this.modalInstance.hide()
               },
             },
             {
@@ -229,11 +228,11 @@ export default {
   mounted() {
     this.setupTabulator();
 
-    $(this.$refs.historyModal).on("shown.bs.modal", () => {
+    this.$refs.historyModal.addEventListener("shown.bs.modal", () => {
       this.setupDateRangePicker();
     });
 
-    $(this.$refs.historyModal).on("hide.bs.modal", () => {
+    this.$refs.historyModal.addEventListener("hide.bs.modal", () => {
       this.$emit("modalHide");
       $(this.$refs.timeRange).data('daterangepicker').remove()
     });
@@ -407,7 +406,8 @@ export default {
       }
     },
     showCommandsModal() {
-      $(this.$refs.historyModal).modal("show");
+      this.modalInstance = Modal.getOrCreateInstance(this.$refs.historyModal)
+      this.modalInstance.show()
     },
     resetToDefault() {
       this.startedFrom = moment().subtract(6, "hour").toISOString();

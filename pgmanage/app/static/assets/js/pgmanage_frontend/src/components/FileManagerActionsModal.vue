@@ -1,5 +1,5 @@
 <template>
-  <div ref="fileManagerActionsModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div id="file_manager_actions_modal" ref="fileManagerActionsModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header text-center pt-2">
@@ -9,7 +9,7 @@
           <p v-if="action === 'rename'">
             <i :class="['fas', 'fa-2xl', { 'fa-folder': file.file_type === 'dir', 'fa-file': file.file_type === 'file' }]"
               :style="{ 'color': file.file_type === 'dir' ? '#0ea5e9' : 'rgb(105 114 118)', }"></i>
-            <span class="ml-1">{{ file.file_name }}</span>
+            <span class="ms-1">{{ file.file_name }}</span>
           </p>
           <input v-if="action !== 'delete'" type="text" class="form-control" v-model="name">
           <div v-if="action === 'delete'">
@@ -29,12 +29,12 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-          <button v-if="action === 'rename'" type="button" class="btn btn-primary" data-dismiss="modal"
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button v-if="action === 'rename'" type="button" class="btn btn-primary" data-bs-dismiss="modal"
             @click="rename">Rename</button>
-          <button v-else-if="action === 'delete'" type="button" class="btn btn-danger" data-dismiss="modal"
+          <button v-else-if="action === 'delete'" type="button" class="btn btn-danger" data-bs-dismiss="modal"
             @click="delete">Delete</button>
-          <button v-else type="button" class="btn btn-primary" data-dismiss="modal"
+          <button v-else type="button" class="btn btn-primary" data-bs-dismiss="modal"
             @click="create($event, createdFileType)">Create</button>
         </div>
       </div>
@@ -96,7 +96,7 @@ export default {
     }
   },
   mounted() {
-    $(this.$refs.fileManagerActionsModal).on('hidden.bs.modal', () => {
+    this.$refs.fileManagerActionsModal.addEventListener('hidden.bs.modal', () => {
       this.name = ''
     })
   },

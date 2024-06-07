@@ -13,18 +13,6 @@ vi.mock("tabulator-tables", () => {
   return { TabulatorFull };
 });
 
-window.$ = vi.fn().mockImplementation(() => {
-  return {
-    on: vi.fn(),
-  };
-});
-
-vi.mock("@/workspace.js", () => {
-  const renameTab = vi.fn();
-  const showMenuNewTabOuter = vi.fn();
-  return { renameTab, showMenuNewTabOuter };
-});
-
 describe("TreePropertiesDDL.vue", () => {
   let settingsStore;
   beforeAll(() => {

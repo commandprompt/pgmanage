@@ -10,13 +10,13 @@
       <div class="omnidb__tab-menu">
         <div class="nav nav-tabs" role="tablist">
           <a ref="dataTab" class="omnidb__tab-menu__link nav-item nav-link active" :id="`nav_data_tab_${tabId}`"
-            data-toggle="tab" :data-target="`#nav_data_${tabId}`" type="button" role="tab"
+          data-bs-toggle="tab" :data-bs-target="`#nav_data_${tabId}`" type="button" role="tab"
             :aria-controls="`nav_data_${tabId}`" aria-selected="true">
             <span class="omnidb__tab-menu__link-name"> Data </span>
           </a>
           <template v-if="postgresqlDialect">
             <a ref="messagesTab" class="omnidb__tab-menu__link nav-item nav-link" :id="`nav_messages_tab_${tabId}`"
-              data-toggle="tab" :data-target="`#nav_messages_${tabId}`" type="button" role="tab"
+            data-bs-toggle="tab" :data-bs-target="`#nav_messages_${tabId}`" type="button" role="tab"
               :aria-controls="`nav_messages_${tabId}`" aria-selected="true">
               <span class="omnidb__tab-menu__link-name">
                 Messages
@@ -24,7 +24,7 @@
               </span>
             </a>
             <a ref="explainTab" class="nav-item nav-link omnidb__tab-menu__link" :id="`nav_explain_tab_${tabId}`"
-              data-toggle="tab" :data-target="`#nav_explain_${tabId}`" type="button" role="tab"
+            data-bs-toggle="tab" :data-bs-target="`#nav_explain_${tabId}`" type="button" role="tab"
               :aria-controls="`nav_explain_${tabId}`" aria-selected="false">
               <span class="omnidb__tab-menu__link-name"> Explain </span>
             </a>
@@ -74,6 +74,7 @@ import { emitter } from "../emitter";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { settingsStore, tabsStore, cellDataModalStore } from "../stores/stores_initializer";
 import { showToast } from "../notification_control";
+import { Tab } from "bootstrap";
 
 export default {
   components: {
@@ -150,13 +151,14 @@ export default {
   mounted() {
     this.handleResize();
     if (this.dialect === "postgresql") {
-      $(`#${this.$refs.explainTab.id}`).on("shown.bs.tab", () => {
+      
+      this.$refs.explainTab.addEventListener("shown.bs.tab", () => {
         this.$emit("enableExplainButtons");
         if (!(this.tabStatus === tabStatusMap.RUNNING))
           this.$emit("runExplain");
       });
 
-      $(`#${this.$refs.explainTab.id}`).on("hidden.bs.tab", () => {
+      this.$refs.explainTab.addEventListener("hidden.bs.tab", () => {
         this.$emit("enableExplainButtons");
       });
     }
@@ -190,7 +192,7 @@ export default {
       }
     });
 
-    $(this.$refs.dataTab).on("shown.bs.tab", (event) => {
+    this.$refs.dataTab.addEventListener("shown.bs.tab", (event) => {
       this.table.redraw();
     });
   },
@@ -226,7 +228,7 @@ export default {
       }
     },
     showExplainTab(data) {
-      $(`#${this.$refs.explainTab.id}`).tab("show");
+      Tab.getOrCreateInstance(this.$refs.explainTab).show()
       if (data?.v_error) {
         this.query = this.editorContent;
         this.plan = data.v_data.message;
@@ -243,13 +245,13 @@ export default {
       }
     },
     showExport(data) {
-      $(`#${this.$refs.dataTab.id}`).tab("show");
+      Tab.getOrCreateInstance(this.$refs.dataTab).show()
 
       this.exportFileName = data.file_name;
       this.exportDownloadName = data.download_name;
     },
     showDataTab(data, context) {
-      $(`#${this.$refs.dataTab.id}`).tab("show");
+      Tab.getOrCreateInstance(this.$refs.dataTab).show()
 
       if (data.notices.length) {
         this.notices = data.notices;

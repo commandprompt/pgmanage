@@ -1,17 +1,16 @@
 <template>
   <Teleport to="body">
-    <div id="file_manager" ref="fileManagerModal" class="modal" tabindex="-1">
+    <div id="file_manager" ref="fileManagerModal" class="modal fade" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-xl modal-file-manager">
         <div class="modal-content">
           <div class="modal-header align-items-center">
             <h2 class="modal-title">File manager</h2>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
             >
-              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
             </button>
           </div>
           <div class="modal-body p-0" style="height: 60vh">
@@ -124,7 +123,7 @@
                   'text-center',
                   'border-0',
                   'pt-3',
-                  'mr-2',
+                  'me-2',
                   { active: file === selectedFile },
                 ]"
                 @click="selectFileOrDir(file.file_name)"
@@ -139,7 +138,7 @@
                     :class="[
                       'fas',
                       'fa-2xl',
-                      'mr-2',
+                      'me-2',
                       {
                         'fa-folder': file.file_type === 'dir',
                         'fa-file': file.file_type === 'file',
@@ -162,14 +161,14 @@
               <div class="card-body p-0">
                 <ul class="list-group list-group-flush form-group rounded-0">
                   <li
-                    class="list-group-item d-flex row no-gutters font-weight-bold"
+                    class="list-group-item d-flex row g-0 fw-bold"
                   >
                     <div class="col-7">Name</div>
                     <div class="col-2">Size</div>
                     <div class="col-3">Modified</div>
                   </li>
                   <li
-                    class="list-group-item d-flex row no-gutters"
+                    class="list-group-item d-flex row g-0"
                     v-for="file in files"
                     :key="file.file_name"
                     @click="selectFileOrDir(file.file_name)"
@@ -244,6 +243,7 @@ import FileManagerActionsModal from "./FileManagerActionsModal.vue";
 import axios from "axios";
 import { showToast } from "../notification_control";
 import { fileManagerStore } from "../stores/stores_initializer";
+import { Modal } from 'bootstrap';
 
 export default {
   name: "FileManager",
@@ -276,8 +276,7 @@ export default {
         });
       }
     });
-
-    $(this.$refs.fileManagerModal).on("hide.bs.modal", () => {
+    this.$refs.fileManagerModal.addEventListener("hide.bs.modal", () => {
       fileManagerStore.hideModal();
     });
   },
@@ -327,18 +326,18 @@ export default {
     },
     openActionsModal(action) {
       this.action = action;
-      $(this.$refs.actionsModal.$el).modal("show");
+      Modal.getOrCreateInstance(this.$refs.actionsModal.$el).show();
     },
     confirmSelection() {
       fileManagerStore.changeFile(this.selectedFile.file_path);
-      $(this.$refs.fileManagerModal).modal("hide");
+      Modal.getOrCreateInstance(this.$refs.fileManagerModal).hide();
     },
     show(desktopMode, onChange, dialog_type) {
       if (desktopMode) {
         this.showNative(onChange, dialog_type);
       } else {
         this.getDirContent();
-        $(this.$refs.fileManagerModal).modal("show");
+        Modal.getOrCreateInstance(this.$refs.fileManagerModal).show();
       }
     },
     showNative(onChange, dialog_type) {

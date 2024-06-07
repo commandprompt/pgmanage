@@ -1,24 +1,24 @@
 <template>
-  <div class="container-fluid position-relative">
-    <div class="row">
+  <div class="container-fluid position-relative g-0">
+    <div class="row g-0">
       <splitpanes class="default-theme">
         <pane size="18">
           <div
             :id="`${connTabId}_div_left`"
             class="omnidb__workspace__div-left col"
           >
-            <div class="row">
-              <div class="omnidb__workspace__content-left border-right">
+            <div class="row g-0">
+              <div class="omnidb__workspace__content-left border-end">
                 <div class="omnidb__workspace__connection-details">
-                  <i class="fas fa-server mr-1"></i>selected DB:
+                  <i class="fas fa-server me-1"></i>selected DB:
                   <b>{{ databaseName }}</b>
                   <div
-                    class="omnidb__switch omnidb__switch--sm float-right"
-                    data-toggle="tooltip"
-                    data-placement="bottom"
-                    data-html="true"
-                    title=""
-                    data-original-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>"
+                    :id="`${connTabId}_switch`"
+                    class="omnidb__switch omnidb__switch--sm float-end"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-html="true"
+                    data-bs-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>"
                   >
                     <input
                       type="checkbox"
@@ -105,6 +105,7 @@ import { Splitpanes, Pane } from "splitpanes";
 import TreePropertiesDDL from "./TreePropertiesDDL.vue";
 import { showToast } from "../notification_control";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
+import { Tooltip } from "bootstrap";
 
 export default {
   name: "ConnectionTab",
@@ -178,13 +179,16 @@ export default {
   mounted() {
     this.changeDatabase(this.connectionTab.metaData.selectedDatabaseIndex);
     this.subscribeToConnectionChanges(this.connTabId, this.databaseIndex);
-    $('[data-toggle="tooltip"]').tooltip({ animation: true }); // Loads or Updates all tooltips
     this.$nextTick(() => {
       if (this.connectionTab.metaData.createInitialTabs) {
         let name = tabsStore.selectedPrimaryTab.metaData.selectedDatabase.replace('\\', '/').split('/').pop()
         tabsStore.createConsoleTab();
         tabsStore.createQueryTab(name);
       }
+    });
+
+    new Tooltip(`#${this.connTabId}_switch`, {
+      boundary: "window",
     });
   },
   methods: {

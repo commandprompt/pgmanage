@@ -1,14 +1,14 @@
 <template>
   <div class="schema-editor-scrollable px-2 pt-3">
-    <div class="form-row">
+    <div class="row">
       <div class="form-group col-2">
-          <label class="font-weight-bold mb-2" :for="`${tabId}_tableNameInput`">Table Name</label>
+          <label class="fw-bold mb-2" :for="`${tabId}_tableNameInput`">Table Name</label>
           <input v-model.trim="localTable.tableName" class="form-control" :id="`${tabId}_tableNameInput`" name="tableName" placeholder="table name..." />
       </div>
 
       <div v-if="showSchema" class="form-group col-3">
-        <label class="font-weight-bold mb-2" :for="`${tabId}_selectSchema`">Schema</label>
-        <select class="form-control text-truncate pr-4" :id="`${tabId}_selectSchema`" v-model="localTable.schema">
+        <label class="fw-bold mb-2" :for="`${tabId}_selectSchema`">Schema</label>
+        <select class="form-control text-truncate pe-4" :id="`${tabId}_selectSchema`" v-model="localTable.schema">
           <option v-for="(schema, index) in schemas" :value="schema" :key="index">
             {{ schema }}
           </option>
@@ -16,15 +16,15 @@
       </div>
       <div class="form-group col d-flex align-items-end">
         <button :disabled="!hasChanges || queryIsRunning" @click='applyChanges' type="button"
-          class="btn btn-success mt-4 ml-auto">
+          class="btn btn-success mt-4 ms-auto">
           Apply Changes
         </button>
       </div>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       <div class="col">
-        <label class="font-weight-bold mb-2 mr-2">Columns</label>
+        <label class="fw-bold mb-2 me-2">Columns</label>
 
       <!-- TODO -->
       <!-- <button @click='addColumn' class="btn btn-icon btn-icon-success" title="Add column">
@@ -42,7 +42,7 @@
       @columns:changed="changeColumns" />
 
     <div class="form-group mb-2">
-        <p class="font-weight-bold mb-2">Generated SQL</p>
+        <p class="fw-bold mb-2">Generated SQL</p>
         <div ref="editor" style="height: 30vh"></div>
     </div>
   </div>

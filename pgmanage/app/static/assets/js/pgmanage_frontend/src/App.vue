@@ -10,6 +10,11 @@
   <GenericMessageModal />
   <CellDataModal />
   <FileManager />
+  <UtilitiesMenu />
+  <template v-for="extraComp in enterpriseComps">
+    <component :is="extraComp">
+    </component>
+  </template>
 </template>
 
 <script>
@@ -22,6 +27,7 @@ import ConnectionsModal from "./components/ConnectionsModal.vue";
 import GenericMessageModal from "./components/GenericMessageModal.vue";
 import CellDataModal from "./components/CellDataModal.vue";
 import FileManager from "./components/FileManager.vue";
+import UtilitiesMenu from "./components/UtilitiesMenu.vue";
 import { emitter } from "./emitter";
 import { startTutorial } from "./tutorial";
 
@@ -37,10 +43,12 @@ export default {
     GenericMessageModal,
     CellDataModal,
     FileManager,
+    UtilitiesMenu,
   },
   data() {
     return {
       initialized: false,
+      enterpriseComps: []
     };
   },
   mounted() {
@@ -58,6 +66,8 @@ export default {
     initialSetup() {
       this.initialized = true;
       v_omnis.div.style.opacity = 1;
+
+      this.enterpriseComps = this?.enterpriseComponents ?? []
     },
     createOmnisAssistant() {
       v_omnis.root = document.getElementById("app");
@@ -75,10 +85,7 @@ export default {
       v_omnis.div.addEventListener("click", function () {
         startTutorial("getting_started");
       });
-
-      // Loads or Updates all tooltips.
-      $('[data-toggle="tooltip"]').tooltip({ animation: true });
-    },
-  },
+    }
+  }
 };
 </script>

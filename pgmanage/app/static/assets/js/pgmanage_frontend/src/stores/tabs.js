@@ -9,6 +9,7 @@ import { emitter } from "../emitter";
 import { queryRequestCodes } from "../constants";
 import { showMenuNewTabOuter, renameTab } from "../workspace";
 import { h } from "vue";
+import { Tooltip } from "bootstrap";
 
 const useTabsStore = defineStore("tabs", {
   state: () => ({
@@ -347,7 +348,8 @@ const useTabsStore = defineStore("tabs", {
               this.checkTabStatus();
             },
             closeFunction: (e, primaryTab) => {
-              $('[data-toggle="tab"]').tooltip("hide");
+              const tooltipEl = document.getElementById(`${primaryTab.id}`);
+              Tooltip.getInstance(tooltipEl).hide();
               this.beforeCloseTab(e, () => {
                 var v_tabs_to_remove = [];
 

@@ -1,6 +1,5 @@
 import 'vite/modulepreload-polyfill';
 import 'bootstrap/scss/bootstrap.scss'
-import 'bootstrap';
 import './assets/scss/omnidb.scss'
 import './assets/scss/login.scss'
 import { showAlert } from './notification_control';

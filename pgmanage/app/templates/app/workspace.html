@@ -40,56 +40,6 @@
   </div>
 
 
-  <div class="omnidb__utilities-menu omnidb__theme-bg--menu-utilities omnidb__rounded--lg">
-    <nav class="navbar p-0">
-      <span class="omnidb__utilities-menu__branding"></span>
-      <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarMain">
-        <div class="navbar-nav">
-        </div>
-      </div> -->
-
-      <form class="form-inline">
-        <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSecond" aria-controls="navbarSecond" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button> -->
-        <div id="navbarSecond">
-            <div class="navbar-nav flex-row">
-              <a id="omnidb__utilities-menu__link-versioning" class="omnidb__menu__btn-text-visible nav-item nav-link d-flex align-items-center justify-content-center">
-                <i class="fas fa-code-branch"></i>
-                <span class="badge badge-info">{{ pgmanage_short_version }}</span>
-              </a>
-              {% if not desktop_mode %}
-              <a id="omnidb__utilities-menu__link-username" class="omnidb__menu__btn-user omnidb__menu__btn-text nav-item nav-link d-flex align-items-center justify-content-center">
-                <!-- <i class="fas fa-user"></i> -->
-                <span>{{ user_name }}</span>
-              </a>
-              {% endif %}
-              {% if not desktop_mode %}
-              {% if super_user %}
-              <a id="omnidb__utilities-menu__link-user" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-user" title="Users"></i></a>
-              {% endif %}
-              {% endif %}
-              <a id="omnidb__utilities-menu__link-config" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-cog" title="Settings"></i></a>
-              <!-- <a id="omnidb__utilities-menu__link-plugins" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="showPlugins();"><i class="fas fa-cube" title="Plugins"></i></a> -->
-              <a id="omnidb__utilities-menu__link-about" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-info-circle" title="About"></i></a>
-              {% if not desktop_mode %}
-              <a id="omnidb__utilities-menu__link-signout" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-sign-out-alt" title="Sign out"></i></a>
-              {% endif %}
-              <a id="omnidb__utilities-menu__link-toggle" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-tools" title="Utilities Menu"></i></a>
-            </div>
-          </div>
-      </form>
-    </nav>
-  </div>
-
-    <!-- <div id="omnidb__main" class="omnidb__main" style="min-height: 100vh">
-      <div id="omnidb_main_tablist">
-      </div>
-    </div> -->
-
     <div id="div_loading" class="div_loading" style='z-index: 100005; display: block;'>
       <div class="div_loading_cover"></div>
       <div class="div_loading_content">
@@ -103,14 +53,12 @@
     </div>
 
     <!-- Modal About -->
-    <div class="modal fade" id="modal_about" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade" id="modal_about" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header align-items-center">
             <h2 class="modal-title font-weight-bold">About</h2>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
 
           <div class="modal-body">
@@ -167,9 +115,7 @@
         <div class="modal-content" style="width: max-content;">
           <div class="modal-header align-items-center">
             <h2 class="modal-title font-weight-bold">User management</h2>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div id="div_user_list" style="width: 100%; overflow: hidden;"></div>
@@ -201,21 +147,19 @@
     </div> -->
 
     <!-- Modal Generic Message -->
-    <div class="modal show" id="modal_message" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade" id="modal_message" tabindex="-1" role="dialog" aria-hidden="true">
       <div id="modal_message_dialog" class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header align-items-center">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div id="modal_message_content" class="modal-body" style='white-space: pre-line; word-break: break-word;'>
           </div>
           <div class="modal-footer">
-            <button id="modal_message_yes" type="button" class="btn btn-primary" data-dismiss="modal">Yes</button>
-            <button id="modal_message_ok" type="button" class="btn btn-success" data-dismiss="modal">Ok</button>
-            <button id="modal_message_no" type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-            <button id="modal_message_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button id="modal_message_yes" type="button" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+            <button id="modal_message_ok" type="button" class="btn btn-success" data-bs-dismiss="modal">Ok</button>
+            <button id="modal_message_no" type="button" class="btn btn-danger" data-bs-dismiss="modal">No</button>
+            <button id="modal_message_cancel" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
         </div>
       </div>
@@ -229,11 +173,11 @@
     var master_key = '{{master_key}}'
   	var v_user_id = {{ user_id }};
     var v_user_key = '{{ user_key }}';
-    var v_user_name = '{{ user_name }}';
+    var user_name = '{{ user_name }}';
     var v_session_key = v_user_key;
-    var v_user_login = v_user_name;
+    var v_user_login = user_name;
     var v_version = '{{ pgmanage_version }}';
-    var v_short_version = '{{ pgmanage_short_version }}';
+    var short_version = '{{ pgmanage_short_version }}';
     var app_base_path = '{{ base_path }}'
   	var gv_desktopMode = ('{{ desktop_mode }}' === 'True');
     var v_omnis = createOmnis();

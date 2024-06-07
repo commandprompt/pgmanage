@@ -2,7 +2,7 @@
   <div>
   <splitpanes class="default-theme query-body" horizontal @resized="handleResize">
     <pane size="30">
-      <QueryEditor ref="editor" class="h-100 mr-2"
+      <QueryEditor ref="editor" class="h-100 me-2"
         :read-only="readOnlyEditor"
         :tab-id="tabId"
         :database-index="databaseIndex"
@@ -11,10 +11,10 @@
         :dialect="dialect" @editor-change="updateEditorContent" @run-selection="queryRunOrExplain(false)" :autocomplete="autocomplete"/>
     </pane>
 
-    <pane size="70" class="px-2 border-top">
+    <pane size="70" class="border-top">
       <!-- ACTION BUTTONS-->
-      <div class="py-2 pr-1 d-flex align-items-center">
-        <div class="tab-actions d-flex w-100">
+      <div class="py-2 pe-1 d-flex align-items-center">
+        <div class="tab-actions d-flex w-100 px-2">
           <button :id="`bt_start_${tabId}`" class="btn btn-sm btn-primary btn-run" title="Run" @click="queryRunOrExplain()" :disabled="executingState">
             <i class="fas fa-play fa-light"></i>
           </button>
@@ -38,17 +38,17 @@
             <i class="fas fa-clock-rotate-left fa-light"></i>
           </button>
 
-          <button :id="`bt_open_file_${tabId}`" class="btn btn-sm btn-secondary ml-2" title="Load from File" @click="openFileManagerModal">
+          <button :id="`bt_open_file_${tabId}`" class="btn btn-sm btn-secondary ms-2" title="Load from File" @click="openFileManagerModal">
             <i class="fas fa-folder-open fa-light"></i>
           </button>
 
-          <button :disabled="fileSaveDisabled" :id="`bt_save_file_${tabId}`" class="btn btn-sm btn-secondary mr-2 " title="Save to File" @click="saveFile">
+          <button :disabled="fileSaveDisabled" :id="`bt_save_file_${tabId}`" class="btn btn-sm btn-secondary me-2 " title="Save to File" @click="saveFile">
             <i class="fas fa-download fa-light"></i>
           </button>
 
           <template v-if="postgresqlDialect">
             <!-- EXPLAIN ANALYZE BUTTONS-->
-            <div class="btn-group ml-2 mr-2">
+            <div class="btn-group ms-2 me-2">
               <button :id="`bt_explain_${tabId}`" class="btn btn-sm btn-secondary" title="Explain" @click="runExplain(0)"
                 :disabled="!enableExplainButtons">
                 <i class="fas fa-chart-simple fa-light"></i>
@@ -101,7 +101,7 @@
             <p class="m-0 h6" v-if="cancelled">
               <b>Cancelled</b>
             </p>
-            <p v-else-if="queryStartTime && queryDuration" class="h6 m-0  mr-2">
+            <p v-else-if="queryStartTime && queryDuration" class="h6 m-0  me-2">
               <b>Start time:</b> {{ queryStartTime.format() }}<br/>
               <b>Duration:</b> {{ queryDuration }}
             </p>
@@ -111,7 +111,7 @@
           </div>
 
           <!-- EXPORT BUTTON with SELECT OPTIONS -->
-          <button class="btn btn-sm btn-primary ml-auto" title="Export Data" @click="exportData()">
+          <button class="btn btn-sm btn-primary ms-auto" title="Export Data" @click="exportData()">
             <i class="fas fa-download fa-light"></i>
           </button>
 

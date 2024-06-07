@@ -1,17 +1,17 @@
 <template>
 <div class="p-2">
-  <div class="form-row">
+  <div class="row">
     <div class="form-group col-2">
       <form class="form" role="search" @submit.prevent>
-        <label class="font-weight-bold mb-2" :for="`${tabId}_inputSearchSettings`">Search</label>
+        <label class="fw-bold mb-2" :for="`${tabId}_inputSearchSettings`">Search</label>
         <input v-model.trim="query_filter" class="form-control" :id="`${tabId}_inputSearchSettings`" name="filter"
           :disabled="v$.$invalid" placeholder="Find in settings" />
       </form>
     </div>
 
     <div class="form-group col-3">
-      <label class="font-weight-bold mb-2" :for="`${tabId}_selectConfCat`">Category</label>
-      <select class="form-control text-truncate pr-4" :id="`${tabId}_selectConfCat`" :disabled="!!query_filter || v$.$invalid" v-model="selected">
+      <label class="fw-bold mb-2" :for="`${tabId}_selectConf`">Category</label>
+      <select class="form-control text-truncate pe-4" :id="`${tabId}_selectConfCat`" :disabled="!!query_filter || v$.$invalid" v-model="selected">
         <option v-for="(cat, index) in categories" :value="cat" :key="index">
           {{ cat }}
         </option>
@@ -19,7 +19,7 @@
     </div>
 
     <div class="form-group col-3">
-      <label class="font-weight-bold mb-2" :for="`${tabId}_selectConf`">Config History</label>
+      <label class="fw-bold mb-2" :for="`${tabId}_selectConf`">Config History</label>
       <select class="form-control text-truncate" :id="`${tabId}_selectConf`" v-model="selectedConf">
         <option disabled value="">Please select one</option>
         <option v-for="(config, index) in configHistory" :value="config" :key="index"
@@ -29,8 +29,8 @@
       </select>
     </div>
 
-    <div class="form-group col-4 d-flex align-items-end pl-0">
-      <button class="btn btn-success mr-2" :disabled="!selectedConf" @click="confirmConfig(e, true)">
+    <div class="form-group col-4 d-flex align-items-end ps-0">
+      <button class="btn btn-success me-2" :disabled="!selectedConf" @click="confirmConfig(e, true)">
         <i class="fa-solid fa-arrow-rotate-left"></i>
       </button>
       <ConfirmableButton class="btn btn-danger mr-2" :disabled="!selectedConf" :callbackFunc="() => deleteOldConfig(selectedConf.id)"> 
@@ -99,17 +99,15 @@
         <div class="modal-header align-items-center">
           <h2 v-if="!modalRevertConfig" class="modal-title">Config Management</h2>
           <h2 v-else class="modal-title">Revert Configuration</h2>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p v-if="modalRevertConfig && !hasRevertValues" class="text-center">No changes to revert to.</p>
-          <p v-else class="text-center">The following changes will be applied:</p>
-          <table v-if="(modalRevertConfig && hasRevertValues) || !modalRevertConfig" class="table table-sm">
+          <p v-if="modalRevertConfig && !hasRevertValues">No changes to revert to.</p>
+          <p v-else class="pb-2">The following changes will be applied:</p>
+          <table v-if="(modalRevertConfig && hasRevertValues) || !modalRevertConfig" class="table table-sm table-bordered">
             <tr>
-              <th width="50%" class="border-top-0">Name</th>
-              <th width="50%" class="border-top-0">New value</th>
+              <th width="50%" class="border-top-0 pb-1">Name</th>
+              <th width="50%" class="border-top-0 pb-1">New value</th>
             </tr>
             <template v-if="!modalRevertConfig">
               <tr v-for="(setting_value, setting_name) in updateSettings" :key="setting_value">
@@ -129,17 +127,17 @@
             </template>
           </table>
           <div v-if="!modalRevertConfig" class="form-group">
-            <label :for="`${tabId}_commit_message`" class="font-weight-bold mb-2">Commit Comment</label>
+            <label :for="`${tabId}_commit_message`" class="fw-bold mb-2">Commit Comment</label>
             <input v-model="commitComment" :id="`${tabId}_commit_message`" class="form-control"
               placeholder="Short description of your changes(optional)" />
           </div>
         </div>
         <div class="modal-footer">
-          <button v-if="!modalRevertConfig" id="config_modal_button" type="button" class="btn btn-primary mr-2"
-            data-dismiss="modal" @click="saveConfiguration">
+          <button v-if="!modalRevertConfig" id="config_modal_button" type="button" class="btn btn-primary me-2"
+            data-bs-dismiss="modal" @click="saveConfiguration">
             Save configuration
           </button>
-          <button v-else id="config_modal_button" type="button" class="btn btn-primary mr-2" data-dismiss="modal"
+          <button v-else id="config_modal_button" type="button" class="btn btn-primary me-2" data-bs-dismiss="modal"
             @click="revertConfig" :disabled="!hasRevertValues">
             Revert configuration
           </button>
@@ -157,6 +155,7 @@ import axios from 'axios'
 import { showToast } from "../notification_control";
 import distance from 'jaro-winkler'
 import moment from 'moment'
+import { Modal } from "bootstrap";
 import { tabsStore } from "../stores/stores_initializer";
 import ConfirmableButton from "./ConfirmableButton.vue";
 
@@ -331,11 +330,11 @@ export default {
     confirmConfig(event, revert = false) {
       if (!revert) {
         this.modalRevertConfig = false
-        $(`#${this.modalId}`).modal();
+        Modal.getOrCreateInstance(`#${this.modalId}`).show()
       } else {
         this.getConfigurationDiffs()
         this.modalRevertConfig = true
-        $(`#${this.modalId}`).modal();
+        Modal.getOrCreateInstance(`#${this.modalId}`).show()
       }
     },
     revertConfig(event) {

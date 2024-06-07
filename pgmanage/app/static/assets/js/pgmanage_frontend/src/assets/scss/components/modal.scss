@@ -17,19 +17,6 @@ $modalPadding: 24px;
         }
     }
 
-    .close {
-        position: absolute;
-        right: 21px;
-        width: 20px;
-        height: 20px;
-        margin: 0;
-        padding: 0;
-        z-index: 10;
-        color: inherit;
-        opacity: .3;
-        outline: none;
-    }
-
     &-header {
         min-height: 3.5rem;
         padding: 0 1.5rem;
@@ -45,6 +32,7 @@ $modalPadding: 24px;
 
     &-content {
         overflow: hidden;
+        border: 0;
     }
 
     &-body {
@@ -94,7 +82,7 @@ $modalPadding: 24px;
     }
 
     &__list {
-        height: calc(100% - 67px);
+        height: calc(100% - 62px);
 
         @include themify() {
             border-right: themed($border);
@@ -124,7 +112,7 @@ $modalPadding: 24px;
     }
 
     &__forms  {
-        height: calc(100% - 67px);
+        height: calc(100% - 62px);
         padding: 16px 20px;
 
         .group-edit-form,  .connection-form {

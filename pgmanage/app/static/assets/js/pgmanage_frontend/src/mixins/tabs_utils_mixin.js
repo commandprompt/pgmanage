@@ -4,6 +4,7 @@ import { queryRequestCodes } from "../constants.js";
 import { showConfirm } from "../notification_control.js";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { emitter } from "../emitter.js";
+import { Tooltip } from "bootstrap";
 
 export default {
   mounted() {
@@ -12,14 +13,17 @@ export default {
         action.after((result) => {
           if (!result.tooltip) return;
           this.$nextTick(() => {
-            $(`#${result.id}`).tooltip({
-              placement: "right",
-              boundary: "window",
-              sanitize: false,
-              title: result.tooltip,
-              html: true,
-              delay: { show: 500, hide: 100 },
-            });
+            const tooltipEl = document.getElementById(`${result.id}`);
+            if (tooltipEl) {
+              new Tooltip(tooltipEl, {
+                placement: "right",
+                boundary: "window",
+                sanitize: false,
+                title: result.tooltip,
+                html: true,
+                delay: { show: 500, hide: 100 },
+              });
+            }
           });
         });
       }
@@ -40,7 +44,11 @@ export default {
       }
 
       if (tab.tooltip) {
-        $('[data-toggle="tab"]').tooltip("hide");
+        const tooltipTriggerList =
+          document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) =>
+          Tooltip.getInstance(tooltipTriggerEl).hide()
+        );
       }
     },
     contextMenuHandler(event, tab) {
@@ -50,7 +58,11 @@ export default {
         tab.rightClickFunction(event, tab);
       }
       if (tab.tooltip) {
-        $('[data-toggle="tab"]').tooltip("hide");
+        const tooltipTriggerList =
+          document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) =>
+          Tooltip.getInstance(tooltipTriggerEl).hide()
+        );
       }
     },
   },

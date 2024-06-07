@@ -1,4 +1,4 @@
-.border {
+.border-end {
     @include themify() {
         border: themed($border) !important;
     }
@@ -16,7 +16,7 @@
     }
 }
 
-.border-left {
+.border-start {
     @include themify() {
         border-left: themed($border) !important;
     }

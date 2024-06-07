@@ -2,7 +2,6 @@ import 'vite/modulepreload-polyfill';
 import 'bootstrap/scss/bootstrap.scss'
 import $ from 'jquery';
 import 'daterangepicker'
-import 'bootstrap';
 import ace from 'ace-builds'
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/mode-sql'
@@ -41,9 +40,18 @@ axios.defaults.headers.common['X-CSRFToken'] = getCookie(v_csrf_cookie_name);
 settingsStore.getSettings().then(() => {
   const app = createApp(App);
   setupLogger(app);
-
-  app.use(ToastPlugin, {
-    duration: 0,
-  });
-  app.mount("#app");
+  if (import.meta.env.VITE_ENTERPRISE === "true") {
+    import("@enterprise/index").then(({ default: enterprisePlugin }) => {
+      app.use(enterprisePlugin);
+      app.use(ToastPlugin, {
+        duration: 0,
+      });
+      app.mount("#app");
+    });
+  } else {
+    app.use(ToastPlugin, {
+      duration: 0,
+    });
+    app.mount("#app");
+  }
 });

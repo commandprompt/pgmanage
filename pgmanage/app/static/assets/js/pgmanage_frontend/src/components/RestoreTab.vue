@@ -1,25 +1,23 @@
 <template>
   <div class="backup-tab-scrollable p-2">
-  <form>
+  <form @submit.prevent>
     <div class="row">
       <div :class="(isNotServer) ? 'col-4':'col-12'" class="d-flex">
           <div class="card flex-grow-1">
-            <h4 class="card-header font-weight-bold px-3 py-2">General</h4>
+            <h4 class="card-header fw-bold px-3 py-2">General</h4>
             <div class="card-body d-flex flex-column px-3 py-2">
               <div class="form-group mb-1">
-                <label :for="`${restoreTabId}_restoreFileName`" class="font-weight-bold mb-1">FileName</label>
+                <label :for="`${restoreTabId}_restoreFileName`" class="fw-bold mb-1">File name</label>
                 <div class="input-group">
-                  <div class="input-group-prepend">
                     <div class="input-group-text btn btn-secondary" @click="openFileManagerModal">Select
                     </div>
-                  </div>
                   <input :id="`${restoreTabId}_restoreFileName`" type="text" class="form-control" :value="restoreOptions.fileName"
                     placeholder="backup file" disabled>
                 </div>
               </div>
 
               <div  class="form-group mb-1">
-                <label for="restoreFormat" class="font-weight-bold mb-1">Format</label>
+                <label for="restoreFormat" class="fw-bold mb-1">Format</label>
                 <select id="restoreFormat" class="form-control" v-model="restoreOptions.format">
                   <option value="custom/tar">Custom or tar</option>
                   <option value="directory">Directory</option>
@@ -27,22 +25,22 @@
               </div>
 
               <div v-if="!isNotServer" class="form-group mb-1 mt-2">
-                <div class="custom-control custom-switch">
-                  <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsEchoQueries`"
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsEchoQueries`"
                     v-model="restoreOptions.echo_queries">
-                  <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsEchoQueries`">
+                  <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsEchoQueries`">
                     Echo all queries
                   </label>
                 </div>
 
-                <div class="custom-control custom-switch">
-                  <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsQuiet`" v-model="restoreOptions.quiet">
-                  <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsQuiet`">Quiet mode</label>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsQuiet`" v-model="restoreOptions.quiet">
+                  <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsQuiet`">Quiet mode</label>
                 </div>
               </div>
 
               <div v-if="isNotServer" class="form-group mb-1">
-                <label for="restoreNumberOfJobs" class="font-weight-bold mb-1">Number of jobs</label>
+                <label for="restoreNumberOfJobs" class="fw-bold mb-1">Number of jobs</label>
                 <select id="restoreNumberOfJobs" class="form-control" v-model="restoreOptions.number_of_jobs">
                   <option value="" disabled>Select an item...</option>
                   <option v-for="number_of_jobs in numberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
@@ -50,7 +48,7 @@
               </div>
 
               <div v-if="isNotServer" class="form-group mb-1">
-                <label for="restoreRoleName" class="font-weight-bold mb-1">Restore as:</label>
+                <label for="restoreRoleName" class="fw-bold mb-1">Restore as:</label>
                 <select id="restoreRoleName" class="form-control" v-model="restoreOptions.role">
                   <option value="" disabled>Select an item...</option>
                   <option v-for="name in roleNames" :value="name" :key="name">{{ name }}</option>
@@ -58,16 +56,16 @@
               </div>
 
               <div v-if="!isWindowsOS" class="form-group mb-1">
-                <div class="custom-control custom-switch">
-                  <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPigz`" v-model="restoreOptions.pigz" :disabled="isDirectoryFormat">
-                  <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsPigz`">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPigz`" v-model="restoreOptions.pigz" :disabled="isDirectoryFormat">
+                  <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsPigz`">
                     Decompress with Pigz
                   </label>
                 </div>
               </div>
               
                 <div class="form-group" :class="(restoreOptions.pigz) ? 'collapse show':'collapse'">
-                  <label for="restorePigzNumberOfJobs" class="font-weight-bold mb-1">Number of jobs</label>
+                  <label for="restorePigzNumberOfJobs" class="fw-bold mb-1">Number of jobs</label>
                   <select id="restorePigzNumberOfJobs" class="form-control" v-model="restoreOptions.pigz_number_of_jobs">
                     <option v-for="number_of_jobs in pigzNumberOfJobs" :value="number_of_jobs" :key="number_of_jobs">{{ number_of_jobs }}</option>
                   </select>
@@ -79,83 +77,83 @@
 
       <div v-if="isNotServer" class="d-flex col-4">
         <div class="card flex-grow-1">
-          <h4 class="card-header font-weight-bold px-3 py-2">Data/Objects</h4>
+          <h4 class="card-header fw-bold px-3 py-2">Data/Objects</h4>
           <div class="card-body d-flex flex-column px-3 py-2">
             <div class="form-group mb-1">
-              <p class="font-weight-bold mb-1">Sections</p>
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPreData`"
+              <p class="fw-bold mb-1">Sections</p>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPreData`"
                   v-model="restoreOptions.pre_data" :disabled="restoreOptions.only_data || restoreOptions.only_schema">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsPreData`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsPreData`">
                   Pre-data
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsData`" v-model="restoreOptions.data"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsData`" v-model="restoreOptions.data"
                   :disabled="restoreOptions.only_data || restoreOptions.only_schema">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsData`">Data</label>
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsData`">Data</label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPostData`"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPostData`"
                   v-model="restoreOptions.post_data" :disabled="restoreOptions.only_data || restoreOptions.only_schema">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsPostData`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsPostData`">
                   Post-data
                 </label>
               </div>
             </div>
 
             <div class="form-group mb-1">
-              <p class="font-weight-bold mb-1">Type of objects</p>
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsOnlyData`"
+              <p class="fw-bold mb-1">Type of objects</p>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsOnlyData`"
                   v-model="restoreOptions.only_data"
                   :disabled="restoreOptions.pre_data || restoreOptions.data || restoreOptions.post_data">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsOnlyData`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsOnlyData`">
                   Only data
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsOnlySchema`"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsOnlySchema`"
                   v-model="restoreOptions.only_schema"
                   :disabled="restoreOptions.pre_data || restoreOptions.data || restoreOptions.post_data">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsOnlySchema`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsOnlySchema`">
                   Only schema
                 </label>
               </div>
             </div>
     
             <div class="form-group mb-1">
-              <p class="font-weight-bold mb-1">Do not save</p>
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsOwner`" v-model="restoreOptions.dns_owner">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsOwner`">
+              <p class="fw-bold mb-1">Do not save</p>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsOwner`" v-model="restoreOptions.dns_owner">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsOwner`">
                   Owner
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPrivilege`"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsPrivilege`"
                   v-model="restoreOptions.dns_privilege">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsPrivilege`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsPrivilege`">
                   Privilege
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsTablespace`"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsTablespace`"
                   v-model="restoreOptions.dns_tablespace">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsTablespace`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsTablespace`">
                   Tablespace
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsComments`"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsComments`"
                   v-model="restoreOptions.no_comments">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsComments`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsComments`">
                   Comments
                 </label>
               </div>
@@ -166,29 +164,29 @@
 
       <div v-if="isNotServer" class="d-flex col-4">
         <div class="card flex-grow-1">
-          <h4 class="card-header font-weight-bold px-3 py-2">Options</h4>
+          <h4 class="card-header fw-bold px-3 py-2">Options</h4>
           <div class="card-body d-flex flex-column px-3 py-2">
             <div class="form-group mb-1">
-              <p class="font-weight-bold mb-1">Queries</p>
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsIncludeCreateDatabase`"
+              <p class="fw-bold mb-1">Queries</p>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsIncludeCreateDatabase`"
                   v-model="restoreOptions.include_create_database">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsIncludeCreateDatabase`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsIncludeCreateDatabase`">
                   Include 'Create Database' statement
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsClean`" v-model="restoreOptions.clean">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsClean`">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsClean`" v-model="restoreOptions.clean">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsClean`">
                   Clean before restore
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsSingleTransaction`"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsSingleTransaction`"
                   v-model="restoreOptions.single_transaction">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsSingleTransaction`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsSingleTransaction`">
                   Single transaction
                 </label>
               </div>
@@ -196,46 +194,46 @@
             </div>
 
             <div class="form-group mb-1">
-              <p class="font-weight-bold mb-1">Disable</p>
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsTrigger`"
+              <p class="fw-bold mb-1">Disable</p>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsTrigger`"
                   v-model="restoreOptions.disable_trigger">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsTrigger`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsTrigger`">
                   Trigger
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsNoDataTableFail`"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsNoDataTableFail`"
                   v-model="restoreOptions.no_data_fail_table">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsNoDataTableFail`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsNoDataTableFail`">
                   No data for failed tables
                 </label>
               </div>
             </div>
 
             <div class="form-group mb-1">
-              <p class="font-weight-bold mb-1">Miscellaneous</p>
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsVerboseMessages`"
+              <p class="fw-bold mb-1">Miscellaneous</p>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsVerboseMessages`"
                   v-model="restoreOptions.verbose">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsVerboseMessages`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsVerboseMessages`">
                   Verbose messages
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsSetSeessionAuthorization`"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsSetSeessionAuthorization`"
                   v-model="restoreOptions.use_set_session_auth">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsSetSeessionAuthorization`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsSetSeessionAuthorization`">
                   Use SET SESSION AUTHORIZATION
                 </label>
               </div>
 
-              <div class="custom-control custom-switch">
-                <input class="custom-control-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsExitOnError`"
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" :id="`${restoreTabId}_restoreOptionsExitOnError`"
                   v-model="restoreOptions.exit_on_error">
-                <label class="custom-control-label" :for="`${restoreTabId}_restoreOptionsExitOnError`">
+                <label class="form-check-label" :for="`${restoreTabId}_restoreOptionsExitOnError`">
                   Exit on error
                 </label>
               </div>

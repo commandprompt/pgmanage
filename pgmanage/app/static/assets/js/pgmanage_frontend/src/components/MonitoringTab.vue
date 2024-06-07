@@ -2,11 +2,11 @@
   <div class="p-2">
     <div ref="topToolbar">
       <button
-        class="btn btn-primary btn-sm my-2 mr-1"
+        class="btn btn-primary btn-sm my-2 me-1"
         title="Refresh"
         @click="refreshMonitoring"
       >
-        <i class="fas fa-sync-alt mr-2"></i>Refresh
+        <i class="fas fa-sync-alt me-2"></i>Refresh
       </button>
       <span class="query_info"> Number of records: {{ dataLength }} </span>
     </div>

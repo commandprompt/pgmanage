@@ -2774,7 +2774,7 @@ export default {
             icon: "fas cm-all fa-key",
             onClick: () => {
               //FIXME: rewrite this properly
-              let html_text = `<div class="form-row">
+              let html_text = `<div class="row">
                             <div class="col-md-12 mb-3">
                                 <label for="change_pwd_role">Password</label>
                                 <input type="password" id="change_pwd_role" class="form-control" placeholder="password" />
@@ -2964,6 +2964,9 @@ export default {
     },
   },
   mounted() {
+    this.$hooks?.add_tree_context_menu_item?.forEach((hook) => {
+      hook.call(this);
+    })
     this.doubleClickNode(this.getRootNode());
     this.$nextTick(() => {
       const processNode = (node) => {
@@ -3032,123 +3035,124 @@ export default {
       }
     },
     refreshTreePostgresqlConfirm(node) {
-      if (node.children.length == 0) this.insertSpinnerNode(node);
       if (node.data.type == "server") {
-        this.getTreeDetailsPostgresql(node);
+        return this.getTreeDetailsPostgresql(node)
       } else if (node.data.type == "database_list") {
-        this.getDatabasesPostgresql(node);
+        return this.getDatabasesPostgresql(node)
       } else if (node.data.type == "database") {
-        this.getDatabaseObjectsPostgresql(node);
+        return this.getDatabaseObjectsPostgresql(node);
       } else if (node.data.type == "schema_list") {
-        this.getSchemasPostgresql(node);
+        return this.getSchemasPostgresql(node);
       } else if (node.data.type == "schema") {
-        this.getSchemasObjectsPostgresql(node);
+        return this.getSchemasObjectsPostgresql(node);
       } else if (node.data.type == "table_list") {
-        this.getTablesPostgresql(node);
+        return this.getTablesPostgresql(node);
       } else if (node.data.type == "table") {
-        this.getColumnsPostgresql(node);
+        return this.getColumnsPostgresql(node);
       } else if (node.data.type == "primary_key") {
-        this.getPKPostgresql(node);
+        return this.getPKPostgresql(node);
       } else if (node.data.type == "pk") {
-        this.getPKColumnsPostgresql(node);
+        return this.getPKColumnsPostgresql(node);
       } else if (node.data.type == "foreign_keys") {
-        this.getFKsPostgresql(node);
+        return this.getFKsPostgresql(node);
       } else if (node.data.type == "foreign_key") {
-        this.getFKsColumnsPostgresql(node);
+        return this.getFKsColumnsPostgresql(node);
       } else if (node.data.type == "uniques") {
-        this.getUniquesPostgresql(node);
+        return this.getUniquesPostgresql(node);
       } else if (node.data.type == "unique") {
-        this.getUniquesColumnsPostgresql(node);
+        return this.getUniquesColumnsPostgresql(node);
       } else if (node.data.type == "check_list") {
-        this.getChecksPostgresql(node);
+        return this.getChecksPostgresql(node);
       } else if (node.data.type == "exclude_list") {
-        this.getExcludesPostgresql(node);
+        return this.getExcludesPostgresql(node);
       } else if (node.data.type == "indexes") {
-        this.getIndexesPostgresql(node);
+        return this.getIndexesPostgresql(node);
       } else if (node.data.type == "index") {
-        this.getIndexesColumnsPostgresql(node);
+        return this.getIndexesColumnsPostgresql(node);
       } else if (node.data.type == "rule_list") {
-        this.getRulesPostgresql(node);
+        return this.getRulesPostgresql(node);
       } else if (node.data.type == "trigger_list") {
-        this.getTriggersPostgresql(node);
+        return this.getTriggersPostgresql(node);
       } else if (node.data.type == "inherited_list") {
-        this.getInheritedsPostgresql(node);
+        return this.getInheritedsPostgresql(node);
       } else if (node.data.type == "partition_list") {
-        this.getPartitionsPostgresql(node);
+        return this.getPartitionsPostgresql(node);
       } else if (node.data.type == "statistics_list") {
-        this.getStatisticsPostgresql(node);
+        return this.getStatisticsPostgresql(node);
       } else if (node.data.type == "statistic") {
-        this.getStatisticsColumnsPostgresql(node);
+        return this.getStatisticsColumnsPostgresql(node);
       } else if (node.data.type == "partitioned_table_list") {
-        this.getPartitionedParentsPostgresql(node);
+        return this.getPartitionedParentsPostgresql(node);
       } else if (node.data.type == "partitioned_parent") {
-        this.getPartitionedChildrenPostgresql(node);
+        return this.getPartitionedChildrenPostgresql(node);
       } else if (node.data.type == "inherited_table_list") {
-        this.getInheritedsParentsPostgresql(node);
+        return this.getInheritedsParentsPostgresql(node);
       } else if (node.data.type == "inherited_parent") {
-        this.getInheritedsChildrenPostgresql(node);
+        return this.getInheritedsChildrenPostgresql(node);
       } else if (node.data.type == "foreign_table_list") {
-        this.getForeignTablesPostgresql(node);
+        return this.getForeignTablesPostgresql(node);
       } else if (node.data.type == "foreign_table") {
-        this.getForeignColumnsPostgresql(node);
+        return this.getForeignColumnsPostgresql(node);
       } else if (node.data.type == "sequence_list") {
-        this.getSequencesPostgresql(node);
+        return this.getSequencesPostgresql(node);
       } else if (node.data.type == "view_list") {
-        this.getViewsPostgresql(node);
+        return this.getViewsPostgresql(node);
       } else if (node.data.type == "view") {
-        this.getViewsColumnsPostgresql(node);
+        return this.getViewsColumnsPostgresql(node);
       } else if (node.data.type == "mview_list") {
-        this.getMaterializedViewsPostgresql(node);
+        return this.getMaterializedViewsPostgresql(node);
       } else if (node.data.type == "mview") {
-        this.getMaterializedViewsColumnsPostgresql(node);
+        return this.getMaterializedViewsColumnsPostgresql(node);
       } else if (node.data.type == "function_list") {
-        this.getFunctionsPostgresql(node);
+        return this.getFunctionsPostgresql(node);
       } else if (node.data.type == "function") {
-        this.getFunctionFieldsPostgresql(node);
+        return this.getFunctionFieldsPostgresql(node);
       } else if (node.data.type == "trigger_function_list") {
-        this.getTriggerFunctionsPostgresql(node);
+        return this.getTriggerFunctionsPostgresql(node);
       } else if (node.data.type == "event_trigger_function_list") {
-        this.getEventTriggerFunctionsPostgresql(node);
+        return this.getEventTriggerFunctionsPostgresql(node);
       } else if (node.data.type == "procedure_list") {
-        this.getProceduresPostgresql(node);
+        return this.getProceduresPostgresql(node);
       } else if (node.data.type == "procedure") {
-        this.getProcedureFieldsPostgresql(node);
+        return this.getProcedureFieldsPostgresql(node);
       } else if (node.data.type == "aggregate_list") {
-        this.getAggregatesPostgresql(node);
+        return this.getAggregatesPostgresql(node);
       } else if (node.data.type == "aggregate") {
-        this.getFunctionFieldsPostgresql(node);
+        return this.getFunctionFieldsPostgresql(node);
       } else if (node.data.type == "type_list") {
-        this.getTypesPostgresql(node);
+        return this.getTypesPostgresql(node);
       } else if (node.data.type == "domain_list") {
-        this.getDomainsPostgresql(node);
+        return this.getDomainsPostgresql(node);
       } else if (node.data.type == "extension_list") {
-        this.getExtensionsPostgresql(node);
+        return this.getExtensionsPostgresql(node);
       } else if (node.data.type == "foreign_data_wrapper_list") {
-        this.getForeignDataWrappersPostgresql(node);
+        return this.getForeignDataWrappersPostgresql(node);
       } else if (node.data.type == "foreign_server_list") {
-        this.getForeignServersPostgresql(node);
+        return this.getForeignServersPostgresql(node);
       } else if (node.data.type == "user_mapping_list") {
-        this.getUserMappingsPostgresql(node);
+        return this.getUserMappingsPostgresql(node);
       } else if (node.data.type == "event_trigger_list") {
-        this.getEventTriggersPostgresql(node);
+        return this.getEventTriggersPostgresql(node);
       } else if (node.data.type == "publication_list") {
-        this.getPublicationsPostgresql(node);
+        return this.getPublicationsPostgresql(node);
       } else if (node.data.type == "publication_table_list") {
-        this.getPublicationTablesPostgresql(node);
+        return this.getPublicationTablesPostgresql(node);
       } else if (node.data.type == "subscription_list") {
-        this.getSubscriptionsPostgresql(node);
+        return this.getSubscriptionsPostgresql(node);
       } else if (node.data.type == "subscription_table_list") {
-        this.getSubscriptionTablesPostgresql(node);
+        return this.getSubscriptionTablesPostgresql(node);
       } else if (node.data.type == "tablespace_list") {
-        this.getTablespacesPostgresql(node);
+        return this.getTablespacesPostgresql(node);
       } else if (node.data.type == "role_list") {
-        this.getRolesPostgresql(node);
+        return this.getRolesPostgresql(node);
       } else if (node.data.type == "physical_replication_slot_list") {
-        this.getPhysicalReplicationSlotsPostgresql(node);
+        return this.getPhysicalReplicationSlotsPostgresql(node);
       } else if (node.data.type == "logical_replication_slot_list") {
-        this.getLogicalReplicationSlotsPostgresql(node);
+        return this.getLogicalReplicationSlotsPostgresql(node);
       } else if (node.data.type == "job_list") {
-        this.getPgCronJobsPostgresql(node);
+        return this.getPgCronJobsPostgresql(node);
+      } else {
+        return Promise.resolve('success');
       }
     },
     refreshTree(node) {
@@ -3157,7 +3161,15 @@ export default {
         true,
         () => {
           setTimeout(() => {
-            this.refreshTreePostgresqlConfirm(node);
+            if (node.children.length == 0) this.insertSpinnerNode(node);
+            this.refreshTreePostgresqlConfirm(node).then(() => {
+              this.$hooks?.add_tree_node_item?.forEach((hook) => {
+                hook(node);
+              });
+            })
+            .catch((error) => {
+              this.nodeOpenError(error, node);
+            });
           }, 100);
         },
         () => {
@@ -3323,932 +3335,917 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getTreeDetailsPostgresql(node) {
-      this.api
-        .post("/get_tree_info_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getTreeDetailsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_tree_info_postgresql/")
 
-          this.contextMenu.cm_server = [this.cmRefreshObject];
-          this.contextMenu.cm_server.push(
-            {
-              label: "Server Configuration",
-              icon: "fas cm-all fa-cog",
-              onClick: () => {
-                tabsStore.createConfigurationTab()
-              },
+        this.removeChildNodes(node);
+  
+        this.contextMenu.cm_server = [this.cmRefreshObject];
+        this.contextMenu.cm_server.push(
+          {
+            label: "Server Configuration",
+            icon: "fas cm-all fa-cog",
+            onClick: () => {
+              tabsStore.createConfigurationTab()
             },
-            {
-              label: "Backup Server",
-              icon: "fa-solid fa-download cm-all",
-              onClick: () => {
-                tabsStore.createUtilityTab(this.selectedNode, 'Backup', 'server')
-              },
+          },
+          {
+            label: "Backup Server",
+            icon: "fa-solid fa-download cm-all",
+            onClick: () => {
+              tabsStore.createUtilityTab(this.selectedNode, 'Backup', 'server')
             },
-            {
-              label: "Restore Server",
-              icon: "fa-solid fa-upload cm-all",
-              onClick: () => {
-                tabsStore.createUtilityTab(this.selectedNode, 'Restore', 'server')
-              },
+          },
+          {
+            label: "Restore Server",
+            icon: "fa-solid fa-upload cm-all",
+            onClick: () => {
+              tabsStore.createUtilityTab(this.selectedNode, 'Restore', 'server')
             },
-            {
-              label: "Monitoring",
-              icon: "fas cm-all fa-chart-line",
-              children: [
-                {
-                  label: "Dashboard",
-                  icon: "fas cm-all fa-chart-line",
-                  onClick: () => {
-                    tabsStore.createMonitoringDashboardTab()
-                  },
+          },
+          {
+            label: "Monitoring",
+            icon: "fas cm-all fa-chart-line",
+            children: [
+              {
+                label: "Dashboard",
+                icon: "fas cm-all fa-chart-line",
+                onClick: () => {
+                  tabsStore.createMonitoringDashboardTab()
                 },
-                {
-                  label: "Backends",
-                  icon: "fas cm-all fa-tasks",
-                  onClick: () => {
-                    tabsStore.createMonitoringTab("Backends", "SELECT * FROM pg_stat_activity")
-                  },
+              },
+              {
+                label: "Backends",
+                icon: "fas cm-all fa-tasks",
+                onClick: () => {
+                  tabsStore.createMonitoringTab("Backends", "SELECT * FROM pg_stat_activity")
                 },
-              ],
-            },
-            {
-              label: "Doc: PostgreSQL",
-              icon: "fas cm-all fa-globe-americas",
-              onClick: () => {
-                this.openWebSite(
-                  `https://www.postgresql.org/docs/${this.getMajorVersion(
-                    this.templates.version
-                  )}/`
-                );
               },
+            ],
+          },
+          {
+            label: "Doc: PostgreSQL",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/`
+              );
             },
-            {
-              label: "Doc: SQL Language",
-              icon: "fas cm-all fa-globe-americas",
-              onClick: () => {
-                this.openWebSite(
-                  `https://www.postgresql.org/docs/${this.getMajorVersion(
-                    this.templates.version
-                  )}/sql.html`
-                );
-              },
+          },
+          {
+            label: "Doc: SQL Language",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/sql.html`
+              );
             },
-            {
-              label: "Doc: SQL Commands",
-              icon: "fas cm-all fa-globe-americas",
-              onClick: () => {
-                this.openWebSite(
-                  `https://www.postgresql.org/docs/${this.getMajorVersion(
-                    this.templates.version
-                  )}/sql-commands.html`
-                );
-              },
-            }
-          );
-
-          this.templates = resp.data;
-
-          this.$refs.tree.updateNode(node.path, {
-            title: resp.data.version,
-          });
-
-          this.insertNode(node, "Replication Slots", {
-            icon: "fas node-all fa-sitemap node-repslot-list",
-            type: "replication",
-            database: false,
-          });
-
-          const replication_node = this.getFirstChildNode(node);
-
-          this.insertNode(replication_node, "Logical Replication Slots", {
-            icon: "fas node-all fa-sitemap node-repslot-list",
-            type: "logical_replication_slot_list",
-            contextMenu: "cm_logical_replication_slots",
-            database: false,
-          });
-
-          this.insertNode(replication_node, "Physical Replication Slots", {
-            icon: "fas node-all fa-sitemap node-repslot-list",
-            type: "physical_replication_slot_list",
-            contextMenu: "cm_physical_replication_slots",
-            database: false,
-          });
-
-          this.insertNode(node, "Roles", {
-            icon: "fas node-all fa-users node-user-list",
-            type: "role_list",
-            contextMenu: "cm_roles",
-            database: false,
-          });
-
-          this.insertNode(node, "Tablespaces", {
-            icon: "fas node-all fa-folder-open node-tablespace-list",
-            type: "tablespace_list",
-            contextMenu: "cm_tablespaces",
-            database: false,
-          });
-
-          this.insertNode(node, "Databases", {
-            icon: "fas node-all fa-database node-database-list",
-            type: "database_list",
-            contextMenu: "cm_databases",
-            database: false,
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getDatabasesPostgresql(node) {
-      this.api
-        .post("/get_databases_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Databases (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-database node-database",
-              type: "database",
-              contextMenu: "cm_database",
-              database: el.name,
-              oid: el.oid,
-              raw_value: el.name_raw,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getDatabaseObjectsPostgresql(node) {
-      this.api
-        .post("/get_database_objects_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.currentSchema = resp.data.current_schema;
-
-          if (resp.data.has_pg_cron) {
-            this.insertNode(node, "Jobs", {
-              icon: "fas node-all fa-clock",
-              type: "job_list",
-              contextMenu: "cm_jobs",
-            });
+          },
+          {
+            label: "Doc: SQL Commands",
+            icon: "fas cm-all fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://www.postgresql.org/docs/${this.getMajorVersion(
+                  this.templates.version
+                )}/sql-commands.html`
+              );
+            },
           }
-          this.insertNode(node, "Logical Replication", {
-            icon: "fas node-all fa-sitemap node-logrep",
-            type: "replication",
-          });
-          const logical_replication_node = this.getFirstChildNode(node);
-
-          this.insertNode(logical_replication_node, "Subscriptions", {
-            icon: "fas node-all fa-arrow-alt-circle-up node-subscription-list",
-            type: "subscription_list",
-            contextMenu: "cm_subscriptions",
-          });
-
-          this.insertNode(logical_replication_node, "Publications", {
-            icon: "fas node-all fa-arrow-alt-circle-down node-publication-list",
-            type: "publication_list",
-            contextMenu: "cm_publications",
-          });
-
-          this.insertNode(node, "Event Triggers", {
-            icon: "fas node-all fa-bolt node-eventtrigger",
-            type: "event_trigger_list",
-            contextMenu: "cm_event_triggers",
-          });
-
-          this.insertNode(node, "Foreign Data Wrappers", {
-            icon: "fas node-all fa-cube node-fdw-list",
-            type: "foreign_data_wrapper_list",
-            contextMenu: "cm_foreign_data_wrappers",
-          });
-
-          this.insertNode(node, "Extensions", {
-            icon: "fas node-all fa-cubes node-extension-list",
-            type: "extension_list",
-            contextMenu: "cm_extensions",
-          });
-
-          this.insertNode(node, "Schemas", {
-            icon: "fas node-all fa-layer-group node-schema-list",
-            type: "schema_list",
-            contextMenu: "cm_schemas",
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        );
+  
+        this.templates = response.data;
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: response.data.version,
         });
-    },
-    getSchemasPostgresql(node) {
-      this.api
-        .post("/get_schemas_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Schemas (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-layer-group node-schema",
-              type: "schema",
-              contextMenu: "cm_schema",
-              schema: el.name,
-              schema_raw: el.name_raw,
-              raw_value: el.name_raw,
-              oid: el.oid,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+  
+        this.insertNode(node, "Replication Slots", {
+          icon: "fas node-all fa-sitemap node-repslot-list",
+          type: "replication",
+          database: false,
         });
+  
+        const replication_node = this.getFirstChildNode(node);
+  
+        this.insertNode(replication_node, "Logical Replication Slots", {
+          icon: "fas node-all fa-sitemap node-repslot-list",
+          type: "logical_replication_slot_list",
+          contextMenu: "cm_logical_replication_slots",
+          database: false,
+        });
+  
+        this.insertNode(replication_node, "Physical Replication Slots", {
+          icon: "fas node-all fa-sitemap node-repslot-list",
+          type: "physical_replication_slot_list",
+          contextMenu: "cm_physical_replication_slots",
+          database: false,
+        });
+  
+        this.insertNode(node, "Roles", {
+          icon: "fas node-all fa-users node-user-list",
+          type: "role_list",
+          contextMenu: "cm_roles",
+          database: false,
+        });
+  
+        this.insertNode(node, "Tablespaces", {
+          icon: "fas node-all fa-folder-open node-tablespace-list",
+          type: "tablespace_list",
+          contextMenu: "cm_tablespaces",
+          database: false,
+        });
+  
+        this.insertNode(node, "Databases", {
+          icon: "fas node-all fa-database node-database-list",
+          type: "database_list",
+          contextMenu: "cm_databases",
+          database: false,
+        });
+      } catch(error) {
+        return error;
+      }
     },
-    getSchemasObjectsPostgresql(node) {
+    async getDatabasesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_databases_postgresql/")
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Databases (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-database node-database",
+            type: "database",
+            contextMenu: "cm_database",
+            database: el.name,
+            oid: el.oid,
+            raw_value: el.name_raw,
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getDatabaseObjectsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_database_objects_postgresql/")
+
+        this.removeChildNodes(node);
+  
+        this.currentSchema = response.data.current_schema;
+  
+        if (response.data.has_pg_cron) {
+          this.insertNode(node, "Jobs", {
+            icon: "fas node-all fa-clock",
+            type: "job_list",
+            contextMenu: "cm_jobs",
+          });
+        }
+        this.insertNode(node, "Logical Replication", {
+          icon: "fas node-all fa-sitemap node-logrep",
+          type: "replication",
+        });
+        const logical_replication_node = this.getFirstChildNode(node);
+  
+        this.insertNode(logical_replication_node, "Subscriptions", {
+          icon: "fas node-all fa-arrow-alt-circle-up node-subscription-list",
+          type: "subscription_list",
+          contextMenu: "cm_subscriptions",
+        });
+  
+        this.insertNode(logical_replication_node, "Publications", {
+          icon: "fas node-all fa-arrow-alt-circle-down node-publication-list",
+          type: "publication_list",
+          contextMenu: "cm_publications",
+        });
+  
+        this.insertNode(node, "Event Triggers", {
+          icon: "fas node-all fa-bolt node-eventtrigger",
+          type: "event_trigger_list",
+          contextMenu: "cm_event_triggers",
+        });
+  
+        this.insertNode(node, "Foreign Data Wrappers", {
+          icon: "fas node-all fa-cube node-fdw-list",
+          type: "foreign_data_wrapper_list",
+          contextMenu: "cm_foreign_data_wrappers",
+        });
+  
+        this.insertNode(node, "Extensions", {
+          icon: "fas node-all fa-cubes node-extension-list",
+          type: "extension_list",
+          contextMenu: "cm_extensions",
+        });
+  
+        this.insertNode(node, "Schemas", {
+          icon: "fas node-all fa-layer-group node-schema-list",
+          type: "schema_list",
+          contextMenu: "cm_schemas",
+        });
+      } catch(error) {
+        return error;
+      }
+    },
+    async getSchemasPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_schemas_postgresql/")
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Schemas (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-layer-group node-schema",
+            type: "schema",
+            contextMenu: "cm_schema",
+            schema: el.name,
+            schema_raw: el.name_raw,
+            raw_value: el.name_raw,
+            oid: el.oid,
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getSchemasObjectsPostgresql(node) {
       this.removeChildNodes(node);
-
-      this.insertNode(node, "Domains", {
-        icon: "fas node-all fa-square node-domain-list",
-        type: "domain_list",
-        contextMenu: "cm_domains",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Types", {
-        icon: "fas node-all fa-square node-type-list",
-        type: "type_list",
-        contextMenu: "cm_types",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Aggregates", {
-        icon: "fas node-all fa-cog node-aggregate-list",
-        type: "aggregate_list",
-        contextMenu: "cm_aggregates",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Procedures", {
-        icon: "fas node-all fa-cog node-procedure-list",
-        type: "procedure_list",
-        contextMenu: "cm_procedures",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Event Trigger Functions", {
-        icon: "fas node-all fa-cog node-etfunction-list",
-        type: "event_trigger_function_list",
-        contextMenu: "cm_event_trigger_functions",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Trigger Functions", {
-        icon: "fas node-all fa-cog node-tfunction-list",
-        type: "trigger_function_list",
-        contextMenu: "cm_trigger_functions",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Functions", {
-        icon: "fas node-all fa-cog node-function-list",
-        type: "function_list",
-        contextMenu: "cm_functions",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Materialized Views", {
-        icon: "fas node-all fa-eye node-mview-list",
-        type: "mview_list",
-        contextMenu: "cm_mviews",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Views", {
-        icon: "fas node-all fa-eye node-view-list",
-        type: "view_list",
-        contextMenu: "cm_views",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Sequences", {
-        icon: "fas node-all fa-sort-numeric-down node-sequence-list",
-        type: "sequence_list",
-        contextMenu: "cm_sequences",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Foreign Tables", {
-        icon: "fas node-all fa-th node-ftable-list",
-        type: "foreign_table_list",
-        contextMenu: "cm_foreign_tables",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Inheritance Tables", {
-        icon: "fas node-all fa-th node-itable-list",
-        type: "inherited_table_list",
-        contextMenu: "cm_inherited_tables",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Partitioned Tables", {
-        icon: "fas node-all fa-th node-ptable-list",
-        type: "partitioned_table_list",
-        contextMenu: "cm_partitioned_tables",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-
-      this.insertNode(node, "Tables", {
-        icon: "fas node-all fa-th node-table-list",
-        type: "table_list",
-        contextMenu: "cm_tables",
-        schema: node.data.schema,
-        schema_raw: node.data.schema_raw,
-      });
-    },
-    getTablesPostgresql(node) {
-      this.api
-        .post("/get_tables_postgresql/", {
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Tables (${resp.data.length})`,
+      return new Promise((resolve, reject) => {
+        try {
+          
+          this.insertNode(node, "Domains", {
+            icon: "fas node-all fa-square node-domain-list",
+            type: "domain_list",
+            contextMenu: "cm_domains",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
           });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-table node-table",
-              type: "table",
-              contextMenu: "cm_table",
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              raw_value: el.name_raw,
-              oid: el.oid,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+    
+          this.insertNode(node, "Types", {
+            icon: "fas node-all fa-square node-type-list",
+            type: "type_list",
+            contextMenu: "cm_types",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Aggregates", {
+            icon: "fas node-all fa-cog node-aggregate-list",
+            type: "aggregate_list",
+            contextMenu: "cm_aggregates",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Procedures", {
+            icon: "fas node-all fa-cog node-procedure-list",
+            type: "procedure_list",
+            contextMenu: "cm_procedures",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Event Trigger Functions", {
+            icon: "fas node-all fa-cog node-etfunction-list",
+            type: "event_trigger_function_list",
+            contextMenu: "cm_event_trigger_functions",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Trigger Functions", {
+            icon: "fas node-all fa-cog node-tfunction-list",
+            type: "trigger_function_list",
+            contextMenu: "cm_trigger_functions",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Functions", {
+            icon: "fas node-all fa-cog node-function-list",
+            type: "function_list",
+            contextMenu: "cm_functions",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Materialized Views", {
+            icon: "fas node-all fa-eye node-mview-list",
+            type: "mview_list",
+            contextMenu: "cm_mviews",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Views", {
+            icon: "fas node-all fa-eye node-view-list",
+            type: "view_list",
+            contextMenu: "cm_views",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Sequences", {
+            icon: "fas node-all fa-sort-numeric-down node-sequence-list",
+            type: "sequence_list",
+            contextMenu: "cm_sequences",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Foreign Tables", {
+            icon: "fas node-all fa-th node-ftable-list",
+            type: "foreign_table_list",
+            contextMenu: "cm_foreign_tables",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Inheritance Tables", {
+            icon: "fas node-all fa-th node-itable-list",
+            type: "inherited_table_list",
+            contextMenu: "cm_inherited_tables",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Partitioned Tables", {
+            icon: "fas node-all fa-th node-ptable-list",
+            type: "partitioned_table_list",
+            contextMenu: "cm_partitioned_tables",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+    
+          this.insertNode(node, "Tables", {
+            icon: "fas node-all fa-th node-table-list",
+            type: "table_list",
+            contextMenu: "cm_tables",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+          });
+          resolve("success")
+        } catch (error) {
+          reject(error)
+        }
+      })
     },
-    getColumnsPostgresql(node) {
-      this.api
-        .post("/get_columns_postgresql/", {
+    async getTablesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_tables_postgresql/", {
+          schema: node.data.schema_raw
+        })
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Tables (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-table node-table",
+            type: "table",
+            contextMenu: "cm_table",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            raw_value: el.name_raw,
+            oid: el.oid,
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getColumnsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_columns_postgresql/", {
           table: node.data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.insertNode(node, "Statistics", {
-            icon: "fas node-all fa-chart-bar node-statistics",
-            type: "statistics_list",
-            contextMenu: "cm_statistics",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Partitions", {
-            icon: "fas node-all fa-table node-partition",
-            type: "partition_list",
-            contextMenu: "cm_partitions",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Inherited Tables", {
-            icon: "fas node-all fa-table node-inherited",
-            type: "inherited_list",
-            contextMenu: "cm_inheriteds",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Triggers", {
-            icon: "fas node-all fa-bolt node-trigger",
-            type: "trigger_list",
-            contextMenu: "cm_triggers",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Rules", {
-            icon: "fas node-all fa-lightbulb node-rule",
-            type: "rule_list",
-            contextMenu: "cm_rules",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Indexes", {
-            icon: "fas node-all fa-thumbtack node-index",
-            type: "indexes",
-            contextMenu: "cm_indexes",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Excludes", {
-            icon: "fas node-all fa-times-circle node-exclude",
-            type: "exclude_list",
-            contextMenu: "cm_excludes",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Checks", {
-            icon: "fas node-all fa-check-square node-check",
-            type: "check_list",
-            contextMenu: "cm_checks",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Uniques", {
-            icon: "fas node-all fa-key node-unique",
-            type: "uniques",
-            contextMenu: "cm_uniques",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Foreign Keys", {
-            icon: "fas node-all fa-key node-fkey",
-            type: "foreign_keys",
-            contextMenu: "cm_fks",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Primary Key", {
-            icon: "fas node-all fa-key node-pkey",
-            type: "primary_key",
-            contextMenu: "cm_pks",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, `Columns (${resp.data.length})`, {
-            icon: "fas node-all fa-columns node-column",
-            type: "column_list",
-            contextMenu: "cm_columns",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          const columns_node = this.getFirstChildNode(node);
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              columns_node,
-              el.column_name,
-              {
-                icon: "fas node-all fa-columns node-column",
-                type: "table_field",
-                contextMenu: "cm_column",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                position: el.position,
-                raw_value: el.name_raw,
-              },
-              null
-            );
-            const table_field = this.getFirstChildNode(columns_node);
-
-            this.insertNode(
-              table_field,
-              `Nullable: ${el.nullable}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-            this.insertNode(
-              table_field,
-              `Type: ${el.data_type}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.insertNode(node, "Statistics", {
+          icon: "fas node-all fa-chart-bar node-statistics",
+          type: "statistics_list",
+          contextMenu: "cm_statistics",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
         });
+  
+        this.insertNode(node, "Partitions", {
+          icon: "fas node-all fa-table node-partition",
+          type: "partition_list",
+          contextMenu: "cm_partitions",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, "Inherited Tables", {
+          icon: "fas node-all fa-table node-inherited",
+          type: "inherited_list",
+          contextMenu: "cm_inheriteds",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, "Triggers", {
+          icon: "fas node-all fa-bolt node-trigger",
+          type: "trigger_list",
+          contextMenu: "cm_triggers",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, "Rules", {
+          icon: "fas node-all fa-lightbulb node-rule",
+          type: "rule_list",
+          contextMenu: "cm_rules",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, "Indexes", {
+          icon: "fas node-all fa-thumbtack node-index",
+          type: "indexes",
+          contextMenu: "cm_indexes",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, "Excludes", {
+          icon: "fas node-all fa-times-circle node-exclude",
+          type: "exclude_list",
+          contextMenu: "cm_excludes",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, "Checks", {
+          icon: "fas node-all fa-check-square node-check",
+          type: "check_list",
+          contextMenu: "cm_checks",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, "Uniques", {
+          icon: "fas node-all fa-key node-unique",
+          type: "uniques",
+          contextMenu: "cm_uniques",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, "Foreign Keys", {
+          icon: "fas node-all fa-key node-fkey",
+          type: "foreign_keys",
+          contextMenu: "cm_fks",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, "Primary Key", {
+          icon: "fas node-all fa-key node-pkey",
+          type: "primary_key",
+          contextMenu: "cm_pks",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, `Columns (${response.data.length})`, {
+          icon: "fas node-all fa-columns node-column",
+          type: "column_list",
+          contextMenu: "cm_columns",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        const columns_node = this.getFirstChildNode(node);
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            columns_node,
+            el.column_name,
+            {
+              icon: "fas node-all fa-columns node-column",
+              type: "table_field",
+              contextMenu: "cm_column",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              position: el.position,
+              raw_value: el.name_raw,
+            },
+            null
+          );
+          const table_field = this.getFirstChildNode(columns_node);
+  
+          this.insertNode(
+            table_field,
+            `Nullable: ${el.nullable}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+          this.insertNode(
+            table_field,
+            `Type: ${el.data_type}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
-    getPKPostgresql(node) {
-      this.api
-        .post("/get_pk_postgresql/", {
+    async getPKPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_pk_postgresql/", {
           table: this.getParentNode(node).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Primary Key (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.constraint_name, {
-              icon: "fas node-all fa-key node-pkey",
-              type: "pk",
-              contextMenu: "cm_pk",
-              oid: el.oid,
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              raw_value: el.name_raw,
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Primary Key (${response.data.length})`,
         });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.constraint_name, {
+            icon: "fas node-all fa-key node-pkey",
+            type: "pk",
+            contextMenu: "cm_pk",
+            oid: el.oid,
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            raw_value: el.name_raw,
+          });
+        });
+      } catch(error) {
+        return error;
+      }
     },
-    getPKColumnsPostgresql(node) {
-      this.api
-        .post("/get_pk_columns_postgresql/", {
+    async getPKColumnsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_pk_columns_postgresql/", {
           key: node.data.raw_value,
           table: this.getParentNodeDeep(node, 2).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el,
-              {
-                icon: "fas node-all fa-columns node-column",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el,
+            {
+              icon: "fas node-all fa-columns node-column",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
         });
+      } catch(error) {
+        return error;
+      }
     },
-    getFKsPostgresql(node) {
-      this.api
-        .post("/get_fks_postgresql/", {
+    async getFKsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_fks_postgresql/", {
           table: this.getParentNode(node).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Foreign Keys (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.constraint_name, {
-              icon: "fas node-all fa-key node-fkey",
-              type: "foreign_key",
-              contextMenu: "cm_fk",
-              oid: el.oid,
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              raw_value: el.name_raw,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Foreign Keys (${response.data.length})`,
         });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.constraint_name, {
+            icon: "fas node-all fa-key node-fkey",
+            type: "foreign_key",
+            contextMenu: "cm_fk",
+            oid: el.oid,
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            raw_value: el.name_raw,
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
-    getFKsColumnsPostgresql(node) {
-      this.api
-        .post("/get_fks_columns_postgresql/", {
+    async getFKsColumnsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_fks_columns_postgresql/", {
           fkey: node.data.raw_value,
           table: this.getParentNodeDeep(node, 2).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              `${el.column_name} <i class='fas node-all fa-arrow-right'></i> ${el.r_column_name}`,
-              {
-                icon: "fas node-all fa-columns node-column",
-                raw_html: true,
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-            this.insertNode(
-              node,
-              `Update Rule: ${el.update_rule}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-            this.insertNode(
-              node,
-              `Delete Rule: ${el.delete_rule}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-            this.insertNode(
-              node,
-              `Referenced Table: ${el.r_table_name}`,
-              {
-                icon: "fas node-all fa-table node-table",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            `${el.column_name} <i class='fas node-all fa-arrow-right'></i> ${el.r_column_name}`,
+            {
+              icon: "fas node-all fa-columns node-column",
+              raw_html: true,
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+          this.insertNode(
+            node,
+            `Update Rule: ${el.update_rule}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+          this.insertNode(
+            node,
+            `Delete Rule: ${el.delete_rule}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+          this.insertNode(
+            node,
+            `Referenced Table: ${el.r_table_name}`,
+            {
+              icon: "fas node-all fa-table node-table",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
         });
+      } catch(error) {
+        return error;
+      }
     },
-    getUniquesPostgresql(node) {
-      this.api
-        .post("/get_uniques_postgresql/", {
+    async getUniquesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_uniques_postgresql/", {
           table: this.getParentNode(node).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Uniques (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.constraint_name, {
-              icon: "fas node-all fa-key node-unique",
-              type: "unique",
-              contextMenu: "cm_unique",
-              oid: el.oid,
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              raw_value: el.name_raw,
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Uniques (${response.data.length})`,
         });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.constraint_name, {
+            icon: "fas node-all fa-key node-unique",
+            type: "unique",
+            contextMenu: "cm_unique",
+            oid: el.oid,
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            raw_value: el.name_raw,
+          });
+        });
+      } catch(error) {
+        return error;
+      }
     },
-    getUniquesColumnsPostgresql(node) {
-      this.api
-        .post("/get_uniques_columns_postgresql/", {
+    async getUniquesColumnsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_uniques_columns_postgresql/", {
           unique: node.data.raw_value,
           table: this.getParentNodeDeep(node, 2).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el,
-              {
-                icon: "fas node-all fa-columns node-column",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el,
+            {
+              icon: "fas node-all fa-columns node-column",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
         });
+      } catch(error) {
+        return error;
+      }
     },
-    getChecksPostgresql(node) {
-      this.api
-        .post("/get_checks_postgresql/", {
+    async getChecksPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_checks_postgresql/", {
           table: this.getParentNode(node).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Checks (${resp.data.length})`,
+        
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Checks (${response.data.length})`,
+        });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.constraint_name, {
+            icon: "fas node-all fa-check-square node-check",
+            type: "check",
+            contextMenu: "cm_check",
+            oid: el.oid,
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            raw_value: el.name_raw,
           });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.constraint_name, {
-              icon: "fas node-all fa-check-square node-check",
-              type: "check",
-              contextMenu: "cm_check",
-              oid: el.oid,
+  
+          const check_node = this.getFirstChildNode(node);
+  
+          this.insertNode(
+            check_node,
+            el.constraint_source,
+            {
+              icon: "fas node-all fa-edit node-check-value",
               schema: node.data.schema,
               schema_raw: node.data.schema_raw,
-              raw_value: el.name_raw,
-            });
-
-            const check_node = this.getFirstChildNode(node);
-
-            this.insertNode(
-              check_node,
-              el.constraint_source,
-              {
-                icon: "fas node-all fa-edit node-check-value",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+            },
+            true
+          );
         });
+
+      } catch(error) {
+        return error;
+      }
     },
-    getExcludesPostgresql(node) {
-      this.api
-        .post("/get_excludes_postgresql/", {
+    async getExcludesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_excludes_postgresql/", {
           table: this.getParentNode(node).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Excludes (${resp.data.length})`,
+        
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Excludes (${response.data.length})`,
+        });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.constraint_name, {
+            icon: "fas node-all fa-times-circle node-exclude",
+            type: "exclude",
+            contextMenu: "cm_exclude",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            oid: el.oid,
+            raw_value: el.name_raw,
           });
-
-          this.resp.data.forEach((el) => {
-            this.insertNode(node, el.constraint_name, {
-              icon: "fas node-all fa-times-circle node-exclude",
-              type: "exclude",
-              contextMenu: "cm_exclude",
+  
+          const exclude_node = this.getFirstChildNode(node);
+  
+          this.insertNode(
+            exclude_node,
+            `Operators: ${el.operations}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
               schema: node.data.schema,
               schema_raw: node.data.schema_raw,
-              oid: el.oid,
-              raw_value: el.name_raw,
-            });
-
-            const exclude_node = this.getFirstChildNode(node);
-
-            this.insertNode(
-              exclude_node,
-              `Operators: ${el.operations}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-
-            this.insertNode(
-              exclude_node,
-              `Attributes: ${el.attributes}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+            },
+            true
+          );
+  
+          this.insertNode(
+            exclude_node,
+            `Attributes: ${el.attributes}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
         });
+      } catch(error) {
+        return error;
+      }
     },
-    getIndexesPostgresql(node) {
-      this.api
-        .post("/get_indexes_postgresql/", {
+    async getIndexesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_indexes_postgresql/", {
           table: this.getParentNode(node).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Indexes (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.index_name, {
-              icon: "fas node-all fa-thumbtack node-index",
-              type: "index",
-              contextMenu: "cm_index",
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              oid: el.oid,
-              uniqueness: el.uniqueness,
-              raw_value: el.name_raw,
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Indexes (${response.data.length})`,
         });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.index_name, {
+            icon: "fas node-all fa-thumbtack node-index",
+            type: "index",
+            contextMenu: "cm_index",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            oid: el.oid,
+            uniqueness: el.uniqueness,
+            raw_value: el.name_raw,
+          });
+        });
+      } catch(error) {
+        return error;
+      }
     },
-    getIndexesColumnsPostgresql(node) {
-      this.api
-        .post("/get_indexes_columns_postgresql/", {
+    async getIndexesColumnsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_indexes_columns_postgresql/", {
           index: node.title,
           table: this.getParentNodeDeep(node, 2).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el,
-              {
-                icon: "fas node-all fa-columns node-column",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el,
+            {
+              icon: "fas node-all fa-columns node-column",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
         });
+      } catch(error) {
+        return error;
+      }
     },
-    getRulesPostgresql(node) {
-      this.api
-        .post("/get_rules_postgresql/", {
+    async getRulesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_rules_postgresql/", {
           table: this.getParentNode(node).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Rules (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el.rule_name,
-              {
-                icon: "fas node-all fa-lightbulb node-rule",
-                type: "rule",
-                contextMenu: "cm_rule",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                oid: el.oid,
-                raw_value: el.name_raw,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Rules (${response.data.length})`,
         });
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el.rule_name,
+            {
+              icon: "fas node-all fa-lightbulb node-rule",
+              type: "rule",
+              contextMenu: "cm_rule",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              oid: el.oid,
+              raw_value: el.name_raw,
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
     },
     getRuleDefinitionPostgresql(node) {
       this.api
@@ -4264,50 +4261,359 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getTriggersPostgresql(node) {
-      this.api
-        .post("/get_triggers_postgresql/", {
+    async getTriggersPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_triggers_postgresql/", {
           table: this.getParentNode(node).data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Triggers (${resp.data.length})`,
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Triggers (${response.data.length})`,
+        });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.trigger_name, {
+            icon: "fas node-all fa-bolt node-trigger",
+            type: "trigger",
+            contextMenu: "cm_trigger",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            oid: el.oid,
+            raw_value: el.name_raw,
           });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.trigger_name, {
-              icon: "fas node-all fa-bolt node-trigger",
-              type: "trigger",
-              contextMenu: "cm_trigger",
+  
+          const trigger_node = this.getFirstChildNode(node);
+  
+          this.insertNode(
+            trigger_node,
+            el.trigger_function,
+            {
+              icon: "fas node-all fa-cog node-tfunction",
+              type: "direct_trigger_function",
+              contextMenu: "cm_direct_trigger_function",
               schema: node.data.schema,
               schema_raw: node.data.schema_raw,
-              oid: el.oid,
+              id: el.id,
+              function_oid: el.function_oid,
+            },
+            true
+          );
+  
+          this.insertNode(
+            trigger_node,
+            `Enabled: ${el.enabled}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
+    },
+    async getInheritedsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_inheriteds_postgresql/", {
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw, 
+        })
+        
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Inherited Tables (${response.data.length})`,
+        });
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el,
+            {
+              icon: "fas node-all fa-table node-inherited",
+              type: "inherit",
+              contextMenu: "cm_inherited",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               raw_value: el.name_raw,
-            });
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
+    },
+    async getPartitionsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_partitions_postgresql/", {
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
+        })
+        
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Partitions (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el,
+            {
+              icon: "fas node-all fa-table node-partition",
+              type: "partition",
+              contextMenu: "cm_partition",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getStatisticsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_statistics_postgresql/", {
+          table: this.getParentNode(node).data.raw_value,
+          schema: node.data.schema_raw,
+        })
 
-            const trigger_node = this.getFirstChildNode(node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Statistics (${response.data.length})`,
+        });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, `${el.schema_name}.${el.statistic_name}`, {
+            icon: "fas node-all fa-chart-bar node-statistic",
+            type: "statistic",
+            contextMenu: "cm_statistic",
+            schema: el.schema_name,
+            schema_raw: node.data.schema_raw,
+            oid: el.oid,
+            statistics: el.statistic_name,
+            raw_value: el.name_raw,
+          });
+        });
+      } catch(error) {
+        return error;
+      }
+    },
+    async getStatisticsColumnsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_statistics_columns_postgresql/", {
+          statistics: node.data.raw_value,
+          schema: node.data.schema_raw,
+        })
 
+        this.removeChildNodes(node);
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el.column_name,
+            {
+              icon: "fas node-all fa-columns node-column",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
+    },
+    async getPartitionedParentsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_partitions_parents_postgresql/", {
+          schema: node.data.schema_raw,
+        })
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Partitioned Tables (${response.data.length})`,
+        });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-layer-group node-ptable",
+            type: "partitioned_parent",
+            contextMenu: "cm_partitioned_parent",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            raw_value: el.name_raw,
+            name: el.name,
+          });
+        });
+      } catch(error) {
+        return error;
+      } 
+    },
+    async getPartitionedChildrenPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_partitions_children_postgresql/", {
+          schema: node.data.schema_raw,
+          table: node.data.raw_value,
+        })
+
+        this.removeChildNodes(node);
+        this.$refs.tree.updateNode(node.path, {
+          title: `${node.data.name} (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-table node-ptable",
+            type: "table",
+            contextMenu: "cm_table",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            oid: el.oid,
+            raw_value: el.name_raw,
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getInheritedsParentsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_inheriteds_parents_postgresql/", {
+          schema: node.data.schema_raw,
+        })
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Inheritance Tables (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-layer-group node-itable",
+            type: "inherited_parent",
+            contextMenu: "cm_inherited_parent",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            raw_value: el.name_raw,
+            name: el.name,
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getInheritedsChildrenPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_inheriteds_children_postgresql/", {
+          schema: node.data.schema_raw,
+          table: node.data.raw_value,
+        })
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `${node.data.name} (${response.data.length})`,
+        });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-table node-itable",
+            type: "table",
+            contextMenu: "cm_table",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            oid: el.oid,
+            raw_value: el.name_raw,
+          });
+        });
+      } catch(error) {
+        return error;
+      }
+    },
+    async getForeignTablesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_foreign_tables_postgresql/", {
+          schema: node.data.schema_raw,
+        })
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Foreign Tables (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-table node-ftable",
+            type: "foreign_table",
+            contextMenu: "cm_foreign_table",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            oid: el.oid,
+            raw_value: el.name_raw,
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getForeignColumnsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_foreign_columns_postgresql/", {
+          table: node.title, // CHeck here
+          schema: node.data.schema_raw,
+        })
+
+        this.removeChildNodes(node);
+  
+        this.insertNode(node, "Statistics", {
+          icon: "fas node-all fa-chart-bar node-statistics",
+          type: "statistics_list",
+          contextMenu: "cm_statistics",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        if (!!response.data.length) {
+          this.insertNode(
+            node,
+            response.data[0].fdw,
+            {
+              icon: "fas node-all fa-cube node-fdw",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+          this.insertNode(
+            node,
+            response.data[0].server,
+            {
+              icon: "fas node-all fa-server node-server",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+  
+          let options = response.data[0].table_options.split(",");
+          options.forEach((el) => {
             this.insertNode(
-              trigger_node,
-              el.trigger_function,
-              {
-                icon: "fas node-all fa-cog node-tfunction",
-                type: "direct_trigger_function",
-                contextMenu: "cm_direct_trigger_function",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                id: el.id,
-                function_oid: el.function_oid,
-              },
-              true
-            );
-
-            this.insertNode(
-              trigger_node,
-              `Enabled: ${el.enabled}`,
+              node,
+              el,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
                 schema: node.data.schema,
@@ -4316,317 +4622,40 @@ export default {
               true
             );
           });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        }
+  
+        this.insertNode(node, `Columns (${response.data.length})`, {
+          icon: "fas node-all fa-columns node-column",
+          type: "foreign_column_list",
+          contextMenu: "cm_foreign_columns",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
         });
-    },
-    getInheritedsPostgresql(node) {
-      this.api
-        .post("/get_inheriteds_postgresql/", {
-          table: this.getParentNode(node).data.raw_value,
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Inherited Tables (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el,
-              {
-                icon: "fas node-all fa-table node-inherited",
-                type: "inherit",
-                contextMenu: "cm_inherited",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                raw_value: el.name_raw,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getPartitionsPostgresql(node) {
-      this.api
-        .post("/get_partitions_postgresql/", {
-          table: this.getParentNode(node).data.raw_value,
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Partitions (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              node,
-              el,
-              {
-                icon: "fas node-all fa-table node-partition",
-                type: "partition",
-                contextMenu: "cm_partition",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getStatisticsPostgresql(node) {
-      this.api
-        .post("/get_statistics_postgresql/", {
-          table: this.getParentNode(node).data.raw_value,
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Statistics (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, `${el.schema_name}.${el.statistic_name}`, {
-              icon: "fas node-all fa-chart-bar node-statistic",
-              type: "statistic",
-              contextMenu: "cm_statistic",
-              schema: el.schema_name,
-              schema_raw: node.data.schema_raw,
-              oid: el.oid,
-              statistics: el.statistic_name,
-              raw_value: el.name_raw,
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getStatisticsColumnsPostgresql(node) {
-      this.api
-        .post("/get_statistics_columns_postgresql/", {
-          statistics: node.data.raw_value,
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el.column_name,
-              {
-                icon: "fas node-all fa-columns node-column",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getPartitionedParentsPostgresql(node) {
-      this.api
-        .post("/get_partitions_parents_postgresql/", {
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Partitioned Tables (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-layer-group node-ptable",
-              type: "partitioned_parent",
-              contextMenu: "cm_partitioned_parent",
+  
+        const foreign_columns_node = this.getFirstChildNode(node);
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            foreign_columns_node,
+            el.column_name,
+            {
+              icon: "fas node-all fa-columns node-column",
+              type: "foreign_table_field",
+              contextMenu: "cm_foreign_column",
               schema: node.data.schema,
               schema_raw: node.data.schema_raw,
-              raw_value: el.name_raw,
-              name: el.name,
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getPartitionedChildrenPostgresql(node) {
-      this.api
-        .post("/get_partitions_children_postgresql/", {
-          schema: node.data.schema_raw,
-          table: node.data.raw_value,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-          this.$refs.tree.updateNode(node.path, {
-            title: `${node.data.name} (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-table node-ptable",
-              type: "table",
-              contextMenu: "cm_table",
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              oid: el.oid,
-              raw_value: el.name_raw,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getInheritedsParentsPostgresql(node) {
-      this.api
-        .post("/get_inheriteds_parents_postgresql/", {
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Inheritance Tables (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-layer-group node-itable",
-              type: "inherited_parent",
-              contextMenu: "cm_inherited_parent",
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              raw_value: el.name_raw,
-              name: el.name,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getInheritedsChildrenPostgresql(node) {
-      this.api
-        .post("/get_inheriteds_children_postgresql/", {
-          schema: node.data.schema_raw,
-          table: node.data.raw_value,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `${node.data.name} (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-table node-itable",
-              type: "table",
-              contextMenu: "cm_table",
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              oid: el.oid,
-              raw_value: el.name_raw,
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getForeignTablesPostgresql(node) {
-      this.api
-        .post("/get_foreign_tables_postgresql/", {
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Foreign Tables (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-table node-ftable",
-              type: "foreign_table",
-              contextMenu: "cm_foreign_table",
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              oid: el.oid,
-              raw_value: el.name_raw,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getForeignColumnsPostgresql(node) {
-      this.api
-        .post("/get_foreign_columns_postgresql/", {
-          table: node.title, // CHeck here
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.insertNode(node, "Statistics", {
-            icon: "fas node-all fa-chart-bar node-statistics",
-            type: "statistics_list",
-            contextMenu: "cm_statistics",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          if (!!resp.data.length) {
-            this.insertNode(
-              node,
-              resp.data[0].fdw,
-              {
-                icon: "fas node-all fa-cube node-fdw",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-            this.insertNode(
-              node,
-              resp.data[0].server,
-              {
-                icon: "fas node-all fa-server node-server",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-
-            let options = resp.data[0].table_options.split(",");
-            options.forEach((el) => {
+            },
+            null
+          );
+          const foreign_table_field =
+            this.getFirstChildNode(foreign_columns_node);
+  
+          if (!!el.options) {
+            let options = el.options.split(",");
+            options.forEach((option_el) => {
               this.insertNode(
-                node,
-                el,
+                foreign_table_field,
+                option_el,
                 {
                   icon: "fas node-all fa-ellipsis-h node-bullet",
                   schema: node.data.schema,
@@ -4636,198 +4665,152 @@ export default {
               );
             });
           }
-
-          this.insertNode(node, `Columns (${resp.data.length})`, {
-            icon: "fas node-all fa-columns node-column",
-            type: "foreign_column_list",
-            contextMenu: "cm_foreign_columns",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          const foreign_columns_node = this.getFirstChildNode(node);
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              foreign_columns_node,
-              el.column_name,
-              {
-                icon: "fas node-all fa-columns node-column",
-                type: "foreign_table_field",
-                contextMenu: "cm_foreign_column",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              null
-            );
-            const foreign_table_field =
-              this.getFirstChildNode(foreign_columns_node);
-
-            if (!!el.options) {
-              let options = el.options.split(",");
-              options.forEach((option_el) => {
-                this.insertNode(
-                  foreign_table_field,
-                  option_el,
-                  {
-                    icon: "fas node-all fa-ellipsis-h node-bullet",
-                    schema: node.data.schema,
-                    schema_raw: node.data.schema_raw,
-                  },
-                  true
-                );
-              });
-            }
-
-            this.insertNode(
-              foreign_table_field,
-              `Nullable: ${el.nullable}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-            this.insertNode(
-              foreign_table_field,
-              `Type: ${el.data_type}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+  
+          this.insertNode(
+            foreign_table_field,
+            `Nullable: ${el.nullable}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+          this.insertNode(
+            foreign_table_field,
+            `Type: ${el.data_type}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
-    getSequencesPostgresql(node) {
-      this.api
-        .post("/get_sequences_postgresql/", {
+    async getSequencesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_sequences_postgresql/", {
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
-          this.$refs.tree.updateNode(node.path, {
-            title: `Sequences (${resp.data.length})`,
-          });
 
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              node,
-              el.sequence_name,
-              {
-                icon: "fas node-all fa-sort-numeric-down node-sequence",
-                type: "sequence",
-                contextMenu: "cm_sequence",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                oid: el.oid,
-                raw_value: el.name_raw,
-              },
-              true
-            );
-          })
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+        this.$refs.tree.updateNode(node.path, {
+          title: `Sequences (${response.data.length})`,
         });
-    },
-    getViewsPostgresql(node) {
-      this.api
-        .post("/get_views_postgresql/", {
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Views (${resp.data.length})`,
-          });
-
-        resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-eye node-view",
-              type: "view",
-              contextMenu: "cm_view",
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.sequence_name,
+            {
+              icon: "fas node-all fa-sort-numeric-down node-sequence",
+              type: "sequence",
+              contextMenu: "cm_sequence",
               schema: node.data.schema,
               schema_raw: node.data.schema_raw,
               oid: el.oid,
               raw_value: el.name_raw,
-            });
-          }, null);
+            },
+            true
+          );
         })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+      } catch(error) {
+        return error;
+      }
     },
-    getViewsColumnsPostgresql(node) {
-      this.api
-        .post("/get_views_columns_postgresql/", {
+    async getViewsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_views_postgresql/", {
+          schema: node.data.schema_raw,
+        })
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Views (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-eye node-view",
+            type: "view",
+            contextMenu: "cm_view",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            oid: el.oid,
+            raw_value: el.name_raw,
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getViewsColumnsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_views_columns_postgresql/", {
           table: node.data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.insertNode(node, "Triggers", {
-            icon: "fas node-all fa-bolt node-trigger",
-            type: "trigger_list",
-            contextMenu: "cm_view_triggers",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Rules", {
-            icon: "fas node-all fa-lightbulb node-rule",
-            type: "rule_list",
-            contextMenu: "cm_rules",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, `Columns (${resp.data.length})`, {
-            icon: "fas node-all fa-columns node-column",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          const columns_node = this.getFirstChildNode(node);
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              columns_node,
-              el.column_name,
-              {
-                icon: "fas node-all fa-columns node-column",
-                type: "table_field",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                raw_value: el.name_raw,
-              },
-              null
-            );
-            const table_field = this.getFirstChildNode(columns_node);
-
-            this.insertNode(
-              table_field,
-              `Type: ${el.data_type}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.insertNode(node, "Triggers", {
+          icon: "fas node-all fa-bolt node-trigger",
+          type: "trigger_list",
+          contextMenu: "cm_view_triggers",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
         });
+  
+        this.insertNode(node, "Rules", {
+          icon: "fas node-all fa-lightbulb node-rule",
+          type: "rule_list",
+          contextMenu: "cm_rules",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, `Columns (${response.data.length})`, {
+          icon: "fas node-all fa-columns node-column",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        const columns_node = this.getFirstChildNode(node);
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            columns_node,
+            el.column_name,
+            {
+              icon: "fas node-all fa-columns node-column",
+              type: "table_field",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
+            },
+            null
+          );
+          const table_field = this.getFirstChildNode(columns_node);
+  
+          this.insertNode(
+            table_field,
+            `Type: ${el.data_type}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
     getViewDefinitionPostgresql(node) {
       this.api
@@ -4842,97 +4825,95 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getMaterializedViewsPostgresql(node) {
-      this.api
-        .post("/get_mviews_postgresql/", {
+    async getMaterializedViewsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_mviews_postgresql/", {
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Materialized Views (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-eye node-mview",
-              type: "mview",
-              contextMenu: "cm_mview",
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              oid: el.oid,
-              raw_value: el.name_raw,
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Materialized Views (${response.data.length})`,
         });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-eye node-mview",
+            type: "mview",
+            contextMenu: "cm_mview",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            oid: el.oid,
+            raw_value: el.name_raw,
+          });
+        });
+      } catch(error) {
+        return error;
+      }
     },
-    getMaterializedViewsColumnsPostgresql(node) {
-      this.api
-        .post("/get_mviews_columns_postgresql/", {
+    async getMaterializedViewsColumnsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_mviews_columns_postgresql/", {
           table: node.data.raw_value,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.insertNode(node, "Statistics", {
-            icon: "fas node-all fa-chart-bar node-statistics",
-            type: "statistics_list",
-            contextMenu: "cm_statistics",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, "Indexes", {
-            icon: "fas node-all fa-thumbtack node-index",
-            type: "indexes",
-            contextMenu: "cm_indexes",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          this.insertNode(node, `Columns (${resp.data.length})`, {
-            icon: "fas node-all fa-columns node-column",
-            schema: node.data.schema,
-            schema_raw: node.data.schema_raw,
-          });
-
-          const columns_node = this.getFirstChildNode(node);
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              columns_node,
-              el.column_name,
-              {
-                icon: "fas node-all fa-columns node-column",
-                type: "table_field",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                raw_value: el.name_raw,
-              },
-              null
-            );
-            const table_field = this.getFirstChildNode(columns_node);
-
-            this.insertNode(
-              table_field,
-              `Type: ${el.data_type}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.insertNode(node, "Statistics", {
+          icon: "fas node-all fa-chart-bar node-statistics",
+          type: "statistics_list",
+          contextMenu: "cm_statistics",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
         });
+  
+        this.insertNode(node, "Indexes", {
+          icon: "fas node-all fa-thumbtack node-index",
+          type: "indexes",
+          contextMenu: "cm_indexes",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        this.insertNode(node, `Columns (${response.data.length})`, {
+          icon: "fas node-all fa-columns node-column",
+          schema: node.data.schema,
+          schema_raw: node.data.schema_raw,
+        });
+  
+        const columns_node = this.getFirstChildNode(node);
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            columns_node,
+            el.column_name,
+            {
+              icon: "fas node-all fa-columns node-column",
+              type: "table_field",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              raw_value: el.name_raw,
+            },
+            null
+          );
+          const table_field = this.getFirstChildNode(columns_node);
+  
+          this.insertNode(
+            table_field,
+            `Type: ${el.data_type}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
     getMaterializedViewDefinitionPostgresql(node) {
       this.api
@@ -4947,93 +4928,91 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getFunctionsPostgresql(node) {
-      this.api
-        .post("/get_functions_postgresql/", {
+    async getFunctionsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_functions_postgresql/", {
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Functions (${resp.data.length})`,
-          });
-
-          let childNodes = resp.data.map((el) => {
-            return {
-              title: el.name,
-              isLeaf: false,
-              isExpanded: false,
-              isDraggable: false,
-              data: {
-                database: this.selectedDatabase,
-                icon: "fas node-all fa-cog node-function",
-                type: "function",
-                contextMenu: "cm_function",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                function_oid: el.function_oid,
-                id: el.id,
-                raw_value: el.name_raw,
-              },
-            };
-          });
-
-          this.insertNodes(node, childNodes);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Functions (${response.data.length})`,
         });
+  
+        let childNodes = response.data.map((el) => {
+          return {
+            title: el.name,
+            isLeaf: false,
+            isExpanded: false,
+            isDraggable: false,
+            data: {
+              database: this.selectedDatabase,
+              icon: "fas node-all fa-cog node-function",
+              type: "function",
+              contextMenu: "cm_function",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              function_oid: el.function_oid,
+              id: el.id,
+              raw_value: el.name_raw,
+            },
+          };
+        });
+  
+        this.insertNodes(node, childNodes);
+      } catch(error) {
+        return error;
+      }
     },
-    getFunctionFieldsPostgresql(node) {
-      this.api
-        .post("/get_function_fields_postgresql/", {
+    async getFunctionFieldsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_function_fields_postgresql/", {
           function: node.data.id,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          resp.data.reduceRight((_, el) => {
-            if (el.type === "O") {
-              this.insertNode(
-                node,
-                el.name,
-                {
-                  icon: "fas node-all fa-arrow-right node-function-field",
-                  schema: node.data.schema,
-                  schema_raw: node.data.schema_raw,
-                },
-                true
-              );
-            } else if (el.type === "I") {
-              this.insertNode(
-                node,
-                el.name,
-                {
-                  icon: "fas node-all fa-arrow-left node-function-field",
-                  schema: node.data.schema,
-                  schema_raw: node.data.schema_raw,
-                },
-                true
-              );
-            } else {
-              this.insertNode(
-                node,
-                el.name,
-                {
-                  icon: "fas node-all fa-exchange-alt node-function-field",
-                  schema: node.data.schema,
-                  schema_raw: node.data.schema_raw,
-                },
-                true
-              );
-            }
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+        this.removeChildNodes(node);
+  
+        response.data.reduceRight((_, el) => {
+          if (el.type === "O") {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-arrow-right node-function-field",
+                schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
+              },
+              true
+            );
+          } else if (el.type === "I") {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-arrow-left node-function-field",
+                schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
+              },
+              true
+            );
+          } else {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-exchange-alt node-function-field",
+                schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
+              },
+              true
+            );
+          }
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
     getFunctionDefinitionPostgresql(node) {
       this.api
@@ -5047,38 +5026,37 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getTriggerFunctionsPostgresql(node) {
-      this.api
-        .post("/get_triggerfunctions_postgresql/", {
+    async getTriggerFunctionsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_triggerfunctions_postgresql/", {
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Trigger Functions (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              node,
-              el.name,
-              {
-                icon: "fas node-all fa-cog node-tfunction",
-                type: "trigger_function",
-                contextMenu: "cm_trigger_function",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                function_oid: el.function_oid,
-                id: el.id,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Trigger Functions (${response.data.length})`,
         });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-cog node-tfunction",
+              type: "trigger_function",
+              contextMenu: "cm_trigger_function",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              function_oid: el.function_oid,
+              id: el.id,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
     getTriggerFunctionDefinitionPostgresql(node) {
       this.api
@@ -5092,38 +5070,37 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getEventTriggerFunctionsPostgresql(node) {
-      this.api
-        .post("/get_eventtriggerfunctions_postgresql/", {
+    async getEventTriggerFunctionsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_eventtriggerfunctions_postgresql/", {
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Event Trigger Functions (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              node,
-              el.name,
-              {
-                icon: "fas node-all fa-cog node-etfunction",
-                type: "event_trigger_function",
-                contextMenu: "cm_event_trigger_function",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                id: el.id,
-                function_oid: el.function_oid,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Event Trigger Functions (${response.data.length})`,
         });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-cog node-etfunction",
+              type: "event_trigger_function",
+              contextMenu: "cm_event_trigger_function",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+              id: el.id,
+              function_oid: el.function_oid,
+            },
+            true
+          );
+        }, null);
+      } catch (error) {
+        return error;
+      }
     },
     getEventTriggerFunctionDefinitionPostgresql(node) {
       this.api
@@ -5137,83 +5114,81 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getProceduresPostgresql(node) {
-      this.api
-        .post("/get_procedures_postgresql/", {
+    async getProceduresPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_procedures_postgresql/", {
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Procedures (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-cog node-procedure",
-              type: "procedure",
-              contextMenu: "cm_procedure",
-              schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
-              id: el.id,
-              function_oid: el.function_oid,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Procedures (${response.data.length})`,
         });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-cog node-procedure",
+            type: "procedure",
+            contextMenu: "cm_procedure",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            id: el.id,
+            function_oid: el.function_oid,
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
-    getProcedureFieldsPostgresql(node) {
-      this.api
-        .post("/get_procedure_fields_postgresql/", {
+    async getProcedureFieldsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_procedure_fields_postgresql/", {
           procedure: node.data.id,
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          resp.data.reduceRight((_, el) => {
-            if (el.type === "O") {
-              this.insertNode(
-                node,
-                el.name,
-                {
-                  icon: "fas node-all fa-arrow-right node-function-field",
-                  schema: node.data.schema,
-                  schema_raw: node.data.schema_raw,
-                },
-                true
-              );
-            } else if (el.type === "I") {
-              this.insertNode(
-                node,
-                el.name,
-                {
-                  icon: "fas node-all fa-arrow-left node-function-field",
-                  schema: node.data.schema,
-                  schema_raw: node.data.schema_raw,
-                },
-                true
-              );
-            } else {
-              this.insertNode(
-                node,
-                el.name,
-                {
-                  icon: "fas node-all fa-exchange-alt node-function-field",
-                  schema: node.data.schema,
-                  schema_raw: node.data.schema_raw,
-                },
-                true
-              );
-            }
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+        this.removeChildNodes(node);
+  
+        response.data.reduceRight((_, el) => {
+          if (el.type === "O") {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-arrow-right node-function-field",
+                schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
+              },
+              true
+            );
+          } else if (el.type === "I") {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-arrow-left node-function-field",
+                schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
+              },
+              true
+            );
+          } else {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-exchange-alt node-function-field",
+                schema: node.data.schema,
+                schema_raw: node.data.schema_raw,
+              },
+              true
+            );
+          }
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
     getProcedureDefinitionPostgresql(node) {
       this.api
@@ -5227,561 +5202,550 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getAggregatesPostgresql(node) {
-      this.api
-        .post("/get_aggregates_postgresql/", {
+    async getAggregatesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_aggregates_postgresql/", {
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Aggregates (${resp.data.length})`,
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Aggregates (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-cog node-aggregate",
+            type: "aggregate",
+            contextMenu: "cm_aggregate",
+            schema: node.data.schema,
+            schema_raw: node.data.schema_raw,
+            id: el.id,
+            oid: el.oid,
           });
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getTypesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_types_postgresql/", {
+          schema: node.data.schema_raw,
+        })
 
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-cog node-aggregate",
-              type: "aggregate",
-              contextMenu: "cm_aggregate",
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Types (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.type_name,
+            {
+              icon: "fas node-all fa-square node-type",
+              type: "type",
+              contextMenu: "cm_type",
               schema: node.data.schema,
               schema_raw: node.data.schema_raw,
-              id: el.id,
               oid: el.oid,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+              raw_value: el.name_raw,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
-    getTypesPostgresql(node) {
-      this.api
-        .post("/get_types_postgresql/", {
+    async getDomainsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_domains_postgresql/", {
           schema: node.data.schema_raw,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Types (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              node,
-              el.type_name,
-              {
-                icon: "fas node-all fa-square node-type",
-                type: "type",
-                contextMenu: "cm_type",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                oid: el.oid,
-                raw_value: el.name_raw,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Domains (${response.data.length})`,
         });
-    },
-    getDomainsPostgresql(node) {
-      this.api
-        .post("/get_domains_postgresql/", {
-          schema: node.data.schema_raw,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Domains (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              node,
-              el.domain_name,
-              {
-                icon: "fas node-all fa-square node-domain",
-                type: "domain",
-                contextMenu: "cm_domain",
-                schema: node.data.schema,
-                schema_raw: node.data.schema_raw,
-                oid: el.oid,
-                raw_value: el.name_raw,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getExtensionsPostgresql(node) {
-      this.api
-        .post("/get_extensions_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Extensions (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              node,
-              el.name,
-              {
-                icon: "fas node-all fa-cubes node-extension",
-                type: "extension",
-                contextMenu: "cm_extension",
-                oid: el.oid,
-                raw_value: el.name_raw,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getForeignDataWrappersPostgresql(node) {
-      this.api
-        .post("/get_foreign_data_wrappers_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Foreign Data Wrappers (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-cube node-fdw",
-              type: "foreign_data_wrapper",
-              contextMenu: "cm_foreign_data_wrapper",
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.domain_name,
+            {
+              icon: "fas node-all fa-square node-domain",
+              type: "domain",
+              contextMenu: "cm_domain",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
               oid: el.oid,
-            });
-
-            const fdw_node = this.getFirstChildNode(node);
-
-            this.insertNode(fdw_node, "Foreign Servers", {
-              icon: "fas node-all fa-server node-server",
-              type: "foreign_server_list",
-              contextMenu: "cm_foreign_servers",
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+              raw_value: el.name_raw,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
     },
-    getForeignServersPostgresql(node) {
-      this.api
-        .post("/get_foreign_servers_postgresql/", {
+    async getExtensionsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_extensions_postgresql/")
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Extensions (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-cubes node-extension",
+              type: "extension",
+              contextMenu: "cm_extension",
+              oid: el.oid,
+              raw_value: el.name_raw,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getForeignDataWrappersPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_foreign_data_wrappers_postgresql/")
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Foreign Data Wrappers (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-cube node-fdw",
+            type: "foreign_data_wrapper",
+            contextMenu: "cm_foreign_data_wrapper",
+            oid: el.oid,
+          });
+  
+          const fdw_node = this.getFirstChildNode(node);
+  
+          this.insertNode(fdw_node, "Foreign Servers", {
+            icon: "fas node-all fa-server node-server",
+            type: "foreign_server_list",
+            contextMenu: "cm_foreign_servers",
+          });
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getForeignServersPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_foreign_servers_postgresql/", {
           fdw: this.getParentNode(node).title,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Foreign Servers (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-server node-server",
-              type: "foreign_server",
-              contextMenu: "cm_foreign_server",
-              raw_value: el.name_raw,
-              oid: el.oid,
-            });
-            const foreign_server_node = this.getFirstChildNode(node);
-
-            this.insertNode(foreign_server_node, "User Mappings", {
-              icon: "fas node-all fa-user-friends node-user",
-              type: "user_mapping_list",
-              contextMenu: "cm_user_mappings",
-            });
-
-            let options = el.options.split(",");
-            options.forEach((option_el) => {
-              this.insertNode(
-                foreign_server_node,
-                option_el,
-                {
-                  icon: "fas node-all fa-ellipsis-h node-bullet",
-                },
-                true
-              );
-            });
-
-            this.insertNode(
-              foreign_server_node,
-              `Version: ${el.version}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-
-            this.insertNode(
-              foreign_server_node,
-              `Type: ${el.type}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Foreign Servers (${response.data.length})`,
         });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-server node-server",
+            type: "foreign_server",
+            contextMenu: "cm_foreign_server",
+            raw_value: el.name_raw,
+            oid: el.oid,
+          });
+          const foreign_server_node = this.getFirstChildNode(node);
+  
+          this.insertNode(foreign_server_node, "User Mappings", {
+            icon: "fas node-all fa-user-friends node-user",
+            type: "user_mapping_list",
+            contextMenu: "cm_user_mappings",
+          });
+  
+          let options = el.options.split(",");
+          options.forEach((option_el) => {
+            this.insertNode(
+              foreign_server_node,
+              option_el,
+              {
+                icon: "fas node-all fa-ellipsis-h node-bullet",
+              },
+              true
+            );
+          });
+  
+          this.insertNode(
+            foreign_server_node,
+            `Version: ${el.version}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+  
+          this.insertNode(
+            foreign_server_node,
+            `Type: ${el.type}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
     },
-    getUserMappingsPostgresql(node) {
-      this.api
-        .post("/get_user_mappings_postgresql/", {
+    async getUserMappingsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_user_mappings_postgresql/", {
           foreign_server: this.getParentNode(node).data.raw_value,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `User Mappings (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-user-friends node-user",
-              type: "user_mapping",
-              contextMenu: "cm_user_mapping",
-              foreign_server: el.foreign_server,
-              raw_value: el.name_raw,
-            });
-
-            const user_mapping_node = this.getFirstChildNode(node);
-
-            let options = el.options.split(",");
-
-            options.forEach((option_el) => {
-              this.insertNode(
-                user_mapping_node,
-                option_el,
-                {
-                  icon: "fas node-all fa-ellipsis-h node-bullet",
-                },
-                true
-              );
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `User Mappings (${response.data.length})`,
         });
-    },
-    getEventTriggersPostgresql(node) {
-      this.api
-        .post("/get_eventtriggers_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Event Triggers (${resp.data.length})`,
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-user-friends node-user",
+            type: "user_mapping",
+            contextMenu: "cm_user_mapping",
+            foreign_server: el.foreign_server,
+            raw_value: el.name_raw,
           });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-bolt node-eventtrigger",
-              type: "event_trigger",
-              contextMenu: "cm_event_trigger",
-              oid: el.oid,
-              raw_value: el.name_raw,
-            });
-            const trigger_node = this.getFirstChildNode(node);
-
+  
+          const user_mapping_node = this.getFirstChildNode(node);
+  
+          let options = el.options.split(",");
+  
+          options.forEach((option_el) => {
             this.insertNode(
-              trigger_node,
-              el.function,
-              {
-                icon: "fas node-all fa-cog node-etfunction",
-                type: "direct_event_trigger_function",
-                contextMenu: "cm_direct_event_trigger_function",
-                id: el.id,
-                function_oid: el.function_oid,
-              },
-              true
-            );
-
-            this.insertNode(
-              trigger_node,
-              `Event: ${el.event}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-
-            this.insertNode(
-              trigger_node,
-              `Enabled: ${el.enabled}`,
+              user_mapping_node,
+              option_el,
               {
                 icon: "fas node-all fa-ellipsis-h node-bullet",
               },
               true
             );
           });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
         });
+      } catch(error) {
+        return error;
+      }
     },
-    getPublicationsPostgresql(node) {
-      this.api
-        .post("/get_publications_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getEventTriggersPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_eventtriggers_postgresql/")
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Publications (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-arrow-alt-circle-down node-publication",
-              type: "publication",
-              contextMenu: "cm_publication",
-              raw_value: el.name_raw,
-              oid: el.oid,
-            });
-            const publication_node = this.getFirstChildNode(node);
-
-            if (el.alltables === "False") {
-              this.insertNode(publication_node, "Tables", {
-                icon: "fas node-all fa-th node-table-list",
-                type: "publication_table_list",
-                contextMenu: "cm_pubtables",
-              });
-            }
-
-            this.insertNode(
-              publication_node,
-              `Truncate: ${el.truncate}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-
-            this.insertNode(
-              publication_node,
-              `Delete: ${el.delete}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-
-            this.insertNode(
-              publication_node,
-              `Update: ${el.update}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-
-            this.insertNode(
-              publication_node,
-              `Insert: ${el.insert}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-
-            this.insertNode(
-              publication_node,
-              `All Tables: ${el.alltables}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Event Triggers (${response.data.length})`,
         });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-bolt node-eventtrigger",
+            type: "event_trigger",
+            contextMenu: "cm_event_trigger",
+            oid: el.oid,
+            raw_value: el.name_raw,
+          });
+          const trigger_node = this.getFirstChildNode(node);
+  
+          this.insertNode(
+            trigger_node,
+            el.function,
+            {
+              icon: "fas node-all fa-cog node-etfunction",
+              type: "direct_event_trigger_function",
+              contextMenu: "cm_direct_event_trigger_function",
+              id: el.id,
+              function_oid: el.function_oid,
+            },
+            true
+          );
+  
+          this.insertNode(
+            trigger_node,
+            `Event: ${el.event}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+  
+          this.insertNode(
+            trigger_node,
+            `Enabled: ${el.enabled}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
     },
-    getPublicationTablesPostgresql(node) {
-      this.api
-        .post("/get_publication_tables_postgresql/", {
+    async getPublicationsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_publications_postgresql/")
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Publications (${response.data.length})`,
+        });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-arrow-alt-circle-down node-publication",
+            type: "publication",
+            contextMenu: "cm_publication",
+            raw_value: el.name_raw,
+            oid: el.oid,
+          });
+          const publication_node = this.getFirstChildNode(node);
+  
+          if (el.alltables === "False") {
+            this.insertNode(publication_node, "Tables", {
+              icon: "fas node-all fa-th node-table-list",
+              type: "publication_table_list",
+              contextMenu: "cm_pubtables",
+            });
+          }
+  
+          this.insertNode(
+            publication_node,
+            `Truncate: ${el.truncate}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+  
+          this.insertNode(
+            publication_node,
+            `Delete: ${el.delete}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+  
+          this.insertNode(
+            publication_node,
+            `Update: ${el.update}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+  
+          this.insertNode(
+            publication_node,
+            `Insert: ${el.insert}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+  
+          this.insertNode(
+            publication_node,
+            `All Tables: ${el.alltables}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
+    },
+    async getPublicationTablesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_publication_tables_postgresql/", {
           pub: this.getParentNode(node).title,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Tables (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el.name,
-              {
-                icon: "fas node-all fa-table node-table",
-                type: "pubtable",
-                contextMenu: "cm_pubtable",
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Tables (${response.data.length})`,
         });
-    },
-    getSubscriptionsPostgresql(node) {
-      this.api
-        .post("/get_subscriptions_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Subscriptions (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-arrow-alt-circle-up node-subscription",
-              type: "subscription",
-              contextMenu: "cm_subscription",
-              oid: el.oid,
-              raw_value: el.name_raw,
-            });
-            const subscription_node = this.getFirstChildNode(node);
-
-            this.insertNode(subscription_node, "Tables", {
-              icon: "fas node-all fa-th node-table-list",
-              type: "subscription_table_list",
-            });
-
-            this.insertNode(subscription_node, "Referenced Publications", {
-              icon: "fas node-all fa-arrow-alt-circle-down node-publication",
-              type: "subpubs",
-            });
-            const referenced_publications =
-              this.getFirstChildNode(subscription_node);
-
-            const publications = el.publications.split(",");
-            publications.forEach((pub_el) => {
-              this.insertNode(
-                referenced_publications,
-                pub_el,
-                {
-                  icon: "fas node-all fa-arrow-alt-circle-down node-publication",
-                  type: "subpub",
-                },
-                true
-              );
-            });
-
-            this.insertNode(
-              subscription_node,
-              `ConnInfo: ${el.conn_info}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-
-            this.insertNode(
-              subscription_node,
-              `Enabled: ${el.enabled}`,
-              {
-                icon: "fas node-all fa-ellipsis-h node-bullet",
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-table node-table",
+              type: "pubtable",
+              contextMenu: "cm_pubtable",
+            },
+            true
+          );
         });
+      } catch(error) {
+        return error;
+      }
     },
-    getSubscriptionTablesPostgresql(node) {
-      this.api
-        .post("/get_subscription_tables_postgresql/", {
+    async getSubscriptionsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_subscriptions_postgresql/")
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Subscriptions (${response.data.length})`,
+        });
+  
+        response.data.forEach((el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-arrow-alt-circle-up node-subscription",
+            type: "subscription",
+            contextMenu: "cm_subscription",
+            oid: el.oid,
+            raw_value: el.name_raw,
+          });
+          const subscription_node = this.getFirstChildNode(node);
+  
+          this.insertNode(subscription_node, "Tables", {
+            icon: "fas node-all fa-th node-table-list",
+            type: "subscription_table_list",
+          });
+  
+          this.insertNode(subscription_node, "Referenced Publications", {
+            icon: "fas node-all fa-arrow-alt-circle-down node-publication",
+            type: "subpubs",
+          });
+          const referenced_publications =
+            this.getFirstChildNode(subscription_node);
+  
+          const publications = el.publications.split(",");
+          publications.forEach((pub_el) => {
+            this.insertNode(
+              referenced_publications,
+              pub_el,
+              {
+                icon: "fas node-all fa-arrow-alt-circle-down node-publication",
+                type: "subpub",
+              },
+              true
+            );
+          });
+  
+          this.insertNode(
+            subscription_node,
+            `ConnInfo: ${el.conn_info}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+  
+          this.insertNode(
+            subscription_node,
+            `Enabled: ${el.enabled}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
+    },
+    async getSubscriptionTablesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_subscription_tables_postgresql/", {
           sub: this.getParentNode(node).title,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Tables (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el.name,
-              {
-                icon: "fas node-all fa-table node-table",
-                type: "subtable",
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getTablespacesPostgresql(node) {
-      this.api
-        .post("/get_tablespaces_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Tablespaces (${resp.data.length})`,
-          });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(
-              node,
-              el.name,
-              {
-                icon: "fas node-all fa-folder node-tablespace",
-                type: "tablespace",
-                contextMenu: "cm_tablespace",
-                oid: el.oid,
-                database: false,
-              },
-              true
-            );
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
-    },
-    getRolesPostgresql(node) {
-      this.api.post("/get_roles_postgresql/").then((resp) => {
         this.removeChildNodes(node);
-
+  
         this.$refs.tree.updateNode(node.path, {
-          title: `Roles (${resp.data.data.length})`,
+          title: `Tables (${response.data.length})`,
         });
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-table node-table",
+              type: "subtable",
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
+    },
+    async getTablespacesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_tablespaces_postgresql/")
 
-        resp.data.data.reduceRight((_, el) => {
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Tablespaces (${response.data.length})`,
+        });
+  
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-folder node-tablespace",
+              type: "tablespace",
+              contextMenu: "cm_tablespace",
+              oid: el.oid,
+              database: false,
+            },
+            true
+          );
+        }, null);
+      } catch(error) {
+        return error;
+      }
+    },
+    async getRolesPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_roles_postgresql/")
+
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Roles (${response.data.data.length})`,
+        });
+  
+        response.data.data.reduceRight((_, el) => {
           this.insertNode(
             node,
             el.name,
@@ -5796,88 +5760,87 @@ export default {
             true
           );
         }, null);
-      });
+      } catch(error) {
+        return error;
+      }
     },
-    getPhysicalReplicationSlotsPostgresql(node) {
-      this.api
-        .post("/get_physicalreplicationslots_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getPhysicalReplicationSlotsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_physicalreplicationslots_postgresql/")
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Physical Replication Slots (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el.name,
-              {
-                icon: "fas node-all fa-sitemap node-repslot",
-                type: "physical_replication_slot",
-                contextMenu: "cm_physical_replication_slot",
-                database: false,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Physical Replication Slots (${response.data.length})`,
         });
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-sitemap node-repslot",
+              type: "physical_replication_slot",
+              contextMenu: "cm_physical_replication_slot",
+              database: false,
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
     },
-    getLogicalReplicationSlotsPostgresql(node) {
-      this.api
-        .post("/get_logicalreplicationslots_postgresql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getLogicalReplicationSlotsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_logicalreplicationslots_postgresql/")
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Logical Replication Slots (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(
-              node,
-              el.name,
-              {
-                icon: "fas node-all fa-sitemap node-repslot",
-                type: "logical_replication_slot",
-                contextMenu: "cm_logical_replication_slot",
-                database: false,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        this.$refs.tree.updateNode(node.path, {
+          title: `Logical Replication Slots (${response.data.length})`,
         });
+  
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-sitemap node-repslot",
+              type: "logical_replication_slot",
+              contextMenu: "cm_logical_replication_slot",
+              database: false,
+            },
+            true
+          );
+        });
+      } catch(error) {
+        return error;
+      }
     },
-    getPgCronJobsPostgresql(node) {
-      this.api
-        .post("/get_pgcron_jobs/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getPgCronJobsPostgresql(node) {
+      try {
+        const response = await this.api.post("/get_pgcron_jobs/")
 
-          let jobs = resp.data.jobs;
-
-          jobs.forEach((job) => {
-            this.insertNode(
-              node,
-              job.name,
-              {
-                icon: "fas node-all fa-clock",
-                contextMenu: "cm_job",
-                job_meta: job,
-              },
-              true
-            );
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+  
+        let jobs = response.data.jobs;
+  
+        jobs.forEach((job) => {
+          this.insertNode(
+            node,
+            job.name,
+            {
+              icon: "fas node-all fa-clock",
+              contextMenu: "cm_job",
+              job_meta: job,
+            },
+            true
+          );
         });
+      } catch(error) {
+        return error;
+      }
     },
     deleteJobPostgresql(node) {
       this.api

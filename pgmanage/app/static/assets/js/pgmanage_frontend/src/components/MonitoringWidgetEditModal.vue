@@ -12,25 +12,24 @@
           <div class="modal-header align-items-center">
             <h2
               data-testid="widget-edit-header-title"
-              class="modal-title font-weight-bold"
+              class="modal-title fw-bold"
             >
               Monitoring Widget
             </h2>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
               @click="closeModal"
             >
-              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
             </button>
           </div>
 
           <div class="modal-body">
-            <div ref="topToolbar" class="form-row mt-3">
+            <div ref="topToolbar" class="row mt-3">
               <div class="form-group col-3">
-                <label for="widgetName" class="font-weight-bold mb-2"
+                <label for="widgetName" class="fw-bold mb-2"
                   >Name</label
                 >
                 <input
@@ -54,7 +53,7 @@
               </div>
 
               <div class="form-group col-2">
-                <label for="widgetType" class="font-weight-bold mb-2"
+                <label for="widgetType" class="fw-bold mb-2"
                   >Type</label
                 >
                 <select
@@ -75,7 +74,7 @@
               </div>
 
               <div class="form-group col-2">
-                <label for="refreshInterval" class="font-weight-bold mb-2"
+                <label for="refreshInterval" class="fw-bold mb-2"
                   >Refresh Interval</label
                 >
                 <input
@@ -102,7 +101,7 @@
               </div>
 
               <div class="form-group col-5">
-                <label for="widgetTemplates" class="font-weight-bold mb-2"
+                <label for="widgetTemplates" class="fw-bold mb-2"
                   >Template</label
                 >
                 <select
@@ -126,7 +125,7 @@
             </div>
 
             <Transition>
-              <div class="form-row">
+              <div class="row">
                 <div
                   v-if="showTestWidget"
                   data-testid="widget-edit-test-wrapper"
@@ -191,6 +190,7 @@ import { showToast } from "../notification_control";
 import MonitoringWidget from "./MonitoringWidget.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { required, minValue, minLength } from "@vuelidate/validators";
+import { Modal } from "bootstrap";
 
 export default {
   name: "MonitoringWidgetEditModal",
@@ -224,6 +224,7 @@ export default {
       showTestWidget: false,
       testWidgetData: {},
       heightSubtract: 150,
+      modalInstance: null,
     };
   },
   computed: {
@@ -246,10 +247,11 @@ export default {
   watch: {
     modalVisible(newValue, oldValue) {
       if (newValue) {
-        $(this.$refs.editWidgetModal).modal({
+        this.modalInstance = Modal.getOrCreateInstance(this.$refs.editWidgetModal, {
           backdrop: "static",
           keyboard: false,
-        });
+        })
+        this.modalInstance.show();
         this.setupModal();
       }
     },
@@ -365,8 +367,8 @@ export default {
           widget_script_chart: this.scriptEditor.getValue(),
         })
         .then((resp) => {
-          this.resetToDefault()
-          $(this.$refs.editWidgetModal).modal("hide");
+          this.resetToDefault();
+          this.modalInstance.hide();
           this.$emit("modalHide");
           showToast("success", "Monitoring widget created.");
         })
@@ -384,8 +386,8 @@ export default {
           widget_script_chart: this.scriptEditor.getValue(),
         })
         .then((resp) => {
-          this.resetToDefault()
-          $(this.$refs.editWidgetModal).modal("hide");
+          this.resetToDefault();
+          this.modalInstance.hide();
           this.$emit("modalHide");
           showToast("success", "Monitoring widget updated.");
         })

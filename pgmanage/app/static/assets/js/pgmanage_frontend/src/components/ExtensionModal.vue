@@ -4,15 +4,13 @@
       <div class="modal-content">
 
         <div class="modal-header align-items-center">
-          <h2 class="modal-title font-weight-bold">{{ modalTitle }}</h2>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-          </button>
+          <h2 class="modal-title fw-bold">{{ modalTitle }}</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
         <div class="modal-body">
           <div class="form-group mb-2">
-            <label for="extensionName" class="font-weight-bold mb-1">Name</label>
+            <label for="extensionName" class="fw-bold mb-1">Name</label>
             <select id="extensionName" class="form-control" v-model="selectedExtension"
               :disabled="mode === 'Alter'">
               <option value="" disabled>Select an item...</option>
@@ -22,13 +20,13 @@
           </div>
 
           <div class="form-group mb-2">
-            <label for="extensionComment" class="font-weight-bold mb-1">Comment</label>
+            <label for="extensionComment" class="fw-bold mb-1">Comment</label>
             <textarea class="form-control" id="extensionComment" disabled
               :value="selectedExtension?.comment"></textarea>
           </div>
 
           <div class="form-group mb-2">
-            <label for="extensionSchema" class="font-weight-bold mb-1">Schema</label>
+            <label for="extensionSchema" class="fw-bold mb-1">Schema</label>
             <select id="extensionSchema" class="form-control" v-model="selectedSchema"
               :disabled="!!requiredSchema || !isRelocatable">
               <option value="" disabled="">Select an item...</option>
@@ -37,7 +35,7 @@
           </div>
 
           <div class="form-group mb-2">
-            <label for="extensionVersions" class="font-weight-bold mb-1">Version</label>
+            <label for="extensionVersions" class="fw-bold mb-1">Version</label>
             <select id="extensionVersions" class="form-control" v-model="selectedVersion">
               <option value="" disabled>Select an item...</option>
               <option v-for="(version, index) in selectedExtension?.versions" :value="version" :key="index">{{ version }}
@@ -46,14 +44,14 @@
           </div>
 
           <div class="form-group mb-2">
-            <p class="font-weight-bold mb-1">Preview</p>
+            <p class="fw-bold mb-1">Preview</p>
             <div id="generated_sql_div" style="height: 10vh">
             </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary mr-2" :disabled="!selectedExtension || noUpdates"
+          <button type="button" class="btn btn-primary me-2" :disabled="!selectedExtension || noUpdates"
             @click="saveExtension">
             Save
           </button>
@@ -68,7 +66,8 @@
 import { emitter } from '../emitter'
 import axios from 'axios'
 import { showToast } from '../notification_control'
-import { settingsStore, messageModalStore } from '../stores/stores_initializer'
+import { settingsStore, messageModalStore } from '../stores/stores_initializer';
+import { Modal } from 'bootstrap';
 
 export default {
   name: 'ExtensionModal',
@@ -86,6 +85,7 @@ export default {
       selectedSchema: '',
       selectedVersion: '',
       editor: '',
+      modalInstance: null
     }
   },
   computed: {
@@ -149,9 +149,9 @@ export default {
     }
     this.setupEditor()
     if (this.mode !== 'Drop') {
-      $('#postgresqlExtensionModal').modal('show')
-    }
-     else {
+      this.modalInstance = new Modal('#postgresqlExtensionModal')
+      this.modalInstance.show()
+    } else {
       messageModalStore.showModal(`Are you sure you want to drop extension '${this.treeNode.title}'?`, this.dropExtension, null, true, [{ 'label': 'CASCADE', 'checked': false }])
     }
   },
@@ -188,7 +188,7 @@ export default {
       })
         .then((resp) => {
           emitter.emit(`refreshTreeRecursive_${this.tabId}`, "extension_list");
-          $('#postgresqlExtensionModal').modal('hide')
+          this.modalInstance.hide()
         })
         .catch((error) => {
           showToast("error", error.response.data.data)

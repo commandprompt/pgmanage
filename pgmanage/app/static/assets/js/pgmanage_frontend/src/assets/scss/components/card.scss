@@ -10,6 +10,10 @@
 
     &-header {
         background-color: rgba($primaryBlue, .2);
+        
+        &:first-child {
+            border-radius: 0;
+        }
 
         @include themify() {
             border-bottom: themed($border) !important;
@@ -21,6 +25,12 @@
 
         @include themify() {
             background-color: themed($surfaceBgSecondary);
+        }
+        
+        .btn-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
         }
     }
 }

@@ -1,9 +1,9 @@
 <template>
-<div v-if="visible" class="col-9 d-flex ml-auto">
+<div v-if="visible" class="col-9 d-flex ms-auto position-relative">
   <div class="modal-connections__forms position-absolute w-100">
     <div class="modal-connections__forms_group group-edit-form position-absolute">
       <div class="form-group mb-3">
-        <label for="groupName" class="font-weight-bold mb-2">Group Name</label>
+        <label for="groupName" class="fw-bold mb-2">Group Name</label>
         <input v-model="v$.groupLocal.name.$model" type="text"
           :class="['form-control', { 'is-invalid': v$.groupLocal.name.$invalid }]" id="groupName" placeholder="Group name">
         <div class="invalid-feedback">
@@ -13,7 +13,7 @@
         </div>
       </div>
 
-      <label class="font-weight-bold mb-2">Group connections</label>
+      <label class="fw-bold mb-2">Group connections</label>
       <div class="group-edit-form__list group-list d-flex flex-wrap">
         <div v-for="(connection, index) in candidateConnections" :key=index class="group-list__item">
           <input
@@ -41,7 +41,7 @@
     <ConfirmableButton v-if="groupLocal.id" :callbackFunc="() => $emit('group:delete', groupLocal)" class="btn btn-danger" />
     <button type="button" 
       @click="trySave()" 
-      class="btn btn-primary ml-auto"
+      class="btn btn-primary ms-auto"
       :disabled="v$.$invalid || (!isChanged && !!this.groupLocal.id)"
       >Save changes</button>
   </div>

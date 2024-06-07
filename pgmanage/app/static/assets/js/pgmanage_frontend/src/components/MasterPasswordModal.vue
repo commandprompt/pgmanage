@@ -10,7 +10,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header align-items-center">
-          <h2 class="modal-title font-weight-bold">Master Password</h2>
+          <h2 class="modal-title fw-bold">Master Password</h2>
         </div>
 
         <div class="modal-body">
@@ -24,7 +24,7 @@
             </span>
           </div>
 
-          <div v-if="isNewPassword" class="form-row">
+          <div v-if="isNewPassword" class="row">
             <div class="form-group col-6">
               <input
                 ref="newMasterPassInput"
@@ -85,7 +85,7 @@
             v-if="isNewPassword"
             type="button"
             class="btn btn-success"
-            data-dismiss="modal"
+            data-bs-dismiss="modal"
             @click="saveMasterPass"
             :disabled="isNewPasswordValid"
           >
@@ -105,7 +105,7 @@
               id="password_reset_button"
               type="button"
               class="btn btn-danger"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
               @click="resetPassword"
             >
               Reset Master Password
@@ -124,6 +124,7 @@ import axios from "axios";
 import { showToast } from "../notification_control.js";
 import { emitter } from "../emitter";
 import { messageModalStore } from "../stores/stores_initializer.js";
+import { Modal } from "bootstrap";
 
 export default {
   name: "MasterPasswordModal",
@@ -141,6 +142,7 @@ export default {
       isNewPassword: false,
       passwordMessage:
         "Please provide your master password to unlock your connection credentials for this session.",
+      modalInstance: null,
     };
   },
   computed: {
@@ -170,7 +172,7 @@ export default {
         this.showModal();
       });
 
-      $(this.$refs.masterPasswordModal).on("shown.bs.modal", () => {
+      this.$refs.masterPasswordModal.addEventListener("shown.bs.modal", () => {
         if (this.isNewPassword) {
           this.$refs.newMasterPassInput.focus();
         } else {
@@ -181,10 +183,14 @@ export default {
     showModal() {
       this.passwordMessage =
         "Please provide your master password to unlock your connection credentials for this session.";
-      $(this.$refs.masterPasswordModal).modal({
-        backdrop: "static",
-        keyboard: false,
-      });
+      this.modalInstance = Modal.getOrCreateInstance(
+        this.$refs.masterPasswordModal,
+        {
+          backdrop: "static",
+          keyboard: false,
+        }
+      );
+      this.modalInstance.show();
     },
     saveMasterPass() {
       axios
@@ -202,8 +208,9 @@ export default {
           master_password: this.checkPassword,
         })
         .then(() => {
-          $(this.$refs.masterPasswordModal).modal("hide");
+          this.modalInstance.hide();
           this.$emit("checkCompleted");
+          this.masterPassConfirmed = true;
         })
         .catch((error) => {
           this.passwordMessage = error.response.data.data;

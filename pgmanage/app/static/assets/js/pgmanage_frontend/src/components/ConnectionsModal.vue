@@ -1,21 +1,19 @@
 <template>
-  <div class="modal modal-blurr modal-connections" id="connections-modal" refs="connmodal" tabindex="-1">
+  <div class="modal modal-connections fade" id="connections-modal" ref="connmodal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-connections__dialog">
       <div class="modal-content modal-connections__content h-100">
         <div class="modal-header align-items-center">
-          <h2 class="modal-title font-weight-bold">Manage connections</h2>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-          </button>
+          <h2 class="modal-title fw-bold">Manage connections</h2>
+          <button type="btn" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body modal-connections__body p-0">
-          <div class="row no-gutters h-100">
-            <div class="col-3">
+          <div class="row g-0 h-100">
+            <div class="col-3 position-relative">
               <div class="modal-connections__panel">
                 <div class="modal-connections__panel_add add-connection d-flex justify-content-between align-items-center">
                   <p class="add-connection__title p-0 m-0"><span>{{ this.connections.length }}</span> connections</p>
                   <div class="btn-group" role="group" >
-                    <button type="button" class="btn btn-success add-connection__btn dropdown-toggle" data-toggle="dropdown" id="add_connection_button">
+                    <button type="button" class="btn btn-success add-connection__btn dropdown-toggle" data-bs-toggle="dropdown" id="add_connection_button">
                       <i class="fa-solid fa-circle-plus"></i> Add
                     </button>
                     <div class="dropdown-menu dropdown-menu-sm" id="add_connection_dropdown_menu">
@@ -28,15 +26,15 @@
                 <div class="modal-connections__list position-absolute w-100" id="connectionsList">
                   <div class="accordion">
                       <!-- GROUP ITEM -->
-                    <div v-for="(group, index) in groupedConnections" :key=index class="card">
-                      <div @click.prevent.stop="showForm('group', group)" class="card-header d-flex justify-content-between align-items-center collapsed" v-bind:id="'group-header-' + group.id" v-bind:data-target="'#collapse-group-' + group.id" data-toggle="collapse">
+                    <div v-for="(group, index) in groupedConnections" :key=index class="card rounded-0 border-0">
+                      <div @click.prevent.stop="showForm('group', group)" class="card-header d-flex justify-content-between align-items-center collapsed" v-bind:id="'group-header-' + group.id" v-bind:data-target="'#collapse-group-' + group.id" data-bs-toggle="collapse">
                         <h4 class="clipped-text mb-0">
                           {{ group.name }}
                         </h4>
                         <i class="fa-solid fa-chevron-down"></i>
                       </div>
 
-                      <div v-bind:id="'collapse-group-' + group.id" class="collapse" data-parent="#connectionsList">
+                      <div v-bind:id="'collapse-group-' + group.id" class="collapse" data-bs-parent="#connectionsList">
                         <div class="card-body p-0">
                           <ul class="list-group">
                             <li @click="showForm('connection', connection)" v-for="(connection, index) in group.connections" :key=index
@@ -99,6 +97,7 @@ import { emitter } from '../emitter'
 import { messageModalStore, tabsStore } from '../stores/stores_initializer';
 import { settingsStore, connectionsStore } from "../stores/stores_initializer";
 import { useVuelidate } from '@vuelidate/core'
+import { Modal, Collapse } from 'bootstrap'
 
 export default {
   name: 'ConnectionsModal',
@@ -276,7 +275,7 @@ export default {
           this.activeForm = 'group';
           this.selectedConnection = {};
           if (object) {
-            $(`#collapse-group-${object.id}`).collapse('toggle');
+            Collapse.getOrCreateInstance(`#collapse-group-${object.id}`).toggle()
             this.selectedGroup = object;
           } else {
             this.selectedGroup = undefined;
@@ -352,10 +351,11 @@ export default {
   mounted() {
     this.loadData(settingsStore.restoreTabs)
 
-    $('#connections-modal').on("shown.bs.modal", () => {
+    
+    this.$refs.connmodal.addEventListener("shown.bs.modal", () => {
       this.loadData(false)})
     
-    $('#connections-modal').on("hide.bs.modal", (event) => {
+    this.$refs.connmodal.addEventListener("hide.bs.modal", (event) => {
       if (this.v$.$anyDirty) {
         event.preventDefault()
         messageModalStore.showModal(
@@ -363,7 +363,7 @@ export default {
           () => {
             this.v$.$reset()
             this.$refs.connectionForm.reset()
-            $('#connections-modal').modal('hide')
+            Modal.getOrCreateInstance(this.$refs.connmodal).hide()
           },
           null
         );

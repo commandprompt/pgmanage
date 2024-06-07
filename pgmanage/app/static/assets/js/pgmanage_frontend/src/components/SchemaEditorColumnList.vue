@@ -1,6 +1,6 @@
 <template>
   <div class="mb-2">
-    <div class="d-flex form-row font-weight-bold text-muted schema-editor__header">
+    <div class="d-flex row fw-bold text-muted schema-editor__header">
       <div :class="commentable ? 'col-2' : 'col-3'">
         <p class="h6">Name</p>
       </div>
@@ -24,7 +24,7 @@
       </div>
     </div>
     <div v-for="(column, index) in columns" :key="column.index"
-        :class="['schema-editor__column d-flex form-row flex-nowrap form-group no-gutters',
+        :class="['schema-editor__column d-flex row flex-nowrap form-group g-0',
           { 'schema-editor__column-deleted': column.deleted },
           { 'schema-editor__column-new': column.new }]">
           <div :class="commentable ? 'col-2' : 'col-3'">
@@ -60,7 +60,7 @@
             :placeholder="this.mode == 'alter' ? '' : 'column comment...'" />
           </div>
 
-          <div :class="['col d-flex mr-2', this.movable(column) ? 'justify-content-between': 'justify-content-end']">
+          <div :class="['col d-flex me-2', this.movable(column) ? 'justify-content-between': 'justify-content-end']">
             <button v-if="column.deleted && !column.new" @click='column.deleted = false' type="button"
               class="btn btn-icon btn-icon-success" title="Revert">
               <i class="fas fa-rotate-left"></i>
@@ -82,8 +82,8 @@
             </button>
           </div>
     </div>
-    <div class="d-flex row no-gutters font-weight-bold mt-2">
-      <button @click='addColumn' class="btn btn-outline-success ml-auto">
+    <div class="d-flex g-0 fw-bold mt-2">
+      <button @click='addColumn' class="btn btn-outline-success ms-auto">
         Add Column
       </button>
     </div>

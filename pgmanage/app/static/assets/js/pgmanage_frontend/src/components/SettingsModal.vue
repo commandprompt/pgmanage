@@ -1,25 +1,23 @@
 <template>
-  <div class="modal fade" id="modal_settings" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal fade" ref="settingsModal" id="modal_settings" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header align-items-center">
-          <h2 class="modal-title font-weight-bold">Settings</h2>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="resetUnsavedSettings">
-            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-          </button>
+          <h2 class="modal-title fw-bold">Settings</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetUnsavedSettings"></button>
         </div>
         <div class="modal-body">
           <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
-              <a class="nav-link active" id="settings_shortcuts-tab" data-toggle="tab" href="#settings_shortcuts"
+              <a class="nav-link active" id="settings_shortcuts-tab" data-bs-toggle="tab" href="#settings_shortcuts"
                 role="tab" aria-controls="settings_shortcuts" aria-selected="true">Shortcuts</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" id="settings_options-tab" data-toggle="tab" href="#settings_options" role="tab"
+              <a class="nav-link" id="settings_options-tab" data-bs-toggle="tab" href="#settings_options" role="tab"
                 aria-controls="settings_options" aria-selected="false">Options</a>
             </li>
             <li v-if="!desktopMode" class="nav-item">
-              <a class="nav-link" id="settings_password-tab" data-toggle="tab" href="#settings_password" role="tab"
+              <a class="nav-link" id="settings_password-tab" data-bs-toggle="tab" href="#settings_password" role="tab"
                 aria-controls="settings_password" aria-selected="false">Password</a>
             </li>
           </ul>
@@ -31,31 +29,33 @@
                 <div style="position: absolute; top: 50%; width: 100%;">Press key combination... (ESC to cancel)</div>
               </div>
 
-              <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="form-group row">
+              <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="row">
                 <label :for="idx" class="col-sm-6 col-form-label">{{ shortcutLabel(shortcut) }}</label>
-                <div class="col-sm-6">
-                  <button :id="idx" class='btn btn-secondary btn-sm btn-block' @click="startSetShortcut">{{
-                    buildButtonText(shortcut)
-                  }}</button>
+                <div class="form-group col-6">
+                  <div class="d-grid">
+                    <button :id="idx" class='btn btn-secondary btn-sm' @click="startSetShortcut">{{
+                      buildButtonText(shortcut)
+                    }}</button>
+                  </div>
                 </div>
               </div>
 
-              <div class="text-right">
+              <div class="text-end">
                 <button class='btn btn-success' @click='saveSettings'>Save</button>
               </div>
             </div>
 
             <div class="tab-pane fade" id="settings_options" role="tabpanel" aria-labelledby="settings_options-tab">
-              <div class="form-row">
+              <div class="row">
                 <div class="form-group col-6">
-                  <label for="sel_theme" class="font-weight-bold mb-2">Theme</label>
+                  <label for="sel_theme" class="fw-bold mb-2">Theme</label>
                   <select id="sel_theme" class="form-control" v-model="theme">
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
                   </select>
                 </div>
                 <div class="form-group col-6">
-                  <label for="sel_interface_font_size" class="font-weight-bold mb-2">Font Size</label>
+                  <label for="sel_interface_font_size" class="fw-bold mb-2">Font Size</label>
                   <select id="sel_interface_font_size" class="form-control" v-model="fontSize">
                     <option v-for="font_size in fontSizeOptions" :key="font_size" :value="font_size">{{ font_size }}
                     </option>
@@ -63,16 +63,16 @@
                 </div>
               </div>
 
-              <div class="form-row">
+              <div class="row">
                 <div class="form-group col-6">
-                  <label for="sel_csv_encoding" class="font-weight-bold mb-2">CSV Encoding</label>
+                  <label for="sel_csv_encoding" class="fw-bold mb-2">CSV Encoding</label>
                   <select id="sel_csv_encoding" class="form-control" v-model="csvEncoding">
                     <option v-for="encoding in encodingValues" :key="encoding" :value="encoding">{{ encoding }}</option>
                   </select>
                 </div>
 
-                <div class="form-group col-6">
-                  <label for="txt_csv_delimiter" class="font-weight-bold mb-2">CSV Delimiter</label>
+                <div class="col-6">
+                  <label for="txt_csv_delimiter" class="fw-bold mb-2">CSV Delimiter</label>
                   <input type="text" id="txt_csv_delimiter" placeholder="Delimiter"
                     :class="['form-control', { 'is-invalid': v$.csvDelimiter.$invalid }]"
                     v-model="csvDelimiter">
@@ -85,94 +85,90 @@
 
               </div>
 
-              <div class="form-row">
-                <div class="form-group col-6">
-                  <div class="custom-control custom-switch">
-                    <input v-model="restoreTabs" id="restore_tabs" type="checkbox" class="custom-control-input" >
-                    <label for="restore_tabs" class="custom-control-label font-weight-bold mb-2">Restore Tabs on Start</label>
+              <div class="row">
+                <div class="col-6">
+                  <div class="form-check form-switch">
+                    <input v-model="restoreTabs" id="restore_tabs" type="checkbox" class="form-check-input" >
+                    <label for="restore_tabs" class="form-check-label fw-bold mb-2">Restore Tabs on Start</label>
                   </div>
                 </div>
 
-                <div class="form-group col-6">
-                  <div class="custom-control custom-switch">
-                    <input v-model="scrollTree" id="scroll_tree" type="checkbox" class="custom-control-input" >
-                    <label for="scroll_tree" title="Scroll datatase tree node into view when opened" class="custom-control-label font-weight-bold mb-2">Database Tree Autoscroll</label>
+                <div class="col-6">
+                  <div class="form-check form-switch">
+                    <input v-model="scrollTree" id="scroll_tree" type="checkbox" class="form-check-input" >
+                    <label for="scroll_tree" title="Scroll datatase tree node into view when opened" class="form-check-label fw-bold mb-2">Database Tree Autoscroll</label>
                   </div>
                 </div>
               </div>
 
-              <div class="form-row">
+              <div class="row">
                 <div class="form-group col-6">
-                  <label for="date_format" class="font-weight-bold mb-2">Date format</label>
+                  <label for="date_format" class="fw-bold mb-2">Date format</label>
                   <select id="date_format" class="form-control" v-model="selectedDateFormat">
                     <option v-for="dateFormat in dateFormats" :key="dateFormat" :value="dateFormat">{{ dateFormat }}
                     </option>
                   </select>
                 </div>
 
-                <div class="form-group col-6">
-                  <label class="font-weight-bold mb-3">Preview</label>
-                  <p class="font-weight-bold"> {{ formattedDatePreview }}</p>
+                <div class="col-6">
+                  <label class="fw-bold mb-3">Preview</label>
+                  <p class="fw-bold"> {{ formattedDatePreview }}</p>
                 </div>
 
               </div>
 
-              <div class="form-row">
+              <div class="row">
                 <div class="form-group col-12">
-                  <label for="binary_path" class="font-weight-bold mb-2">PostgreSQL Binary Path</label>
+                  <label for="binary_path" class="fw-bold mb-2">PostgreSQL Binary Path</label>
                   <div class="d-flex">
                     <div class="input-group">
                       <input id="binary_path" type="text" class="form-control" v-model="binaryPath"
                         :placeholder="`${action} binary path..`">
-                      <div v-if="desktopMode" class="input-group-append">
-                        <label class="btn btn-outline-secondary mb-0" type="button">
-                          Select
-                          <input type="file" @change="setPostgresqlPath" nwdirectory hidden>
-                        </label>
-                      </div>
+                      <label v-if="desktopMode" class="btn btn-outline-secondary mb-0" type="button">
+                        Select
+                        <input type="file" @change="setPostgresqlPath" nwdirectory hidden>
+                      </label>
                     </div>
-                    <a class="btn btn-outline-primary ml-2" @click="validateBinaryPath(binaryPath, ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])" title="Validate">
+                    <a class="btn btn-outline-primary ms-2" @click="validateBinaryPath(binaryPath, ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])" title="Validate">
                       Validate
                     </a>
                   </div>
                 </div>
               </div>
 
-              <div v-if="!isWindowsOS" class="form-row">
+              <div v-if="!isWindowsOS" class="row">
                 <div class="form-group col-12">
-                  <label for="pigz_path" class="font-weight-bold mb-2">Pigz Binary Path</label>
+                  <label for="pigz_path" class="fw-bold mb-2">Pigz Binary Path</label>
                   <div class="d-flex">
                     <div class="input-group">
                       <input id="pigz_path" type="text" class="form-control" v-model="pigzPath"
                         :placeholder="`${action} binary path..`">
-                      <div v-if="desktopMode" class="input-group-append">
-                        <label class="btn btn-outline-secondary mb-0" type="button">
-                          Select
-                          <input type="file" @change="setPigzPath" nwdirectory hidden>
-                        </label>
-                      </div>
+                      <label v-if="desktopMode" class="btn btn-outline-secondary mb-0" type="button">
+                        Select
+                        <input type="file" @change="setPigzPath" nwdirectory hidden>
+                      </label>
                     </div>
-                    <a class="btn btn-outline-primary ml-2" @click="validateBinaryPath(pigzPath, ['pigz'])" title="Validate">
+                    <a class="btn btn-outline-primary ms-2" @click="validateBinaryPath(pigzPath, ['pigz'])" title="Validate">
                       Validate
                     </a>
                   </div>
                 </div>
               </div>
 
-              <div class="text-right">
+              <div class="text-end">
                 <button class='btn btn-success' @click='saveSettings'>Save</button>
               </div>
             </div>
 
             <div class="tab-pane fade" id="settings_password" role="tabpanel" aria-labelledby="settings_password-tab">
-              <div class="form-row">
+              <div class="row">
                 <div class="form-group col-6">
-                  <label for="txt_new_pwd" class="font-weight-bold mb-2">New Password</label>
+                  <label for="txt_new_pwd" class="fw-bold mb-2">New Password</label>
                   <input v-model="password" id="txt_new_pwd" type="password" class="form-control" @input="checkPassword"
                     minlength="8" required>
                 </div>
-                <div class="form-group col-6">
-                  <label for="txt_confirm_new_pwd" class="font-weight-bold mb-2">Confirm</label>
+                <div class="col-6">
+                  <label for="txt_confirm_new_pwd" class="fw-bold mb-2">Confirm</label>
                   <input ref="passwordConfirm" v-model="passwordConfirm" id="txt_confirm_new_pwd" type="password"
                     class="form-control" @input="checkPassword" minlength="8" required>
                   <div class="invalid-tooltip">
@@ -180,7 +176,7 @@
                   </div>
                 </div>
               </div>
-              <div class="text-right">
+              <div class="text-end">
                 <button class='btn btn-success' @click='saveUserPassword' :disabled="buttonFormDisabled">Save</button>
               </div>
             </div>
@@ -202,6 +198,7 @@ import { settingsStore, tabsStore } from '../stores/stores_initializer'
 
 import { useVuelidate } from '@vuelidate/core'
 import { required, maxLength } from '@vuelidate/validators'
+import { Modal } from 'bootstrap'
 
 const light_terminal_theme = {
       background: '#FFFFFF',
@@ -530,7 +527,7 @@ export default {
     document.body.addEventListener('keydown', this.keyBoardShortcuts);
 
     this.$nextTick(() => {
-      $('#modal_settings').on('hidden.bs.modal', (e) => {
+      this.$refs.settingsModal.addEventListener('hidden.bs.modal', (e) => {
         this.password = '';
         this.passwordConfirm = '';
         this.buttonFormDisabled = true;
@@ -545,7 +542,7 @@ export default {
 
     this.applyThemes()
 
-    $('#modal_settings').on("show.bs.modal", () => {
+    this.$refs.settingsModal.addEventListener("show.bs.modal", () => {
       this.hidden = false
       settingsStore.getSettings();
     });
@@ -632,14 +629,14 @@ export default {
 
         document.body.classList.remove('pgmanage-theme--light', 'omnidb--theme-light');
 		    document.body.classList.add('pgmanage-theme--dark', 'omnidb--theme-dark');
-
       } else {
         settingsStore.setEditorTheme('omnidb')
         settingsStore.setTerminalTheme(light_terminal_theme)
-
         document.body.classList.remove('pgmanage-theme--dark', 'omnidb--theme-dark',);
 		    document.body.classList.add('pgmanage-theme--light', 'omnidb--theme-light');
       }
+
+      document.body.setAttribute('data-bs-theme', this.theme);
     },
     buildButtonText(shortcut_object, button = null) {
       let text = '';
@@ -662,7 +659,7 @@ export default {
           this.fallbackFontSize = null
           this.fallbackTheme = null
           this.hidden = true
-          $('#modal_settings').modal('hide');
+          Modal.getInstance(this.$refs.settingsModal).hide()
         })
       }
     },
@@ -676,7 +673,7 @@ export default {
             "password": this.password,
           })
           .then(() => {
-            $('#modal_settings').modal('hide');
+            Modal.getInstance(this.$refs.settingsModal).hide()
             showToast("success", "Password saved.");
           })
           .catch((error) => {

@@ -2,10 +2,10 @@
   <div>
   <splitpanes class="default-theme console-body" horizontal @resized="onResize">
     <pane size="80">
-      <div ref="console" :id="`txt_console_${tabId}`" class="omnidb__txt-console mr-2 h-100"></div>
+      <div ref="console" :id="`txt_console_${tabId}`" class="omnidb__txt-console me-2 h-100"></div>
     </pane>
 
-    <pane size="20" class="pl-2 border-top">
+    <pane size="20" class="ps-2 border-top">
       <div class="tab-actions py-2 d-flex align-items-center">
         <button class="btn btn-sm btn-primary" title="Run" @click="consoleSQL(false)" :disabled="executingState">
           <i class="fas fa-play fa-light"></i>
@@ -66,17 +66,17 @@
           <p class="m-0 h6" v-if="cancelled">
             <b>Cancelled</b>
           </p>
-          <p v-else-if="queryStartTime && queryDuration" class="m-0 h6 mr-2">
+          <p v-else-if="queryStartTime && queryDuration" class="m-0 h6 me-2">
             <b>Start time:</b> {{ queryStartTime.format() }}<br/>
             <b>Duration:</b> {{ queryDuration }}
           </p>
-          <p v-else-if="queryStartTime" class="m-0 h6 mr-2">
+          <p v-else-if="queryStartTime" class="m-0 h6 me-2">
             <b>Start time:</b> {{ queryStartTime.format() }}
           </p>
         </div>
       </div>
       <!--FIXME: add proper editor height recalculation-->
-        <QueryEditor ref="editor" class="custom-editor mr-2" :read-only="readOnlyEditor" :tab-id="tabId" tab-mode="console"
+        <QueryEditor ref="editor" class="custom-editor me-2" :read-only="readOnlyEditor" :tab-id="tabId" tab-mode="console"
           :dialect="dialect" @editor-change="updateEditorContent" :autocomplete="autocomplete"/>
     </pane>
   </splitpanes>

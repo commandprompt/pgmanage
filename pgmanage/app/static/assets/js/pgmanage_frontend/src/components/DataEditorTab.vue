@@ -1,10 +1,10 @@
 <template>
 <div class="data-editor p-2">
-  <div ref="topToolbar" class="form-row">
+  <div ref="topToolbar" class="row">
     <div class="form-group col-9">
       <form class="form" @submit.prevent>
         <label class="mb-2" :for="`${tabId}_queryFilter`">
-          <span class="font-weight-bold">Filter</span> <span class='text-info'> select</span> * <span class='text-info'>from</span> {{this.schema ? `${this.schema}.${this.table}` : `${this.table}`}}
+          <span class="fw-bold">Filter</span> <span class='text-info'> select</span> * <span class='text-info'>from</span> {{this.schema ? `${this.schema}.${this.table}` : `${this.table}`}}
         </label>
         <input :id="`${tabId}_queryFilter`" v-model.trim="queryFilter" class="form-control" name="filter"
            placeholder="extra filter criteria" />
@@ -12,7 +12,7 @@
     </div>
     <div class="form-group col-2">
       <form class="form" @submit.prevent>
-        <label class="font-weight-bold mb-2" :for="`${tabId}_rowLimit`">Limit</label>
+        <label class="fw-bold mb-2" :for="`${tabId}_rowLimit`">Limit</label>
         <select :id="`${tabId}_rowLimit`" v-model="rowLimit" class="form-control">
             <option v-for="(option, index) in [10, 100, 1000]"
               :key=index
@@ -22,8 +22,8 @@
         </select>
       </form>
     </div>
-    <div class="form-group col-1 d-flex align-items-end pl-0">
-      <button class="btn btn-primary mr-2" title="Load Data" @click="getTableData()">
+    <div class="form-group col-1 d-flex align-items-end ps-0">
+      <button class="btn btn-primary me-2" title="Load Data" @click="getTableData()">
         <i class="fa-solid fa-filter"></i>
       </button>
     </div>
@@ -33,8 +33,8 @@
   </div>
 
   <div ref="bottomToolbar" class="data-editor__footer d-flex align-items-center justify-content-end p-2">
-    <p class="text-info mr-2" v-if="!hasPK" ><i class="fa-solid fa-circle-info"></i> The table has no primary key, existing rows can not be updated</p>
-    <button type="submit" class="btn btn-success btn-sm mr-5" :disabled="!hasChanges"
+    <p class="text-info me-2" v-if="!hasPK" ><i class="fa-solid fa-circle-info"></i> The table has no primary key, existing rows can not be updated</p>
+    <button type="submit" class="btn btn-success btn-sm me-5" :disabled="!hasChanges"
       @click.prevent="applyChanges">
       {{this.applyBtnTitle()}}
     </button>
@@ -215,8 +215,8 @@ export default {
             headerClick: this.addRow,
           }
           let columns = this.tableColumns.map((col, idx) => {
-            let prepend = col.is_primary ? '<i class="fas fa-key action-key text-secondary mr-1"></i>' : ''
-            let title = `${prepend}<span>${col.name}</span><div class='font-weight-light'>${col.data_type}</div>`
+            let prepend = col.is_primary ? '<i class="fas fa-key action-key text-secondary me-1"></i>' : ''
+            let title = `${prepend}<span>${col.name}</span><div class='fw-light'>${col.data_type}</div>`
 
             return {
               field: (idx + 1).toString(),

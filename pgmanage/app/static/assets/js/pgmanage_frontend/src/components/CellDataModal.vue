@@ -1,7 +1,8 @@
 <template>
   <div
+    id="cell_data_modal"
     ref="cellDataModal"
-    class="modal show"
+    class="modal fade"
     aria-hidden="true"
     role="dialog"
     tabindex="-1"
@@ -12,12 +13,11 @@
           <h2 class="modal-title font-weight-bold">Show Data</h2>
           <button
             type="button"
-            class="close"
+            class="btn-close"
             data-dismiss="modal"
             aria-label="Close"
             @click="store.hideModal()"
           >
-            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
           </button>
         </div>
         <div class="modal-body">
@@ -43,12 +43,14 @@ import {
   settingsStore,
   cellDataModalStore,
 } from "../stores/stores_initializer";
+import { Modal } from "bootstrap";
 
 export default {
   name: "CellDataModal",
   data() {
     return {
       editor: null,
+      modalInstance: null,
     };
   },
   computed: {
@@ -62,18 +64,19 @@ export default {
         action.after(() => {
           this.setupEdidor();
           this.setEditorContent();
-          $(this.$refs.cellDataModal).modal({
+          this.modalInstance = Modal.getOrCreateInstance(this.$refs.cellDataModal, {
             backdrop: "static",
             keyboard: false,
           });
+          this.modalInstance.show();
         });
       }
 
       if (action.name === "hideModal") {
         this.editor.destroy();
+        this.modalInstance.hide();
         // erase leftover css classes left after editor destruction
         this.$refs.editor.classList.remove('ace-omnidb', 'ace-omnidb_dark')
-        $(this.$refs.cellDataModal).modal("hide");
       }
     });
   },
@@ -110,7 +113,6 @@ export default {
 
 .ace-editor {
   height: 70vh;
-  border: 1px solid rgb(195, 195, 195);
 }
 
 .modal-body {

@@ -3,30 +3,33 @@ $theme-map: null; //important! do not delete this
 @import './common/themes.scss';
 @import './common/variables';
 @import './common/typography';
+@import './common/ui-elements';
+
 @import './components/button';
 @import './components/dropdown';
 @import './components/accordion';
 @import './components/input';
 @import './components/modal';
 @import './components/tabs';
-@import './components/daterangepicker';
 @import './components/pagination';
 @import './components/card';
 @import './components/list-group';
-@import './components/alert';
-@import './common/ui-elements';
-@import './components/toasts';
-@import './components/context-menu-pgmanage';
-@import './components/cron-light';
-@import './components/pev2/pev2';
+@import './components/tables';
 @import './components/schema-editor';
-@import './components/vue-power-tree';
-@import './components/erd-card';
-@import './components/tabulator';
 @import './components/data-editor-tab';
-@import './components/splitpanes';
 @import './components/bootstrap-tooltips';
 @import './components/welcome-screen';
+
+@import './libs/pev2/pev2';
+@import './libs/tabulator';
+@import './libs/vue-power-tree';
+@import './libs/cron-light';
+@import './libs/context-menu-pgmanage';
+@import './libs/toasts';
+@import './libs/erd-card';
+@import './libs/daterangepicker';
+@import './libs/splitpanes';
+@import './libs/alert';
 
 body {
     font-family: $fontFamily;

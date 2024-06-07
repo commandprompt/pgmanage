@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { showToast } from "../notification_control.js";
 import moment from "moment";
-import { emitter } from "../emitter.js";
+import { Modal } from "bootstrap";
 
 const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -42,7 +42,11 @@ const useSettingsStore = defineStore("settings", {
             : userSettings.date_format,
         });
 
-        this.shortcuts = Object.assign({}, this.shortcuts, response.data.shortcuts);
+        this.shortcuts = Object.assign(
+          {},
+          this.shortcuts,
+          response.data.shortcuts
+        );
         moment.defaultFormat = this.dateFormat;
         document.documentElement.style.fontSize = `${this.fontSize}px`;
 
@@ -113,6 +117,12 @@ const useSettingsStore = defineStore("settings", {
     },
     setScrollTree(value) {
       this.scrollTree = value;
+    },
+    showModal() {
+      Modal.getOrCreateInstance('#modal_settings', {
+        backdrop: 'static', keyboard: false
+      }).show()
+      $('#txt_new_pwd').passtrength({passwordToggle: false});
     },
   },
 });

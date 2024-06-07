@@ -1,10 +1,10 @@
 <template>
   <div class="col-7">
     <div ref="settingInput">
-      <div class="custom-control custom-switch" v-if="setting.vartype === 'bool'">
-        <input class="custom-control-input" type="checkbox" :id="`switch-${inputId}`" v-model="setting.setting" true-value="on" false-value="off"
+      <div class="form-check form-switch" v-if="setting.vartype === 'bool'">
+        <input class="form-check-input" type="checkbox" :id="`switch-${inputId}`" v-model="setting.setting" true-value="on" false-value="off"
           @change="changeSetting" :disabled="isReadOnly" />
-        <label class="custom-control-label" :for="`switch-${inputId}`"></label>
+        <label class="form-check-label" :for="`switch-${inputId}`"></label>
       </div>
 
       <select v-else-if="setting.vartype === 'enum'" class="form-control form-control-sm" :name="setting.name"
@@ -47,6 +47,7 @@
 import { useVuelidate } from '@vuelidate/core'
 import { required, requiredUnless, minValue, maxValue, helpers } from '@vuelidate/validators'
 import { tabsStore } from '../stores/stores_initializer';
+import { Tooltip } from 'bootstrap';
 
 export default {
   setup() {
@@ -67,7 +68,7 @@ export default {
   emits: ["settingChange"],
   data() {
     return {
-      tooltipTitle: `<table class="text-left">
+      tooltipTitle: `<table class="text-start">
               <tr>
                 <td>Type:</td>
                 <td><b>${this.initialSetting.vartype}</b></td>
@@ -122,21 +123,28 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      $(`#${this.inputId}`).tooltip({
-        container: this.$refs.settingInput,
-        sanitize: false,
-        title: this.tooltipTitle,
-        boundary: "window",
-        html: true,
-        delay: { show: 500, hide: 100 },
-      });
-      $(`#${this.buttonId}`).tooltip({
-        container: this.$refs.resetButton,
-        sanitize: false,
-        boundary: "window",
-        html: true,
-        delay: { show: 500, hide: 100 },
-      });
+      const inputEl = document.getElementById(this.inputId)
+      const buttonEl = document.getElementById(this.buttonId)
+
+      if (inputEl) {
+        new Tooltip(inputEl, {
+          container: this.$refs.settingInput,
+          sanitize: false,
+          title: this.tooltipTitle,
+          boundary: "window",
+          html: true,
+          delay: { show: 500, hide: 100 }
+        })
+      }
+      if (buttonEl) {
+        new Tooltip(buttonEl, {
+          container: this.$refs.resetButton,
+          sanitize: false,
+          boundary: "window",
+          html: true,
+          delay: { show: 500, hide: 100 }
+        })
+      }
     });
   },
   methods: {

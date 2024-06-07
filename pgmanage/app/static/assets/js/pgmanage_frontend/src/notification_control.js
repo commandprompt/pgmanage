@@ -1,5 +1,6 @@
 import { createApp } from "vue";
 import { useToast } from 'vue-toast-notification';
+import { Modal } from "bootstrap";
 
 let v_message_modal_animating = false;
 let v_message_modal_queued = false;
@@ -7,30 +8,33 @@ let v_message_modal_queued_function = null;
 let v_shown_callback = null;
 
 $(function () {
-  $('#modal_message').on('hide.bs.modal', function (e) {
-    v_message_modal_animating = true;
-  });
-  $('#modal_message').on('show.bs.modal', function (e) {
-    v_message_modal_animating = true;
-  });
-  $('#modal_message').on('hidden.bs.modal', function (e) {
-		document.getElementById('modal_message_content').innerHTML = '';
-    v_message_modal_animating = false;
-    if (v_message_modal_queued == true) {
-			if (v_message_modal_queued_function!=null)
-				v_message_modal_queued_function();
-      $('#modal_message').modal();
-		}
-    v_message_modal_queued = false;
-		v_message_modal_queued_function = null;
-  });
-  $('#modal_message').on('shown.bs.modal', function (e) {
-    v_message_modal_animating = false;
-    if (v_shown_callback) {
-      v_shown_callback();
-      v_shown_callback = null;
-    }
-  });
+  let messageModalEl = document.getElementById("modal_message")
+  if ( messageModalEl) {
+    messageModalEl.addEventListener('hide.bs.modal', function (e) {
+      v_message_modal_animating = true;
+    });
+    messageModalEl.addEventListener('show.bs.modal', function (e) {
+      v_message_modal_animating = true;
+    });
+    messageModalEl.addEventListener('hidden.bs.modal', function (e) {
+      document.getElementById('modal_message_content').innerHTML = '';
+      v_message_modal_animating = false;
+      if (v_message_modal_queued == true) {
+        if (v_message_modal_queued_function!=null)
+          v_message_modal_queued_function();
+        Modal.getInstance(messageModalEl).show()
+      }
+      v_message_modal_queued = false;
+      v_message_modal_queued_function = null;
+    });
+    messageModalEl.addEventListener('shown.bs.modal', function (e) {
+      v_message_modal_animating = false;
+      if (v_shown_callback) {
+        v_shown_callback();
+        v_shown_callback = null;
+      }
+    });
+  }
 });
 
 function showMessageModal(p_content_function, p_large) {
@@ -47,7 +51,7 @@ function showMessageModal(p_content_function, p_large) {
   if (!v_message_modal_animating) {
 		if (p_content_function!=null)
 			p_content_function();
-    $('#modal_message').modal();
+    Modal.getOrCreateInstance('#modal_message').show()
 	}
   else {
     v_message_modal_queued = true;
@@ -137,7 +141,7 @@ function showToast(type, message) {
   let title = titleMap[type] || titleMap['default']
   let scrollableClass = type === 'error' ? 'v-toast-scrollable' : ''
   let html_msg = `<div class="v-toast__body p-0" >
-                    <h3 class="font-weight-bold">${title}</h3>
+                    <h3 class="fw-bold">${title}</h3>
                     <p class="${scrollableClass}">${message}</p>
                   </div>`
   const $toast = useToast()
