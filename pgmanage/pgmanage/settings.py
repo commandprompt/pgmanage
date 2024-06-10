@@ -1,9 +1,6 @@
 import os
-import sys
-import shutil
 import random
 import string
-import getpass
 from . import custom_settings
 
 
@@ -12,10 +9,10 @@ DEBUG = custom_settings.DEV_MODE
 DESKTOP_MODE = custom_settings.DESKTOP_MODE
 BASE_DIR = custom_settings.BASE_DIR
 HOME_DIR = custom_settings.HOME_DIR
-TEMP_DIR = BASE_DIR / 'app' / 'static' / 'temp'
-PLUGINS_DIR = BASE_DIR / 'app' / 'plugins'
-PLUGINS_STATIC_DIR = BASE_DIR / 'app' / 'static' / 'plugins'
-APP_DIR = BASE_DIR / 'app'
+TEMP_DIR = os.path.join(BASE_DIR,'app','static','temp')
+PLUGINS_DIR = os.path.join(BASE_DIR,'app','plugins')
+PLUGINS_STATIC_DIR = os.path.join(BASE_DIR,'app','static','plugins')
+APP_DIR = os.path.join(BASE_DIR,'app')
 
 SESSION_COOKIE_SECURE = custom_settings.SESSION_COOKIE_SECURE
 CSRF_COOKIE_SECURE = custom_settings.CSRF_COOKIE_SECURE
