@@ -122,7 +122,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "app/static")
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer' #TODO: remove PickleSerializer and fix upcomming errors
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 #PgManage LOGGING
 
