@@ -117,6 +117,7 @@ export default {
         columnDefaults: {
           headerHozAlign: "left",
           headerSort: false,
+          headerTooltip: 'double-click to maximize/minimize',
           maxInitialWidth: 200,
         },
         clipboard: "copy",

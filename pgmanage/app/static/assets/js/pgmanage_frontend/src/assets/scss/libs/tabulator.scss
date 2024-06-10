@@ -18,14 +18,13 @@
                 @include themify() {
                     background-color: themed($surfaceBg);
                 }
-
-                .subscript {
-                    font-size: 0.7rem;
+                &:hover .tabulator-col {
+                    border-left-color: rgba($primaryMutedColor, 0.4) !important;
                 }
-
                 .tabulator-col {
                     background: inherit !important;
-                    border: 0 !important;
+                    border: 1px solid transparent !important;
+                    transition: border-left-color .2s ease-in-out;
 
                     &-content {
                         padding: 0 0.75rem!important;

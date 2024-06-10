@@ -3468,7 +3468,7 @@ export default {
           database: false,
         });
       } catch(error) {
-        return error;
+        throw error; 
       }
     },
     async getDatabasesPostgresql(node) {
@@ -3492,7 +3492,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getDatabaseObjectsPostgresql(node) {
@@ -3552,7 +3552,7 @@ export default {
           contextMenu: "cm_schemas",
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getSchemasPostgresql(node) {
@@ -3577,7 +3577,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getSchemasObjectsPostgresql(node) {
@@ -3725,7 +3725,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getColumnsPostgresql(node) {
@@ -3873,7 +3873,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getPKPostgresql(node) {
@@ -3901,7 +3901,7 @@ export default {
           });
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getPKColumnsPostgresql(node) {
@@ -3927,7 +3927,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getFKsPostgresql(node) {
@@ -3954,7 +3954,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getFKsColumnsPostgresql(node) {
@@ -4010,7 +4010,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getUniquesPostgresql(node) {
@@ -4037,7 +4037,7 @@ export default {
           });
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getUniquesColumnsPostgresql(node) {
@@ -4062,7 +4062,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getChecksPostgresql(node) {
@@ -4104,7 +4104,7 @@ export default {
         });
 
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getExcludesPostgresql(node) {
@@ -4156,7 +4156,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getIndexesPostgresql(node) {
@@ -4185,7 +4185,7 @@ export default {
           });
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getIndexesColumnsPostgresql(node) {
@@ -4211,7 +4211,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getRulesPostgresql(node) {
@@ -4244,7 +4244,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     getRuleDefinitionPostgresql(node) {
@@ -4314,7 +4314,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getInheritedsPostgresql(node) {
@@ -4346,7 +4346,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getPartitionsPostgresql(node) {
@@ -4377,7 +4377,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getStatisticsPostgresql(node) {
@@ -4406,7 +4406,7 @@ export default {
           });
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getStatisticsColumnsPostgresql(node) {
@@ -4431,7 +4431,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getPartitionedParentsPostgresql(node) {
@@ -4458,7 +4458,7 @@ export default {
           });
         });
       } catch(error) {
-        return error;
+        throw error;
       } 
     },
     async getPartitionedChildrenPostgresql(node) {
@@ -4485,7 +4485,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getInheritedsParentsPostgresql(node) {
@@ -4512,7 +4512,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getInheritedsChildrenPostgresql(node) {
@@ -4540,7 +4540,7 @@ export default {
           });
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getForeignTablesPostgresql(node) {
@@ -4567,7 +4567,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getForeignColumnsPostgresql(node) {
@@ -4688,7 +4688,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getSequencesPostgresql(node) {
@@ -4719,7 +4719,7 @@ export default {
           );
         })
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getViewsPostgresql(node) {
@@ -4746,7 +4746,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getViewsColumnsPostgresql(node) {
@@ -4809,7 +4809,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     getViewDefinitionPostgresql(node) {
@@ -4849,7 +4849,7 @@ export default {
           });
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getMaterializedViewsColumnsPostgresql(node) {
@@ -4912,7 +4912,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     getMaterializedViewDefinitionPostgresql(node) {
@@ -4962,7 +4962,7 @@ export default {
   
         this.insertNodes(node, childNodes);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getFunctionFieldsPostgresql(node) {
@@ -5011,7 +5011,7 @@ export default {
           }
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     getFunctionDefinitionPostgresql(node) {
@@ -5055,7 +5055,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     getTriggerFunctionDefinitionPostgresql(node) {
@@ -5099,7 +5099,7 @@ export default {
           );
         }, null);
       } catch (error) {
-        return error;
+        throw error;
       }
     },
     getEventTriggerFunctionDefinitionPostgresql(node) {
@@ -5138,7 +5138,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getProcedureFieldsPostgresql(node) {
@@ -5187,7 +5187,7 @@ export default {
           }
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     getProcedureDefinitionPostgresql(node) {
@@ -5226,7 +5226,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getTypesPostgresql(node) {
@@ -5258,7 +5258,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getDomainsPostgresql(node) {
@@ -5290,7 +5290,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getExtensionsPostgresql(node) {
@@ -5318,7 +5318,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getForeignDataWrappersPostgresql(node) {
@@ -5348,7 +5348,7 @@ export default {
           });
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getForeignServersPostgresql(node) {
@@ -5410,7 +5410,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getUserMappingsPostgresql(node) {
@@ -5450,7 +5450,7 @@ export default {
           });
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getEventTriggersPostgresql(node) {
@@ -5505,7 +5505,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getPublicationsPostgresql(node) {
@@ -5582,7 +5582,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getPublicationTablesPostgresql(node) {
@@ -5610,7 +5610,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getSubscriptionsPostgresql(node) {
@@ -5677,7 +5677,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getSubscriptionTablesPostgresql(node) {
@@ -5704,7 +5704,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getTablespacesPostgresql(node) {
@@ -5732,7 +5732,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getRolesPostgresql(node) {
@@ -5761,7 +5761,7 @@ export default {
           );
         }, null);
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getPhysicalReplicationSlotsPostgresql(node) {
@@ -5788,7 +5788,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getLogicalReplicationSlotsPostgresql(node) {
@@ -5815,7 +5815,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     async getPgCronJobsPostgresql(node) {
@@ -5839,7 +5839,7 @@ export default {
           );
         });
       } catch(error) {
-        return error;
+        throw error;
       }
     },
     deleteJobPostgresql(node) {
