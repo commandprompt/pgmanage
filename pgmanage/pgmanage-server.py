@@ -194,7 +194,7 @@ else:
 
 #importing settings after setting HOME_DIR and other required parameters
 import pgmanage.settings
-
+import pgmanage.logging_filter
 # Adjust pgmanage settings based on the content of the config file
 for attribute, value in pgmanage_settings.__dict__.items():
     setattr(pgmanage.settings,attribute,value)
