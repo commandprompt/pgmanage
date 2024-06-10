@@ -22,10 +22,12 @@ function createExtensionModal(node, mode) {
     },
     mounted() {
       setTimeout(() => {
-        $("#postgresqlExtensionModal").on("hidden.bs.modal", () => {
+        let extensionModalEl = document.getElementById("postgresqlExtensionModal");
+        let messageModalEl = document.getElementById("generic_modal_message");
+        extensionModalEl.addEventListener("hidden.bs.modal", () => {
           app.unmount();
         });
-        $("#generic_modal_message").on("hidden.bs.modal", () => {
+        messageModalEl.addEventListener("hidden.bs.modal", () => {
           app.unmount();
         });
       }, 500);
@@ -57,7 +59,8 @@ function createPgCronModal(node, mode) {
     },
     mounted() {
       setTimeout(() => {
-        $("#pgCronModal").on("hidden.bs.modal", () => {
+        let pgCronModalEl = document.getElementById("pgCronModal")
+        pgCronModalEl.addEventListener("hidden.bs.modal", () => {
           app.unmount();
         });
       }, 500);

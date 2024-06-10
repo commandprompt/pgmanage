@@ -1,52 +1,61 @@
 .tooltip {
-    &[x-placement='top']{
-      .arrow::before {
-        @include themify() {
-            border-top-color: themed($tooltipBg);
-        }
-      }
+  --bs-tooltip-arrow-width: 1rem;
+  --bs-tooltip-arrow-height: 0.6rem;
+
+  &-inner {
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 0.5rem 1rem rgba(0,  0,  0,  0.15);
+
+    @include themify() {
+      color: themed($color);
+      background-color: themed($tooltipBg);
     }
 
-    &[x-placement='bottom']{
-      .arrow::before {
-        @include themify() {
-            border-bottom-color: themed($tooltipBg);
-        }
-      }
-    }
-
-    &[x-placement='left']{
-      .arrow::before {
-        @include themify() {
-            border-left-color: themed($tooltipBg);
-        }
-      }
-    }
-
-    &[x-placement='right']{
-      .arrow::before {
-        @include themify() {
-            border-right-color: themed($tooltipBg);
-        }
-      }
-    }
-
-    &-inner {
-      border-radius: 6px;
-      padding: 8px;
-      box-shadow: 0 0.5rem 1rem rgba(0,  0,  0,  0.15);
-
-        @include themify() {
-            color: themed($color);
-            background-color: themed($tooltipBg);
-        }
-
-      ul {
-        padding-left: 20px;
-      }
-    }
-
-    &.show {
-      opacity: 1 !important;
+    ul {
+      padding-left: 20px;
     }
   }
+
+  &.show {
+    opacity: 1 !important;
+  }
+}
+
+.bs-tooltip {
+  &-top,
+  &-auto[data-popper-placement^=top]  {
+    .tooltip-arrow::before {
+      @include themify() {
+        border-top-color: themed($tooltipBg);
+      }
+    }
+  }
+
+  &-end,
+  &-auto[data-popper-placement^=right]  {
+    .tooltip-arrow::before {
+      @include themify() {
+        border-right-color: themed($tooltipBg);
+      }
+    }
+  }
+
+  &-bottom,
+  &-auto[data-popper-placement^=bottom]  {
+    .tooltip-arrow::before {
+      @include themify() {
+        border-bottom-color: themed($tooltipBg);
+      }
+    }
+  }
+
+  &-start,
+  &-auto[data-popper-placement^=left] {
+    .tooltip-arrow:before {
+      @include themify() {
+        border-left-color: themed($tooltipBg);
+      }
+    }
+  }
+}

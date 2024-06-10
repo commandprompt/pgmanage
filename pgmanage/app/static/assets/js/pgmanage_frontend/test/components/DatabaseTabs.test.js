@@ -5,12 +5,6 @@ import { useTabsStore } from "../../src/stores/tabs";
 import { nextTick } from "vue";
 import { emitter } from "../../src/emitter";
 
-vi.mock("@/workspace.js", () => {
-  const renameTab = vi.fn();
-
-  return { renameTab };
-});
-
 describe("DatabaseTabs.vue", () => {
   let tabsStore, connTab, snippetTab;
   enableAutoUnmount(afterEach);

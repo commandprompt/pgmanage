@@ -29,12 +29,11 @@
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import {
-  createMessageModal,
   showConfirm,
   showToast,
 } from "../notification_control";
 import { emitter } from "../emitter";
-import { tabsStore } from "../stores/stores_initializer";
+import { messageModalStore, tabsStore } from "../stores/stores_initializer";
 
 export default {
   name: "TreeSnippets",
@@ -268,7 +267,7 @@ export default {
       );
     },
     deleteNodeSnippet(node) {
-      createMessageModal(
+      messageModalStore.showModal(
         `Are you sure you want to delete this ${node.data.type}?`,
         () => {
           this.api

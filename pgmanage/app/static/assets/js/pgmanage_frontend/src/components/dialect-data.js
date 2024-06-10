@@ -1,6 +1,7 @@
 import TableCompiler_SQLite3 from 'knex/lib/dialects/sqlite3/schema/sqlite-tablecompiler'
 import TableCompiler_MySQL from 'knex/lib/dialects/mysql/schema/mysql-tablecompiler'
-import { identity, flatten } from 'lodash'
+import identity from 'lodash/identity';
+import flatten from 'lodash/flatten';
 
 // TODO: Mysql - add PrimaryKey and Comment handling in alter table
 

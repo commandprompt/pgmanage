@@ -114,10 +114,10 @@ function polling_response(message) {
     }
     case parseInt(queryResponseCodes.ConsoleResult): {
       if (context) {
-        if (message.v_data.v_last_block || message.v_error) {
-          context.callback(message, context)
+        context.callback(message, context)
 
-          //Remove context
+        //Remove context
+        if (message.v_data.last_block || message.v_error) {
           removeContext(context_code);
         }
       }

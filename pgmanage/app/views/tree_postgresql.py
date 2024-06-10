@@ -19,9 +19,6 @@ def get_tree_info(request, database):
             "create_database": database.TemplateCreateDatabase().v_text,
             "alter_database": database.TemplateAlterDatabase().v_text,
             "drop_database": database.TemplateDropDatabase().v_text,
-            "create_extension": database.TemplateCreateExtension().v_text,
-            "alter_extension": database.TemplateAlterExtension().v_text,
-            "drop_extension": database.TemplateDropExtension().v_text,
             "create_schema": database.TemplateCreateSchema().v_text,
             "alter_schema": database.TemplateAlterSchema().v_text,
             "drop_schema": database.TemplateDropSchema().v_text,
@@ -50,8 +47,6 @@ def get_tree_info(request, database):
             "refresh_mview": database.TemplateRefreshMaterializedView().v_text,
             "alter_mview": database.TemplateAlterMaterializedView().v_text,
             "drop_mview": database.TemplateDropMaterializedView().v_text,
-            "create_table": database.TemplateCreateTable().v_text,
-            "alter_table": database.TemplateAlterTable().v_text,
             "drop_table": database.TemplateDropTable().v_text,
             "create_column": database.TemplateCreateColumn().v_text,
             "alter_column": database.TemplateAlterColumn().v_text,
@@ -613,8 +608,7 @@ def get_partitions(request, database):
     try:
         partitions = database.QueryTablesPartitions(table, False, schema)
         list_partitions = [
-            f'{partition["child_schema"]}.{partition["child_table"]}'
-            for partition in partitions.Rows
+            partition["child_table"] for partition in partitions.Rows
         ]
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -1508,7 +1502,7 @@ def get_partitions_parents(request, database):
         tables = database.QueryTablesPartitionsParents(False, schema)
         for table in tables.Rows:
             table_data = {
-                "name": f'{table["table_schema"]}.{table["table_name"]}',
+                "name": table["table_name"],
                 "name_raw": f'{table["table_schema_raw"]}.{table["name_raw"]}',
             }
             list_tables.append(table_data)

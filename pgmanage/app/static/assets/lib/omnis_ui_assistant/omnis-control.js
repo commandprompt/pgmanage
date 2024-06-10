@@ -302,7 +302,7 @@ function createOmnisUiAssistant({p_callback_end = false, p_omnis, p_steps = []})
 
         var v_step_btn_next = '';
         if (this.stepList[this.stepSelected].next_button && this.stepSelected < this.stepCounter - 1) {
-          v_step_btn_next += '<button id="omnis_step_btn_next" type="button" class="btn btn-sm btn-primary ml-2">Next</button>';
+          v_step_btn_next += '<button id="omnis_step_btn_next" type="button" class="btn btn-sm btn-primary ms-2">Next</button>';
         }
 
         // Temporarily disabling previous button.
@@ -312,7 +312,7 @@ function createOmnisUiAssistant({p_callback_end = false, p_omnis, p_steps = []})
         //   v_step_btn_previous += '<button id="omnis_step_btn_previous" type="button" class="btn btn-sm btn-secondary mr-2">Previous</button>';
         // }
 
-        var v_step_btn_close = '<button id="omnis_step_btn_close" type="button" class="btn btn-sm btn-danger ml-auto">End walkthrough</button>';
+        var v_step_btn_close = '<button id="omnis_step_btn_close" type="button" class="btn btn-sm btn-danger ms-auto">End walkthrough</button>';
 
         var v_step_title =
         '<div class="mb-4 text-center" style="position: relative;">' +

@@ -8,7 +8,7 @@ import { snippetsStore, settingsStore } from "../stores/stores_initializer";
 import { buildSnippetContextMenuObjects } from "../tree_context_functions/tree_snippets";
 import { emitter } from "../emitter";
 import { format } from "sql-formatter";
-import { setupAceDragDrop } from "../file_drop";
+import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_plugins";
 import { maxLinesForIndentSQL } from "../constants";
 import { showToast } from "../notification_control";
 import { dbMetadataStore } from "../stores/stores_initializer";
@@ -100,10 +100,19 @@ export default {
         dbMetadataStore.fetchDbMeta(this.databaseIndex, this.tabId, this.databaseName)
     },
     setupEditor() {
+      const EDITOR_MODEMAP = {
+        'postgresql': 'pgsql',
+        'mysql': 'mysql',
+        'mariadb': 'mysql',
+        'oracle': 'plsql'
+      }
+
+      let editor_mode = EDITOR_MODEMAP[this.dialect] || 'sql'
+
       this.editor = ace.edit(this.$refs.editor);
       this.editor.$blockScrolling = Infinity;
       this.editor.setTheme(`ace/theme/${settingsStore.editorTheme}`);
-      this.editor.session.setMode("ace/mode/sql");
+      this.editor.session.setMode(`ace/mode/${editor_mode}`);
       this.editor.setFontSize(settingsStore.fontSize);
       this.editor.setShowPrintMargin(false);
 
@@ -148,6 +157,7 @@ export default {
       this.editor.resize();
 
       setupAceDragDrop(this.editor);
+      setupAceSelectionHighlight(this.editor);
     },
     setupCompleter() {
       // TODO:

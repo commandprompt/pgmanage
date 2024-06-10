@@ -56,6 +56,14 @@ const useConnectionsStore = defineStore({
           console.log(error);
         });
     },
+    async testConnection(connection) {
+      try {
+        const response = await axios.post("/test_connection/", connection);
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    },
   },
 });
 

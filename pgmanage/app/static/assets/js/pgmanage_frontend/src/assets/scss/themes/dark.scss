@@ -157,14 +157,6 @@ SOFTWARE.
   .nav-tabs .nav-link.active {
     background-color: inherit;
   }
-  // .nav-tabs .nav-link:focus,
-  // .nav-tabs .nav-link:hover {
-  //   border-color: #383b42 #383b42 #383b42;
-  //   color: #555;
-  // }
-  // .nav-tabs .nav-link.active {
-  //   border-top: 2px solid #0054A6;
-  // }
   .omnidb__tab-menu--primary .nav-tabs .nav-link {
     border-top: 0;
     transition: all .3s ease-in-out;
@@ -291,33 +283,29 @@ SOFTWARE.
 
   /* QUERY RESULT TABS */
   .omnidb__query-result-tabs {
-    .tab-pane {
-      background-color: #16171E;
-    }
-
     .omnidb__tab-menu  {
-        &__link {
-          background-color: transparent;
-          border-width: 0 0 2px 0;
-          border-style: solid;
-          opacity: .7;
+      &__link {
+        background-color: transparent;
+        border-width: 0 0 2px 0;
+        border-style: solid;
+        opacity: .7;
 
-          &.active {
-            background-color: #16171E;
-            border-color: #2C3B5A;
-            border-bottom-color: #1560AD;
-            opacity: 1;
-            font-weight: 500;
-          }
-
-          &-name {
-            color: #F8FAFD !important;
-          }
-
-          &-icon {
-            background-color: #2F3136 !important;
-          }
+        &.active {
+          background-color: #16171E;
+          border-color: #2C3B5A;
+          border-bottom-color: #1560AD;
+          opacity: 1;
+          font-weight: 500;
         }
+
+        &-name {
+          color: #F8FAFD !important;
+        }
+
+        &-icon {
+          background-color: #2F3136 !important;
+        }
+      }
     }
   }
 
@@ -349,72 +337,6 @@ SOFTWARE.
   .omnidb__monitoring-result-tabs {
     border: 1px solid #43464E;
   }
-
-  /* CARD */
-  // .card {
-  //   background-color: #282A2F;
-  // }
-  // .card .card-header {
-  //   border-bottom-color: #383b42;
-  // }
-  // .card .card-header .nav.nav-tabs {
-  //   border-color: transparent;
-  // }
-
-  // /* DATERANGEPICKER */
-  // .daterangepicker {
-  //   background-color: #1d1f21;
-  //   border: 1px solid #5371bd;
-  // }
-  // .daterangepicker:after,
-  // .daterangepicker:before {
-  //   top: -7px;
-  //   border-right: 7px solid transparent;
-  //   border-left: 7px solid transparent;
-  //   border-bottom: 7px solid #5371bd;
-  // }
-  // .daterangepicker .ranges {
-  //   background-color: #252e44;
-  // }
-  // .daterangepicker .ranges li.active {
-  //   background-color: #394E83;
-  // }
-  // .daterangepicker .ranges li:hover {
-  //   background-color: #374463;
-  // }
-  // .daterangepicker .drp-buttons {
-  //   border-top: 1px solid #5371bd;
-  // }
-  // .daterangepicker .cancelBtn {
-  //   color: #FFF;
-  //   background-color: #d26363;
-  // }
-  // .daterangepicker.show-ranges.ltr .drp-calendar.left {
-  //     border-left: 1px solid #5371bd;
-  // }
-  // .daterangepicker .calendar-table {
-  //   border: 1px solid #191b1d;
-  //   background-color: #222529;
-  // }
-  // .daterangepicker td.off,
-  // .daterangepicker td.off.in-range,
-  // .daterangepicker td.off.start-date,
-  // .daterangepicker td.off.end-date {
-  //   background-color: #222529;
-  //   color: #999;
-  // }
-  // .daterangepicker td.in-range {
-  //   background-color: #9ba8b3;
-  // }
-  // .daterangepicker td.available:hover,
-  // .daterangepicker th.available:hover {
-  //   background-color: #2b5ca7;
-  // }
-  // .daterangepicker td.active,
-  // .daterangepicker td.active:hover {
-  //   background-color: #357ebd;
-  //   color: #fff;
-  // }
 
   /* FORMS */
   ::placeholder {
@@ -538,51 +460,18 @@ SOFTWARE.
     border-color: #474954;
   }
 
-  /* RESIZE LINES */
-  // .resize_line_vertical,
-  // .resize_line_horizontal {
-  //   transition: all .3s ease-in-out;
-
-  //   &:hover {
-  //     background-color: rgba(255, 255, 255, 0.1);
-  //     &:before, &:after {
-  //       background-color: rgba(255, 255, 255, 0.4);
-  //     }
-  //   }
-  // }
-
   /* Workspace Connection Info */
   .omnidb__workspace__connection-details b {
     color: #206BC4;
   }
-
-  /* HANDSONTABLE */
-  /* .handsontable th {
-    background-color: #FFF;
-    color: #9a9a9a;
-    font-weight: bold;
-  }
-  .handsontable .cellEven {
-    background-color: #efefef;
-  }
-  .handsontable thead th,
-  .handsontable td {
-    border-color: #DEE2E6;
-  } */
   .omnidb__ht__first-col-actions td:first-child {
     color: #1CF58A;
-  }
-
-  /* Query Info */
-  .omnidb__query-info__value {
-    /* color: #3b7fc1; */
   }
 
   /* Aimara Tree */
   .node-all {
     color: inherit;
   }
-
 
   /* Tree Component */
   .div_left ul.tree {
@@ -618,9 +507,6 @@ SOFTWARE.
     background-color: #373b41 !important;
     color: white;
   }
-  // div.header {
-  //   background-color: #1A1A1D !important;
-  // }
   .header .header_a_selected {
     background-color: #1E90FF !important;
   }
@@ -663,10 +549,6 @@ SOFTWARE.
   /* --------------------
   			Right Div
   ---------------------*/
-  /* Right Div Colors */
-  /* .query_info {
-      color: #ffffff !important;
-  } */
   .div_right div > div.tab {
     background-color: #373b41 !important;
   }
@@ -723,9 +605,6 @@ SOFTWARE.
   .div_left .ddTitle {
     color: #ffffff !important;
     background: #373b41 !important;
-  }
-  .ddTitle span {
-    /*font-weight: bold !important;*/
   }
   .div_left .dd .divider {
     border-left: 1px solid #484a55 !important;
@@ -816,21 +695,6 @@ SOFTWARE.
     color: #ffffff;
   }
 
-  /*
-  .div_alert_buttons button {
-    background: #17171f;
-    background-image: -webkit-linear-gradient(top, #0b394e, #17171f);
-    background-image: -moz-linear-gradient(top, #0b394e, #17171f);
-    background-image: -ms-linear-gradient(top, #0b394e, #17171f);
-    background-image: -o-linear-gradient(top, #0b394e, #17171f);
-    background-image: linear-gradient(to bottom, #0b394e, #17171f);
-    border: solid #0e678f 1px;
-    color: #d7d7d7;
-  }
-  .div_alert_buttons button:hover {
-    color: #f8f8f8;
-    background: #1E90FF;
-  }*/
   a.modal-closer {
       color: #ffffff !important;
       border: 1px solid #1E90FF !important;
@@ -841,17 +705,7 @@ SOFTWARE.
       color: #ffffff !important;
       border: 1px solid #6d6d6d !important;
   }
-  /*
-  button {
-    background: #25282c;
-    border: solid #484a55 1px;
-    color: #ffffff;
-  }
-  button:hover {
-    color: #fff !important;
-    background: #1E90FF !important;
-  }
-  */
+
   #plugin_file_label {
     background: #25282c;
     border: solid #484a55 1px;
@@ -861,7 +715,8 @@ SOFTWARE.
     color: #fff !important;
     background: #1E90FF !important;
   }
-  input,
+  input[type="text"],
+  input[type="password"],
   textarea  {
     background-color: #1A2234 !important;
     border-color: #243049 !important;

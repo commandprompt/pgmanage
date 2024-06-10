@@ -10,6 +10,7 @@ from math import ceil
 import os
 import time
 import threading
+import copy
 import app.include.Spartacus as Spartacus
 import app.include.Spartacus.Database as Database
 import app.include.Spartacus.Utils as Utils
@@ -46,6 +47,11 @@ class queryModes(IntEnum):
     COMMIT = 3
     ROLLBACK = 4
 
+class consoleModes(IntEnum):
+    DATA_OPERATION = 0
+    FETCH_MORE = 1
+    FETCH_ALL = 2
+    SKIP_FETCH = 3
 
 class requestType(IntEnum):
   Login          = 0
@@ -339,12 +345,11 @@ def create_request(request, session):
 
             #Console request
             elif v_code == requestType.Console:
-                v_data['v_tab_object'] = tab_object
+                v_data['tab_object'] = tab_object
                 t = StoppableThread(thread_console,v_data)
                 tab_object['thread'] = t
                 tab_object['type'] = 'console'
-                tab_object['sql_cmd'] = v_data['v_sql_cmd']
-                tab_object['tab_id'] = v_data['v_tab_id']
+                tab_object['sql_cmd'] = v_data['sql_cmd']
                 #t.setDaemon(True)
                 t.start()
 
@@ -851,9 +856,9 @@ def thread_query(self, args):
                 log_end_time = datetime.now(timezone.utc)
                 duration = GetDuration(log_start_time, log_end_time)
 
-
                 response_data['v_data'] = {
                     'col_names': data.Columns,
+                    'col_types': [database.v_connection.ResolveType(c) for c in data.ColumnTypeCodes],
                     'data': data.Rows,
                     'last_block': True,
                     'duration': duration,
@@ -883,6 +888,7 @@ def thread_query(self, args):
 
                     response_data['v_data'] = {
                         'col_names': data.Columns,
+                        'col_types': [database.v_connection.ResolveType(c) for c in data.ColumnTypeCodes],
                         'data': data.Rows,
                         'last_block': False,
                         'duration': duration,
@@ -915,6 +921,7 @@ def thread_query(self, args):
 
                     response_data['v_data'] = {
                         'col_names': data.Columns,
+                        'col_types': [database.v_connection.ResolveType(c) for c in data.ColumnTypeCodes],
                         'data': data.Rows,
                         'last_block': True,
                         'duration': duration,
@@ -935,6 +942,7 @@ def thread_query(self, args):
 
                 response_data['v_data'] = {
                     'col_names': None,
+                    'col_types': data.ColumnTypes,
                     'data': [],
                     'last_block': True,
                     'duration': duration,
@@ -1047,145 +1055,162 @@ def export_data(sql_cmd: str, database, encoding: str, delimiter: str, cmd_type:
     return file_name, extension
 
 
-def thread_console(self,args):
-    v_response = {
+def thread_console(self, args):
+    response_data = {
         'v_code': response.ConsoleResult,
-        'v_context_code': args['v_context_code'],
+        'v_context_code': args.get('v_context_code'),
         'v_error': False,
         'v_data': 1
     }
-
     try:
-        v_sql            = args['v_sql_cmd']
-        v_tab_id         = args['v_tab_id']
-        v_tab_object     = args['v_tab_object']
-        v_autocommit     = args['v_autocommit']
-        v_mode           = args['v_mode']
-        v_client_object  = args['v_client_object']
+        sql_cmd: str = args.get('sql_cmd')
+        tab_object: dict = args.get('tab_object')
+        autocommit: bool = args.get('autocommit')
+        mode: consoleModes = args.get('mode')
+        client_object: Client  = args.get('client_object') or args.get('v_client_object')
 
-        session = args['session']
-        v_database = args['v_database']
+        session: Session = args.get('session')
+        database = args.get('database') or args.get('v_database')
 
         #Removing last character if it is a semi-colon
-        if v_sql[-1:]==';':
-            v_sql = v_sql[:-1]
+        if sql_cmd[-1:]==';':
+            sql_cmd = sql_cmd[:-1]
 
         log_start_time = datetime.now(timezone.utc)
-        log_status = 'success'
+        show_fetch_button = False
 
         try:
-            list_sql = sqlparse.split(v_sql)
+            list_sql = sqlparse.split(sql_cmd)
 
-            v_data_return = ''
+            data_return = ''
             run_command_list = True
 
-            if v_mode==0:
-                v_database.v_connection.v_autocommit = v_autocommit
-                if not v_database.v_connection.v_con or v_database.v_connection.GetConStatus() == 0:
-                    v_database.v_connection.Open()
+            if mode == consoleModes.DATA_OPERATION:
+                database.v_connection.v_autocommit = autocommit
+                if not database.v_connection.v_con or database.v_connection.GetConStatus() == 0:
+                    database.v_connection.Open()
                 else:
-                    v_database.v_connection.v_start=True
+                    database.v_connection.v_start=True
 
-            if v_mode == 1 or v_mode ==2:
-                v_table = v_database.v_connection.QueryBlock('', 50, True, True)
+            if mode == consoleModes.FETCH_MORE:
+                v_table = database.v_connection.QueryBlock('', 50, True, True)
                 #need to stop again
-                if not v_database.v_connection.v_start or len(v_table.Rows)>=50:
-                    v_data_return += '\n' + v_table.Pretty(v_database.v_connection.v_expanded) + '\n' + v_database.v_connection.GetStatus()
+                if not database.v_connection.v_start or len(v_table.Rows)>=50:
+                    data_return += '\n' + v_table.Pretty(database.v_connection.v_expanded) + '\n' + database.v_connection.GetStatus()
                     run_command_list = False
-                    v_show_fetch_button = True
+                    show_fetch_button = True
                 else:
-                    v_data_return += '\n' + v_table.Pretty(v_database.v_connection.v_expanded) + '\n' + v_database.v_connection.GetStatus()
+                    data_return += '\n' + v_table.Pretty(database.v_connection.v_expanded) + '\n' + database.v_connection.GetStatus()
                     run_command_list = True
-                    list_sql = v_tab_object['remaining_commands']
+                    list_sql = tab_object['remaining_commands']
+            elif mode == consoleModes.FETCH_ALL:
+                has_more_records = True
+                run_command_list = False
+                while has_more_records:
 
-            if v_mode == 3:
+                    data = database.v_connection.QueryBlock('', 10000, True, True)
+                    data_return += '\n' + data.Pretty(database.v_connection.v_expanded) + '\n' + database.v_connection.GetStatus()
+
+                    if database.v_connection.v_start:
+                        has_more_records = False
+                    elif len(data.Rows) > 0:
+                        has_more_records = True
+                    else:
+                        has_more_records = False
+
+
+                    if self.cancel:
+                            break
+
+            if mode == consoleModes.SKIP_FETCH:
                 run_command_list = True
-                list_sql = v_tab_object['remaining_commands']
+                list_sql = tab_object['remaining_commands']
 
             if run_command_list:
                 counter = 0
-                v_show_fetch_button = False
+                show_fetch_button = False
                 for sql in list_sql:
                     counter = counter + 1
                     try:
                         formated_sql = sql.strip()
-                        v_data_return += '\n' + v_database.v_active_service + '=# ' + formated_sql + '\n'
+                        data_return += '\n' + database.v_active_service + '=# ' + formated_sql + '\n'
 
-                        v_database.v_connection.ClearNotices()
-                        v_database.v_connection.v_start=True
-                        v_data1 = v_database.v_connection.Special(sql)
+                        database.v_connection.ClearNotices()
+                        database.v_connection.v_start=True
+                        data1 = database.v_connection.Special(sql)
 
-                        v_notices = v_database.v_connection.GetNotices()
-                        v_notices_text = ''
-                        if len(v_notices) > 0:
-                            for v_notice in v_notices:
-                                v_notices_text += v_notice
-                            v_data_return += v_notices_text
+                        notices = database.v_connection.GetNotices()
+                        notices_text = ''
+                        if len(notices) > 0:
+                            for notice in notices:
+                                notices_text += notice
+                            data_return += notices_text
 
-                        v_data_return += v_data1
+                        data_return += data1
 
-                        if v_database.v_use_server_cursor:
-                            if v_database.v_connection.v_last_fetched_size == 50:
-                                v_tab_object['remaining_commands'] = list_sql[counter:]
-                                v_show_fetch_button = True
+                        if database.v_use_server_cursor:
+                            if database.v_connection.v_last_fetched_size == 50:
+                                tab_object['remaining_commands'] = list_sql[counter:]
+                                show_fetch_button = True
                                 break
                     except Exception as exc:
                         try:
-                            v_notices = v_database.v_connection.GetNotices()
-                            v_notices_text = ''
-                            if len(v_notices) > 0:
-                                for v_notice in v_notices:
-                                    v_notices_text += v_notice
-                                v_data_return += v_notices_text
+                            notices = database.v_connection.GetNotices()
+                            notices_text = ''
+                            if len(notices) > 0:
+                                for notice in notices:
+                                    notices_text += notice
+                                data_return += notices_text
                         except Exception as exc:
                             None
-                        v_response['v_error'] = True
-                        v_data_return += str(exc)
-                    v_tab_object['remaining_commands'] = []
+                        response_data['v_error'] = True
+                        data_return += str(exc)
+                    tab_object['remaining_commands'] = []
 
             log_end_time = datetime.now(timezone.utc)
-            v_duration = GetDuration(log_start_time,log_end_time)
+            duration = GetDuration(log_start_time,log_end_time)
 
-            v_data_return = v_data_return.replace("\n","\r\n")
+            data_return = data_return.replace("\n","\r\n")
 
-            v_response['v_data'] = {
-                'v_data' : v_data_return,
-                'v_last_block': True,
-                'v_duration': v_duration,
-                'v_con_status': v_database.v_connection.GetConStatus(),
+            response_data['v_data'] = {
+                'data' : data_return,
+                'last_block': True,
+                'duration': duration,
+                'con_status': database.v_connection.GetConStatus(),
             }
 
             #send data in chunks to avoid blocking the websocket server
-            chunks = [v_data_return[x:x+10000] for x in range(0, len(v_data_return), 10000)]
+            chunks = [data_return[x:x+10000] for x in range(0, len(data_return), 10000)]
             if len(chunks)>0:
-                for count in range(0,len(chunks)):
+                for idx, chunk in enumerate(chunks, 1):
+                    response_data_copy = copy.deepcopy(response_data)
                     if self.cancel:
                         break
-                    if not count==len(chunks)-1:
-                        v_response['v_data'] = {
-                            'v_data' : chunks[count],
-                            'v_last_block': False,
-                            'v_duration': v_duration,
-                            'v_show_fetch_button': v_show_fetch_button,
-                            'v_con_status': '',
+                    if idx != len(chunks):
+                        response_data_copy['v_data'] = {
+                            'data' : chunk,
+                            'last_block': False,
+                            'duration': duration,
+                            'show_fetch_button': show_fetch_button,
+                            'con_status': '',
                         }
                     else:
-                        v_response['v_data'] = {
-                            'v_data' : chunks[count],
-                            'v_last_block': True,
-                            'v_duration': v_duration,
-                            'v_show_fetch_button': v_show_fetch_button,
-                            'v_con_status': v_database.v_connection.GetConStatus(),
-                            'v_status': v_database.v_connection.GetStatus(),
+                        response_data_copy['v_data'] = {
+                            'data' : chunk,
+                            'last_block': True,
+                            'duration': duration,
+                            'show_fetch_button': show_fetch_button,
+                            'con_status': database.v_connection.GetConStatus(),
+                            'status': database.v_connection.GetStatus(),
                         }
                     if not self.cancel:
-                        queue_response(v_client_object,v_response)
+                        queue_response(client_object, response_data_copy)
             else:
                 if not self.cancel:
-                    queue_response(v_client_object,v_response)
+                    queue_response(client_object, response_data)
 
             try:
-                v_database.v_connection.ClearNotices()
+                database.v_connection.ClearNotices()
             except Exception:
                 None
         except Exception as exc:
@@ -1194,39 +1219,37 @@ def thread_console(self,args):
             #except:
             #    pass
             log_end_time = datetime.now(timezone.utc)
-            v_duration = GetDuration(log_start_time,log_end_time)
-            log_status = 'error'
-            v_response['v_error'] = True
-            v_response['v_data'] = {
-                'v_data': str(exc),
-                'v_duration': v_duration
+            duration = GetDuration(log_start_time,log_end_time)
+            response_data['v_error'] = True
+            response_data['v_data'] = {
+                'data': str(exc),
+                'duration': duration
             }
 
             if not self.cancel:
-                queue_response(v_client_object,v_response)
+                queue_response(client_object, response_data)
 
-        if v_mode == 0:
-            #logging to console history
+        if mode == consoleModes.DATA_OPERATION:
+            # logging to console history
             query_object = ConsoleHistory(
                 user=User.objects.get(id=session.v_user_id),
-                connection=Connection.objects.get(id=v_database.v_conn_id),
+                connection=Connection.objects.get(id=database.v_conn_id),
                 start_time=datetime.now(timezone.utc),
-                snippet=v_sql.replace("'","''"),
-                database=v_database.v_active_service
+                snippet=sql_cmd.replace("'","''"),
+                database=database.v_active_service
             )
 
             query_object.save()
 
-
     except Exception as exc:
         logger.error('''*** Exception ***\n{0}'''.format(traceback.format_exc()))
-        v_response['v_error'] = True
-        v_response['v_data'] = {
-            'v_data': str(exc),
-            'v_duration': ''
+        response_data['v_error'] = True
+        response_data['v_data'] = {
+            'data': str(exc),
+            'duration': ''
         }
         if not self.cancel:
-            queue_response(v_client_object,v_response)
+            queue_response(client_object, response_data)
 
 
 def thread_query_edit_data(self,args):

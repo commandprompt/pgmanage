@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import ShortUniqueId from "short-unique-id";
-import { connectionsStore } from "./stores_initializer";
+import { connectionsStore, messageModalStore } from "./stores_initializer";
 import { showToast, showConfirm } from "../notification_control";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { createRequest } from "../long_polling";
@@ -9,6 +9,7 @@ import { emitter } from "../emitter";
 import { queryRequestCodes } from "../constants";
 import { showMenuNewTabOuter, renameTab } from "../workspace";
 import { h } from "vue";
+import { Tooltip } from "bootstrap";
 
 const useTabsStore = defineStore("tabs", {
   state: () => ({
@@ -151,25 +152,19 @@ const useTabsStore = defineStore("tabs", {
       let allNodes = Array.from(el.parentNode.children);
       let oldIndex = allNodes.indexOf(el);
 
-      // Filter out non-draggable siblings
-      let siblings = allNodes.filter((node) => node !== el && !!node.draggable);
-
-      // Find the new index based on drop position
-      let newIndex = siblings.findIndex((sibling) => {
-        let rect = sibling.getBoundingClientRect();
+      let newIndex = allNodes.findIndex((node) => {
+        let rect = node.getBoundingClientRect();
         return (
           drop_pos_x >= rect.left &&
           drop_pos_x <= rect.right &&
           drop_pos_y >= rect.top &&
-          drop_pos_y <= rect.bottom
+          drop_pos_y <= rect.bottom &&
+          !!node.draggable
         );
       });
 
-      // Handle case where newIndex is -1 (drop position not found among siblings)
       if (newIndex === -1) {
-        newIndex = siblings.length;
-      } else if (newIndex === oldIndex) {
-        newIndex++;
+        newIndex = oldIndex;
       }
 
       // Reorder the tabs based on the new index
@@ -191,6 +186,15 @@ const useTabsStore = defineStore("tabs", {
     },
     getPrimaryTabById(tabId) {
       return this.tabs.find((tab) => tab.id === tabId);
+    },
+    getSecondaryTabById(tabId, parentId) {
+      const primaryTab = this.tabs.find((tab) => tab.id === parentId);
+      if (primaryTab) {
+        const secondaryTab = primaryTab.metaData.secondaryTabs.find(
+          (tab) => tab.id === tabId
+        );
+        return secondaryTab;
+      }
     },
     beforeCloseTab(e, confirmFunction) {
       if (e) {
@@ -331,7 +335,7 @@ const useTabsStore = defineStore("tabs", {
             imgName = `${v_conn.technology}2`;
           }
 
-          let icon = `<img src="${v_url_folder}${imgPath}${imgName}.svg"/>`;
+          let icon = `<img src="${app_base_path}${imgPath}${imgName}.svg"/>`;
 
           const connTab = this.addTab({
             name: connName,
@@ -344,7 +348,8 @@ const useTabsStore = defineStore("tabs", {
               this.checkTabStatus();
             },
             closeFunction: (e, primaryTab) => {
-              $('[data-toggle="tab"]').tooltip("hide");
+              const tooltipEl = document.getElementById(`${primaryTab.id}`);
+              Tooltip.getInstance(tooltipEl).hide();
               this.beforeCloseTab(e, () => {
                 var v_tabs_to_remove = [];
 
@@ -553,9 +558,17 @@ const useTabsStore = defineStore("tabs", {
         component: "ConfigTab",
         mode: "configuration",
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
+          if (tab.metaData.hasUnsavedChanges) {
+            messageModalStore.showModal(
+              "Are you sure you wish to discard unsaved configuration changes?",
+              () => {
+                this.closeTab(tab);
+              },
+              null
+            );
+          } else {
             this.closeTab(tab);
-          });
+          }
         },
       });
 

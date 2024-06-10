@@ -2,7 +2,7 @@
   <div class="dropdown dropdown-searchable" v-if="options">
 
     <!-- Dropdown Input -->
-    <input class="dropdown-searchable__input form-control pr-4"
+    <input class="dropdown-searchable__input form-control pe-4"
       :name="name"
       @focus="showOptions()"
       @blur="exit()"

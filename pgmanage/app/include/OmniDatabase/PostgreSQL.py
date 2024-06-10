@@ -1843,7 +1843,6 @@ class PostgreSQL:
 
     @lock_required
     def QueryTablesInheritedsChildren(self, p_table, p_schema):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) >= 100000:
             return self.v_connection.Query('''
                 select quote_ident(cc.relname) as name_raw,
                        cc.relname as table_name,
@@ -1856,21 +1855,6 @@ class PostgreSQL:
                 inner join pg_namespace nc on nc.oid = cc.relnamespace
                 where not cc.relispartition
                   and quote_ident(np.nspname) || '.' || quote_ident(cp.relname) = '{0}'
-                  and quote_ident(nc.nspname) = '{1}'
-                order by 2, 1
-            '''.format(p_table, p_schema))
-        else:
-            return self.v_connection.Query('''
-                select quote_ident(cc.relname) as name_raw,
-                       cc.relname as table_name,
-                       quote_ident(nc.nspname) as table_schema,
-                       cc.oid
-                from pg_inherits i
-                inner join pg_class cp on cp.oid = i.inhparent
-                inner join pg_namespace np on np.oid = cp.relnamespace
-                inner join pg_class cc on cc.oid = i.inhrelid
-                inner join pg_namespace nc on nc.oid = cc.relnamespace
-                where quote_ident(np.nspname) || '.' || quote_ident(cp.relname) = '{0}'
                   and quote_ident(nc.nspname) = '{1}'
                 order by 2, 1
             '''.format(p_table, p_schema))
@@ -2086,35 +2070,21 @@ class PostgreSQL:
                 v_filter = "and quote_ident(n.nspname) = '{0}' ".format(self.v_schema)
         else:
             v_filter = "and quote_ident(n.nspname) not in ('information_schema','pg_catalog') "
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.Query('''
-                select quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' as id,
-                       quote_ident(p.proname) as name,
-                       quote_ident(n.nspname) as schema_name,
-                       p.oid AS function_oid
-                from pg_proc p
-                join pg_namespace n
-                on p.pronamespace = n.oid
-                where not p.proisagg
-                  and format_type(p.prorettype, null) not in ('trigger', 'event_trigger')
-                {0}
-                order by 1
-            '''.format(v_filter), True)
-        else:
-            return self.v_connection.Query('''
-                select quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' as id,
-                       quote_ident(p.proname) as name_raw,
-                       p.proname as name,
-                       quote_ident(n.nspname) as schema_name,
-                       p.oid AS function_oid
-                from pg_proc p
-                join pg_namespace n
-                on p.pronamespace = n.oid
-                where p.prokind = 'f'
-                  and format_type(p.prorettype, null) not in ('trigger', 'event_trigger')
-                {0}
-                order by 1
-            '''.format(v_filter), True)
+
+        return self.v_connection.Query('''
+            select quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' as id,
+                    quote_ident(p.proname) as name_raw,
+                    p.proname as name,
+                    quote_ident(n.nspname) as schema_name,
+                    p.oid AS function_oid
+            from pg_proc p
+            join pg_namespace n
+            on p.pronamespace = n.oid
+            where p.prokind = 'f'
+                and format_type(p.prorettype, null) not in ('trigger', 'event_trigger')
+            {0}
+            order by 1
+        '''.format(v_filter), True)
 
     @lock_required
     def QueryFunctionFields(self, p_function, p_schema):
@@ -2323,46 +2293,25 @@ class PostgreSQL:
         else:
             v_filter = "AND quote_ident(n.nspname) NOT IN ('information_schema','pg_catalog') "
 
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.Query(
-                '''
-                    SELECT quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS id,
-                           quote_ident(p.proname) AS name,
-                           quote_ident(n.nspname) AS schema_name,
-                           p.oid
-                    FROM pg_aggregate a
-                    INNER JOIN pg_proc p
-                            ON a.aggfnoid = p.oid
-                    INNER JOIN pg_namespace n
-                            ON p.pronamespace = n.oid
-                    WHERE p.proisagg
-                      {0}
-                    ORDER BY 1
-                '''.format(
-                    v_filter
-                ),
-                True
-            )
-        else:
-            return self.v_connection.Query(
-                '''
-                    SELECT quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS id,
-                           quote_ident(p.proname) AS name,
-                           quote_ident(n.nspname) AS schema_name,
-                           p.oid
-                    FROM pg_aggregate a
-                    INNER JOIN pg_proc p
-                            ON a.aggfnoid = p.oid
-                    INNER JOIN pg_namespace n
-                            ON p.pronamespace = n.oid
-                    WHERE p.prokind = 'a'
-                      {0}
-                    ORDER BY 1
-                '''.format(
-                    v_filter
-                ),
-                True
-            )
+        return self.v_connection.Query(
+            '''
+                SELECT quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS id,
+                        quote_ident(p.proname) AS name,
+                        quote_ident(n.nspname) AS schema_name,
+                        p.oid
+                FROM pg_aggregate a
+                INNER JOIN pg_proc p
+                        ON a.aggfnoid = p.oid
+                INNER JOIN pg_namespace n
+                        ON p.pronamespace = n.oid
+                WHERE p.prokind = 'a'
+                    {0}
+                ORDER BY 1
+            '''.format(
+                v_filter
+            ),
+            True
+        )
 
     @lock_required
     def GetEventTriggerFunctionDefinition(self, p_function):
@@ -2623,32 +2572,18 @@ CREATE MATERIALIZED VIEW {0}.{1} AS
 
     @lock_required
     def QueryPublications(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) >= 110000:
-            return self.v_connection.Query('''
-                select quote_ident(pubname) as name_raw,
-                       pubname,
-                       puballtables,
-                       pubinsert,
-                       pubupdate,
-                       pubdelete,
-                       pubtruncate,
-                       oid
-                from pg_publication
-                order by 1
-            ''', True)
-        else:
-            return self.v_connection.Query('''
-                select quote_ident(pubname) as name_raw,
-                       pubname,
-                       puballtables,
-                       pubinsert,
-                       pubupdate,
-                       pubdelete,
-                       false as pubtruncate,
-                       oid
-                from pg_publication
-                order by 1
-            ''', True)
+        return self.v_connection.Query('''
+            select quote_ident(pubname) as name_raw,
+                    pubname,
+                    puballtables,
+                    pubinsert,
+                    pubupdate,
+                    pubdelete,
+                    false as pubtruncate,
+                    oid
+            from pg_publication
+            order by 1
+        ''', True)
 
     @lock_required
     def QueryPublicationTables(self, p_pub):
@@ -2777,36 +2712,20 @@ CREATE MATERIALIZED VIEW {0}.{1} AS
                 v_filter = "and quote_ident(n.nspname) = '{0}' ".format(self.v_schema)
         else:
             v_filter = "and quote_ident(n.nspname) not in ('information_schema','pg_catalog') "
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 100000:
-            return self.v_connection.Query('''
-                select quote_ident(c.relname) as name_raw,
-                       c.relname as table_name,
-                       quote_ident(n.nspname) as table_schema,
-                       false as is_partition,
-                       false as is_partitioned,
-                       c.oid
-                from pg_class c
-                inner join pg_namespace n
-                on n.oid = c.relnamespace
-                where c.relkind = 'f'
-                {0}
-                order by 2, 1
-            '''.format(v_filter), True)
-        else:
-            return self.v_connection.Query('''
-                select quote_ident(c.relname) as name_raw,
-                       c.relname as table_name,
-                       quote_ident(n.nspname) as table_schema,
-                       c.relispartition as is_partition,
-                       false as is_partitioned,
-                       c.oid
-                from pg_class c
-                inner join pg_namespace n
-                on n.oid = c.relnamespace
-                where c.relkind = 'f'
-                {0}
-                order by 2, 1
-            '''.format(v_filter), True)
+        return self.v_connection.Query('''
+            select quote_ident(c.relname) as name_raw,
+                    c.relname as table_name,
+                    quote_ident(n.nspname) as table_schema,
+                    c.relispartition as is_partition,
+                    false as is_partitioned,
+                    c.oid
+            from pg_class c
+            inner join pg_namespace n
+            on n.oid = c.relnamespace
+            where c.relkind = 'f'
+            {0}
+            order by 2, 1
+        '''.format(v_filter), True)
 
     @lock_required
     def QueryForeignTablesFields(self, p_table=None, p_all_schemas=False, p_schema=None):
@@ -3803,52 +3722,28 @@ CREATE MATERIALIZED VIEW {0}.{1} AS
         return v_sql
 
     def AdvancedObjectSearchInheritedTableName(self, p_textPattern, p_caseSentive, p_regex, p_inSchemas):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) >= 100000:
-            v_sql = '''
-                select 'Inherited Table Name'::text as category,
-                       quote_ident(np.nspname)::text as schema_name,
-                       quote_ident(cp.relname)::text as table_name,
-                       ''::text as column_name,
-                       quote_ident(cc.relname)::text as match_value
-                from pg_inherits i
-                inner join pg_class cp
-                           on cp.oid = i.inhparent
-                inner join pg_namespace np
-                           on np.oid = cp.relnamespace
-                inner join pg_class cc
-                           on cc.oid = i.inhrelid
-                inner join pg_namespace nc
-                           on nc.oid = cc.relnamespace
-                where not cc.relispartition
-                --#FILTER_PATTERN_CASE_SENSITIVE#  and quote_ident(cc.relname) like '#VALUE_PATTERN_CASE_SENSITIVE#'
-                --#FILTER_PATTERN_CASE_INSENSITIVE#  and lower(quote_ident(cc.relname)) like lower('#VALUE_PATTERN_CASE_INSENSITIVE#')
-                --#FILTER_PATTERN_REGEX_CASE_SENSITIVE# and quote_ident(cc.relname) ~ '#VALUE_PATTERN_REGEX_CASE_SENSITIVE#'
-                --#FILTER_PATTERN_REGEX_CASE_INSENSITIVE# and quote_ident(cc.relname) ~* '#VALUE_PATTERN_REGEX_CASE_INSENSITIVE#'
-                --#FILTER_BY_SCHEMA#  and lower(quote_ident(np.nspname)) in (#VALUE_BY_SCHEMA#)
-            '''
-        else:
-            v_sql = '''
-                select 'Inherited Table Name'::text as category,
-                       quote_ident(np.nspname)::text as schema_name,
-                       quote_ident(cp.relname)::text as table_name,
-                       ''::text as column_name,
-                       quote_ident(cc.relname)::text as match_value
-                from pg_inherits i
-                inner join pg_class cp
-                           on cp.oid = i.inhparent
-                inner join pg_namespace np
-                           on np.oid = cp.relnamespace
-                inner join pg_class cc
-                           on cc.oid = i.inhrelid
-                inner join pg_namespace nc
-                           on nc.oid = cc.relnamespace
-                where 1 = 1
-                --#FILTER_PATTERN_CASE_SENSITIVE#  and quote_ident(cc.relname) like '#VALUE_PATTERN_CASE_SENSITIVE#'
-                --#FILTER_PATTERN_CASE_INSENSITIVE#  and lower(quote_ident(cc.relname)) like lower('#VALUE_PATTERN_CASE_INSENSITIVE#')
-                --#FILTER_PATTERN_REGEX_CASE_SENSITIVE# and quote_ident(cc.relname) ~ '#VALUE_PATTERN_REGEX_CASE_SENSITIVE#'
-                --#FILTER_PATTERN_REGEX_CASE_INSENSITIVE# and quote_ident(cc.relname) ~* '#VALUE_PATTERN_REGEX_CASE_INSENSITIVE#'
-                --#FILTER_BY_SCHEMA#  and lower(quote_ident(np.nspname)) in (#VALUE_BY_SCHEMA#)
-            '''
+        v_sql = '''
+            select 'Inherited Table Name'::text as category,
+                    quote_ident(np.nspname)::text as schema_name,
+                    quote_ident(cp.relname)::text as table_name,
+                    ''::text as column_name,
+                    quote_ident(cc.relname)::text as match_value
+            from pg_inherits i
+            inner join pg_class cp
+                        on cp.oid = i.inhparent
+            inner join pg_namespace np
+                        on np.oid = cp.relnamespace
+            inner join pg_class cc
+                        on cc.oid = i.inhrelid
+            inner join pg_namespace nc
+                        on nc.oid = cc.relnamespace
+            where not cc.relispartition
+            --#FILTER_PATTERN_CASE_SENSITIVE#  and quote_ident(cc.relname) like '#VALUE_PATTERN_CASE_SENSITIVE#'
+            --#FILTER_PATTERN_CASE_INSENSITIVE#  and lower(quote_ident(cc.relname)) like lower('#VALUE_PATTERN_CASE_INSENSITIVE#')
+            --#FILTER_PATTERN_REGEX_CASE_SENSITIVE# and quote_ident(cc.relname) ~ '#VALUE_PATTERN_REGEX_CASE_SENSITIVE#'
+            --#FILTER_PATTERN_REGEX_CASE_INSENSITIVE# and quote_ident(cc.relname) ~* '#VALUE_PATTERN_REGEX_CASE_INSENSITIVE#'
+            --#FILTER_BY_SCHEMA#  and lower(quote_ident(np.nspname)) in (#VALUE_BY_SCHEMA#)
+        '''
 
         if p_inSchemas != '':
             v_sql = v_sql.replace('--#FILTER_BY_SCHEMA#', '').replace('#VALUE_BY_SCHEMA#', p_inSchemas)
@@ -4699,7 +4594,7 @@ LOCATION 'directory'
 --CONNECTION LIMIT connlimit
 --IS_TEMPLATE istemplate
 ''')
-        else:
+        elif int(self.v_connection.ExecuteScalar("show server_version_num")) >= 130000 and int(self.v_connection.ExecuteScalar("show server_version_num")) < 150000:
             return Template('''CREATE DATABASE name
 --OWNER user_name
 --TEMPLATE template
@@ -4711,6 +4606,24 @@ LOCATION 'directory'
 --ALLOW_CONNECTIONS allowconn
 --CONNECTION LIMIT connlimit
 --IS_TEMPLATE istemplate
+''')
+        else:
+            return Template('''CREATE DATABASE name
+--OWNER user_name
+--TEMPLATE template
+--ENCODING encoding
+--STRATEGY strategy
+--LOCALE locale
+--LC_COLLATE lc_collate
+--LC_CTYPE lc_ctype
+--ICU_LOCALE icu_locale
+--LOCALE_PROVIDER locale_provider
+--COLLATION_VERSION collation_version
+--TABLESPACE tablespace
+--ALLOW_CONNECTIONS allowconn
+--CONNECTION LIMIT connlimit
+--IS_TEMPLATE istemplate
+--OID oid
 ''')
 
     def TemplateAlterDatabase(self):
@@ -4735,31 +4648,6 @@ LOCATION 'directory'
 --WITH ( FORCE )
 ''')
 
-    def TemplateCreateExtension(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
-            return Template('''CREATE EXTENSION name
---SCHEMA schema_name
---VERSION VERSION
---FROM old_version
-''')
-        else:
-            return Template('''CREATE EXTENSION name
---SCHEMA schema_name
---VERSION VERSION
-''')
-
-    def TemplateAlterExtension(self):
-        return Template('''ALTER EXTENSION #extension_name#
---UPDATE [ TO new_version ]
---SET SCHEMA new_schema
---ADD member_object
---DROP member_object
-''')
-
-    def TemplateDropExtension(self):
-        return Template('''DROP EXTENSION #extension_name#
---CASCADE
-''')
 
     def TemplateCreateSchema(self):
         return Template('''CREATE SCHEMA schema_name
@@ -5208,163 +5096,6 @@ SELECT ...
 --CASCADE
 ''')
 
-    def TemplateCreateTable(self):
-        return Template('''CREATE
---TEMPORARY
---UNLOGGED
-TABLE #schema_name#.table_name
---OF type_name
---AS query [ WITH [ NO ] DATA ]
---PARTITION OF parent_table
-(
-    column_name data_type
-    --COLLATE collation
-    --CONSTRAINT constraint_name
-    --NOT NULL
-    --NULL
-    --CHECK ( expression ) [ NO INHERIT ]
-    --DEFAULT default_expr
-    --GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( sequence_options ) ]
-    --GENERATED ALWAYS AS ( generation_expr ) STORED
-    --UNIQUE [ WITH ( storage_parameter [= value] [, ... ] ) ] [ USING INDEX TABLESPACE tablespace_name ]
-    --PRIMARY KEY [ WITH ( storage_parameter [= value] [, ... ] ) ] [ USING INDEX TABLESPACE tablespace_name ]
-    --REFERENCES reftable [ ( refcolumn ) ] [ MATCH FULL | MATCH PARTIAL | MATCH SIMPLE ] [ ON DELETE { NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT } ] [ ON UPDATE { NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT } ]
-    --CHECK ( expression ) [ NO INHERIT ]
-    --UNIQUE ( column_name [, ... ] ) [ WITH ( storage_parameter [= value] [, ... ] ) ] [ USING INDEX TABLESPACE tablespace_name ]
-    --PRIMARY KEY ( column_name [, ... ] ) [ WITH ( storage_parameter [= value] [, ... ] ) ] [ USING INDEX TABLESPACE tablespace_name ]
-    --EXCLUDE [ USING index_method ] ( { column_name | ( expression ) } [ opclass ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] WITH operator [, ... ] ) [ WITH ( storage_parameter [= value] [, ... ] ) ] [ USING INDEX TABLESPACE tablespace_name ] [ WHERE ( predicate ) ]
-    --FOREIGN KEY ( column_name [, ... ] ) REFERENCES reftable [ ( refcolumn [, ... ] ) ] [ MATCH FULL | MATCH PARTIAL | MATCH SIMPLE ] [ ON DELETE { NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT } ] [ ON UPDATE { NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT } ]
-    --DEFERRABLE
-    --NOT DEFERRABLE
-    --INITIALLY DEFERRED
-    --INITIALLY IMMEDIATE
-    --LIKE source_table [ { INCLUDING | EXCLUDING } { COMMENTS | CONSTRAINTS | DEFAULTS | IDENTITY | INDEXES | STATISTICS | STORAGE | ALL } ... ]
-)
---FOR VALUES IN ( { numeric_literal | string_literal | TRUE | FALSE | NULL } [, ...] )
---FOR VALUES FROM ( { numeric_literal | string_literal | TRUE | FALSE | MINVALUE | MAXVALUE } [, ...] ) TO ( { numeric_literal | string_literal | TRUE | FALSE | MINVALUE | MAXVALUE } [, ...] )
---FOR VALUES WITH ( MODULUS numeric_literal, REMAINDER numeric_literal )
---DEFAULT
---INHERITS ( parent_table [, ... ] )
---PARTITION BY { RANGE | LIST | HASH } ( { column_name | ( expression ) } [ COLLATE collation ] [ opclass ] [, ... ] )
---WITH ( storage_parameter [= value] [, ... ] )
---WITHOUT OIDS
---ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP }
---TABLESPACE tablespace_name
-''')
-
-    def TemplateAlterTable(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
-            return Template('''ALTER TABLE
---ONLY
-#table_name#
---ADD [ COLUMN ] [ IF NOT EXISTS ] column_name data_type [ COLLATE collation ] [ column_constraint [ ... ] ]
---DROP [ COLUMN ] [ IF EXISTS ] column_name [ RESTRICT | CASCADE ]
---ALTER [ COLUMN ] column_name [ SET DATA ] TYPE data_type [ COLLATE collation ] [ USING expression ]
---ALTER [ COLUMN ] column_name SET DEFAULT expression
---ALTER [ COLUMN ] column_name DROP DEFAULT
---ALTER [ COLUMN ] column_name { SET | DROP } NOT NULL
---ALTER [ COLUMN ] column_name ADD GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( sequence_options ) ]
---ALTER [ COLUMN ] column_name { SET GENERATED { ALWAYS | BY DEFAULT } | SET sequence_option | RESTART [ [ WITH ] restart ] } [...]
---ALTER [ COLUMN ] column_name DROP IDENTITY [ IF EXISTS ]
---ALTER [ COLUMN ] column_name SET STATISTICS integer
---ALTER [ COLUMN ] column_name SET ( attribute_option = value [, ... ] )
---ALTER [ COLUMN ] column_name RESET ( attribute_option [, ... ] )
---ALTER [ COLUMN ] column_name SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
---ADD table_constraint [ NOT VALID ]
---ADD CONSTRAINT constraint_name { UNIQUE | PRIMARY KEY } USING INDEX index_name [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
---ALTER CONSTRAINT constraint_name [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
---VALIDATE CONSTRAINT constraint_name
---DROP CONSTRAINT [ IF EXISTS ]  constraint_name [ RESTRICT | CASCADE ]
---DISABLE TRIGGER [ trigger_name | ALL | USER ]
---ENABLE TRIGGER [ trigger_name | ALL | USER ]
---ENABLE REPLICA TRIGGER trigger_name
---ENABLE ALWAYS TRIGGER trigger_name
---DISABLE RULE rewrite_rule_name
---ENABLE RULE rewrite_rule_name
---ENABLE REPLICA RULE rewrite_rule_name
---ENABLE ALWAYS RULE rewrite_rule_name
---DISABLE ROW LEVEL SECURITY
---ENABLE ROW LEVEL SECURITY
---FORCE ROW LEVEL SECURITY
---NO FORCE ROW LEVEL SECURITY
---CLUSTER ON index_name
---SET WITHOUT CLUSTER
---SET WITHOUT OIDS
---SET TABLESPACE new_tablespace
---SET { LOGGED | UNLOGGED }
---SET ( storage_parameter = value [, ... ] )
---RESET ( storage_parameter [, ... ] )
---INHERIT parent_table
---NO INHERIT parent_table
---OF type_name
---NOT OF
---OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
---REPLICA IDENTITY { DEFAULT | USING INDEX index_name | FULL | NOTHING }
---RENAME [ COLUMN ] column_name TO new_column_name
---RENAME CONSTRAINT constraint_name TO new_constraint_name
---RENAME TO new_name
---SET SCHEMA new_schema
---ALL IN TABLESPACE name [ OWNED BY role_name [, ... ] ] SET TABLESPACE new_tablespace [ NOWAIT ]
---ATTACH PARTITION partition_name FOR VALUES partition_bound_spec
---DETACH PARTITION partition_name
-''')
-        else:
-            return Template('''ALTER TABLE
---ONLY
-#table_name#
---ADD [ COLUMN ] [ IF NOT EXISTS ] column_name data_type [ COLLATE collation ] [ column_constraint [ ... ] ]
---DROP [ COLUMN ] [ IF EXISTS ] column_name [ RESTRICT | CASCADE ]
---ALTER [ COLUMN ] column_name [ SET DATA ] TYPE data_type [ COLLATE collation ] [ USING expression ]
---ALTER [ COLUMN ] column_name SET DEFAULT expression
---ALTER [ COLUMN ] column_name DROP DEFAULT
---ALTER [ COLUMN ] column_name { SET | DROP } NOT NULL
---ALTER [ COLUMN ] column_name DROP EXPRESSION
---ALTER [ COLUMN ] column_name ADD GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( sequence_options ) ]
---ALTER [ COLUMN ] column_name { SET GENERATED { ALWAYS | BY DEFAULT } | SET sequence_option | RESTART [ [ WITH ] restart ] } [...]
---ALTER [ COLUMN ] column_name DROP IDENTITY [ IF EXISTS ]
---ALTER [ COLUMN ] column_name SET STATISTICS integer
---ALTER [ COLUMN ] column_name SET ( attribute_option = value [, ... ] )
---ALTER [ COLUMN ] column_name RESET ( attribute_option [, ... ] )
---ALTER [ COLUMN ] column_name SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
---ADD table_constraint [ NOT VALID ]
---ADD CONSTRAINT constraint_name { UNIQUE | PRIMARY KEY } USING INDEX index_name [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
---ALTER CONSTRAINT constraint_name [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
---VALIDATE CONSTRAINT constraint_name
---DROP CONSTRAINT [ IF EXISTS ]  constraint_name [ RESTRICT | CASCADE ]
---DISABLE TRIGGER [ trigger_name | ALL | USER ]
---ENABLE TRIGGER [ trigger_name | ALL | USER ]
---ENABLE REPLICA TRIGGER trigger_name
---ENABLE ALWAYS TRIGGER trigger_name
---DISABLE RULE rewrite_rule_name
---ENABLE RULE rewrite_rule_name
---ENABLE REPLICA RULE rewrite_rule_name
---ENABLE ALWAYS RULE rewrite_rule_name
---DISABLE ROW LEVEL SECURITY
---ENABLE ROW LEVEL SECURITY
---FORCE ROW LEVEL SECURITY
---NO FORCE ROW LEVEL SECURITY
---CLUSTER ON index_name
---SET WITHOUT CLUSTER
---SET WITHOUT OIDS
---SET TABLESPACE new_tablespace
---SET { LOGGED | UNLOGGED }
---SET ( storage_parameter = value [, ... ] )
---RESET ( storage_parameter [, ... ] )
---INHERIT parent_table
---NO INHERIT parent_table
---OF type_name
---NOT OF
---OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
---REPLICA IDENTITY { DEFAULT | USING INDEX index_name | FULL | NOTHING }
---RENAME [ COLUMN ] column_name TO new_column_name
---RENAME CONSTRAINT constraint_name TO new_constraint_name
---RENAME TO new_name
---SET SCHEMA new_schema
---ALL IN TABLESPACE name [ OWNED BY role_name [, ... ] ] SET TABLESPACE new_tablespace [ NOWAIT ]
---ATTACH PARTITION partition_name FOR VALUES partition_bound_spec
---DETACH PARTITION partition_name
-''')
-
     def TemplateDropTable(self):
         return Template('''DROP TABLE #table_name#
 --CASCADE
@@ -5705,18 +5436,7 @@ EXECUTE PROCEDURE function_name()
 ''')
 
     def TemplateAlterType(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 100000:
-            return Template('''ALTER TYPE #type_name#
---ADD ATTRIBUTE attribute_name data_type [ COLLATE collation ] [ CASCADE | RESTRICT ]
---DROP ATTRIBUTE [ IF EXISTS ] attribute_name [ CASCADE | RESTRICT ]
---ALTER ATTRIBUTE attribute_name [ SET DATA ] TYPE data_type [ COLLATE collation ] [ CASCADE | RESTRICT ]
---RENAME ATTRIBUTE attribute_name TO new_attribute_name [ CASCADE | RESTRICT ]
---OWNER TO new_owner
---RENAME TO new_name
---SET SCHEMA new_schema
---ADD VALUE [ IF NOT EXISTS ] new_enum_value [ { BEFORE | AFTER } existing_enum_value ]
-''')
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
             return Template('''ALTER TYPE #type_name#
 --ADD ATTRIBUTE attribute_name data_type [ COLLATE collation ] [ CASCADE | RESTRICT ]
 --DROP ATTRIBUTE [ IF EXISTS ] attribute_name [ CASCADE | RESTRICT ]
@@ -6355,6 +6075,7 @@ FROM #table_name#
             from pg_roles
             where quote_ident(rolname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetPropertiesTablespace(self, p_object):
         return self.v_connection.Query('''
@@ -6369,6 +6090,7 @@ FROM #table_name#
             on r.oid = t.spcowner
             where quote_ident(t.spcname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetPropertiesDatabase(self, p_object):
         return self.v_connection.Query('''
@@ -6390,6 +6112,7 @@ FROM #table_name#
             on t.oid = d.dattablespace
             where quote_ident(d.datname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetPropertiesExtension(self, p_object):
         return self.v_connection.Query('''
@@ -6406,6 +6129,7 @@ FROM #table_name#
             on n.oid = e.extnamespace
             where quote_ident(e.extname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetPropertiesSchema(self, p_object):
         return self.v_connection.Query('''
@@ -6418,387 +6142,108 @@ FROM #table_name#
             on r.oid = n.nspowner
             where quote_ident(n.nspname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetPropertiesTable(self, p_schema, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 100000:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       c.relname as "Table",
-                       c.oid as "OID",
-                       r.rolname as "Owner",
-                       pg_size_pretty(pg_relation_size(c.oid)) as "Size",
-                       coalesce(t1.spcname, t2.spcname) as "Tablespace",
-                       c.relacl as "ACL",
-                       c.reloptions as "Options",
-                       pg_relation_filepath(c.oid) as "Filenode",
-                       c.reltuples as "Estimate Count",
-                       c.relhasindex as "Has Index",
-                       (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
-                       c.relnatts as "Number of Attributes",
-                       c.relchecks as "Number of Checks",
-                       c.relhasoids as "Has OIDs",
-                       c.relhaspkey as "Has Primary Key",
-                       c.relhasrules as "Has Rules",
-                       c.relhastriggers as "Has Triggers",
-                       c.relhassubclass as "Has Subclass"
-                from pg_class c
-                inner join pg_namespace n
-                on n.oid = c.relnamespace
-                inner join pg_roles r
-                on r.oid = c.relowner
-                left join pg_tablespace t1
-                on t1.oid = c.reltablespace
-                inner join (
-                select t.spcname
-                from pg_database d
-                inner join pg_tablespace t
-                on t.oid = d.dattablespace
-                where d.datname = current_database()
-                ) t2
-                on 1 = 1
-                where quote_ident(n.nspname) = '{0}'
-                  and quote_ident(c.relname) = '{1}'
-            '''.format(p_schema, p_object))
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) >= 100000 and int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       c.relname as "Table",
-                       c.oid as "OID",
-                       r.rolname as "Owner",
-                       pg_size_pretty(pg_relation_size(c.oid)) as "Size",
-                       coalesce(t1.spcname, t2.spcname) as "Tablespace",
-                       c.relacl as "ACL",
-                       c.reloptions as "Options",
-                       pg_relation_filepath(c.oid) as "Filenode",
-                       c.reltuples as "Estimate Count",
-                       c.relhasindex as "Has Index",
-                       (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
-                       c.relnatts as "Number of Attributes",
-                       c.relchecks as "Number of Checks",
-                       c.relhasoids as "Has OIDs",
-                       c.relhaspkey as "Has Primary Key",
-                       c.relhasrules as "Has Rules",
-                       c.relhastriggers as "Has Triggers",
-                       c.relhassubclass as "Has Subclass",
-                       c.relkind = 'p' as "Is Partitioned",
-                       c.relispartition as "Is Partition",
-                       (case when c.relispartition then po.parent_table else '' end) as "Partition Of"
-                from pg_class c
-                inner join pg_namespace n
-                on n.oid = c.relnamespace
-                inner join pg_roles r
-                on r.oid = c.relowner
-                left join pg_tablespace t1
-                on t1.oid = c.reltablespace
-                inner join (
-                select t.spcname
-                from pg_database d
-                inner join pg_tablespace t
-                on t.oid = d.dattablespace
-                where d.datname = current_database()
-                ) t2
-                on 1 = 1
-                left join (
-                select quote_ident(n2.nspname) || '.' || quote_ident(c2.relname) as parent_table
-                from pg_inherits i
-                inner join pg_class c2
-                on c2.oid = i.inhparent
-                inner join pg_namespace n2
-                on n2.oid = c2.relnamespace
-                where i.inhrelid = '{0}.{1}'::regclass
-                ) po
-                on 1 = 1
-                where quote_ident(n.nspname) = '{0}'
-                  and quote_ident(c.relname) = '{1}'
-            '''.format(p_schema, p_object))
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) >= 110000 and int(self.v_connection.ExecuteScalar('show server_version_num')) < 120000:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       c.relname as "Table",
-                       c.oid as "OID",
-                       r.rolname as "Owner",
-                       pg_size_pretty(pg_relation_size(c.oid)) as "Size",
-                       coalesce(t1.spcname, t2.spcname) as "Tablespace",
-                       c.relacl as "ACL",
-                       c.reloptions as "Options",
-                       pg_relation_filepath(c.oid) as "Filenode",
-                       c.reltuples as "Estimate Count",
-                       c.relhasindex as "Has Index",
-                       (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
-                       c.relnatts as "Number of Attributes",
-                       c.relchecks as "Number of Checks",
-                       c.relhasoids as "Has OIDs",
-                       c.relhasrules as "Has Rules",
-                       c.relhastriggers as "Has Triggers",
-                       c.relhassubclass as "Has Subclass",
-                       c.relkind = 'p' as "Is Partitioned",
-                       c.relispartition as "Is Partition",
-                       (case when c.relispartition then po.parent_table else '' end) as "Partition Of"
-                from pg_class c
-                inner join pg_namespace n
-                on n.oid = c.relnamespace
-                inner join pg_roles r
-                on r.oid = c.relowner
-                left join pg_tablespace t1
-                on t1.oid = c.reltablespace
-                inner join (
-                select t.spcname
-                from pg_database d
-                inner join pg_tablespace t
-                on t.oid = d.dattablespace
-                where d.datname = current_database()
-                ) t2
-                on 1 = 1
-                left join (
-                select quote_ident(n2.nspname) || '.' || quote_ident(c2.relname) as parent_table
-                from pg_inherits i
-                inner join pg_class c2
-                on c2.oid = i.inhparent
-                inner join pg_namespace n2
-                on n2.oid = c2.relnamespace
-                where i.inhrelid = '{0}.{1}'::regclass
-                ) po
-                on 1 = 1
-                where quote_ident(n.nspname) = '{0}'
-                  and quote_ident(c.relname) = '{1}'
-            '''.format(p_schema, p_object))
-        else:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       c.relname as "Table",
-                       c.oid as "OID",
-                       r.rolname as "Owner",
-                       pg_size_pretty(pg_relation_size(c.oid)) as "Size",
-                       coalesce(t1.spcname, t2.spcname) as "Tablespace",
-                       c.relacl as "ACL",
-                       c.reloptions as "Options",
-                       pg_relation_filepath(c.oid) as "Filenode",
-                       c.reltuples as "Estimate Count",
-                       c.relhasindex as "Has Index",
-                       (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
-                       c.relnatts as "Number of Attributes",
-                       c.relchecks as "Number of Checks",
-                       c.relhasrules as "Has Rules",
-                       c.relhastriggers as "Has Triggers",
-                       c.relhassubclass as "Has Subclass",
-                       c.relkind = 'p' as "Is Partitioned",
-                       c.relispartition as "Is Partition",
-                       (case when c.relispartition then po.parent_table else '' end) as "Partition Of"
-                from pg_class c
-                inner join pg_namespace n
-                on n.oid = c.relnamespace
-                inner join pg_roles r
-                on r.oid = c.relowner
-                left join pg_tablespace t1
-                on t1.oid = c.reltablespace
-                inner join (
-                select t.spcname
-                from pg_database d
-                inner join pg_tablespace t
-                on t.oid = d.dattablespace
-                where d.datname = current_database()
-                ) t2
-                on 1 = 1
-                left join (
-                select quote_ident(n2.nspname) || '.' || quote_ident(c2.relname) as parent_table
-                from pg_inherits i
-                inner join pg_class c2
-                on c2.oid = i.inhparent
-                inner join pg_namespace n2
-                on n2.oid = c2.relnamespace
-                where i.inhrelid = '{0}.{1}'::regclass
-                ) po
-                on 1 = 1
-                where quote_ident(n.nspname) = '{0}'
-                  and quote_ident(c.relname) = '{1}'
-            '''.format(p_schema, p_object))
+        return self.v_connection.Query('''
+            select current_database() as "Database",
+                    n.nspname as "Schema",
+                    c.relname as "Table",
+                    c.oid as "OID",
+                    r.rolname as "Owner",
+                    pg_size_pretty(pg_relation_size(c.oid)) as "Size",
+                    coalesce(t1.spcname, t2.spcname) as "Tablespace",
+                    c.relacl as "ACL",
+                    c.reloptions as "Options",
+                    pg_relation_filepath(c.oid) as "Filenode",
+                    c.reltuples as "Estimate Count",
+                    c.relhasindex as "Has Index",
+                    (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
+                    c.relnatts as "Number of Attributes",
+                    c.relchecks as "Number of Checks",
+                    c.relhasrules as "Has Rules",
+                    c.relhastriggers as "Has Triggers",
+                    c.relhassubclass as "Has Subclass",
+                    c.relkind = 'p' as "Is Partitioned",
+                    c.relispartition as "Is Partition",
+                    (case when c.relispartition then po.parent_table else '' end) as "Partition Of"
+            from pg_class c
+            inner join pg_namespace n
+            on n.oid = c.relnamespace
+            inner join pg_roles r
+            on r.oid = c.relowner
+            left join pg_tablespace t1
+            on t1.oid = c.reltablespace
+            inner join (
+            select t.spcname
+            from pg_database d
+            inner join pg_tablespace t
+            on t.oid = d.dattablespace
+            where d.datname = current_database()
+            ) t2
+            on 1 = 1
+            left join (
+            select quote_ident(n2.nspname) || '.' || quote_ident(c2.relname) as parent_table
+            from pg_inherits i
+            inner join pg_class c2
+            on c2.oid = i.inhparent
+            inner join pg_namespace n2
+            on n2.oid = c2.relnamespace
+            where i.inhrelid = '{0}.{1}'::regclass
+            ) po
+            on 1 = 1
+            where quote_ident(n.nspname) = '{0}'
+                and quote_ident(c.relname) = '{1}'
+        '''.format(p_schema, p_object))
 
     @lock_required
     def GetPropertiesTableField(self, p_schema, p_table, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 100000:
-            return self.v_connection.Query(
-                '''
-                    SELECT current_database() AS "Database",
-                           n.nspname AS "Schema",
-                           c.relname AS "Table",
-                           a.attname AS "Column",
-                           c.oid AS "OID",
-                           r.rolname AS "Owner",
-                           a.atttypid::regtype AS "Type",
-                           a.attstattarget AS "Statistics Target",
-                           a.attlen AS "Type Length",
-                           a.attnum AS "Position",
-                           a.attndims AS "Dimension",
-                           a.attcacheoff AS "Cache Offset",
-                           a.atttypmod AS "Type Mod",
-                           a.attbyval AS "By Value",
-                           a.attstorage AS "Storage Type",
-                           a.attalign AS "Storage Alignment",
-                           a.attnotnull AS "Not Null",
-                           a.atthasdef AS "Has Default",
-                           a.attisdropped AS "Is Dropped",
-                           a.attislocal AS "Is Local",
-                           a.attinhcount AS "Inherited Count",
-                           a.attcollation AS "Collate",
-                           a.attacl AS "ACL",
-                           a.attoptions AS "Options",
-                           a.attfdwoptions AS "FDW Options"
-                    FROM pg_class c
-                    INNER JOIN pg_namespace n
-                            ON c.relnamespace = n.oid
-                    INNER JOIN pg_roles r
-                            ON c.relowner = r.oid
-                    INNER JOIN pg_attribute a
-                            ON c.oid = a.attrelid
-                    WHERE c.oid = '{0}.{1}'::regclass
-                      AND a.attname = quote_ident('{2}')
-                '''.format(
-                    p_schema,
-                    p_table,
-                    p_object
-                )
+        return self.v_connection.Query(
+            '''
+                SELECT current_database() AS "Database",
+                        n.nspname AS "Schema",
+                        c.relname AS "Table",
+                        a.attname AS "Column",
+                        c.oid AS "OID",
+                        r.rolname AS "Owner",
+                        a.atttypid::regtype AS "Type",
+                        a.attstattarget AS "Statistics Target",
+                        a.attlen AS "Type Length",
+                        a.attnum AS "Position",
+                        a.attndims AS "Dimension",
+                        a.attcacheoff AS "Cache Offset",
+                        a.atttypmod AS "Type Mod",
+                        a.attbyval AS "By Value",
+                        a.attstorage AS "Storage Type",
+                        a.attalign AS "Storage Alignment",
+                        a.attnotnull AS "Not Null",
+                        a.atthasdef AS "Has Default",
+                        a.atthasmissing AS "Has Missing",
+                        a.attidentity AS "Identitiy",
+                        a.attgenerated AS "Generated",
+                        a.attisdropped AS "Is Dropped",
+                        a.attislocal AS "Is Local",
+                        a.attinhcount AS "Inherited Count",
+                        a.attcollation AS "Collate",
+                        a.attacl AS "ACL",
+                        a.attoptions AS "Options",
+                        a.attfdwoptions AS "FDW Options",
+                        attmissingval AS "Missing Value"
+                FROM pg_class c
+                INNER JOIN pg_namespace n
+                        ON c.relnamespace = n.oid
+                INNER JOIN pg_roles r
+                        ON c.relowner = r.oid
+                INNER JOIN pg_attribute a
+                        ON c.oid = a.attrelid
+                WHERE c.oid = '{0}.{1}'::regclass
+                    AND quote_ident(a.attname) = '{2}'
+            '''.format(
+                p_schema,
+                p_table,
+                p_object
             )
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.Query(
-                '''
-                    SELECT current_database() AS "Database",
-                           n.nspname AS "Schema",
-                           c.relname AS "Table",
-                           a.attname AS "Column",
-                           c.oid AS "OID",
-                           r.rolname AS "Owner",
-                           a.atttypid::regtype AS "Type",
-                           a.attstattarget AS "Statistics Target",
-                           a.attlen AS "Type Length",
-                           a.attnum AS "Position",
-                           a.attndims AS "Dimension",
-                           a.attcacheoff AS "Cache Offset",
-                           a.atttypmod AS "Type Mod",
-                           a.attbyval AS "By Value",
-                           a.attstorage AS "Storage Type",
-                           a.attalign AS "Storage Alignment",
-                           a.attnotnull AS "Not Null",
-                           a.atthasdef AS "Has Default",
-                           a.attidentity AS "Identitiy",
-                           a.attisdropped AS "Is Dropped",
-                           a.attislocal AS "Is Local",
-                           a.attinhcount AS "Inherited Count",
-                           a.attcollation AS "Collate",
-                           a.attacl AS "ACL",
-                           a.attoptions AS "Options",
-                           a.attfdwoptions AS "FDW Options"
-                    FROM pg_class c
-                    INNER JOIN pg_namespace n
-                            ON c.relnamespace = n.oid
-                    INNER JOIN pg_roles r
-                            ON c.relowner = r.oid
-                    INNER JOIN pg_attribute a
-                            ON c.oid = a.attrelid
-                    WHERE c.oid = '{0}.{1}'::regclass
-                      AND a.attname = quote_ident('{2}')
-                '''.format(
-                    p_schema,
-                    p_table,
-                    p_object
-                )
-            )
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) < 120000:
-            return self.v_connection.Query(
-                '''
-                    SELECT current_database() AS "Database",
-                           n.nspname AS "Schema",
-                           c.relname AS "Table",
-                           a.attname AS "Column",
-                           c.oid AS "OID",
-                           r.rolname AS "Owner",
-                           a.atttypid::regtype AS "Type",
-                           a.attstattarget AS "Statistics Target",
-                           a.attlen AS "Type Length",
-                           a.attnum AS "Position",
-                           a.attndims AS "Dimension",
-                           a.attcacheoff AS "Cache Offset",
-                           a.atttypmod AS "Type Mod",
-                           a.attbyval AS "By Value",
-                           a.attstorage AS "Storage Type",
-                           a.attalign AS "Storage Alignment",
-                           a.attnotnull AS "Not Null",
-                           a.atthasdef AS "Has Default",
-                           a.atthasmissing AS "Has Missing",
-                           a.attidentity AS "Identitiy",
-                           a.attisdropped AS "Is Dropped",
-                           a.attislocal AS "Is Local",
-                           a.attinhcount AS "Inherited Count",
-                           a.attcollation AS "Collate",
-                           a.attacl AS "ACL",
-                           a.attoptions AS "Options",
-                           a.attfdwoptions AS "FDW Options",
-                           attmissingval AS "Missing Value"
-                    FROM pg_class c
-                    INNER JOIN pg_namespace n
-                            ON c.relnamespace = n.oid
-                    INNER JOIN pg_roles r
-                            ON c.relowner = r.oid
-                    INNER JOIN pg_attribute a
-                            ON c.oid = a.attrelid
-                    WHERE c.oid = '{0}.{1}'::regclass
-                      AND a.attname = quote_ident('{2}')
-                '''.format(
-                    p_schema,
-                    p_table,
-                    p_object
-                )
-            )
-        else:
-            return self.v_connection.Query(
-                '''
-                    SELECT current_database() AS "Database",
-                           n.nspname AS "Schema",
-                           c.relname AS "Table",
-                           a.attname AS "Column",
-                           c.oid AS "OID",
-                           r.rolname AS "Owner",
-                           a.atttypid::regtype AS "Type",
-                           a.attstattarget AS "Statistics Target",
-                           a.attlen AS "Type Length",
-                           a.attnum AS "Position",
-                           a.attndims AS "Dimension",
-                           a.attcacheoff AS "Cache Offset",
-                           a.atttypmod AS "Type Mod",
-                           a.attbyval AS "By Value",
-                           a.attstorage AS "Storage Type",
-                           a.attalign AS "Storage Alignment",
-                           a.attnotnull AS "Not Null",
-                           a.atthasdef AS "Has Default",
-                           a.atthasmissing AS "Has Missing",
-                           a.attidentity AS "Identitiy",
-                           a.attgenerated AS "Generated",
-                           a.attisdropped AS "Is Dropped",
-                           a.attislocal AS "Is Local",
-                           a.attinhcount AS "Inherited Count",
-                           a.attcollation AS "Collate",
-                           a.attacl AS "ACL",
-                           a.attoptions AS "Options",
-                           a.attfdwoptions AS "FDW Options",
-                           attmissingval AS "Missing Value"
-                    FROM pg_class c
-                    INNER JOIN pg_namespace n
-                            ON c.relnamespace = n.oid
-                    INNER JOIN pg_roles r
-                            ON c.relowner = r.oid
-                    INNER JOIN pg_attribute a
-                            ON c.oid = a.attrelid
-                    WHERE c.oid = '{0}.{1}'::regclass
-                      AND quote_ident(a.attname) = '{2}'
-                '''.format(
-                    p_schema,
-                    p_table,
-                    p_object
-                )
-            )
+        )
 
     @lock_required
     def GetPropertiesIndex(self, p_schema, p_object):
@@ -6842,6 +6287,7 @@ FROM #table_name#
             where quote_ident(n.nspname) = '{0}'
               and quote_ident(c.relname) = '{1}'
         '''.format(p_schema, p_object))
+    
     @lock_required
     def GetPropertiesSequence(self, p_schema, p_object):
         v_table1 = self.v_connection.Query('''
@@ -6870,35 +6316,22 @@ FROM #table_name#
             where quote_ident(n.nspname) = '{0}'
               and quote_ident(c.relname) = '{1}'
         '''.format(p_schema, p_object)).Transpose('Property', 'Value')
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 100000:
-            v_table2 = self.v_connection.Query('''
-                select last_value as "Last Value",
-                       start_value as "Start Value",
-                       increment_by as "Increment By",
-                       max_value as "Max Value",
-                       min_value as "Min Value",
-                       cache_value as "Cache Value",
-                       is_cycled as "Is Cycled",
-                       is_called as "Is Called"
-                from {0}.{1}
-            '''.format(p_schema, p_object)).Transpose('Property', 'Value')
-        else:
-            v_table2 = self.v_connection.Query('''
-                select data_type as "Data Type",
-                       last_value as "Last Value",
-                       start_value as "Start Value",
-                       increment_by as "Increment By",
-                       max_value as "Max Value",
-                       min_value as "Min Value",
-                       cache_size as "Cache Size",
-                       cycle as "Is Cycled"
-                from pg_sequences
-                where quote_ident(schemaname) = '{0}'
-                  and quote_ident(sequencename) = '{1}'
-            '''.format(p_schema, p_object)).Transpose('Property', 'Value')
-            v_table1.Merge(v_table2)
+        v_table2 = self.v_connection.Query('''
+            select data_type as "Data Type",
+                    last_value as "Last Value",
+                    start_value as "Start Value",
+                    increment_by as "Increment By",
+                    max_value as "Max Value",
+                    min_value as "Min Value",
+                    cache_size as "Cache Size",
+                    cycle as "Is Cycled"
+            from pg_sequences
+            where quote_ident(schemaname) = '{0}'
+                and quote_ident(sequencename) = '{1}'
+        '''.format(p_schema, p_object)).Transpose('Property', 'Value')
         v_table1.Merge(v_table2)
         return v_table1
+    
     @lock_required
     def GetPropertiesView(self, p_schema, p_object):
         return self.v_connection.Query('''
@@ -6915,106 +6348,42 @@ FROM #table_name#
             where quote_ident(n.nspname) = '{0}'
               and quote_ident(c.relname) = '{1}'
         '''.format(p_schema, p_object))
+    
     @lock_required
     def GetPropertiesFunction(self, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 90600:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       p.proname as "Function",
-                       quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' as "Function ID",
-                       p.oid as "OID",
-                       r.rolname as "Owner",
-                       l.lanname as "Language",
-                       p.procost as "Estimated Execution Cost",
-                       p.prorows as "Estimated Returned Rows",
-                       p.proisagg as "Is Aggregate",
-                       p.proiswindow as "Is Window",
-                       p.prosecdef as "Security Definer",
-                       p.proleakproof as "Leak Proof",
-                       p.proisstrict as "Is Strict",
-                       p.proretset as "Returns Set",
-                       (case p.provolatile when 'i' then 'Immutable' when 's' then 'Stable' when 'v' then 'Volatile' end) as "Volatile",
-                       p.pronargs as "Number of Arguments",
-                       p.pronargdefaults as "Number of Default Arguments",
-                       p.probin as "Invoke",
-                       p.proconfig as "Configuration",
-                       p.proacl as "ACL"
-                from pg_proc p
-                join pg_namespace n
-                on p.pronamespace = n.oid
-                inner join pg_roles r
-                on r.oid = p.proowner
-                inner join pg_language l
-                on l.oid = p.prolang
-                where quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' = '{0}'
-            '''.format(p_object))
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       p.proname as "Function",
-                       quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' as "Function ID",
-                       p.oid as "OID",
-                       r.rolname as "Owner",
-                       l.lanname as "Language",
-                       p.procost as "Estimated Execution Cost",
-                       p.prorows as "Estimated Returned Rows",
-                       p.proisagg as "Is Aggregate",
-                       p.proiswindow as "Is Window",
-                       p.prosecdef as "Security Definer",
-                       p.proleakproof as "Leak Proof",
-                       p.proisstrict as "Is Strict",
-                       p.proretset as "Returns Set",
-                       (case p.provolatile when 'i' then 'Immutable' when 's' then 'Stable' when 'v' then 'Volatile' end) as "Volatile",
-                       (case p.proparallel when 's' then 'Safe' when 'r' then 'Restricted' when 'u' then 'Unsafe' end) as "Parallel",
-                       p.pronargs as "Number of Arguments",
-                       p.pronargdefaults as "Number of Default Arguments",
-                       p.probin as "Invoke",
-                       p.proconfig as "Configuration",
-                       p.proacl as "ACL"
-                from pg_proc p
-                join pg_namespace n
-                on p.pronamespace = n.oid
-                inner join pg_roles r
-                on r.oid = p.proowner
-                inner join pg_language l
-                on l.oid = p.prolang
-                where quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' = '{0}'
-            '''.format(p_object))
-        else:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       p.proname as "Function",
-                       quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' as "Function ID",
-                       p.oid as "OID",
-                       r.rolname as "Owner",
-                       (case p.prokind when 'f' then 'Normal' when 'a' then 'Aggregate' when 'w' then 'Window' end) as "Function Kind",
-                       l.lanname as "Language",
-                       p.procost as "Estimated Execution Cost",
-                       p.prorows as "Estimated Returned Rows",
-                       p.prosecdef as "Security Definer",
-                       p.proleakproof as "Leak Proof",
-                       p.proisstrict as "Is Strict",
-                       p.proretset as "Returns Set",
-                       (case p.provolatile when 'i' then 'Immutable' when 's' then 'Stable' when 'v' then 'Volatile' end) as "Volatile",
-                       (case p.proparallel when 's' then 'Safe' when 'r' then 'Restricted' when 'u' then 'Unsafe' end) as "Parallel",
-                       p.pronargs as "Number of Arguments",
-                       p.pronargdefaults as "Number of Default Arguments",
-                       p.probin as "Invoke",
-                       p.proconfig as "Configuration",
-                       p.proacl as "ACL"
-                from pg_proc p
-                join pg_namespace n
-                on p.pronamespace = n.oid
-                inner join pg_roles r
-                on r.oid = p.proowner
-                inner join pg_language l
-                on l.oid = p.prolang
-                where quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' = '{0}'
-                  and p.prokind = 'f'
-            '''.format(p_object))
+        return self.v_connection.Query('''
+            select current_database() as "Database",
+                    n.nspname as "Schema",
+                    p.proname as "Function",
+                    quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' as "Function ID",
+                    p.oid as "OID",
+                    r.rolname as "Owner",
+                    (case p.prokind when 'f' then 'Normal' when 'a' then 'Aggregate' when 'w' then 'Window' end) as "Function Kind",
+                    l.lanname as "Language",
+                    p.procost as "Estimated Execution Cost",
+                    p.prorows as "Estimated Returned Rows",
+                    p.prosecdef as "Security Definer",
+                    p.proleakproof as "Leak Proof",
+                    p.proisstrict as "Is Strict",
+                    p.proretset as "Returns Set",
+                    (case p.provolatile when 'i' then 'Immutable' when 's' then 'Stable' when 'v' then 'Volatile' end) as "Volatile",
+                    (case p.proparallel when 's' then 'Safe' when 'r' then 'Restricted' when 'u' then 'Unsafe' end) as "Parallel",
+                    p.pronargs as "Number of Arguments",
+                    p.pronargdefaults as "Number of Default Arguments",
+                    p.probin as "Invoke",
+                    p.proconfig as "Configuration",
+                    p.proacl as "ACL"
+            from pg_proc p
+            join pg_namespace n
+            on p.pronamespace = n.oid
+            inner join pg_roles r
+            on r.oid = p.proowner
+            inner join pg_language l
+            on l.oid = p.prolang
+            where quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' = '{0}'
+                and p.prokind = 'f'
+        '''.format(p_object))
+    
     @lock_required
     def GetPropertiesProcedure(self, p_object):
         return self.v_connection.Query('''
@@ -7047,6 +6416,7 @@ FROM #table_name#
             where quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' = '{0}'
               and p.prokind = 'p'
         '''.format(p_object))
+    
     @lock_required
     def GetPropertiesTrigger(self, p_schema, p_table, p_object):
         return self.v_connection.Query('''
@@ -7108,6 +6478,7 @@ FROM #table_name#
             and y.table_name = x.table_name
             and y.trigger_name = x.trigger_name
         '''.format(p_schema, p_table, p_object))
+    
     @lock_required
     def GetPropertiesEventTrigger(self, p_object):
         return self.v_connection.Query('''
@@ -7131,267 +6502,97 @@ FROM #table_name#
 
     @lock_required
     def GetPropertiesAggregate(self, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 90600:
-            return self.v_connection.Query(
-                '''
-                    WITH procs AS (
-                        SELECT p.oid AS function_oid,
-                               quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS function_id,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(p.proname) AS function_name,
-                               r.rolname AS function_owner,
-                               p.proisagg AS is_aggregate
-                        FROM pg_proc p
-                        INNER JOIN pg_namespace n
-                                ON p.pronamespace = n.oid
-                        INNER JOIN pg_roles r
-                                ON p.proowner = r.oid
-                    ),
-                    operators AS (
-                        SELECT o.oid AS operator_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(o.oprname) AS operator_name
-                        FROM pg_operator o
-                        INNER JOIN pg_namespace n
-                                ON o.oprnamespace = n.oid
-                    ),
-                    types AS (
-                        SELECT t.oid AS type_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(t.typname) AS type_name
-                        FROM pg_type t
-                        INNER JOIN pg_namespace n
-                                ON t.typnamespace = n.oid
-                    )
-                    SELECT current_database() as "Database",
-                           p1.schema_name AS "Schema",
-                           p1.function_name AS "Aggregate",
-                           p1.function_id AS "Aggregate ID",
-                           a.aggfnoid AS "OID",
-                           p1.function_owner as "Owner",
-                           a.aggkind AS "Kind",
-                           a.aggnumdirectargs AS "Number of Direct Args",
-                           p2.function_id AS "Transition Function ID",
-                           p3.function_id AS "Final Function ID",
-                           p7.function_id AS "Forward Transition Function ID",
-                           p8.function_id AS "Inverse Transition Function ID",
-                           p9.function_id AS "Final Moving Function ID",
-                           a.aggfinalextra AS "Extra Dummy to Final Function",
-                           a.aggmfinalextra AS "Extra Dummy to Final Moving Function",
-                           o.operator_name AS "Sort Operator",
-                           format('%s.%s', t1.schema_name, t1.type_name)::regtype AS "Internal Transition Data Type",
-                           a.aggtransspace AS "Average Size of Transition",
-                           format('%s.%s', t1.schema_name, t1.type_name)::regtype AS "Internal Transition Moving Data Type",
-                           a.aggmtransspace AS "Average Size of Transition Moving",
-                           a.agginitval AS "Transition Init Value",
-                           a.aggminitval AS "Transition Moving Init Value"
-                    FROM pg_aggregate a
-                    INNER JOIN procs p1
-                            ON a.aggfnoid = p1.function_oid
-                    LEFT JOIN procs p2
-                           ON a.aggtransfn = p2.function_oid
-                    LEFT JOIN procs p3
-                           ON a.aggfinalfn = p3.function_oid
-                    LEFT JOIN procs p7
-                           ON a.aggmtransfn = p7.function_oid
-                    LEFT JOIN procs p8
-                           ON a.aggminvtransfn = p8.function_oid
-                    LEFT JOIN procs p9
-                           ON a.aggmfinalfn = p9.function_oid
-                    LEFT JOIN operators o
-                           ON a.aggsortop = o.operator_oid
-                    LEFT JOIN types t1
-                           ON a.aggtranstype = t1.type_oid
-                    LEFT JOIN types t2
-                           ON a.aggmtranstype = t2.type_oid
-                    WHERE p1.is_aggregate
-                      AND p1.function_id = '{0}'
-                '''.format(
-                    p_object
+        return self.v_connection.Query(
+            '''
+                WITH procs AS (
+                    SELECT p.oid AS function_oid,
+                            quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS function_id,
+                            quote_ident(n.nspname) AS schema_name,
+                            quote_ident(p.proname) AS function_name,
+                            r.rolname AS function_owner,
+                            p.prokind AS function_kind,
+                            p.proparallel
+                    FROM pg_proc p
+                    INNER JOIN pg_namespace n
+                            ON p.pronamespace = n.oid
+                    INNER JOIN pg_roles r
+                            ON p.proowner = r.oid
+                ),
+                operators AS (
+                    SELECT o.oid AS operator_oid,
+                            quote_ident(n.nspname) AS schema_name,
+                            quote_ident(o.oprname) AS operator_name
+                    FROM pg_operator o
+                    INNER JOIN pg_namespace n
+                            ON o.oprnamespace = n.oid
+                ),
+                types AS (
+                    SELECT t.oid AS type_oid,
+                            quote_ident(n.nspname) AS schema_name,
+                            quote_ident(t.typname) AS type_name
+                    FROM pg_type t
+                    INNER JOIN pg_namespace n
+                            ON t.typnamespace = n.oid
                 )
+                SELECT current_database() as "Database",
+                        p1.schema_name AS "Schema",
+                        p1.function_name AS "Aggregate",
+                        p1.function_id AS "Aggregate ID",
+                        a.aggfnoid AS "OID",
+                        p1.function_owner as "Owner",
+                        a.aggkind AS "Kind",
+                        a.aggnumdirectargs AS "Number of Direct Args",
+                        p2.function_id AS "Transition Function ID",
+                        p3.function_id AS "Final Function ID",
+                        p4.function_id AS "Combine Function ID",
+                        p5.function_id AS "Serialization Function ID",
+                        p6.function_id AS "Deerialization Function ID",
+                        p7.function_id AS "Forward Transition Function ID",
+                        p8.function_id AS "Inverse Transition Function ID",
+                        p9.function_id AS "Final Moving Function ID",
+                        a.aggfinalextra AS "Extra Dummy to Final Function",
+                        a.aggmfinalextra AS "Extra Dummy to Final Moving Function",
+                        a.aggfinalmodify AS "Final Function Modifier",
+                        a.aggmfinalmodify AS "Final Moving Function Modifier",
+                        o.operator_name AS "Sort Operator",
+                        format('%s.%s', t1.schema_name, t1.type_name)::regtype AS "Internal Transition Data Type",
+                        a.aggtransspace AS "Average Size of Transition",
+                        format('%s.%s', t1.schema_name, t1.type_name)::regtype AS "Internal Transition Moving Data Type",
+                        a.aggmtransspace AS "Average Size of Transition Moving",
+                        a.agginitval AS "Transition Init Value",
+                        a.aggminitval AS "Transition Moving Init Value",
+                        p1.proparallel AS "Parallel Mode"
+                FROM pg_aggregate a
+                INNER JOIN procs p1
+                        ON a.aggfnoid = p1.function_oid
+                LEFT JOIN procs p2
+                        ON a.aggtransfn = p2.function_oid
+                LEFT JOIN procs p3
+                        ON a.aggfinalfn = p3.function_oid
+                LEFT JOIN procs p4
+                        ON a.aggcombinefn = p4.function_oid
+                LEFT JOIN procs p5
+                        ON a.aggserialfn = p5.function_oid
+                LEFT JOIN procs p6
+                        ON a.aggdeserialfn = p6.function_oid
+                LEFT JOIN procs p7
+                        ON a.aggmtransfn = p7.function_oid
+                LEFT JOIN procs p8
+                        ON a.aggminvtransfn = p8.function_oid
+                LEFT JOIN procs p9
+                        ON a.aggmfinalfn = p9.function_oid
+                LEFT JOIN operators o
+                        ON a.aggsortop = o.operator_oid
+                LEFT JOIN types t1
+                        ON a.aggtranstype = t1.type_oid
+                LEFT JOIN types t2
+                        ON a.aggmtranstype = t2.type_oid
+                WHERE p1.function_kind = 'a'
+                    AND p1.function_id = '{0}'
+            '''.format(
+                p_object
             )
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.Query(
-                '''
-                    WITH procs AS (
-                        SELECT p.oid AS function_oid,
-                               quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS function_id,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(p.proname) AS function_name,
-                               r.rolname AS function_owner,
-                               p.proisagg AS is_aggregate,
-                               p.proparallel
-                        FROM pg_proc p
-                        INNER JOIN pg_namespace n
-                                ON p.pronamespace = n.oid
-                        INNER JOIN pg_roles r
-                                ON p.proowner = r.oid
-                    ),
-                    operators AS (
-                        SELECT o.oid AS operator_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(o.oprname) AS operator_name
-                        FROM pg_operator o
-                        INNER JOIN pg_namespace n
-                                ON o.oprnamespace = n.oid
-                    ),
-                    types AS (
-                        SELECT t.oid AS type_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(t.typname) AS type_name
-                        FROM pg_type t
-                        INNER JOIN pg_namespace n
-                                ON t.typnamespace = n.oid
-                    )
-                    SELECT current_database() as "Database",
-                           p1.schema_name AS "Schema",
-                           p1.function_name AS "Aggregate",
-                           p1.function_id AS "Aggregate ID",
-                           a.aggfnoid AS "OID",
-                           p1.function_owner as "Owner",
-                           a.aggkind AS "Kind",
-                           a.aggnumdirectargs AS "Number of Direct Args",
-                           p2.function_id AS "Transition Function ID",
-                           p3.function_id AS "Final Function ID",
-                           p4.function_id AS "Combine Function ID",
-                           p5.function_id AS "Serialization Function ID",
-                           p6.function_id AS "Deerialization Function ID",
-                           p7.function_id AS "Forward Transition Function ID",
-                           p8.function_id AS "Inverse Transition Function ID",
-                           p9.function_id AS "Final Moving Function ID",
-                           a.aggfinalextra AS "Extra Dummy to Final Function",
-                           a.aggmfinalextra AS "Extra Dummy to Final Moving Function",
-                           o.operator_name AS "Sort Operator",
-                           format('%s.%s', t1.schema_name, t1.type_name)::regtype AS "Internal Transition Data Type",
-                           a.aggtransspace AS "Average Size of Transition",
-                           format('%s.%s', t1.schema_name, t1.type_name)::regtype AS "Internal Transition Moving Data Type",
-                           a.aggmtransspace AS "Average Size of Transition Moving",
-                           a.agginitval AS "Transition Init Value",
-                           a.aggminitval AS "Transition Moving Init Value",
-                           p1.proparallel AS "Parallel Mode"
-                    FROM pg_aggregate a
-                    INNER JOIN procs p1
-                            ON a.aggfnoid = p1.function_oid
-                    LEFT JOIN procs p2
-                           ON a.aggtransfn = p2.function_oid
-                    LEFT JOIN procs p3
-                           ON a.aggfinalfn = p3.function_oid
-                    LEFT JOIN procs p4
-                           ON a.aggcombinefn = p4.function_oid
-                    LEFT JOIN procs p5
-                           ON a.aggserialfn = p5.function_oid
-                    LEFT JOIN procs p6
-                           ON a.aggdeserialfn = p6.function_oid
-                    LEFT JOIN procs p7
-                           ON a.aggmtransfn = p7.function_oid
-                    LEFT JOIN procs p8
-                           ON a.aggminvtransfn = p8.function_oid
-                    LEFT JOIN procs p9
-                           ON a.aggmfinalfn = p9.function_oid
-                    LEFT JOIN operators o
-                           ON a.aggsortop = o.operator_oid
-                    LEFT JOIN types t1
-                           ON a.aggtranstype = t1.type_oid
-                    LEFT JOIN types t2
-                           ON a.aggmtranstype = t2.type_oid
-                    WHERE p1.is_aggregate
-                      AND p1.function_id = '{0}'
-                '''.format(
-                    p_object
-                )
-            )
-        else:
-            return self.v_connection.Query(
-                '''
-                    WITH procs AS (
-                        SELECT p.oid AS function_oid,
-                               quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS function_id,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(p.proname) AS function_name,
-                               r.rolname AS function_owner,
-                               p.prokind AS function_kind,
-                               p.proparallel
-                        FROM pg_proc p
-                        INNER JOIN pg_namespace n
-                                ON p.pronamespace = n.oid
-                        INNER JOIN pg_roles r
-                                ON p.proowner = r.oid
-                    ),
-                    operators AS (
-                        SELECT o.oid AS operator_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(o.oprname) AS operator_name
-                        FROM pg_operator o
-                        INNER JOIN pg_namespace n
-                                ON o.oprnamespace = n.oid
-                    ),
-                    types AS (
-                        SELECT t.oid AS type_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(t.typname) AS type_name
-                        FROM pg_type t
-                        INNER JOIN pg_namespace n
-                                ON t.typnamespace = n.oid
-                    )
-                    SELECT current_database() as "Database",
-                           p1.schema_name AS "Schema",
-                           p1.function_name AS "Aggregate",
-                           p1.function_id AS "Aggregate ID",
-                           a.aggfnoid AS "OID",
-                           p1.function_owner as "Owner",
-                           a.aggkind AS "Kind",
-                           a.aggnumdirectargs AS "Number of Direct Args",
-                           p2.function_id AS "Transition Function ID",
-                           p3.function_id AS "Final Function ID",
-                           p4.function_id AS "Combine Function ID",
-                           p5.function_id AS "Serialization Function ID",
-                           p6.function_id AS "Deerialization Function ID",
-                           p7.function_id AS "Forward Transition Function ID",
-                           p8.function_id AS "Inverse Transition Function ID",
-                           p9.function_id AS "Final Moving Function ID",
-                           a.aggfinalextra AS "Extra Dummy to Final Function",
-                           a.aggmfinalextra AS "Extra Dummy to Final Moving Function",
-                           a.aggfinalmodify AS "Final Function Modifier",
-                           a.aggmfinalmodify AS "Final Moving Function Modifier",
-                           o.operator_name AS "Sort Operator",
-                           format('%s.%s', t1.schema_name, t1.type_name)::regtype AS "Internal Transition Data Type",
-                           a.aggtransspace AS "Average Size of Transition",
-                           format('%s.%s', t1.schema_name, t1.type_name)::regtype AS "Internal Transition Moving Data Type",
-                           a.aggmtransspace AS "Average Size of Transition Moving",
-                           a.agginitval AS "Transition Init Value",
-                           a.aggminitval AS "Transition Moving Init Value",
-                           p1.proparallel AS "Parallel Mode"
-                    FROM pg_aggregate a
-                    INNER JOIN procs p1
-                            ON a.aggfnoid = p1.function_oid
-                    LEFT JOIN procs p2
-                           ON a.aggtransfn = p2.function_oid
-                    LEFT JOIN procs p3
-                           ON a.aggfinalfn = p3.function_oid
-                    LEFT JOIN procs p4
-                           ON a.aggcombinefn = p4.function_oid
-                    LEFT JOIN procs p5
-                           ON a.aggserialfn = p5.function_oid
-                    LEFT JOIN procs p6
-                           ON a.aggdeserialfn = p6.function_oid
-                    LEFT JOIN procs p7
-                           ON a.aggmtransfn = p7.function_oid
-                    LEFT JOIN procs p8
-                           ON a.aggminvtransfn = p8.function_oid
-                    LEFT JOIN procs p9
-                           ON a.aggmfinalfn = p9.function_oid
-                    LEFT JOIN operators o
-                           ON a.aggsortop = o.operator_oid
-                    LEFT JOIN types t1
-                           ON a.aggtranstype = t1.type_oid
-                    LEFT JOIN types t2
-                           ON a.aggmtranstype = t2.type_oid
-                    WHERE p1.function_kind = 'a'
-                      AND p1.function_id = '{0}'
-                '''.format(
-                    p_object
-                )
-            )
+        )
 
     @lock_required
     def GetPropertiesPK(self, p_schema, p_table, p_object):
@@ -7452,6 +6653,7 @@ FROM #table_name#
               and quote_ident(t.relname) = '{1}'
               and quote_ident(c.conname) = '{2}'
         '''.format(p_schema, p_table, p_object))
+    
     @lock_required
     def GetPropertiesFK(self, p_schema, p_table, p_object):
         return self.v_connection.Query('''
@@ -7635,6 +6837,7 @@ FROM #table_name#
               and quote_ident(t.relname) = '{1}'
               and quote_ident(c.conname) = '{2}'
         '''.format(p_schema, p_table, p_object))
+    
     @lock_required
     def GetPropertiesUnique(self, p_schema, p_table, p_object):
         return self.v_connection.Query('''
@@ -7694,6 +6897,7 @@ FROM #table_name#
               and quote_ident(t.relname) = '{1}'
               and quote_ident(c.conname) = '{2}'
         '''.format(p_schema, p_table, p_object))
+    
     @lock_required
     def GetPropertiesCheck(self, p_schema, p_table, p_object):
         return self.v_connection.Query('''
@@ -7751,6 +6955,7 @@ FROM #table_name#
               and quote_ident(t.relname) = '{1}'
               and quote_ident(c.conname) = '{2}'
         '''.format(p_schema, p_table, p_object))
+    
     @lock_required
     def GetPropertiesExclude(self, p_schema, p_table, p_object):
         return self.v_connection.Query('''
@@ -7835,6 +7040,7 @@ FROM #table_name#
               and quote_ident(t.relname) = '{1}'
               and quote_ident(c.conname) = '{2}'
         '''.format(p_schema, p_table, p_object))
+    
     @lock_required
     def GetPropertiesRule(self, p_schema, p_table, p_object):
         return self.v_connection.Query('''
@@ -7847,178 +7053,69 @@ FROM #table_name#
               and quote_ident(tablename) = '{1}'
               and quote_ident(rulename) = '{2}'
         '''.format(p_schema, p_table, p_object))
+    
     @lock_required
     def GetPropertiesForeignTable(self, p_schema, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 100000:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       c.relname as "Table",
-                       c.oid as "OID",
-                       r.rolname as "Owner",
-                       pg_size_pretty(pg_relation_size(c.oid)) as "Size",
-                       coalesce(t1.spcname, t2.spcname) as "Tablespace",
-                       c.relacl as "ACL",
-                       c.reloptions as "Options",
-                       pg_relation_filepath(c.oid) as "Filenode",
-                       c.reltuples as "Estimate Count",
-                       c.relhasindex as "Has Index",
-                       (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
-                       c.relnatts as "Number of Attributes",
-                       c.relchecks as "Number of Checks",
-                       c.relhasoids as "Has OIDs",
-                       c.relhaspkey as "Has Primary Key",
-                       c.relhasrules as "Has Rules",
-                       c.relhastriggers as "Has Triggers",
-                       c.relhassubclass as "Has Subclass",
-                       array_to_string(f.ftoptions, ',') as "Foreign Table Options",
-                       s.srvname as "Foreign Server",
-                       w.fdwname as "Foreign Data Wrapper"
-                from pg_class c
-                inner join pg_namespace n
-                on n.oid = c.relnamespace
-                inner join pg_roles r
-                on r.oid = c.relowner
-                left join pg_tablespace t1
-                on t1.oid = c.reltablespace
-                inner join (
-                select t.spcname
-                from pg_database d
-                inner join pg_tablespace t
-                on t.oid = d.dattablespace
-                where d.datname = current_database()
-                ) t2
-                on 1 = 1
-                inner join pg_foreign_table f
-                on f.ftrelid = c.oid
-                inner join pg_foreign_server s
-                on s.oid = f.ftserver
-                inner join pg_foreign_data_wrapper w
-                on w.oid = s.srvfdw
-                where quote_ident(n.nspname) = '{0}'
-                  and quote_ident(c.relname) = '{1}'
-            '''.format(p_schema, p_object))
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) >= 100000 and int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       c.relname as "Table",
-                       c.oid as "OID",
-                       r.rolname as "Owner",
-                       pg_size_pretty(pg_relation_size(c.oid)) as "Size",
-                       coalesce(t1.spcname, t2.spcname) as "Tablespace",
-                       c.relacl as "ACL",
-                       c.reloptions as "Options",
-                       pg_relation_filepath(c.oid) as "Filenode",
-                       c.reltuples as "Estimate Count",
-                       c.relhasindex as "Has Index",
-                       (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
-                       c.relnatts as "Number of Attributes",
-                       c.relchecks as "Number of Checks",
-                       c.relhasoids as "Has OIDs",
-                       c.relhasrules as "Has Rules",
-                       c.relhastriggers as "Has Triggers",
-                       c.relhassubclass as "Has Subclass",
-                       c.relkind = 'p' as "Is Partitioned",
-                       c.relispartition as "Is Partition",
-                       (case when c.relispartition then po.parent_table else '' end) as "Partition Of",
-                       array_to_string(f.ftoptions, ',') as "Foreign Table Options",
-                       s.srvname as "Foreign Server",
-                       w.fdwname as "Foreign Data Wrapper"
-                from pg_class c
-                inner join pg_namespace n
-                on n.oid = c.relnamespace
-                inner join pg_roles r
-                on r.oid = c.relowner
-                left join pg_tablespace t1
-                on t1.oid = c.reltablespace
-                inner join (
-                select t.spcname
-                from pg_database d
-                inner join pg_tablespace t
-                on t.oid = d.dattablespace
-                where d.datname = current_database()
-                ) t2
-                on 1 = 1
-                left join (
-                select quote_ident(n2.nspname) || '.' || quote_ident(c2.relname) as parent_table
-                from pg_inherits i
-                inner join pg_class c2
-                on c2.oid = i.inhparent
-                inner join pg_namespace n2
-                on n2.oid = c2.relnamespace
-                where i.inhrelid = '{0}.{1}'::regclass
-                ) po
-                on 1 = 1
-                inner join pg_foreign_table f
-                on f.ftrelid = c.oid
-                inner join pg_foreign_server s
-                on s.oid = f.ftserver
-                inner join pg_foreign_data_wrapper w
-                on w.oid = s.srvfdw
-                where quote_ident(n.nspname) = '{0}'
-                  and quote_ident(c.relname) = '{1}'
-            '''.format(p_schema, p_object))
-        else:
-            return self.v_connection.Query('''
-                select current_database() as "Database",
-                       n.nspname as "Schema",
-                       c.relname as "Table",
-                       c.oid as "OID",
-                       r.rolname as "Owner",
-                       pg_size_pretty(pg_relation_size(c.oid)) as "Size",
-                       coalesce(t1.spcname, t2.spcname) as "Tablespace",
-                       c.relacl as "ACL",
-                       c.reloptions as "Options",
-                       pg_relation_filepath(c.oid) as "Filenode",
-                       c.reltuples as "Estimate Count",
-                       c.relhasindex as "Has Index",
-                       (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
-                       c.relnatts as "Number of Attributes",
-                       c.relchecks as "Number of Checks",
-                       c.relhasrules as "Has Rules",
-                       c.relhastriggers as "Has Triggers",
-                       c.relhassubclass as "Has Subclass",
-                       c.relkind = 'p' as "Is Partitioned",
-                       c.relispartition as "Is Partition",
-                       (case when c.relispartition then po.parent_table else '' end) as "Partition Of",
-                       array_to_string(f.ftoptions, ',') as "Foreign Table Options",
-                       s.srvname as "Foreign Server",
-                       w.fdwname as "Foreign Data Wrapper"
-                from pg_class c
-                inner join pg_namespace n
-                on n.oid = c.relnamespace
-                inner join pg_roles r
-                on r.oid = c.relowner
-                left join pg_tablespace t1
-                on t1.oid = c.reltablespace
-                inner join (
-                select t.spcname
-                from pg_database d
-                inner join pg_tablespace t
-                on t.oid = d.dattablespace
-                where d.datname = current_database()
-                ) t2
-                on 1 = 1
-                left join (
-                select quote_ident(n2.nspname) || '.' || quote_ident(c2.relname) as parent_table
-                from pg_inherits i
-                inner join pg_class c2
-                on c2.oid = i.inhparent
-                inner join pg_namespace n2
-                on n2.oid = c2.relnamespace
-                where i.inhrelid = '{0}.{1}'::regclass
-                ) po
-                on 1 = 1
-                inner join pg_foreign_table f
-                on f.ftrelid = c.oid
-                inner join pg_foreign_server s
-                on s.oid = f.ftserver
-                inner join pg_foreign_data_wrapper w
-                on w.oid = s.srvfdw
-                where quote_ident(n.nspname) = '{0}'
-                  and quote_ident(c.relname) = '{1}'
-            '''.format(p_schema, p_object))
+        return self.v_connection.Query('''
+            select current_database() as "Database",
+                    n.nspname as "Schema",
+                    c.relname as "Table",
+                    c.oid as "OID",
+                    r.rolname as "Owner",
+                    pg_size_pretty(pg_relation_size(c.oid)) as "Size",
+                    coalesce(t1.spcname, t2.spcname) as "Tablespace",
+                    c.relacl as "ACL",
+                    c.reloptions as "Options",
+                    pg_relation_filepath(c.oid) as "Filenode",
+                    c.reltuples as "Estimate Count",
+                    c.relhasindex as "Has Index",
+                    (case c.relpersistence when 'p' then 'Permanent' when 'u' then 'Unlogged' when 't' then 'Temporary' end) as "Persistence",
+                    c.relnatts as "Number of Attributes",
+                    c.relchecks as "Number of Checks",
+                    c.relhasrules as "Has Rules",
+                    c.relhastriggers as "Has Triggers",
+                    c.relhassubclass as "Has Subclass",
+                    c.relkind = 'p' as "Is Partitioned",
+                    c.relispartition as "Is Partition",
+                    (case when c.relispartition then po.parent_table else '' end) as "Partition Of",
+                    array_to_string(f.ftoptions, ',') as "Foreign Table Options",
+                    s.srvname as "Foreign Server",
+                    w.fdwname as "Foreign Data Wrapper"
+            from pg_class c
+            inner join pg_namespace n
+            on n.oid = c.relnamespace
+            inner join pg_roles r
+            on r.oid = c.relowner
+            left join pg_tablespace t1
+            on t1.oid = c.reltablespace
+            inner join (
+            select t.spcname
+            from pg_database d
+            inner join pg_tablespace t
+            on t.oid = d.dattablespace
+            where d.datname = current_database()
+            ) t2
+            on 1 = 1
+            left join (
+            select quote_ident(n2.nspname) || '.' || quote_ident(c2.relname) as parent_table
+            from pg_inherits i
+            inner join pg_class c2
+            on c2.oid = i.inhparent
+            inner join pg_namespace n2
+            on n2.oid = c2.relnamespace
+            where i.inhrelid = '{0}.{1}'::regclass
+            ) po
+            on 1 = 1
+            inner join pg_foreign_table f
+            on f.ftrelid = c.oid
+            inner join pg_foreign_server s
+            on s.oid = f.ftserver
+            inner join pg_foreign_data_wrapper w
+            on w.oid = s.srvfdw
+            where quote_ident(n.nspname) = '{0}'
+                and quote_ident(c.relname) = '{1}'
+        '''.format(p_schema, p_object))
+    
     @lock_required
     def GetPropertiesUserMapping(self, p_server, p_object):
         if p_object == 'PUBLIC':
@@ -8055,6 +7152,7 @@ FROM #table_name#
                 where quote_ident(s.srvname) = '{0}'
                   and quote_ident(r.rolname) = '{1}'
             '''.format(p_server, p_object))
+    
     @lock_required
     def GetPropertiesForeignServer(self, p_object):
         return self.v_connection.Query('''
@@ -8073,6 +7171,7 @@ FROM #table_name#
             on r.oid = s.srvowner
             where quote_ident(s.srvname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetPropertiesForeignDataWrapper(self, p_object):
         return self.v_connection.Query('''
@@ -8092,6 +7191,7 @@ FROM #table_name#
             on v.oid = w.fdwvalidator
             where quote_ident(w.fdwname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetPropertiesType(self, p_schema, p_object):
         return self.v_connection.Query('''
@@ -8353,6 +7453,7 @@ FROM #table_name#
                 raise Exception('Object {0} does not exist anymore. Please refresh the tree view.'.format(p_object))
             else:
                 raise exc
+    
     @lock_required
     def GetDDLRole(self, p_object):
         return self.v_connection.ExecuteScalar('''
@@ -8409,6 +7510,7 @@ FROM #table_name#
             select ddl||coalesce(ddl_config||E'\n','')
               from q1,q2
         '''.format(p_object))
+    
     @lock_required
     def GetDDLTablespace(self, p_object):
         return self.v_connection.ExecuteScalar('''
@@ -8430,74 +7532,43 @@ FROM #table_name#
             on r.oid = t.spcowner
             where quote_ident(t.spcname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetDDLDatabase(self, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 90500:
-            return self.v_connection.ExecuteScalar('''
-                WITH comments AS (
-                    SELECT shobj_description(oid, 'pg_database') AS comment
-                    FROM pg_database
-                    WHERE quote_ident(datname) = '{0}'
-                )
-                select format(E'CREATE DATABASE %s\nOWNER %s\nENCODING %s\nLC_COLLATE ''%s''\nLC_CTYPE ''%s''\nTABLESPACE %s\CONNECTION LIMIT %s;%s',
-                              quote_ident(d.datname),
-                              quote_ident(r.rolname),
-                              pg_encoding_to_char(encoding),
-                              datcollate,
-                              datctype,
-                              quote_ident(t.spcname),
-                              datconnlimit,
-                              (CASE WHEN c.comment IS NOT NULL
-                                    THEN format(
-                                             E'\n\nCOMMENT ON DATABASE %s is %s;',
-                                             quote_ident(d.datname),
-                                             quote_literal(c.comment)
-                                         )
-                                    ELSE ''
-                               END))
-                from pg_database d
-                inner join pg_roles r
-                on r.oid = d.datdba
-                inner join pg_tablespace t
-                on t.oid = d.dattablespace
-                LEFT JOIN comments c
-                       ON 1 = 1
-                where quote_ident(d.datname) = '{0}'
-            '''.format(p_object))
-        else:
-            return self.v_connection.ExecuteScalar('''
-                WITH comments AS (
-                    SELECT shobj_description(oid, 'pg_database') AS comment
-                    FROM pg_database
-                    WHERE quote_ident(datname) = '{0}'
-                )
-                select format(E'CREATE DATABASE %s\nOWNER %s\nENCODING %s\nLC_COLLATE ''%s''\nLC_CTYPE ''%s''\nTABLESPACE %s\nALLOW_CONNECTIONS %s\nCONNECTION LIMIT %s\nIS_TEMPLATE %s;%s',
-                              quote_ident(d.datname),
-                              quote_ident(r.rolname),
-                              pg_encoding_to_char(encoding),
-                              datcollate,
-                              datctype,
-                              quote_ident(t.spcname),
-                              datallowconn::text,
-                              datconnlimit,
-                              datistemplate::text,
-                              (CASE WHEN c.comment IS NOT NULL
-                                    THEN format(
-                                             E'\n\nCOMMENT ON DATABASE %s is %s;',
-                                             quote_ident(d.datname),
-                                             quote_literal(c.comment)
-                                         )
-                                    ELSE ''
-                               END))
-                from pg_database d
-                inner join pg_roles r
-                on r.oid = d.datdba
-                inner join pg_tablespace t
-                on t.oid = d.dattablespace
-                LEFT JOIN comments c
-                       ON 1 = 1
-                where quote_ident(d.datname) = '{0}'
-            '''.format(p_object))
+        return self.v_connection.ExecuteScalar('''
+            WITH comments AS (
+                SELECT shobj_description(oid, 'pg_database') AS comment
+                FROM pg_database
+                WHERE quote_ident(datname) = '{0}'
+            )
+            select format(E'CREATE DATABASE %s\nOWNER %s\nENCODING %s\nLC_COLLATE ''%s''\nLC_CTYPE ''%s''\nTABLESPACE %s\nALLOW_CONNECTIONS %s\nCONNECTION LIMIT %s\nIS_TEMPLATE %s;%s',
+                            quote_ident(d.datname),
+                            quote_ident(r.rolname),
+                            pg_encoding_to_char(encoding),
+                            datcollate,
+                            datctype,
+                            quote_ident(t.spcname),
+                            datallowconn::text,
+                            datconnlimit,
+                            datistemplate::text,
+                            (CASE WHEN c.comment IS NOT NULL
+                                THEN format(
+                                            E'\n\nCOMMENT ON DATABASE %s is %s;',
+                                            quote_ident(d.datname),
+                                            quote_literal(c.comment)
+                                        )
+                                ELSE ''
+                            END))
+            from pg_database d
+            inner join pg_roles r
+            on r.oid = d.datdba
+            inner join pg_tablespace t
+            on t.oid = d.dattablespace
+            LEFT JOIN comments c
+                    ON 1 = 1
+            where quote_ident(d.datname) = '{0}'
+        '''.format(p_object))
+    
     @lock_required
     def GetDDLExtension(self, p_object):
         return self.v_connection.ExecuteScalar(
@@ -8522,7 +7593,7 @@ FROM #table_name#
                 p_object
             )
         )
-        return 'CREATE EXTENSION {0};'.format(p_object)
+
     @lock_required
     def GetDDLSchema(self, p_object):
         return self.v_connection.ExecuteScalar('''
@@ -8610,2170 +7681,557 @@ FROM #table_name#
               inner join grants on 1=1
              where quote_ident(n.nspname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetDDLClass(self, p_schema, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 100000:
-            return self.v_connection.ExecuteScalar('''
-                with obj as (
-                   SELECT c.oid,
-                         'pg_class'::regclass,
-                         c.relname AS name,
-                         n.nspname AS namespace,
-                         coalesce(cc.column2,c.relkind::text) AS kind,
-                         pg_get_userbyid(c.relowner) AS owner,
-                         coalesce(cc.column2,c.relkind::text) AS sql_kind,
-                         cast('{0}.{1}'::regclass AS text) AS sql_identifier
-                    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-                    LEFT join (
-                         values ('r','TABLE'),
-                                ('v','VIEW'),
-                                ('i','INDEX'),
-                                ('S','SEQUENCE'),
-                                ('s','SPECIAL'),
-                                ('m','MATERIALIZED VIEW'),
-                                ('c','TYPE'),
-                                ('t','TOAST'),
-                                ('f','FOREIGN TABLE')
-                    ) as cc on cc.column1 = c.relkind
-                   WHERE c.oid = '{0}.{1}'::regclass
-                ),
-                columns as (
-                    SELECT a.attname AS name, format_type(t.oid, NULL::integer) AS type,
+        return self.v_connection.ExecuteScalar('''
+            with obj as (
+                SELECT c.oid,
+                        'pg_class'::regclass,
+                        c.relname AS name,
+                        n.nspname AS namespace,
+                        coalesce(cc.column2,c.relkind::text) AS kind,
+                        pg_get_userbyid(c.relowner) AS owner,
+                        coalesce(cc.column2,c.relkind::text) AS sql_kind,
+                        cast('{0}.{1}'::regclass AS text) AS sql_identifier
+                FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+                LEFT join (
+                        values ('r','TABLE'),
+                            ('v','VIEW'),
+                            ('i','INDEX'),
+                            ('I','PARTITIONED INDEX'),
+                            ('S','SEQUENCE'),
+                            ('s','SPECIAL'),
+                            ('m','MATERIALIZED VIEW'),
+                            ('c','TYPE'),
+                            ('t','TOAST'),
+                            ('f','FOREIGN TABLE'),
+                            ('p','PARTITIONED TABLE')
+                ) as cc on cc.column1 = c.relkind
+                WHERE c.oid = '{0}.{1}'::regclass
+            ),
+            columns as (
+                SELECT a.attname AS name, format_type(t.oid, NULL::integer) AS type,
+                    CASE
+                        WHEN (a.atttypmod - 4) > 0 THEN a.atttypmod - 4
+                        ELSE NULL::integer
+                    END AS size,
+                    a.attnotnull AS not_null,
+                    a.attgenerated AS generated,
+                    pg_get_expr(def.adbin, def.adrelid) AS "default",
+                    col_description(c.oid, a.attnum::integer) AS comment,
+                    con.conname AS primary_key,
+                    a.attislocal AS is_local,
+                    a.attstorage::text AS storage,
+                    nullif(col.collcollate::text,'') AS collation,
+                    a.attnum AS ord,
+                    s.nspname AS namespace,
+                    c.relname AS class_name,
+                    format('%s.%I',text(c.oid::regclass),a.attname) AS sql_identifier,
+                    c.oid,
+                    a.attacl,
+                    format('%I %s%s%s%s',
+                        a.attname::text,
+                        format_type(t.oid, a.atttypmod),
                         CASE
-                            WHEN (a.atttypmod - 4) > 0 THEN a.atttypmod - 4
-                            ELSE NULL::integer
-                        END AS size,
-                        a.attnotnull AS not_null,
-                        def.adsrc AS "default",
-                        col_description(c.oid, a.attnum::integer) AS comment,
-                        con.conname AS primary_key,
-                        a.attislocal AS is_local,
-                        a.attstorage::text AS storage,
-                        nullif(col.collcollate::text,'') AS collation,
-                        a.attnum AS ord,
-                        s.nspname AS namespace,
-                        c.relname AS class_name,
-                        format('%s.%I',text(c.oid::regclass),a.attname) AS sql_identifier,
-                        c.oid,
-                        a.attacl,
-                        format('%I %s%s%s',
-                        	a.attname::text,
-                        	format_type(t.oid, a.atttypmod),
-                	        CASE
-                    	      WHEN length(col.collcollate) > 0
-                        	  THEN ' COLLATE ' || quote_ident(col.collcollate::text)
-                              ELSE ''
-                        	END,
-                        	CASE
-                              WHEN a.attnotnull THEN ' NOT NULL'::text
-                              ELSE ''::text
-                        	END)
-                        AS definition
-                   FROM pg_class c
-                   JOIN pg_namespace s ON s.oid = c.relnamespace
-                   JOIN pg_attribute a ON c.oid = a.attrelid
-                   LEFT JOIN pg_attrdef def ON c.oid = def.adrelid AND a.attnum = def.adnum
-                   LEFT JOIN pg_constraint con
-                        ON con.conrelid = c.oid AND (a.attnum = ANY (con.conkey)) AND con.contype = 'p'
-                   LEFT JOIN pg_type t ON t.oid = a.atttypid
-                   LEFT JOIN pg_collation col ON col.oid = a.attcollation
-                   JOIN pg_namespace tn ON tn.oid = t.typnamespace
-                  WHERE c.relkind IN ('r','v','c','f') AND a.attnum > 0 AND NOT a.attisdropped
-                    AND has_table_privilege(c.oid, 'select') AND has_schema_privilege(s.oid, 'usage')
-                    AND c.oid = '{0}.{1}'::regclass
-                  ORDER BY s.nspname, c.relname, a.attnum
-                ),
-                comments as (
-                   select 'COMMENT ON COLUMN ' || text('{0}.{1}') || '.' || quote_ident(name) ||
-                          ' IS ' || quote_nullable(comment) || ';' as cc
-                     from columns
-                    where comment IS NOT NULL
-                ),
-                settings as (
-                   select 'ALTER ' || obj.kind || ' ' || text('{0}.{1}') || ' SET (' ||
-                          quote_ident(option_name)||'='||quote_nullable(option_value) ||');' as ss
-                     from pg_options_to_table((select reloptions from pg_class where oid = '{0}.{1}'::regclass))
-                     join obj on (true)
-                ),
-                constraints as (
-                   SELECT nc.nspname AS namespace,
-                        r.relname AS class_name,
-                        c.conname AS constraint_name,
-                        case c.contype
-                            when 'c'::"char" then 'CHECK'::text
-                            when 'f'::"char" then 'FOREIGN KEY'::text
-                            when 'p'::"char" then 'PRIMARY KEY'::text
-                            when 'u'::"char" then 'UNIQUE'::text
-                            when 't'::"char" then 'TRIGGER'::text
-                            when 'x'::"char" then 'EXCLUDE'::text
-                            else c.contype::text
-                        end AS constraint_type,
-                        pg_get_constraintdef(c.oid,true) AS constraint_definition,
-                        c.condeferrable AS is_deferrable,
-                        c.condeferred  AS initially_deferred,
-                        r.oid as regclass, c.oid AS sysid
-                   FROM pg_namespace nc, pg_namespace nr, pg_constraint c, pg_class r
-                  WHERE nc.oid = c.connamespace AND nr.oid = r.relnamespace AND c.conrelid = r.oid
-                    AND coalesce(r.oid='{0}.{1}'::regclass,true)
-                ),
-                indexes as (
-                   SELECT DISTINCT
-                        c.oid AS oid,
-                        n.nspname::text AS namespace,
-                        c.relname::text AS class,
-                        i.relname::text AS name,
-                        NULL::text AS tablespace,
-                        CASE d.refclassid
-                            WHEN 'pg_constraint'::regclass
-                            THEN 'ALTER TABLE ' || text(c.oid::regclass)
-                                 || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
-                                 || ' ' || pg_get_constraintdef(cc.oid)
-                            ELSE pg_get_indexdef(i.oid)
-                        END AS indexdef,
-                        cc.conname::text AS constraint_name
-                   FROM pg_index x
-                   JOIN pg_class c ON c.oid = x.indrelid
-                   JOIN pg_namespace n ON n.oid = c.relnamespace
-                   JOIN pg_class i ON i.oid = x.indexrelid
-                   JOIN pg_depend d ON d.objid = x.indexrelid
-                   LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
-                  WHERE c.relkind in ('r','m') AND i.relkind = 'i'::"char"
-                    AND coalesce(c.oid = '{0}.{1}'::regclass,true)
-                    AND NOT x.indisunique
-                    AND NOT x.indisprimary
-                    AND NOT x.indisexclusion
-                ),
-                triggers as (
-                   SELECT
-                        CASE t.tgisinternal
-                            WHEN true THEN 'CONSTRAINT'::text
-                            ELSE NULL::text
-                        END AS is_constraint, t.tgname::text AS trigger_name,
-                        CASE (t.tgtype::integer & 64) <> 0
-                            WHEN true THEN 'INSTEAD'::text
-                            ELSE CASE t.tgtype::integer & 2
-                              WHEN 2 THEN 'BEFORE'::text
-                              WHEN 0 THEN 'AFTER'::text
-                              ELSE NULL::text
-                            END
-                        END AS action_order,
-                        array_to_string(array[
-                          case when (t.tgtype::integer &  4) <> 0 then 'INSERT'   end,
-                          case when (t.tgtype::integer &  8) <> 0 then 'DELETE'   end,
-                          case when (t.tgtype::integer & 16) <> 0 then 'UPDATE'   end,
-                          case when (t.tgtype::integer & 32) <> 0 then 'TRUNCATE' end
-                        ],' OR ') AS event_manipulation,
-                        c.oid::regclass::text AS event_object_sql_identifier,
-                        p.oid::regprocedure::text AS action_statement,
-                        CASE t.tgtype::integer & 1
-                            WHEN 1 THEN 'ROW'::text
-                            ELSE 'STATEMENT'::text
-                        END AS action_orientation,
-                        pg_get_triggerdef(t.oid,true) as trigger_definition,
-                        c.oid::regclass AS regclass,
-                        p.oid::regprocedure AS regprocedure,
-                        s.nspname::text AS event_object_schema,
-                        c.relname::text AS event_object_table,
-                        (quote_ident(t.tgname::text) || ' ON ') || c.oid::regclass::text AS sql_identifier
-                   FROM pg_trigger t
-                   LEFT JOIN pg_class c ON c.oid = t.tgrelid
-                   LEFT JOIN pg_namespace s ON s.oid = c.relnamespace
-                   LEFT JOIN pg_proc p ON p.oid = t.tgfoid
-                   LEFT JOIN pg_namespace s1 ON s1.oid = p.pronamespace
-                   WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
-                ),
-                rules as (
-                   SELECT n.nspname::text AS namespace,
-                        c.relname::text AS class_name,
-                        r.rulename::text AS rule_name,
-                        CASE
-                            WHEN r.ev_type = '1'::"char" THEN 'SELECT'::text
-                            WHEN r.ev_type = '2'::"char" THEN 'UPDATE'::text
-                            WHEN r.ev_type = '3'::"char" THEN 'INSERT'::text
-                            WHEN r.ev_type = '4'::"char" THEN 'DELETE'::text
-                            ELSE 'UNKNOWN'::text
-                        END AS rule_event,
-                        r.is_instead,
-                        pg_get_ruledef(r.oid, true) AS rule_definition,
-                        c.oid::regclass AS regclass
-                   FROM pg_rewrite r
-                   JOIN pg_class c ON c.oid = r.ev_class
-                   JOIN pg_namespace n ON n.oid = c.relnamespace
-                  WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
-                    AND NOT (r.ev_type = '1'::"char" AND r.rulename = '_RETURN'::name)
-                  ORDER BY r.oid
-                ),
-                createview as (
-                    select
-                     'CREATE '||
-                      case relkind
-                        when 'v' THEN 'OR REPLACE VIEW '
-                        when 'm' THEN 'MATERIALIZED VIEW '
-                      end || (oid::regclass::text) || E' AS\n'||
-                      pg_catalog.pg_get_viewdef(oid,true)||E'\n'||
-                      (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                            THEN (CASE relkind WHEN 'v'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON VIEW %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'm'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON MATERIALIZED VIEW %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               ELSE ''
-                                  END)
+                            WHEN length(col.collcollate) > 0
+                            THEN ' COLLATE ' || quote_ident(col.collcollate::text)
                             ELSE ''
-                       END) as text
-                     FROM pg_class t
-                     WHERE oid = '{0}.{1}'::regclass
-                       AND relkind in ('v','m')
-                ),
-                createtable as (
-                    select
-                        'CREATE '||
-                      case relpersistence
-                        when 'u' then 'UNLOGGED '
-                        when 't' then 'TEMPORARY '
-                        else ''
-                      end
-                      || obj.kind || ' ' || obj.sql_identifier
-                      || case obj.kind when 'TYPE' then ' AS' else '' end
-                      ||
-                      E' (\n'||
+                        END,
+                        CASE
+                            WHEN a.attnotnull THEN ' NOT NULL'::text
+                            ELSE ''::text
+                        END,
+                        CASE
+                            WHEN a.attidentity = 'a' THEN ' GENERATED ALWAYS AS IDENTITY'::text
+                            WHEN a.attidentity = 'd' THEN ' GENERATED BY DEFAULT AS IDENTITY'::text
+                            WHEN a.attgenerated = 's' THEN format(' GENERATED ALWAYS AS %s STORED',pg_get_expr(def.adbin, def.adrelid))::text
+                            ELSE ''::text
+                        END)
+                    AS definition
+                FROM pg_class c
+                JOIN pg_namespace s ON s.oid = c.relnamespace
+                JOIN pg_attribute a ON c.oid = a.attrelid
+                LEFT JOIN pg_attrdef def ON c.oid = def.adrelid AND a.attnum = def.adnum
+                LEFT JOIN pg_constraint con
+                    ON con.conrelid = c.oid AND (a.attnum = ANY (con.conkey)) AND con.contype = 'p'
+                LEFT JOIN pg_type t ON t.oid = a.atttypid
+                LEFT JOIN pg_collation col ON col.oid = a.attcollation
+                JOIN pg_namespace tn ON tn.oid = t.typnamespace
+                WHERE c.relkind IN ('r','v','c','f','p') AND a.attnum > 0 AND NOT a.attisdropped
+                AND has_table_privilege(c.oid, 'select') AND has_schema_privilege(s.oid, 'usage')
+                AND c.oid = '{0}.{1}'::regclass
+                ORDER BY s.nspname, c.relname, a.attnum
+            ),
+            comments as (
+                select 'COMMENT ON COLUMN ' || text('{0}.{1}') || '.' || quote_ident(name) ||
+                        ' IS ' || quote_nullable(comment) || ';' as cc
+                    from columns
+                where comment IS NOT NULL
+            ),
+            settings as (
+                select 'ALTER ' || obj.kind || ' ' || text('{0}.{1}') || ' SET (' ||
+                        quote_ident(option_name)||'='||quote_nullable(option_value) ||');' as ss
+                    from pg_options_to_table((select reloptions from pg_class where oid = '{0}.{1}'::regclass))
+                    join obj on (true)
+            ),
+            constraints as (
+                SELECT nc.nspname AS namespace,
+                    r.relname AS class_name,
+                    c.conname AS constraint_name,
+                    case c.contype
+                        when 'c'::"char" then 'CHECK'::text
+                        when 'f'::"char" then 'FOREIGN KEY'::text
+                        when 'p'::"char" then 'PRIMARY KEY'::text
+                        when 'u'::"char" then 'UNIQUE'::text
+                        when 't'::"char" then 'TRIGGER'::text
+                        when 'x'::"char" then 'EXCLUDE'::text
+                        else c.contype::text
+                    end AS constraint_type,
+                    pg_get_constraintdef(c.oid,true) AS constraint_definition,
+                    c.condeferrable AS is_deferrable,
+                    c.condeferred  AS initially_deferred,
+                    r.oid as regclass, c.oid AS sysid
+                FROM pg_namespace nc, pg_namespace nr, pg_constraint c, pg_class r
+                WHERE nc.oid = c.connamespace AND nr.oid = r.relnamespace AND c.conrelid = r.oid
+                AND coalesce(r.oid='{0}.{1}'::regclass,true)
+            ),
+            indexes as (
+                SELECT DISTINCT
+                    c.oid AS oid,
+                    n.nspname::text AS namespace,
+                    c.relname::text AS class,
+                    i.relname::text AS name,
+                    NULL::text AS tablespace,
+                    CASE d.refclassid
+                        WHEN 'pg_constraint'::regclass
+                        THEN 'ALTER TABLE ' || text(c.oid::regclass)
+                                || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
+                                || ' ' || pg_get_constraintdef(cc.oid)
+                        ELSE pg_get_indexdef(i.oid)
+                    END AS indexdef,
+                    cc.conname::text AS constraint_name
+                FROM pg_index x
+                JOIN pg_class c ON c.oid = x.indrelid
+                JOIN pg_namespace n ON n.oid = c.relnamespace
+                JOIN pg_class i ON i.oid = x.indexrelid
+                JOIN pg_depend d ON d.objid = x.indexrelid
+                LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
+                WHERE c.relkind in ('r','p','m') AND i.relkind in ('i'::"char", 'I'::"char")
+                AND coalesce(c.oid = '{0}.{1}'::regclass,true)
+                AND NOT x.indisprimary
+                AND NOT x.indisexclusion
+            ),
+            triggers as (
+                SELECT
+                    CASE t.tgisinternal
+                        WHEN true THEN 'CONSTRAINT'::text
+                        ELSE NULL::text
+                    END AS is_constraint, t.tgname::text AS trigger_name,
+                    CASE (t.tgtype::integer & 64) <> 0
+                        WHEN true THEN 'INSTEAD'::text
+                        ELSE CASE t.tgtype::integer & 2
+                            WHEN 2 THEN 'BEFORE'::text
+                            WHEN 0 THEN 'AFTER'::text
+                            ELSE NULL::text
+                        END
+                    END AS action_order,
+                    array_to_string(array[
+                        case when (t.tgtype::integer &  4) <> 0 then 'INSERT'   end,
+                        case when (t.tgtype::integer &  8) <> 0 then 'DELETE'   end,
+                        case when (t.tgtype::integer & 16) <> 0 then 'UPDATE'   end,
+                        case when (t.tgtype::integer & 32) <> 0 then 'TRUNCATE' end
+                    ],' OR ') AS event_manipulation,
+                    c.oid::regclass::text AS event_object_sql_identifier,
+                    p.oid::regprocedure::text AS action_statement,
+                    CASE t.tgtype::integer & 1
+                        WHEN 1 THEN 'ROW'::text
+                        ELSE 'STATEMENT'::text
+                    END AS action_orientation,
+                    pg_get_triggerdef(t.oid,true) as trigger_definition,
+                    c.oid::regclass AS regclass,
+                    p.oid::regprocedure AS regprocedure,
+                    s.nspname::text AS event_object_schema,
+                    c.relname::text AS event_object_table,
+                    (quote_ident(t.tgname::text) || ' ON ') || c.oid::regclass::text AS sql_identifier
+                FROM pg_trigger t
+                LEFT JOIN pg_class c ON c.oid = t.tgrelid
+                LEFT JOIN pg_namespace s ON s.oid = c.relnamespace
+                LEFT JOIN pg_proc p ON p.oid = t.tgfoid
+                LEFT JOIN pg_namespace s1 ON s1.oid = p.pronamespace
+                WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
+            ),
+            rules as (
+                SELECT n.nspname::text AS namespace,
+                    c.relname::text AS class_name,
+                    r.rulename::text AS rule_name,
+                    CASE
+                        WHEN r.ev_type = '1'::"char" THEN 'SELECT'::text
+                        WHEN r.ev_type = '2'::"char" THEN 'UPDATE'::text
+                        WHEN r.ev_type = '3'::"char" THEN 'INSERT'::text
+                        WHEN r.ev_type = '4'::"char" THEN 'DELETE'::text
+                        ELSE 'UNKNOWN'::text
+                    END AS rule_event,
+                    r.is_instead,
+                    pg_get_ruledef(r.oid, true) AS rule_definition,
+                    c.oid::regclass AS regclass
+                FROM pg_rewrite r
+                JOIN pg_class c ON c.oid = r.ev_class
+                JOIN pg_namespace n ON n.oid = c.relnamespace
+                WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
+                AND NOT (r.ev_type = '1'::"char" AND r.rulename = '_RETURN'::name)
+                ORDER BY r.oid
+            ),
+            createview as (
+                select
+                    'CREATE '||
+                    case relkind
+                    when 'v' THEN 'OR REPLACE VIEW '
+                    when 'm' THEN 'MATERIALIZED VIEW '
+                    end || (oid::regclass::text) || E' AS\n'||
+                    pg_catalog.pg_get_viewdef(oid,true)||E'\n'||
+                    (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
+                        THEN (CASE relkind WHEN 'v'
+                                            THEN format(
+                                                    E'\n\nCOMMENT ON VIEW %s IS %s;',
+                                                    '{0}.{1}'::regclass,
+                                                    quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
+                                                )
+                                            WHEN 'm'
+                                            THEN format(
+                                                    E'\n\nCOMMENT ON MATERIALIZED VIEW %s IS %s;',
+                                                    '{0}.{1}'::regclass,
+                                                    quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
+                                                )
+                                            ELSE ''
+                                END)
+                        ELSE ''
+                    END) as text
+                    FROM pg_class t
+                    WHERE oid = '{0}.{1}'::regclass
+                    AND relkind in ('v','m')
+            ),
+            createtable as (
+                select
+                    'CREATE '||
+                    case relpersistence
+                    when 'u' then 'UNLOGGED '
+                    when 't' then 'TEMPORARY '
+                    else ''
+                    end
+                    || case obj.kind when 'PARTITIONED TABLE' then 'TABLE' else obj.kind end || ' ' || obj.sql_identifier
+                    || case obj.kind when 'TYPE' then ' AS' else '' end
+                    || case when c.relispartition
+                    then
+                        E'\n' ||
+                        (SELECT
+                            coalesce(' PARTITION OF ' || string_agg(i.inhparent::regclass::text,', '), '')
+                            FROM pg_inherits i WHERE i.inhrelid = '{0}.{1}'::regclass) ||
+                        E'\n'||
+                        coalesce(' '||(
+                            pg_get_expr(c.relpartbound, c.oid, true)
+                        ),'')
+                    else
+                        E' (\n'||
                         coalesce(''||(
-                          SELECT coalesce(string_agg('    '||definition,E',\n'),'')
+                            SELECT coalesce(string_agg('    '||definition,E',\n'),'')
                             FROM columns WHERE is_local
                         )||E'\n','')||')'
-                      ||
-                      (SELECT
+                        ||
+                        (SELECT
                         coalesce(' INHERITS(' || string_agg(i.inhparent::regclass::text,', ') || ')', '')
-                         FROM pg_inherits i WHERE i.inhrelid = '{0}.{1}'::regclass)
-                      ||
-                      CASE relhasoids WHEN true THEN ' WITH OIDS' ELSE '' END
-                      ||
-                      coalesce(
-                        E'\nSERVER '||quote_ident(fs.srvname)
-                        ,'')
-                      ||
-                      coalesce(
-                        E'\nOPTIONS (\n'||
-                        (select string_agg(
-                                  '    '||quote_ident(option_name)||' '||quote_nullable(option_value),
-                                  E',\n')
-                           from pg_options_to_table(ft.ftoptions))||E'\n)'
-                        ,'')
-                      ||
-                      E';\n'||
-                      (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                            THEN (CASE relkind WHEN 'r'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'f'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON FOREIGN TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               ELSE ''
-                                  END)
-                            ELSE ''
-                       END) as text
-                     FROM pg_class c JOIN obj ON (true)
-                     LEFT JOIN pg_foreign_table  ft ON (c.oid = ft.ftrelid)
-                     LEFT JOIN pg_foreign_server fs ON (ft.ftserver = fs.oid)
-                     WHERE c.oid = '{0}.{1}'::regclass
-                    -- AND relkind in ('r','c')
-                ),
-                createsequence as (
-                    SELECT 'CREATE SEQUENCE '||(c.oid::regclass::text) || E';\n'
-                           ||'ALTER SEQUENCE '||(c.oid::regclass::text)
-                           ||E'\n INCREMENT BY '||sp.increment
-                           ||E'\n MINVALUE '||sp.minimum_value
-                           ||E'\n MAXVALUE '||sp.maximum_value
-                           ||E'\n START WITH '||sp.start_value
-                           ||E'\n '|| CASE cycle_option WHEN true THEN 'CYCLE' ELSE 'NO CYCLE' END
-                           ||E';\n'||
-                           (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                                 THEN (CASE relkind WHEN 'S'
-                                                    THEN format(
-                                                             E'\n\nCOMMENT ON SEQUENCE %s IS %s;',
-                                                             '{0}.{1}'::regclass,
-                                                             quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                         )
-                                                    ELSE ''
-                                       END)
-                                 ELSE ''
-                            END) as text
-                    FROM pg_class c,
-                    LATERAL pg_sequence_parameters(c.oid) sp (start_value, minimum_value, maximum_value, increment, cycle_option)
-                    WHERE c.oid = '{0}.{1}'::regclass
-                      AND c.relkind = 'S'
-                ),
-                createindex as (
-                    with ii as (
-                     SELECT DISTINCT CASE d.refclassid
-                                WHEN 'pg_constraint'::regclass
-                                THEN 'ALTER TABLE ' || text(c.oid::regclass)
-                                     || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
-                                     || ' ' || pg_get_constraintdef(cc.oid)
-                                ELSE pg_get_indexdef(i.oid) ||
-                                     (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                                           THEN format(
-                                                    E'\n\nCOMMENT ON INDEX %s IS %s;',
+                            FROM pg_inherits i WHERE i.inhrelid = '{0}.{1}'::regclass)
+                    end
+                    ||
+                    case when c.relkind = 'p'
+                    then E'\n' || ' PARTITION BY ' || pg_get_partkeydef('{0}.{1}'::regclass)
+                    else '' end
+                    ||
+                    coalesce(
+                    E'\nSERVER '||quote_ident(fs.srvname)
+                    ,'')
+                    ||
+                    coalesce(
+                    E'\nOPTIONS (\n'||
+                    (select string_agg(
+                                '    '||quote_ident(option_name)||' '||quote_nullable(option_value),
+                                E',\n')
+                        from pg_options_to_table(ft.ftoptions))||E'\n)'
+                    ,'')
+                    ||
+                    E';\n'||
+                    (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
+                        THEN (CASE relkind WHEN 'r'
+                                            THEN format(
+                                                    E'\n\nCOMMENT ON TABLE %s IS %s;',
                                                     '{0}.{1}'::regclass,
                                                     quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
                                                 )
-                                           ELSE ''
-                                      END)
-                            END AS indexdef
-                       FROM pg_index x
-                       JOIN pg_class c ON c.oid = x.indrelid
-                       JOIN pg_class i ON i.oid = x.indexrelid
-                       JOIN pg_depend d ON d.objid = x.indexrelid
-                       LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
-                      WHERE c.relkind in ('r','m') AND i.relkind = 'i'::"char"
-                        AND i.oid = '{0}.{1}'::regclass
-                    )
-                     SELECT indexdef || E';\n' as text
-                       FROM ii
-                ),
-                createclass as (
-                    select format(E'--\n-- Type: %s ; Name: %s; Owner: %s\n--\n\n', obj.kind,obj.name,obj.owner)
-                    ||
-                     case
-                      when obj.kind in ('VIEW','MATERIALIZED VIEW') then (select text from createview)
-                      when obj.kind in ('TABLE','TYPE','FOREIGN TABLE') then (select text from createtable)
-                      when obj.kind in ('SEQUENCE') then (select text from createsequence)
-                      when obj.kind in ('INDEX') then (select text from createindex)
-                      else '-- UNSUPPORTED CLASS: '||obj.kind
-                     end
-                      || E'\n' ||
-                      coalesce((select string_agg(cc,E'\n')||E'\n' from comments),'')
-                      ||
-                      coalesce(E'\n'||(select string_agg(ss,E'\n')||E'\n' from settings),'')
-                      || E'\n' as text
-                    from obj
-                ),
-                altertabledefaults as (
-                    select
-                        coalesce(
-                          string_agg(
-                            'ALTER TABLE '||text('{0}.{1}')||
-                              ' ALTER '||quote_ident(name)||
-                              ' SET DEFAULT '||"default",
-                            E';\n') || E';\n\n',
-                        '') as text
-                       from columns
-                      where "default" is not null
-                ),
-                createconstraints as (
-                    with cs as (
-                      select
-                       'ALTER TABLE ' || text(regclass(regclass)) ||
-                       ' ADD CONSTRAINT ' || quote_ident(constraint_name) ||
-                       E'\n  ' || constraint_definition as sql
-                        from constraints
-                       order by constraint_type desc, sysid
-                     )
-                     select coalesce(string_agg(sql,E';\n') || E';\n\n','') as text
-                       from cs
-                ),
-                createindexes as (
-                    with ii as (select * from indexes order by name)
-                     SELECT coalesce(string_agg(indexdef||E';\n','') || E'\n' , '') as text
-                       FROM ii
-                      WHERE constraint_name is null
-                ),
-                createtriggers as (
-                    with tg as (
-                      select trigger_definition as sql
-                     from triggers where is_constraint is null
-                     order by trigger_name
-                     -- per SQL triggers get called in order created vs name as in PostgreSQL
-                     )
-                     select coalesce(string_agg(sql,E';\n')||E';\n\n','') as text
-                       from tg
-                ),
-                createrules as (
-                    select coalesce(string_agg(rule_definition,E'\n')||E'\n\n','') as text
-                    from rules
-                   where regclass = '{0}.{1}'::regclass
-                     and rule_definition is not null
-                ),
-                alterowner as (
-                    select
-                       case
-                         when obj.kind = 'INDEX' then ''
-                         else 'ALTER '||sql_kind||' '||sql_identifier||
-                              ' OWNER TO '||quote_ident(owner)||E';\n\n'
-                       end as text
-                      from obj
-                ),
-                privileges as (
-                    SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor,
-                            (grantee.rolname)::information_schema.sql_identifier AS grantee,
-                            (current_database())::information_schema.sql_identifier AS table_catalog,
-                            (nc.nspname)::information_schema.sql_identifier AS table_schema,
-                            (c.relname)::information_schema.sql_identifier AS table_name,
-                            (c.prtype)::information_schema.character_data AS privilege_type,
-                            (
-                                CASE
-                                    WHEN (pg_has_role(grantee.oid, c.relowner, 'USAGE'::text) OR c.grantable) THEN 'YES'::text
-                                    ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS is_grantable,
-                            (
-                                CASE
-                                    WHEN (c.prtype = 'SELECT'::text) THEN 'YES'::text
-                                    ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS with_hierarchy
-                           FROM ( SELECT pg_class.oid,
-                                         pg_class.relname,
-                                         pg_class.relnamespace,
-                                         pg_class.relkind,
-                                         pg_class.relowner,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantor AS grantor,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantee AS grantee,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).privilege_type AS privilege_type,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).is_grantable AS is_grantable
-                                  FROM pg_class
-                                  WHERE pg_class.relkind <> 'S'
-                                  UNION
-                                  SELECT pg_class.oid,
-                                         pg_class.relname,
-                                         pg_class.relnamespace,
-                                         pg_class.relkind,
-                                         pg_class.relowner,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantor AS grantor,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantee AS grantee,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).privilege_type AS privilege_type,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).is_grantable AS is_grantable
-                                  FROM pg_class
-                                  WHERE pg_class.relkind = 'S') c(oid, relname, relnamespace, relkind, relowner, grantor, grantee, prtype, grantable),
-                            pg_namespace nc,
-                            pg_roles u_grantor,
-                            ( SELECT pg_roles.oid,
-                                    pg_roles.rolname
-                                   FROM pg_roles
-                                UNION ALL
-                                 SELECT (0)::oid AS oid,
-                                    'PUBLIC'::name) grantee(oid, rolname)
-                          WHERE ((c.relnamespace = nc.oid) AND (c.grantee = grantee.oid) AND (c.grantor = u_grantor.oid)
-                            AND (c.prtype = ANY (ARRAY['INSERT'::text, 'SELECT'::text, 'UPDATE'::text, 'DELETE'::text, 'TRUNCATE'::text, 'REFERENCES'::text, 'TRIGGER'::text]))
-                            AND (pg_has_role(u_grantor.oid, 'USAGE'::text) OR pg_has_role(grantee.oid, 'USAGE'::text) OR (grantee.rolname = 'PUBLIC'::name)))
-                ),
-                grants as (
-                    select
-                       coalesce(
-                        string_agg(format(
-                        	E'GRANT %s ON %s TO %s%s;\n',
-                            privilege_type,
-                            '{0}.{1}',
-                            case grantee
-                              when 'PUBLIC' then 'PUBLIC'
-                              else quote_ident(grantee)
-                            end,
-                    		case is_grantable
-                              when 'YES' then ' WITH GRANT OPTION'
-                              else ''
-                            end), ''),
-                        '') as text
-                     FROM privileges g
-                     join obj on (true)
-                     WHERE table_schema=obj.namespace
-                       AND table_name=obj.name
-                       AND grantee<>obj.owner
-                ),
-                columnsprivileges as (
-                    SELECT r.rolname AS grantee,
-                           c.name AS column_name,
-                           c.privilege_type
-                    FROM (
-                        SELECT name,
-                               (aclexplode(attacl)).grantee AS grantee,
-                               (aclexplode(attacl)).privilege_type AS privilege_type
-                        FROM columns
-                    ) c
-                    INNER JOIN pg_roles r
-                            ON c.grantee = r.oid
-                ),
-                columnsgrants as (
-                    SELECT coalesce(
-                               string_agg(
-                                   format(
-                                       E'GRANT %s(%s) ON %s TO %s;\n',
-                                       privilege_type,
-                                       column_name,
-                                       '{0}.{1}',
-                                       quote_ident(grantee)
-                                   ),
-                                   ''
-                               ),
-                               ''
-                           ) AS text
-                     FROM columnsprivileges
+                                            WHEN 'p'
+                                            THEN format(
+                                                    E'\n\nCOMMENT ON TABLE %s IS %s;',
+                                                    '{0}.{1}'::regclass,
+                                                    quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
+                                                )
+                                            WHEN 'f'
+                                            THEN format(
+                                                    E'\n\nCOMMENT ON FOREIGN TABLE %s IS %s;',
+                                                    '{0}.{1}'::regclass,
+                                                    quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
+                                                )
+                                            ELSE ''
+                                END)
+                        ELSE ''
+                    END) as text
+                    FROM pg_class c JOIN obj ON (true)
+                    LEFT JOIN pg_foreign_table  ft ON (c.oid = ft.ftrelid)
+                    LEFT JOIN pg_foreign_server fs ON (ft.ftserver = fs.oid)
+                    WHERE c.oid = '{0}.{1}'::regclass
+                -- AND relkind in ('r','c')
+            ),
+            createsequence as (
+                SELECT 'CREATE SEQUENCE '||(c.oid::regclass::text) || E';\n'
+                        ||'ALTER SEQUENCE '||(c.oid::regclass::text)
+                        ||E'\n INCREMENT BY '||sp.increment
+                        ||E'\n MINVALUE '||sp.minimum_value
+                        ||E'\n MAXVALUE '||sp.maximum_value
+                        ||E'\n START WITH '||sp.start_value
+                        ||E'\n '|| CASE cycle_option WHEN true THEN 'CYCLE' ELSE 'NO CYCLE' END
+                        ||E';\n'||
+                        (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
+                                THEN (CASE relkind WHEN 'S'
+                                                THEN format(
+                                                            E'\n\nCOMMENT ON SEQUENCE %s IS %s;',
+                                                            '{0}.{1}'::regclass,
+                                                            quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
+                                                        )
+                                                ELSE ''
+                                    END)
+                                ELSE ''
+                        END) as text
+                FROM pg_class c,
+                LATERAL pg_sequence_parameters(c.oid) sp (start_value, minimum_value, maximum_value, increment, cycle_option)
+                WHERE c.oid = '{0}.{1}'::regclass
+                    AND c.relkind = 'S'
+            ),
+            createindex as (
+                with ii as (
+                    SELECT DISTINCT CASE d.refclassid
+                            WHEN 'pg_constraint'::regclass
+                            THEN 'ALTER TABLE ' || text(c.oid::regclass)
+                                    || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
+                                    || ' ' || pg_get_constraintdef(cc.oid)
+                            ELSE pg_get_indexdef(i.oid) ||
+                                    (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
+                                        THEN format(
+                                                E'\n\nCOMMENT ON INDEX %s IS %s;',
+                                                '{0}.{1}'::regclass,
+                                                quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
+                                            )
+                                        ELSE ''
+                                    END)
+                        END AS indexdef
+                    FROM pg_index x
+                    JOIN pg_class c ON c.oid = x.indrelid
+                    JOIN pg_class i ON i.oid = x.indexrelid
+                    JOIN pg_depend d ON d.objid = x.indexrelid
+                    LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
+                    WHERE c.relkind in ('r','p','m') AND i.relkind in ('i'::"char", 'I'::"char")
+                    AND i.oid = '{0}.{1}'::regclass
                 )
-                select (select text from createclass) ||
-                       (select text from altertabledefaults) ||
-                       (select text from createconstraints) ||
-                       (select text from createindexes) ||
-                       (select text from createtriggers) ||
-                       (select text from createrules) ||
-                       (select text from alterowner) ||
-                       (select text from grants) ||
-                       (SELECT text FROM columnsgrants)
+                    SELECT indexdef || E';\n' as text
+                    FROM ii
+            ),
+            createclass as (
+                select format(E'--\n-- Type: %s ; Name: %s; Owner: %s\n--\n\n', obj.kind,obj.name,obj.owner)
+                ||
+                    case
+                    when obj.kind in ('VIEW','MATERIALIZED VIEW') then (select text from createview)
+                    when obj.kind in ('TABLE','TYPE','FOREIGN TABLE','PARTITIONED TABLE') then (select text from createtable)
+                    when obj.kind in ('SEQUENCE') then (select text from createsequence)
+                    when obj.kind in ('INDEX', 'PARTITIONED INDEX') then (select text from createindex)
+                    else '-- UNSUPPORTED CLASS: '||obj.kind
+                    end
+                    || E'\n' ||
+                    coalesce((select string_agg(cc,E'\n')||E'\n' from comments),'')
+                    ||
+                    coalesce(E'\n'||(select string_agg(ss,E'\n')||E'\n' from settings),'')
+                    || E'\n' as text
+                from obj
+            ),
+            altertabledefaults as (
+                select
+                    coalesce(
+                        string_agg(
+                        'ALTER TABLE '||text('{0}.{1}')||
+                            ' ALTER '||quote_ident(name)||
+                            ' SET DEFAULT '||"default",
+                        E';\n') || E';\n\n',
+                    '') as text
+                    from columns
+                    where "default" is not null
+                    and generated = ''
+            ),
+            createconstraints as (
+                with cs as (
+                    select
+                    'ALTER TABLE ' || text(regclass(regclass)) ||
+                    ' ADD CONSTRAINT ' || quote_ident(constraint_name) ||
+                    E'\n  ' || constraint_definition as sql
+                    from constraints
+                    order by constraint_type desc, sysid
+                    )
+                    select coalesce(string_agg(sql,E';\n') || E';\n\n','') as text
+                    from cs
+            ),
+            createindexes as (
+                with ii as (select * from indexes order by name)
+                    SELECT coalesce(string_agg(indexdef||E';\n','') || E'\n' , '') as text
+                    FROM ii
+                    WHERE constraint_name is null
+            ),
+            createtriggers as (
+                with tg as (
+                    select trigger_definition as sql
+                    from triggers where is_constraint is null
+                    order by trigger_name
+                    -- per SQL triggers get called in order created vs name as in PostgreSQL
+                    )
+                    select coalesce(string_agg(sql,E';\n')||E';\n\n','') as text
+                    from tg
+            ),
+            createrules as (
+                select coalesce(string_agg(rule_definition,E'\n')||E'\n\n','') as text
+                from rules
+                where regclass = '{0}.{1}'::regclass
+                    and rule_definition is not null
+            ),
+            alterowner as (
+                select
+                    case
+                        when obj.kind in ('INDEX', 'PARTITIONED INDEX') then ''
+                        when obj.kind = 'PARTITIONED TABLE'
+                        then 'ALTER TABLE '||sql_identifier||
+                            ' OWNER TO '||quote_ident(owner)||E';\n\n'
+                        else 'ALTER '||sql_kind||' '||sql_identifier||
+                            ' OWNER TO '||quote_ident(owner)||E';\n\n'
+                    end as text
+                    from obj
+            ),
+            privileges as (
+                SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor,
+                        (grantee.rolname)::information_schema.sql_identifier AS grantee,
+                        (current_database())::information_schema.sql_identifier AS table_catalog,
+                        (nc.nspname)::information_schema.sql_identifier AS table_schema,
+                        (c.relname)::information_schema.sql_identifier AS table_name,
+                        (c.prtype)::information_schema.character_data AS privilege_type,
+                        (
+                            CASE
+                                WHEN (pg_has_role(grantee.oid, c.relowner, 'USAGE'::text) OR c.grantable) THEN 'YES'::text
+                                ELSE 'NO'::text
+                            END)::information_schema.yes_or_no AS is_grantable,
+                        (
+                            CASE
+                                WHEN (c.prtype = 'SELECT'::text) THEN 'YES'::text
+                                ELSE 'NO'::text
+                            END)::information_schema.yes_or_no AS with_hierarchy
+                        FROM ( SELECT pg_class.oid,
+                                        pg_class.relname,
+                                        pg_class.relnamespace,
+                                        pg_class.relkind,
+                                        pg_class.relowner,
+                                        (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantor AS grantor,
+                                        (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantee AS grantee,
+                                        (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).privilege_type AS privilege_type,
+                                        (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).is_grantable AS is_grantable
+                                FROM pg_class
+                                WHERE pg_class.relkind <> 'S'
+                                UNION
+                                SELECT pg_class.oid,
+                                        pg_class.relname,
+                                        pg_class.relnamespace,
+                                        pg_class.relkind,
+                                        pg_class.relowner,
+                                        (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantor AS grantor,
+                                        (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantee AS grantee,
+                                        (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).privilege_type AS privilege_type,
+                                        (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).is_grantable AS is_grantable
+                                FROM pg_class
+                                WHERE pg_class.relkind = 'S') c(oid, relname, relnamespace, relkind, relowner, grantor, grantee, prtype, grantable),
+                        pg_namespace nc,
+                        pg_roles u_grantor,
+                        ( SELECT pg_roles.oid,
+                                pg_roles.rolname
+                                FROM pg_roles
+                            UNION ALL
+                                SELECT (0)::oid AS oid,
+                                'PUBLIC'::name) grantee(oid, rolname)
+                        WHERE ((c.relnamespace = nc.oid) AND (c.grantee = grantee.oid) AND (c.grantor = u_grantor.oid)
+                        AND (c.prtype = ANY (ARRAY['INSERT'::text, 'SELECT'::text, 'UPDATE'::text, 'DELETE'::text, 'TRUNCATE'::text, 'REFERENCES'::text, 'TRIGGER'::text]))
+                        AND (pg_has_role(u_grantor.oid, 'USAGE'::text) OR pg_has_role(grantee.oid, 'USAGE'::text) OR (grantee.rolname = 'PUBLIC'::name)))
+            ),
+            grants as (
+                select
+                    coalesce(
+                    string_agg(format(
+                        E'GRANT %s ON %s TO %s%s;\n',
+                        privilege_type,
+                        '{0}.{1}',
+                        case grantee
+                            when 'PUBLIC' then 'PUBLIC'
+                            else quote_ident(grantee)
+                        end,
+                        case is_grantable
+                            when 'YES' then ' WITH GRANT OPTION'
+                            else ''
+                        end), ''),
+                    '') as text
+                    FROM privileges g
+                    join obj on (true)
+                    WHERE table_schema=obj.namespace
+                    AND table_name=obj.name
+                    AND grantee<>obj.owner
+            ),
+            columnsprivileges as (
+                SELECT r.rolname AS grantee,
+                        c.name AS column_name,
+                        c.privilege_type
+                FROM (
+                    SELECT name,
+                            (aclexplode(attacl)).grantee AS grantee,
+                            (aclexplode(attacl)).privilege_type AS privilege_type
+                    FROM columns
+                ) c
+                INNER JOIN pg_roles r
+                        ON c.grantee = r.oid
+            ),
+            columnsgrants as (
+                SELECT coalesce(
+                            string_agg(
+                                format(
+                                    E'GRANT %s(%s) ON %s TO %s;\n',
+                                    privilege_type,
+                                    column_name,
+                                    '{0}.{1}',
+                                    quote_ident(grantee)
+                                ),
+                                ''
+                            ),
+                            ''
+                        ) AS text
+                    FROM columnsprivileges
+            )
+            select (select text from createclass) ||
+                    (select text from altertabledefaults) ||
+                    (select text from createconstraints) ||
+                    (select text from createindexes) ||
+                    (select text from createtriggers) ||
+                    (select text from createrules) ||
+                    (select text from alterowner) ||
+                    (select text from grants) ||
+                    (SELECT text FROM columnsgrants)
         '''.format(p_schema, p_object))
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) >= 100000 and int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.ExecuteScalar('''
-                with obj as (
-                   SELECT c.oid,
-                         'pg_class'::regclass,
-                         c.relname AS name,
-                         n.nspname AS namespace,
-                         coalesce(cc.column2,c.relkind::text) AS kind,
-                         pg_get_userbyid(c.relowner) AS owner,
-                         coalesce(cc.column2,c.relkind::text) AS sql_kind,
-                         cast('{0}.{1}'::regclass AS text) AS sql_identifier
-                    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-                    LEFT join (
-                         values ('r','TABLE'),
-                                ('v','VIEW'),
-                                ('i','INDEX'),
-                                ('I','PARTITIONED INDEX'),
-                                ('S','SEQUENCE'),
-                                ('s','SPECIAL'),
-                                ('m','MATERIALIZED VIEW'),
-                                ('c','TYPE'),
-                                ('t','TOAST'),
-                                ('f','FOREIGN TABLE'),
-                                ('p','PARTITIONED TABLE')
-                    ) as cc on cc.column1 = c.relkind
-                   WHERE c.oid = '{0}.{1}'::regclass
-                ),
-                columns as (
-                    SELECT a.attname AS name, format_type(t.oid, NULL::integer) AS type,
-                        CASE
-                            WHEN (a.atttypmod - 4) > 0 THEN a.atttypmod - 4
-                            ELSE NULL::integer
-                        END AS size,
-                        a.attnotnull AS not_null,
-                        def.adsrc AS "default",
-                        col_description(c.oid, a.attnum::integer) AS comment,
-                        con.conname AS primary_key,
-                        a.attislocal AS is_local,
-                        a.attstorage::text AS storage,
-                        nullif(col.collcollate::text,'') AS collation,
-                        a.attnum AS ord,
-                        s.nspname AS namespace,
-                        c.relname AS class_name,
-                        format('%s.%I',text(c.oid::regclass),a.attname) AS sql_identifier,
-                        c.oid,
-                        a.attacl,
-                        format('%I %s%s%s%s',
-                        	a.attname::text,
-                        	format_type(t.oid, a.atttypmod),
-                	        CASE
-                    	      WHEN length(col.collcollate) > 0
-                        	  THEN ' COLLATE ' || quote_ident(col.collcollate::text)
-                              ELSE ''
-                        	END,
-                        	CASE
-                              WHEN a.attnotnull THEN ' NOT NULL'::text
-                              ELSE ''::text
-                        	END,
-                            CASE
-                              WHEN a.attidentity = 'a' THEN ' GENERATED ALWAYS AS IDENTITY'::text
-                              WHEN a.attidentity = 'd' THEN ' GENERATED BY DEFAULT AS IDENTITY'::text
-                              ELSE ''::text
-                            END)
-                        AS definition
-                   FROM pg_class c
-                   JOIN pg_namespace s ON s.oid = c.relnamespace
-                   JOIN pg_attribute a ON c.oid = a.attrelid
-                   LEFT JOIN pg_attrdef def ON c.oid = def.adrelid AND a.attnum = def.adnum
-                   LEFT JOIN pg_constraint con
-                        ON con.conrelid = c.oid AND (a.attnum = ANY (con.conkey)) AND con.contype = 'p'
-                   LEFT JOIN pg_type t ON t.oid = a.atttypid
-                   LEFT JOIN pg_collation col ON col.oid = a.attcollation
-                   JOIN pg_namespace tn ON tn.oid = t.typnamespace
-                  WHERE c.relkind IN ('r','v','c','f','p') AND a.attnum > 0 AND NOT a.attisdropped
-                    AND has_table_privilege(c.oid, 'select') AND has_schema_privilege(s.oid, 'usage')
-                    AND c.oid = '{0}.{1}'::regclass
-                  ORDER BY s.nspname, c.relname, a.attnum
-                ),
-                comments as (
-                   select 'COMMENT ON COLUMN ' || text('{0}.{1}') || '.' || quote_ident(name) ||
-                          ' IS ' || quote_nullable(comment) || ';' as cc
-                     from columns
-                    where comment IS NOT NULL
-                ),
-                settings as (
-                   select 'ALTER ' || obj.kind || ' ' || text('{0}.{1}') || ' SET (' ||
-                          quote_ident(option_name)||'='||quote_nullable(option_value) ||');' as ss
-                     from pg_options_to_table((select reloptions from pg_class where oid = '{0}.{1}'::regclass))
-                     join obj on (true)
-                ),
-                constraints as (
-                   SELECT nc.nspname AS namespace,
-                        r.relname AS class_name,
-                        c.conname AS constraint_name,
-                        case c.contype
-                            when 'c'::"char" then 'CHECK'::text
-                            when 'f'::"char" then 'FOREIGN KEY'::text
-                            when 'p'::"char" then 'PRIMARY KEY'::text
-                            when 'u'::"char" then 'UNIQUE'::text
-                            when 't'::"char" then 'TRIGGER'::text
-                            when 'x'::"char" then 'EXCLUDE'::text
-                            else c.contype::text
-                        end AS constraint_type,
-                        pg_get_constraintdef(c.oid,true) AS constraint_definition,
-                        c.condeferrable AS is_deferrable,
-                        c.condeferred  AS initially_deferred,
-                        r.oid as regclass, c.oid AS sysid
-                   FROM pg_namespace nc, pg_namespace nr, pg_constraint c, pg_class r
-                  WHERE nc.oid = c.connamespace AND nr.oid = r.relnamespace AND c.conrelid = r.oid
-                    AND coalesce(r.oid='{0}.{1}'::regclass,true)
-                ),
-                indexes as (
-                   SELECT DISTINCT
-                        c.oid AS oid,
-                        n.nspname::text AS namespace,
-                        c.relname::text AS class,
-                        i.relname::text AS name,
-                        NULL::text AS tablespace,
-                        CASE d.refclassid
-                            WHEN 'pg_constraint'::regclass
-                            THEN 'ALTER TABLE ' || text(c.oid::regclass)
-                                 || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
-                                 || ' ' || pg_get_constraintdef(cc.oid)
-                            ELSE pg_get_indexdef(i.oid)
-                        END AS indexdef,
-                        cc.conname::text AS constraint_name
-                   FROM pg_index x
-                   JOIN pg_class c ON c.oid = x.indrelid
-                   JOIN pg_namespace n ON n.oid = c.relnamespace
-                   JOIN pg_class i ON i.oid = x.indexrelid
-                   JOIN pg_depend d ON d.objid = x.indexrelid
-                   LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
-                  WHERE c.relkind in ('r','p','m') AND i.relkind in ('i'::"char", 'I'::"char")
-                    AND coalesce(c.oid = '{0}.{1}'::regclass,true)
-                    AND NOT x.indisunique
-                    AND NOT x.indisprimary
-                    AND NOT x.indisexclusion
-                ),
-                triggers as (
-                   SELECT
-                        CASE t.tgisinternal
-                            WHEN true THEN 'CONSTRAINT'::text
-                            ELSE NULL::text
-                        END AS is_constraint, t.tgname::text AS trigger_name,
-                        CASE (t.tgtype::integer & 64) <> 0
-                            WHEN true THEN 'INSTEAD'::text
-                            ELSE CASE t.tgtype::integer & 2
-                              WHEN 2 THEN 'BEFORE'::text
-                              WHEN 0 THEN 'AFTER'::text
-                              ELSE NULL::text
-                            END
-                        END AS action_order,
-                        array_to_string(array[
-                          case when (t.tgtype::integer &  4) <> 0 then 'INSERT'   end,
-                          case when (t.tgtype::integer &  8) <> 0 then 'DELETE'   end,
-                          case when (t.tgtype::integer & 16) <> 0 then 'UPDATE'   end,
-                          case when (t.tgtype::integer & 32) <> 0 then 'TRUNCATE' end
-                        ],' OR ') AS event_manipulation,
-                        c.oid::regclass::text AS event_object_sql_identifier,
-                        p.oid::regprocedure::text AS action_statement,
-                        CASE t.tgtype::integer & 1
-                            WHEN 1 THEN 'ROW'::text
-                            ELSE 'STATEMENT'::text
-                        END AS action_orientation,
-                        pg_get_triggerdef(t.oid,true) as trigger_definition,
-                        c.oid::regclass AS regclass,
-                        p.oid::regprocedure AS regprocedure,
-                        s.nspname::text AS event_object_schema,
-                        c.relname::text AS event_object_table,
-                        (quote_ident(t.tgname::text) || ' ON ') || c.oid::regclass::text AS sql_identifier
-                   FROM pg_trigger t
-                   LEFT JOIN pg_class c ON c.oid = t.tgrelid
-                   LEFT JOIN pg_namespace s ON s.oid = c.relnamespace
-                   LEFT JOIN pg_proc p ON p.oid = t.tgfoid
-                   LEFT JOIN pg_namespace s1 ON s1.oid = p.pronamespace
-                   WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
-                ),
-                rules as (
-                   SELECT n.nspname::text AS namespace,
-                        c.relname::text AS class_name,
-                        r.rulename::text AS rule_name,
-                        CASE
-                            WHEN r.ev_type = '1'::"char" THEN 'SELECT'::text
-                            WHEN r.ev_type = '2'::"char" THEN 'UPDATE'::text
-                            WHEN r.ev_type = '3'::"char" THEN 'INSERT'::text
-                            WHEN r.ev_type = '4'::"char" THEN 'DELETE'::text
-                            ELSE 'UNKNOWN'::text
-                        END AS rule_event,
-                        r.is_instead,
-                        pg_get_ruledef(r.oid, true) AS rule_definition,
-                        c.oid::regclass AS regclass
-                   FROM pg_rewrite r
-                   JOIN pg_class c ON c.oid = r.ev_class
-                   JOIN pg_namespace n ON n.oid = c.relnamespace
-                  WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
-                    AND NOT (r.ev_type = '1'::"char" AND r.rulename = '_RETURN'::name)
-                  ORDER BY r.oid
-                ),
-                createview as (
-                    select
-                     'CREATE '||
-                      case relkind
-                        when 'v' THEN 'OR REPLACE VIEW '
-                        when 'm' THEN 'MATERIALIZED VIEW '
-                      end || (oid::regclass::text) || E' AS\n'||
-                      pg_catalog.pg_get_viewdef(oid,true)||E'\n'||
-                      (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                            THEN (CASE relkind WHEN 'v'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON VIEW %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'm'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON MATERIALIZED VIEW %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               ELSE ''
-                                  END)
-                            ELSE ''
-                       END) as text
-                     FROM pg_class t
-                     WHERE oid = '{0}.{1}'::regclass
-                       AND relkind in ('v','m')
-                ),
-                createtable as (
-                    select
-                        'CREATE '||
-                      case relpersistence
-                        when 'u' then 'UNLOGGED '
-                        when 't' then 'TEMPORARY '
-                        else ''
-                      end
-                      || case obj.kind when 'PARTITIONED TABLE' then 'TABLE' else obj.kind end || ' ' || obj.sql_identifier
-                      || case obj.kind when 'TYPE' then ' AS' else '' end
-                      || case when c.relispartition
-                      then
-                          E'\n' ||
-                          (SELECT
-                             coalesce(' PARTITION OF ' || string_agg(i.inhparent::regclass::text,', '), '')
-                             FROM pg_inherits i WHERE i.inhrelid = '{0}.{1}'::regclass) ||
-                          E'\n'||
-                            coalesce(' '||(
-                              pg_get_expr(c.relpartbound, c.oid, true)
-                            ),'')
-                      else
-                          E' (\n'||
-                            coalesce(''||(
-                              SELECT coalesce(string_agg('    '||definition,E',\n'),'')
-                                FROM columns WHERE is_local
-                            )||E'\n','')||')'
-                          ||
-                          (SELECT
-                            coalesce(' INHERITS(' || string_agg(i.inhparent::regclass::text,', ') || ')', '')
-                             FROM pg_inherits i WHERE i.inhrelid = '{0}.{1}'::regclass)
-                      end
-                      ||
-                      case when c.relkind = 'p'
-                      then E'\n' || ' PARTITION BY ' || pg_get_partkeydef('{0}.{1}'::regclass)
-                      else '' end
-                      ||
-                      CASE relhasoids WHEN true THEN ' WITH OIDS' ELSE '' END
-                      ||
-                      coalesce(
-                        E'\nSERVER '||quote_ident(fs.srvname)
-                        ,'')
-                      ||
-                      coalesce(
-                        E'\nOPTIONS (\n'||
-                        (select string_agg(
-                                  '    '||quote_ident(option_name)||' '||quote_nullable(option_value),
-                                  E',\n')
-                           from pg_options_to_table(ft.ftoptions))||E'\n)'
-                        ,'')
-                      ||
-                      E';\n'||
-                      (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                            THEN (CASE relkind WHEN 'r'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'p'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'f'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON FOREIGN TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               ELSE ''
-                                  END)
-                            ELSE ''
-                       END) as text
-                     FROM pg_class c JOIN obj ON (true)
-                     LEFT JOIN pg_foreign_table  ft ON (c.oid = ft.ftrelid)
-                     LEFT JOIN pg_foreign_server fs ON (ft.ftserver = fs.oid)
-                     WHERE c.oid = '{0}.{1}'::regclass
-                    -- AND relkind in ('r','c')
-                ),
-                createsequence as (
-                    SELECT 'CREATE SEQUENCE '||(c.oid::regclass::text) || E';\n'
-                           ||'ALTER SEQUENCE '||(c.oid::regclass::text)
-                           ||E'\n INCREMENT BY '||sp.increment
-                           ||E'\n MINVALUE '||sp.minimum_value
-                           ||E'\n MAXVALUE '||sp.maximum_value
-                           ||E'\n START WITH '||sp.start_value
-                           ||E'\n '|| CASE cycle_option WHEN true THEN 'CYCLE' ELSE 'NO CYCLE' END
-                           ||E';\n'||
-                           (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                                 THEN (CASE relkind WHEN 'S'
-                                                    THEN format(
-                                                             E'\n\nCOMMENT ON SEQUENCE %s IS %s;',
-                                                             '{0}.{1}'::regclass,
-                                                             quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                         )
-                                                    ELSE ''
-                                       END)
-                                 ELSE ''
-                            END) as text
-                    FROM pg_class c,
-                    LATERAL pg_sequence_parameters(c.oid) sp (start_value, minimum_value, maximum_value, increment, cycle_option)
-                    WHERE c.oid = '{0}.{1}'::regclass
-                      AND c.relkind = 'S'
-                ),
-                createindex as (
-                    with ii as (
-                     SELECT DISTINCT CASE d.refclassid
-                                WHEN 'pg_constraint'::regclass
-                                THEN 'ALTER TABLE ' || text(c.oid::regclass)
-                                     || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
-                                     || ' ' || pg_get_constraintdef(cc.oid)
-                                ELSE pg_get_indexdef(i.oid) ||
-                                     (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                                           THEN format(
-                                                    E'\n\nCOMMENT ON INDEX %s IS %s;',
-                                                    '{0}.{1}'::regclass,
-                                                    quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                )
-                                           ELSE ''
-                                      END)
-                            END AS indexdef
-                       FROM pg_index x
-                       JOIN pg_class c ON c.oid = x.indrelid
-                       JOIN pg_class i ON i.oid = x.indexrelid
-                       JOIN pg_depend d ON d.objid = x.indexrelid
-                       LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
-                      WHERE c.relkind in ('r','p','m') AND i.relkind in ('i'::"char", 'I'::"char")
-                        AND i.oid = '{0}.{1}'::regclass
-                    )
-                     SELECT indexdef || E';\n' as text
-                       FROM ii
-                ),
-                createclass as (
-                    select format(E'--\n-- Type: %s ; Name: %s; Owner: %s\n--\n\n', obj.kind,obj.name,obj.owner)
-                    ||
-                     case
-                      when obj.kind in ('VIEW','MATERIALIZED VIEW') then (select text from createview)
-                      when obj.kind in ('TABLE','TYPE','FOREIGN TABLE','PARTITIONED TABLE') then (select text from createtable)
-                      when obj.kind in ('SEQUENCE') then (select text from createsequence)
-                      when obj.kind in ('INDEX', 'PARTITIONED INDEX') then (select text from createindex)
-                      else '-- UNSUPPORTED CLASS: '||obj.kind
-                     end
-                      || E'\n' ||
-                      coalesce((select string_agg(cc,E'\n')||E'\n' from comments),'')
-                      ||
-                      coalesce(E'\n'||(select string_agg(ss,E'\n')||E'\n' from settings),'')
-                      || E'\n' as text
-                    from obj
-                ),
-                altertabledefaults as (
-                    select
-                        coalesce(
-                          string_agg(
-                            'ALTER TABLE '||text('{0}.{1}')||
-                              ' ALTER '||quote_ident(name)||
-                              ' SET DEFAULT '||"default",
-                            E';\n') || E';\n\n',
-                        '') as text
-                       from columns
-                      where "default" is not null
-                ),
-                createconstraints as (
-                    with cs as (
-                      select
-                       'ALTER TABLE ' || text(regclass(regclass)) ||
-                       ' ADD CONSTRAINT ' || quote_ident(constraint_name) ||
-                       E'\n  ' || constraint_definition as sql
-                        from constraints
-                       order by constraint_type desc, sysid
-                     )
-                     select coalesce(string_agg(sql,E';\n') || E';\n\n','') as text
-                       from cs
-                ),
-                createindexes as (
-                    with ii as (select * from indexes order by name)
-                     SELECT coalesce(string_agg(indexdef||E';\n','') || E'\n' , '') as text
-                       FROM ii
-                      WHERE constraint_name is null
-                ),
-                createtriggers as (
-                    with tg as (
-                      select trigger_definition as sql
-                     from triggers where is_constraint is null
-                     order by trigger_name
-                     -- per SQL triggers get called in order created vs name as in PostgreSQL
-                     )
-                     select coalesce(string_agg(sql,E';\n')||E';\n\n','') as text
-                       from tg
-                ),
-                createrules as (
-                    select coalesce(string_agg(rule_definition,E'\n')||E'\n\n','') as text
-                    from rules
-                   where regclass = '{0}.{1}'::regclass
-                     and rule_definition is not null
-                ),
-                alterowner as (
-                    select
-                       case
-                         when obj.kind in ('INDEX', 'PARTITIONED INDEX') then ''
-                         when obj.kind = 'PARTITIONED TABLE'
-                         then 'ALTER TABLE '||sql_identifier||
-                              ' OWNER TO '||quote_ident(owner)||E';\n\n'
-                         else 'ALTER '||sql_kind||' '||sql_identifier||
-                              ' OWNER TO '||quote_ident(owner)||E';\n\n'
-                       end as text
-                      from obj
-                ),
-                privileges as (
-                    SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor,
-                            (grantee.rolname)::information_schema.sql_identifier AS grantee,
-                            (current_database())::information_schema.sql_identifier AS table_catalog,
-                            (nc.nspname)::information_schema.sql_identifier AS table_schema,
-                            (c.relname)::information_schema.sql_identifier AS table_name,
-                            (c.prtype)::information_schema.character_data AS privilege_type,
-                            (
-                                CASE
-                                    WHEN (pg_has_role(grantee.oid, c.relowner, 'USAGE'::text) OR c.grantable) THEN 'YES'::text
-                                    ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS is_grantable,
-                            (
-                                CASE
-                                    WHEN (c.prtype = 'SELECT'::text) THEN 'YES'::text
-                                    ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS with_hierarchy
-                           FROM ( SELECT pg_class.oid,
-                                         pg_class.relname,
-                                         pg_class.relnamespace,
-                                         pg_class.relkind,
-                                         pg_class.relowner,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantor AS grantor,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantee AS grantee,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).privilege_type AS privilege_type,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).is_grantable AS is_grantable
-                                  FROM pg_class
-                                  WHERE pg_class.relkind <> 'S'
-                                  UNION
-                                  SELECT pg_class.oid,
-                                         pg_class.relname,
-                                         pg_class.relnamespace,
-                                         pg_class.relkind,
-                                         pg_class.relowner,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantor AS grantor,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantee AS grantee,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).privilege_type AS privilege_type,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).is_grantable AS is_grantable
-                                  FROM pg_class
-                                  WHERE pg_class.relkind = 'S') c(oid, relname, relnamespace, relkind, relowner, grantor, grantee, prtype, grantable),
-                            pg_namespace nc,
-                            pg_roles u_grantor,
-                            ( SELECT pg_roles.oid,
-                                    pg_roles.rolname
-                                   FROM pg_roles
-                                UNION ALL
-                                 SELECT (0)::oid AS oid,
-                                    'PUBLIC'::name) grantee(oid, rolname)
-                          WHERE ((c.relnamespace = nc.oid) AND (c.grantee = grantee.oid) AND (c.grantor = u_grantor.oid)
-                            AND (c.prtype = ANY (ARRAY['INSERT'::text, 'SELECT'::text, 'UPDATE'::text, 'DELETE'::text, 'TRUNCATE'::text, 'REFERENCES'::text, 'TRIGGER'::text]))
-                            AND (pg_has_role(u_grantor.oid, 'USAGE'::text) OR pg_has_role(grantee.oid, 'USAGE'::text) OR (grantee.rolname = 'PUBLIC'::name)))
-                ),
-                grants as (
-                    select
-                       coalesce(
-                        string_agg(format(
-                        	E'GRANT %s ON %s TO %s%s;\n',
-                            privilege_type,
-                            '{0}.{1}',
-                            case grantee
-                              when 'PUBLIC' then 'PUBLIC'
-                              else quote_ident(grantee)
-                            end,
-                    		case is_grantable
-                              when 'YES' then ' WITH GRANT OPTION'
-                              else ''
-                            end), ''),
-                        '') as text
-                     FROM privileges g
-                     join obj on (true)
-                     WHERE table_schema=obj.namespace
-                       AND table_name=obj.name
-                       AND grantee<>obj.owner
-                ),
-                columnsprivileges as (
-                    SELECT r.rolname AS grantee,
-                           c.name AS column_name,
-                           c.privilege_type
-                    FROM (
-                        SELECT name,
-                               (aclexplode(attacl)).grantee AS grantee,
-                               (aclexplode(attacl)).privilege_type AS privilege_type
-                        FROM columns
-                    ) c
-                    INNER JOIN pg_roles r
-                            ON c.grantee = r.oid
-                ),
-                columnsgrants as (
-                    SELECT coalesce(
-                               string_agg(
-                                   format(
-                                       E'GRANT %s(%s) ON %s TO %s;\n',
-                                       privilege_type,
-                                       column_name,
-                                       '{0}.{1}',
-                                       quote_ident(grantee)
-                                   ),
-                                   ''
-                               ),
-                               ''
-                           ) AS text
-                     FROM columnsprivileges
-                )
-                select (select text from createclass) ||
-                       (select text from altertabledefaults) ||
-                       (select text from createconstraints) ||
-                       (select text from createindexes) ||
-                       (select text from createtriggers) ||
-                       (select text from createrules) ||
-                       (select text from alterowner) ||
-                       (select text from grants) ||
-                       (SELECT text FROM columnsgrants)
-            '''.format(p_schema, p_object))
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) >= 110000 and int(self.v_connection.ExecuteScalar('show server_version_num')) < 120000:
-            return self.v_connection.ExecuteScalar('''
-                with obj as (
-                   SELECT c.oid,
-                         'pg_class'::regclass,
-                         c.relname AS name,
-                         n.nspname AS namespace,
-                         coalesce(cc.column2,c.relkind::text) AS kind,
-                         pg_get_userbyid(c.relowner) AS owner,
-                         coalesce(cc.column2,c.relkind::text) AS sql_kind,
-                         cast('{0}.{1}'::regclass AS text) AS sql_identifier
-                    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-                    LEFT join (
-                         values ('r','TABLE'),
-                                ('v','VIEW'),
-                                ('i','INDEX'),
-                                ('I','PARTITIONED INDEX'),
-                                ('S','SEQUENCE'),
-                                ('s','SPECIAL'),
-                                ('m','MATERIALIZED VIEW'),
-                                ('c','TYPE'),
-                                ('t','TOAST'),
-                                ('f','FOREIGN TABLE'),
-                                ('p','PARTITIONED TABLE')
-                    ) as cc on cc.column1 = c.relkind
-                   WHERE c.oid = '{0}.{1}'::regclass
-                ),
-                columns as (
-                    SELECT a.attname AS name, format_type(t.oid, NULL::integer) AS type,
-                        CASE
-                            WHEN (a.atttypmod - 4) > 0 THEN a.atttypmod - 4
-                            ELSE NULL::integer
-                        END AS size,
-                        a.attnotnull AS not_null,
-                        def.adsrc AS "default",
-                        col_description(c.oid, a.attnum::integer) AS comment,
-                        con.conname AS primary_key,
-                        a.attislocal AS is_local,
-                        a.attstorage::text AS storage,
-                        nullif(col.collcollate::text,'') AS collation,
-                        a.attnum AS ord,
-                        s.nspname AS namespace,
-                        c.relname AS class_name,
-                        format('%s.%I',text(c.oid::regclass),a.attname) AS sql_identifier,
-                        c.oid,
-                        a.attacl,
-                        format('%I %s%s%s%s',
-                        	a.attname::text,
-                        	format_type(t.oid, a.atttypmod),
-                	        CASE
-                    	      WHEN length(col.collcollate) > 0
-                        	  THEN ' COLLATE ' || quote_ident(col.collcollate::text)
-                              ELSE ''
-                        	END,
-                        	CASE
-                              WHEN a.attnotnull THEN ' NOT NULL'::text
-                              ELSE ''::text
-                        	END,
-                            CASE
-                              WHEN a.attidentity = 'a' THEN ' GENERATED ALWAYS AS IDENTITY'::text
-                              WHEN a.attidentity = 'd' THEN ' GENERATED BY DEFAULT AS IDENTITY'::text
-                              ELSE ''::text
-                            END)
-                        AS definition
-                   FROM pg_class c
-                   JOIN pg_namespace s ON s.oid = c.relnamespace
-                   JOIN pg_attribute a ON c.oid = a.attrelid
-                   LEFT JOIN pg_attrdef def ON c.oid = def.adrelid AND a.attnum = def.adnum
-                   LEFT JOIN pg_constraint con
-                        ON con.conrelid = c.oid AND (a.attnum = ANY (con.conkey)) AND con.contype = 'p'
-                   LEFT JOIN pg_type t ON t.oid = a.atttypid
-                   LEFT JOIN pg_collation col ON col.oid = a.attcollation
-                   JOIN pg_namespace tn ON tn.oid = t.typnamespace
-                  WHERE c.relkind IN ('r','v','c','f','p') AND a.attnum > 0 AND NOT a.attisdropped
-                    AND has_table_privilege(c.oid, 'select') AND has_schema_privilege(s.oid, 'usage')
-                    AND c.oid = '{0}.{1}'::regclass
-                  ORDER BY s.nspname, c.relname, a.attnum
-                ),
-                comments as (
-                   select 'COMMENT ON COLUMN ' || text('{0}.{1}') || '.' || quote_ident(name) ||
-                          ' IS ' || quote_nullable(comment) || ';' as cc
-                     from columns
-                    where comment IS NOT NULL
-                ),
-                settings as (
-                   select 'ALTER ' || obj.kind || ' ' || text('{0}.{1}') || ' SET (' ||
-                          quote_ident(option_name)||'='||quote_nullable(option_value) ||');' as ss
-                     from pg_options_to_table((select reloptions from pg_class where oid = '{0}.{1}'::regclass))
-                     join obj on (true)
-                ),
-                constraints as (
-                   SELECT nc.nspname AS namespace,
-                        r.relname AS class_name,
-                        c.conname AS constraint_name,
-                        case c.contype
-                            when 'c'::"char" then 'CHECK'::text
-                            when 'f'::"char" then 'FOREIGN KEY'::text
-                            when 'p'::"char" then 'PRIMARY KEY'::text
-                            when 'u'::"char" then 'UNIQUE'::text
-                            when 't'::"char" then 'TRIGGER'::text
-                            when 'x'::"char" then 'EXCLUDE'::text
-                            else c.contype::text
-                        end AS constraint_type,
-                        pg_get_constraintdef(c.oid,true) AS constraint_definition,
-                        c.condeferrable AS is_deferrable,
-                        c.condeferred  AS initially_deferred,
-                        r.oid as regclass, c.oid AS sysid
-                   FROM pg_namespace nc, pg_namespace nr, pg_constraint c, pg_class r
-                  WHERE nc.oid = c.connamespace AND nr.oid = r.relnamespace AND c.conrelid = r.oid
-                    AND coalesce(r.oid='{0}.{1}'::regclass,true)
-                ),
-                indexes as (
-                   SELECT DISTINCT
-                        c.oid AS oid,
-                        n.nspname::text AS namespace,
-                        c.relname::text AS class,
-                        i.relname::text AS name,
-                        NULL::text AS tablespace,
-                        CASE d.refclassid
-                            WHEN 'pg_constraint'::regclass
-                            THEN 'ALTER TABLE ' || text(c.oid::regclass)
-                                 || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
-                                 || ' ' || pg_get_constraintdef(cc.oid)
-                            ELSE pg_get_indexdef(i.oid)
-                        END AS indexdef,
-                        cc.conname::text AS constraint_name
-                   FROM pg_index x
-                   JOIN pg_class c ON c.oid = x.indrelid
-                   JOIN pg_namespace n ON n.oid = c.relnamespace
-                   JOIN pg_class i ON i.oid = x.indexrelid
-                   JOIN pg_depend d ON d.objid = x.indexrelid
-                   LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
-                  WHERE c.relkind in ('r','p','m') AND i.relkind in ('i'::"char", 'I'::"char")
-                    AND coalesce(c.oid = '{0}.{1}'::regclass,true)
-                    AND NOT x.indisunique
-                    AND NOT x.indisprimary
-                    AND NOT x.indisexclusion
-                ),
-                triggers as (
-                   SELECT
-                        CASE t.tgisinternal
-                            WHEN true THEN 'CONSTRAINT'::text
-                            ELSE NULL::text
-                        END AS is_constraint, t.tgname::text AS trigger_name,
-                        CASE (t.tgtype::integer & 64) <> 0
-                            WHEN true THEN 'INSTEAD'::text
-                            ELSE CASE t.tgtype::integer & 2
-                              WHEN 2 THEN 'BEFORE'::text
-                              WHEN 0 THEN 'AFTER'::text
-                              ELSE NULL::text
-                            END
-                        END AS action_order,
-                        array_to_string(array[
-                          case when (t.tgtype::integer &  4) <> 0 then 'INSERT'   end,
-                          case when (t.tgtype::integer &  8) <> 0 then 'DELETE'   end,
-                          case when (t.tgtype::integer & 16) <> 0 then 'UPDATE'   end,
-                          case when (t.tgtype::integer & 32) <> 0 then 'TRUNCATE' end
-                        ],' OR ') AS event_manipulation,
-                        c.oid::regclass::text AS event_object_sql_identifier,
-                        p.oid::regprocedure::text AS action_statement,
-                        CASE t.tgtype::integer & 1
-                            WHEN 1 THEN 'ROW'::text
-                            ELSE 'STATEMENT'::text
-                        END AS action_orientation,
-                        pg_get_triggerdef(t.oid,true) as trigger_definition,
-                        c.oid::regclass AS regclass,
-                        p.oid::regprocedure AS regprocedure,
-                        s.nspname::text AS event_object_schema,
-                        c.relname::text AS event_object_table,
-                        (quote_ident(t.tgname::text) || ' ON ') || c.oid::regclass::text AS sql_identifier
-                   FROM pg_trigger t
-                   LEFT JOIN pg_class c ON c.oid = t.tgrelid
-                   LEFT JOIN pg_namespace s ON s.oid = c.relnamespace
-                   LEFT JOIN pg_proc p ON p.oid = t.tgfoid
-                   LEFT JOIN pg_namespace s1 ON s1.oid = p.pronamespace
-                   WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
-                ),
-                rules as (
-                   SELECT n.nspname::text AS namespace,
-                        c.relname::text AS class_name,
-                        r.rulename::text AS rule_name,
-                        CASE
-                            WHEN r.ev_type = '1'::"char" THEN 'SELECT'::text
-                            WHEN r.ev_type = '2'::"char" THEN 'UPDATE'::text
-                            WHEN r.ev_type = '3'::"char" THEN 'INSERT'::text
-                            WHEN r.ev_type = '4'::"char" THEN 'DELETE'::text
-                            ELSE 'UNKNOWN'::text
-                        END AS rule_event,
-                        r.is_instead,
-                        pg_get_ruledef(r.oid, true) AS rule_definition,
-                        c.oid::regclass AS regclass
-                   FROM pg_rewrite r
-                   JOIN pg_class c ON c.oid = r.ev_class
-                   JOIN pg_namespace n ON n.oid = c.relnamespace
-                  WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
-                    AND NOT (r.ev_type = '1'::"char" AND r.rulename = '_RETURN'::name)
-                  ORDER BY r.oid
-                ),
-                createview as (
-                    select
-                     'CREATE '||
-                      case relkind
-                        when 'v' THEN 'OR REPLACE VIEW '
-                        when 'm' THEN 'MATERIALIZED VIEW '
-                      end || (oid::regclass::text) || E' AS\n'||
-                      pg_catalog.pg_get_viewdef(oid,true)||E'\n'||
-                      (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                            THEN (CASE relkind WHEN 'v'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON VIEW %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'm'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON MATERIALIZED VIEW %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               ELSE ''
-                                  END)
-                            ELSE ''
-                       END) as text
-                     FROM pg_class t
-                     WHERE oid = '{0}.{1}'::regclass
-                       AND relkind in ('v','m')
-                ),
-                createtable as (
-                    select
-                        'CREATE '||
-                      case relpersistence
-                        when 'u' then 'UNLOGGED '
-                        when 't' then 'TEMPORARY '
-                        else ''
-                      end
-                      || case obj.kind when 'PARTITIONED TABLE' then 'TABLE' else obj.kind end || ' ' || obj.sql_identifier
-                      || case obj.kind when 'TYPE' then ' AS' else '' end
-                      || case when c.relispartition
-                      then
-                          E'\n' ||
-                          (SELECT
-                             coalesce(' PARTITION OF ' || string_agg(i.inhparent::regclass::text,', '), '')
-                             FROM pg_inherits i WHERE i.inhrelid = '{0}.{1}'::regclass) ||
-                          E'\n'||
-                            coalesce(' '||(
-                              pg_get_expr(c.relpartbound, c.oid, true)
-                            ),'')
-                      else
-                          E' (\n'||
-                            coalesce(''||(
-                              SELECT coalesce(string_agg('    '||definition,E',\n'),'')
-                                FROM columns WHERE is_local
-                            )||E'\n','')||')'
-                          ||
-                          (SELECT
-                            coalesce(' INHERITS(' || string_agg(i.inhparent::regclass::text,', ') || ')', '')
-                             FROM pg_inherits i WHERE i.inhrelid = '{0}.{1}'::regclass)
-                      end
-                      ||
-                      case when c.relkind = 'p'
-                      then E'\n' || ' PARTITION BY ' || pg_get_partkeydef('{0}.{1}'::regclass)
-                      else '' end
-                      ||
-                      CASE relhasoids WHEN true THEN ' WITH OIDS' ELSE '' END
-                      ||
-                      coalesce(
-                        E'\nSERVER '||quote_ident(fs.srvname)
-                        ,'')
-                      ||
-                      coalesce(
-                        E'\nOPTIONS (\n'||
-                        (select string_agg(
-                                  '    '||quote_ident(option_name)||' '||quote_nullable(option_value),
-                                  E',\n')
-                           from pg_options_to_table(ft.ftoptions))||E'\n)'
-                        ,'')
-                      ||
-                      E';\n'||
-                      (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                            THEN (CASE relkind WHEN 'r'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'p'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'f'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON FOREIGN TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               ELSE ''
-                                  END)
-                            ELSE ''
-                       END) as text
-                     FROM pg_class c JOIN obj ON (true)
-                     LEFT JOIN pg_foreign_table  ft ON (c.oid = ft.ftrelid)
-                     LEFT JOIN pg_foreign_server fs ON (ft.ftserver = fs.oid)
-                     WHERE c.oid = '{0}.{1}'::regclass
-                    -- AND relkind in ('r','c')
-                ),
-                createsequence as (
-                    SELECT 'CREATE SEQUENCE '||(c.oid::regclass::text) || E';\n'
-                           ||'ALTER SEQUENCE '||(c.oid::regclass::text)
-                           ||E'\n INCREMENT BY '||sp.increment
-                           ||E'\n MINVALUE '||sp.minimum_value
-                           ||E'\n MAXVALUE '||sp.maximum_value
-                           ||E'\n START WITH '||sp.start_value
-                           ||E'\n '|| CASE cycle_option WHEN true THEN 'CYCLE' ELSE 'NO CYCLE' END
-                           ||E';\n'||
-                           (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                                 THEN (CASE relkind WHEN 'S'
-                                                    THEN format(
-                                                             E'\n\nCOMMENT ON SEQUENCE %s IS %s;',
-                                                             '{0}.{1}'::regclass,
-                                                             quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                         )
-                                                    ELSE ''
-                                       END)
-                                 ELSE ''
-                            END) as text
-                    FROM pg_class c,
-                    LATERAL pg_sequence_parameters(c.oid) sp (start_value, minimum_value, maximum_value, increment, cycle_option)
-                    WHERE c.oid = '{0}.{1}'::regclass
-                      AND c.relkind = 'S'
-                ),
-                createindex as (
-                    with ii as (
-                     SELECT DISTINCT CASE d.refclassid
-                                WHEN 'pg_constraint'::regclass
-                                THEN 'ALTER TABLE ' || text(c.oid::regclass)
-                                     || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
-                                     || ' ' || pg_get_constraintdef(cc.oid)
-                                ELSE pg_get_indexdef(i.oid) ||
-                                     (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                                           THEN format(
-                                                    E'\n\nCOMMENT ON INDEX %s IS %s;',
-                                                    '{0}.{1}'::regclass,
-                                                    quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                )
-                                           ELSE ''
-                                      END)
-                            END AS indexdef
-                       FROM pg_index x
-                       JOIN pg_class c ON c.oid = x.indrelid
-                       JOIN pg_class i ON i.oid = x.indexrelid
-                       JOIN pg_depend d ON d.objid = x.indexrelid
-                       LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
-                      WHERE c.relkind in ('r','p','m') AND i.relkind in ('i'::"char", 'I'::"char")
-                        AND i.oid = '{0}.{1}'::regclass
-                    )
-                     SELECT indexdef || E';\n' as text
-                       FROM ii
-                ),
-                createclass as (
-                    select format(E'--\n-- Type: %s ; Name: %s; Owner: %s\n--\n\n', obj.kind,obj.name,obj.owner)
-                    ||
-                     case
-                      when obj.kind in ('VIEW','MATERIALIZED VIEW') then (select text from createview)
-                      when obj.kind in ('TABLE','TYPE','FOREIGN TABLE','PARTITIONED TABLE') then (select text from createtable)
-                      when obj.kind in ('SEQUENCE') then (select text from createsequence)
-                      when obj.kind in ('INDEX', 'PARTITIONED INDEX') then (select text from createindex)
-                      else '-- UNSUPPORTED CLASS: '||obj.kind
-                     end
-                      || E'\n' ||
-                      coalesce((select string_agg(cc,E'\n')||E'\n' from comments),'')
-                      ||
-                      coalesce(E'\n'||(select string_agg(ss,E'\n')||E'\n' from settings),'')
-                      || E'\n' as text
-                    from obj
-                ),
-                altertabledefaults as (
-                    select
-                        coalesce(
-                          string_agg(
-                            'ALTER TABLE '||text('{0}.{1}')||
-                              ' ALTER '||quote_ident(name)||
-                              ' SET DEFAULT '||"default",
-                            E';\n') || E';\n\n',
-                        '') as text
-                       from columns
-                      where "default" is not null
-                ),
-                createconstraints as (
-                    with cs as (
-                      select
-                       'ALTER TABLE ' || text(regclass(regclass)) ||
-                       ' ADD CONSTRAINT ' || quote_ident(constraint_name) ||
-                       E'\n  ' || constraint_definition as sql
-                        from constraints
-                       order by constraint_type desc, sysid
-                     )
-                     select coalesce(string_agg(sql,E';\n') || E';\n\n','') as text
-                       from cs
-                ),
-                createindexes as (
-                    with ii as (select * from indexes order by name)
-                     SELECT coalesce(string_agg(indexdef||E';\n','') || E'\n' , '') as text
-                       FROM ii
-                      WHERE constraint_name is null
-                ),
-                createtriggers as (
-                    with tg as (
-                      select trigger_definition as sql
-                     from triggers where is_constraint is null
-                     order by trigger_name
-                     -- per SQL triggers get called in order created vs name as in PostgreSQL
-                     )
-                     select coalesce(string_agg(sql,E';\n')||E';\n\n','') as text
-                       from tg
-                ),
-                createrules as (
-                    select coalesce(string_agg(rule_definition,E'\n')||E'\n\n','') as text
-                    from rules
-                   where regclass = '{0}.{1}'::regclass
-                     and rule_definition is not null
-                ),
-                alterowner as (
-                    select
-                       case
-                         when obj.kind in ('INDEX', 'PARTITIONED INDEX') then ''
-                         when obj.kind = 'PARTITIONED TABLE'
-                         then 'ALTER TABLE '||sql_identifier||
-                              ' OWNER TO '||quote_ident(owner)||E';\n\n'
-                         else 'ALTER '||sql_kind||' '||sql_identifier||
-                              ' OWNER TO '||quote_ident(owner)||E';\n\n'
-                       end as text
-                      from obj
-                ),
-                privileges as (
-                    SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor,
-                            (grantee.rolname)::information_schema.sql_identifier AS grantee,
-                            (current_database())::information_schema.sql_identifier AS table_catalog,
-                            (nc.nspname)::information_schema.sql_identifier AS table_schema,
-                            (c.relname)::information_schema.sql_identifier AS table_name,
-                            (c.prtype)::information_schema.character_data AS privilege_type,
-                            (
-                                CASE
-                                    WHEN (pg_has_role(grantee.oid, c.relowner, 'USAGE'::text) OR c.grantable) THEN 'YES'::text
-                                    ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS is_grantable,
-                            (
-                                CASE
-                                    WHEN (c.prtype = 'SELECT'::text) THEN 'YES'::text
-                                    ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS with_hierarchy
-                           FROM ( SELECT pg_class.oid,
-                                         pg_class.relname,
-                                         pg_class.relnamespace,
-                                         pg_class.relkind,
-                                         pg_class.relowner,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantor AS grantor,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantee AS grantee,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).privilege_type AS privilege_type,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).is_grantable AS is_grantable
-                                  FROM pg_class
-                                  WHERE pg_class.relkind <> 'S'
-                                  UNION
-                                  SELECT pg_class.oid,
-                                         pg_class.relname,
-                                         pg_class.relnamespace,
-                                         pg_class.relkind,
-                                         pg_class.relowner,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantor AS grantor,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantee AS grantee,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).privilege_type AS privilege_type,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).is_grantable AS is_grantable
-                                  FROM pg_class
-                                  WHERE pg_class.relkind = 'S') c(oid, relname, relnamespace, relkind, relowner, grantor, grantee, prtype, grantable),
-                            pg_namespace nc,
-                            pg_roles u_grantor,
-                            ( SELECT pg_roles.oid,
-                                    pg_roles.rolname
-                                   FROM pg_roles
-                                UNION ALL
-                                 SELECT (0)::oid AS oid,
-                                    'PUBLIC'::name) grantee(oid, rolname)
-                          WHERE ((c.relnamespace = nc.oid) AND (c.grantee = grantee.oid) AND (c.grantor = u_grantor.oid)
-                            AND (c.prtype = ANY (ARRAY['INSERT'::text, 'SELECT'::text, 'UPDATE'::text, 'DELETE'::text, 'TRUNCATE'::text, 'REFERENCES'::text, 'TRIGGER'::text]))
-                            AND (pg_has_role(u_grantor.oid, 'USAGE'::text) OR pg_has_role(grantee.oid, 'USAGE'::text) OR (grantee.rolname = 'PUBLIC'::name)))
-                ),
-                grants as (
-                    select
-                       coalesce(
-                        string_agg(format(
-                        	E'GRANT %s ON %s TO %s%s;\n',
-                            privilege_type,
-                            '{0}.{1}',
-                            case grantee
-                              when 'PUBLIC' then 'PUBLIC'
-                              else quote_ident(grantee)
-                            end,
-                    		case is_grantable
-                              when 'YES' then ' WITH GRANT OPTION'
-                              else ''
-                            end), ''),
-                        '') as text
-                     FROM privileges g
-                     join obj on (true)
-                     WHERE table_schema=obj.namespace
-                       AND table_name=obj.name
-                       AND grantee<>obj.owner
-                ),
-                columnsprivileges as (
-                    SELECT r.rolname AS grantee,
-                           c.name AS column_name,
-                           c.privilege_type
-                    FROM (
-                        SELECT name,
-                               (aclexplode(attacl)).grantee AS grantee,
-                               (aclexplode(attacl)).privilege_type AS privilege_type
-                        FROM columns
-                    ) c
-                    INNER JOIN pg_roles r
-                            ON c.grantee = r.oid
-                ),
-                columnsgrants as (
-                    SELECT coalesce(
-                               string_agg(
-                                   format(
-                                       E'GRANT %s(%s) ON %s TO %s;\n',
-                                       privilege_type,
-                                       column_name,
-                                       '{0}.{1}',
-                                       quote_ident(grantee)
-                                   ),
-                                   ''
-                               ),
-                               ''
-                           ) AS text
-                     FROM columnsprivileges
-                )
-                select (select text from createclass) ||
-                       (select text from altertabledefaults) ||
-                       (select text from createconstraints) ||
-                       (select text from createindexes) ||
-                       (select text from createtriggers) ||
-                       (select text from createrules) ||
-                       (select text from alterowner) ||
-                       (select text from grants) ||
-                       (SELECT text FROM columnsgrants)
-            '''.format(p_schema, p_object))
-        else:
-            return self.v_connection.ExecuteScalar('''
-                with obj as (
-                   SELECT c.oid,
-                         'pg_class'::regclass,
-                         c.relname AS name,
-                         n.nspname AS namespace,
-                         coalesce(cc.column2,c.relkind::text) AS kind,
-                         pg_get_userbyid(c.relowner) AS owner,
-                         coalesce(cc.column2,c.relkind::text) AS sql_kind,
-                         cast('{0}.{1}'::regclass AS text) AS sql_identifier
-                    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-                    LEFT join (
-                         values ('r','TABLE'),
-                                ('v','VIEW'),
-                                ('i','INDEX'),
-                                ('I','PARTITIONED INDEX'),
-                                ('S','SEQUENCE'),
-                                ('s','SPECIAL'),
-                                ('m','MATERIALIZED VIEW'),
-                                ('c','TYPE'),
-                                ('t','TOAST'),
-                                ('f','FOREIGN TABLE'),
-                                ('p','PARTITIONED TABLE')
-                    ) as cc on cc.column1 = c.relkind
-                   WHERE c.oid = '{0}.{1}'::regclass
-                ),
-                columns as (
-                    SELECT a.attname AS name, format_type(t.oid, NULL::integer) AS type,
-                        CASE
-                            WHEN (a.atttypmod - 4) > 0 THEN a.atttypmod - 4
-                            ELSE NULL::integer
-                        END AS size,
-                        a.attnotnull AS not_null,
-                        a.attgenerated AS generated,
-                        pg_get_expr(def.adbin, def.adrelid) AS "default",
-                        col_description(c.oid, a.attnum::integer) AS comment,
-                        con.conname AS primary_key,
-                        a.attislocal AS is_local,
-                        a.attstorage::text AS storage,
-                        nullif(col.collcollate::text,'') AS collation,
-                        a.attnum AS ord,
-                        s.nspname AS namespace,
-                        c.relname AS class_name,
-                        format('%s.%I',text(c.oid::regclass),a.attname) AS sql_identifier,
-                        c.oid,
-                        a.attacl,
-                        format('%I %s%s%s%s',
-                        	a.attname::text,
-                        	format_type(t.oid, a.atttypmod),
-                	        CASE
-                    	      WHEN length(col.collcollate) > 0
-                        	  THEN ' COLLATE ' || quote_ident(col.collcollate::text)
-                              ELSE ''
-                        	END,
-                        	CASE
-                              WHEN a.attnotnull THEN ' NOT NULL'::text
-                              ELSE ''::text
-                        	END,
-                            CASE
-                              WHEN a.attidentity = 'a' THEN ' GENERATED ALWAYS AS IDENTITY'::text
-                              WHEN a.attidentity = 'd' THEN ' GENERATED BY DEFAULT AS IDENTITY'::text
-                              WHEN a.attgenerated = 's' THEN format(' GENERATED ALWAYS AS %s STORED',pg_get_expr(def.adbin, def.adrelid))::text
-                              ELSE ''::text
-                            END)
-                        AS definition
-                   FROM pg_class c
-                   JOIN pg_namespace s ON s.oid = c.relnamespace
-                   JOIN pg_attribute a ON c.oid = a.attrelid
-                   LEFT JOIN pg_attrdef def ON c.oid = def.adrelid AND a.attnum = def.adnum
-                   LEFT JOIN pg_constraint con
-                        ON con.conrelid = c.oid AND (a.attnum = ANY (con.conkey)) AND con.contype = 'p'
-                   LEFT JOIN pg_type t ON t.oid = a.atttypid
-                   LEFT JOIN pg_collation col ON col.oid = a.attcollation
-                   JOIN pg_namespace tn ON tn.oid = t.typnamespace
-                  WHERE c.relkind IN ('r','v','c','f','p') AND a.attnum > 0 AND NOT a.attisdropped
-                    AND has_table_privilege(c.oid, 'select') AND has_schema_privilege(s.oid, 'usage')
-                    AND c.oid = '{0}.{1}'::regclass
-                  ORDER BY s.nspname, c.relname, a.attnum
-                ),
-                comments as (
-                   select 'COMMENT ON COLUMN ' || text('{0}.{1}') || '.' || quote_ident(name) ||
-                          ' IS ' || quote_nullable(comment) || ';' as cc
-                     from columns
-                    where comment IS NOT NULL
-                ),
-                settings as (
-                   select 'ALTER ' || obj.kind || ' ' || text('{0}.{1}') || ' SET (' ||
-                          quote_ident(option_name)||'='||quote_nullable(option_value) ||');' as ss
-                     from pg_options_to_table((select reloptions from pg_class where oid = '{0}.{1}'::regclass))
-                     join obj on (true)
-                ),
-                constraints as (
-                   SELECT nc.nspname AS namespace,
-                        r.relname AS class_name,
-                        c.conname AS constraint_name,
-                        case c.contype
-                            when 'c'::"char" then 'CHECK'::text
-                            when 'f'::"char" then 'FOREIGN KEY'::text
-                            when 'p'::"char" then 'PRIMARY KEY'::text
-                            when 'u'::"char" then 'UNIQUE'::text
-                            when 't'::"char" then 'TRIGGER'::text
-                            when 'x'::"char" then 'EXCLUDE'::text
-                            else c.contype::text
-                        end AS constraint_type,
-                        pg_get_constraintdef(c.oid,true) AS constraint_definition,
-                        c.condeferrable AS is_deferrable,
-                        c.condeferred  AS initially_deferred,
-                        r.oid as regclass, c.oid AS sysid
-                   FROM pg_namespace nc, pg_namespace nr, pg_constraint c, pg_class r
-                  WHERE nc.oid = c.connamespace AND nr.oid = r.relnamespace AND c.conrelid = r.oid
-                    AND coalesce(r.oid='{0}.{1}'::regclass,true)
-                ),
-                indexes as (
-                   SELECT DISTINCT
-                        c.oid AS oid,
-                        n.nspname::text AS namespace,
-                        c.relname::text AS class,
-                        i.relname::text AS name,
-                        NULL::text AS tablespace,
-                        CASE d.refclassid
-                            WHEN 'pg_constraint'::regclass
-                            THEN 'ALTER TABLE ' || text(c.oid::regclass)
-                                 || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
-                                 || ' ' || pg_get_constraintdef(cc.oid)
-                            ELSE pg_get_indexdef(i.oid)
-                        END AS indexdef,
-                        cc.conname::text AS constraint_name
-                   FROM pg_index x
-                   JOIN pg_class c ON c.oid = x.indrelid
-                   JOIN pg_namespace n ON n.oid = c.relnamespace
-                   JOIN pg_class i ON i.oid = x.indexrelid
-                   JOIN pg_depend d ON d.objid = x.indexrelid
-                   LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
-                  WHERE c.relkind in ('r','p','m') AND i.relkind in ('i'::"char", 'I'::"char")
-                    AND coalesce(c.oid = '{0}.{1}'::regclass,true)
-                    AND NOT x.indisunique
-                    AND NOT x.indisprimary
-                    AND NOT x.indisexclusion
-                ),
-                triggers as (
-                   SELECT
-                        CASE t.tgisinternal
-                            WHEN true THEN 'CONSTRAINT'::text
-                            ELSE NULL::text
-                        END AS is_constraint, t.tgname::text AS trigger_name,
-                        CASE (t.tgtype::integer & 64) <> 0
-                            WHEN true THEN 'INSTEAD'::text
-                            ELSE CASE t.tgtype::integer & 2
-                              WHEN 2 THEN 'BEFORE'::text
-                              WHEN 0 THEN 'AFTER'::text
-                              ELSE NULL::text
-                            END
-                        END AS action_order,
-                        array_to_string(array[
-                          case when (t.tgtype::integer &  4) <> 0 then 'INSERT'   end,
-                          case when (t.tgtype::integer &  8) <> 0 then 'DELETE'   end,
-                          case when (t.tgtype::integer & 16) <> 0 then 'UPDATE'   end,
-                          case when (t.tgtype::integer & 32) <> 0 then 'TRUNCATE' end
-                        ],' OR ') AS event_manipulation,
-                        c.oid::regclass::text AS event_object_sql_identifier,
-                        p.oid::regprocedure::text AS action_statement,
-                        CASE t.tgtype::integer & 1
-                            WHEN 1 THEN 'ROW'::text
-                            ELSE 'STATEMENT'::text
-                        END AS action_orientation,
-                        pg_get_triggerdef(t.oid,true) as trigger_definition,
-                        c.oid::regclass AS regclass,
-                        p.oid::regprocedure AS regprocedure,
-                        s.nspname::text AS event_object_schema,
-                        c.relname::text AS event_object_table,
-                        (quote_ident(t.tgname::text) || ' ON ') || c.oid::regclass::text AS sql_identifier
-                   FROM pg_trigger t
-                   LEFT JOIN pg_class c ON c.oid = t.tgrelid
-                   LEFT JOIN pg_namespace s ON s.oid = c.relnamespace
-                   LEFT JOIN pg_proc p ON p.oid = t.tgfoid
-                   LEFT JOIN pg_namespace s1 ON s1.oid = p.pronamespace
-                   WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
-                ),
-                rules as (
-                   SELECT n.nspname::text AS namespace,
-                        c.relname::text AS class_name,
-                        r.rulename::text AS rule_name,
-                        CASE
-                            WHEN r.ev_type = '1'::"char" THEN 'SELECT'::text
-                            WHEN r.ev_type = '2'::"char" THEN 'UPDATE'::text
-                            WHEN r.ev_type = '3'::"char" THEN 'INSERT'::text
-                            WHEN r.ev_type = '4'::"char" THEN 'DELETE'::text
-                            ELSE 'UNKNOWN'::text
-                        END AS rule_event,
-                        r.is_instead,
-                        pg_get_ruledef(r.oid, true) AS rule_definition,
-                        c.oid::regclass AS regclass
-                   FROM pg_rewrite r
-                   JOIN pg_class c ON c.oid = r.ev_class
-                   JOIN pg_namespace n ON n.oid = c.relnamespace
-                  WHERE coalesce(c.oid='{0}.{1}'::regclass,true)
-                    AND NOT (r.ev_type = '1'::"char" AND r.rulename = '_RETURN'::name)
-                  ORDER BY r.oid
-                ),
-                createview as (
-                    select
-                     'CREATE '||
-                      case relkind
-                        when 'v' THEN 'OR REPLACE VIEW '
-                        when 'm' THEN 'MATERIALIZED VIEW '
-                      end || (oid::regclass::text) || E' AS\n'||
-                      pg_catalog.pg_get_viewdef(oid,true)||E'\n'||
-                      (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                            THEN (CASE relkind WHEN 'v'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON VIEW %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'm'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON MATERIALIZED VIEW %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               ELSE ''
-                                  END)
-                            ELSE ''
-                       END) as text
-                     FROM pg_class t
-                     WHERE oid = '{0}.{1}'::regclass
-                       AND relkind in ('v','m')
-                ),
-                createtable as (
-                    select
-                        'CREATE '||
-                      case relpersistence
-                        when 'u' then 'UNLOGGED '
-                        when 't' then 'TEMPORARY '
-                        else ''
-                      end
-                      || case obj.kind when 'PARTITIONED TABLE' then 'TABLE' else obj.kind end || ' ' || obj.sql_identifier
-                      || case obj.kind when 'TYPE' then ' AS' else '' end
-                      || case when c.relispartition
-                      then
-                          E'\n' ||
-                          (SELECT
-                             coalesce(' PARTITION OF ' || string_agg(i.inhparent::regclass::text,', '), '')
-                             FROM pg_inherits i WHERE i.inhrelid = '{0}.{1}'::regclass) ||
-                          E'\n'||
-                            coalesce(' '||(
-                              pg_get_expr(c.relpartbound, c.oid, true)
-                            ),'')
-                      else
-                          E' (\n'||
-                            coalesce(''||(
-                              SELECT coalesce(string_agg('    '||definition,E',\n'),'')
-                                FROM columns WHERE is_local
-                            )||E'\n','')||')'
-                          ||
-                          (SELECT
-                            coalesce(' INHERITS(' || string_agg(i.inhparent::regclass::text,', ') || ')', '')
-                             FROM pg_inherits i WHERE i.inhrelid = '{0}.{1}'::regclass)
-                      end
-                      ||
-                      case when c.relkind = 'p'
-                      then E'\n' || ' PARTITION BY ' || pg_get_partkeydef('{0}.{1}'::regclass)
-                      else '' end
-                      ||
-                      coalesce(
-                        E'\nSERVER '||quote_ident(fs.srvname)
-                        ,'')
-                      ||
-                      coalesce(
-                        E'\nOPTIONS (\n'||
-                        (select string_agg(
-                                  '    '||quote_ident(option_name)||' '||quote_nullable(option_value),
-                                  E',\n')
-                           from pg_options_to_table(ft.ftoptions))||E'\n)'
-                        ,'')
-                      ||
-                      E';\n'||
-                      (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                            THEN (CASE relkind WHEN 'r'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'p'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               WHEN 'f'
-                                               THEN format(
-                                                        E'\n\nCOMMENT ON FOREIGN TABLE %s IS %s;',
-                                                        '{0}.{1}'::regclass,
-                                                        quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                    )
-                                               ELSE ''
-                                  END)
-                            ELSE ''
-                       END) as text
-                     FROM pg_class c JOIN obj ON (true)
-                     LEFT JOIN pg_foreign_table  ft ON (c.oid = ft.ftrelid)
-                     LEFT JOIN pg_foreign_server fs ON (ft.ftserver = fs.oid)
-                     WHERE c.oid = '{0}.{1}'::regclass
-                    -- AND relkind in ('r','c')
-                ),
-                createsequence as (
-                    SELECT 'CREATE SEQUENCE '||(c.oid::regclass::text) || E';\n'
-                           ||'ALTER SEQUENCE '||(c.oid::regclass::text)
-                           ||E'\n INCREMENT BY '||sp.increment
-                           ||E'\n MINVALUE '||sp.minimum_value
-                           ||E'\n MAXVALUE '||sp.maximum_value
-                           ||E'\n START WITH '||sp.start_value
-                           ||E'\n '|| CASE cycle_option WHEN true THEN 'CYCLE' ELSE 'NO CYCLE' END
-                           ||E';\n'||
-                           (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                                 THEN (CASE relkind WHEN 'S'
-                                                    THEN format(
-                                                             E'\n\nCOMMENT ON SEQUENCE %s IS %s;',
-                                                             '{0}.{1}'::regclass,
-                                                             quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                         )
-                                                    ELSE ''
-                                       END)
-                                 ELSE ''
-                            END) as text
-                    FROM pg_class c,
-                    LATERAL pg_sequence_parameters(c.oid) sp (start_value, minimum_value, maximum_value, increment, cycle_option)
-                    WHERE c.oid = '{0}.{1}'::regclass
-                      AND c.relkind = 'S'
-                ),
-                createindex as (
-                    with ii as (
-                     SELECT DISTINCT CASE d.refclassid
-                                WHEN 'pg_constraint'::regclass
-                                THEN 'ALTER TABLE ' || text(c.oid::regclass)
-                                     || ' ADD CONSTRAINT ' || quote_ident(cc.conname)
-                                     || ' ' || pg_get_constraintdef(cc.oid)
-                                ELSE pg_get_indexdef(i.oid) ||
-                                     (CASE WHEN obj_description('{0}.{1}'::regclass, 'pg_class') IS NOT NULL
-                                           THEN format(
-                                                    E'\n\nCOMMENT ON INDEX %s IS %s;',
-                                                    '{0}.{1}'::regclass,
-                                                    quote_literal(obj_description('{0}.{1}'::regclass, 'pg_class'))
-                                                )
-                                           ELSE ''
-                                      END)
-                            END AS indexdef
-                       FROM pg_index x
-                       JOIN pg_class c ON c.oid = x.indrelid
-                       JOIN pg_class i ON i.oid = x.indexrelid
-                       JOIN pg_depend d ON d.objid = x.indexrelid
-                       LEFT JOIN pg_constraint cc ON cc.oid = d.refobjid
-                      WHERE c.relkind in ('r','p','m') AND i.relkind in ('i'::"char", 'I'::"char")
-                        AND i.oid = '{0}.{1}'::regclass
-                    )
-                     SELECT indexdef || E';\n' as text
-                       FROM ii
-                ),
-                createclass as (
-                    select format(E'--\n-- Type: %s ; Name: %s; Owner: %s\n--\n\n', obj.kind,obj.name,obj.owner)
-                    ||
-                     case
-                      when obj.kind in ('VIEW','MATERIALIZED VIEW') then (select text from createview)
-                      when obj.kind in ('TABLE','TYPE','FOREIGN TABLE','PARTITIONED TABLE') then (select text from createtable)
-                      when obj.kind in ('SEQUENCE') then (select text from createsequence)
-                      when obj.kind in ('INDEX', 'PARTITIONED INDEX') then (select text from createindex)
-                      else '-- UNSUPPORTED CLASS: '||obj.kind
-                     end
-                      || E'\n' ||
-                      coalesce((select string_agg(cc,E'\n')||E'\n' from comments),'')
-                      ||
-                      coalesce(E'\n'||(select string_agg(ss,E'\n')||E'\n' from settings),'')
-                      || E'\n' as text
-                    from obj
-                ),
-                altertabledefaults as (
-                    select
-                        coalesce(
-                          string_agg(
-                            'ALTER TABLE '||text('{0}.{1}')||
-                              ' ALTER '||quote_ident(name)||
-                              ' SET DEFAULT '||"default",
-                            E';\n') || E';\n\n',
-                        '') as text
-                       from columns
-                      where "default" is not null
-                        and generated = ''
-                ),
-                createconstraints as (
-                    with cs as (
-                      select
-                       'ALTER TABLE ' || text(regclass(regclass)) ||
-                       ' ADD CONSTRAINT ' || quote_ident(constraint_name) ||
-                       E'\n  ' || constraint_definition as sql
-                        from constraints
-                       order by constraint_type desc, sysid
-                     )
-                     select coalesce(string_agg(sql,E';\n') || E';\n\n','') as text
-                       from cs
-                ),
-                createindexes as (
-                    with ii as (select * from indexes order by name)
-                     SELECT coalesce(string_agg(indexdef||E';\n','') || E'\n' , '') as text
-                       FROM ii
-                      WHERE constraint_name is null
-                ),
-                createtriggers as (
-                    with tg as (
-                      select trigger_definition as sql
-                     from triggers where is_constraint is null
-                     order by trigger_name
-                     -- per SQL triggers get called in order created vs name as in PostgreSQL
-                     )
-                     select coalesce(string_agg(sql,E';\n')||E';\n\n','') as text
-                       from tg
-                ),
-                createrules as (
-                    select coalesce(string_agg(rule_definition,E'\n')||E'\n\n','') as text
-                    from rules
-                   where regclass = '{0}.{1}'::regclass
-                     and rule_definition is not null
-                ),
-                alterowner as (
-                    select
-                       case
-                         when obj.kind in ('INDEX', 'PARTITIONED INDEX') then ''
-                         when obj.kind = 'PARTITIONED TABLE'
-                         then 'ALTER TABLE '||sql_identifier||
-                              ' OWNER TO '||quote_ident(owner)||E';\n\n'
-                         else 'ALTER '||sql_kind||' '||sql_identifier||
-                              ' OWNER TO '||quote_ident(owner)||E';\n\n'
-                       end as text
-                      from obj
-                ),
-                privileges as (
-                    SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor,
-                            (grantee.rolname)::information_schema.sql_identifier AS grantee,
-                            (current_database())::information_schema.sql_identifier AS table_catalog,
-                            (nc.nspname)::information_schema.sql_identifier AS table_schema,
-                            (c.relname)::information_schema.sql_identifier AS table_name,
-                            (c.prtype)::information_schema.character_data AS privilege_type,
-                            (
-                                CASE
-                                    WHEN (pg_has_role(grantee.oid, c.relowner, 'USAGE'::text) OR c.grantable) THEN 'YES'::text
-                                    ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS is_grantable,
-                            (
-                                CASE
-                                    WHEN (c.prtype = 'SELECT'::text) THEN 'YES'::text
-                                    ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS with_hierarchy
-                           FROM ( SELECT pg_class.oid,
-                                         pg_class.relname,
-                                         pg_class.relnamespace,
-                                         pg_class.relkind,
-                                         pg_class.relowner,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantor AS grantor,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).grantee AS grantee,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).privilege_type AS privilege_type,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('r', pg_class.relowner)))).is_grantable AS is_grantable
-                                  FROM pg_class
-                                  WHERE pg_class.relkind <> 'S'
-                                  UNION
-                                  SELECT pg_class.oid,
-                                         pg_class.relname,
-                                         pg_class.relnamespace,
-                                         pg_class.relkind,
-                                         pg_class.relowner,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantor AS grantor,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).grantee AS grantee,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).privilege_type AS privilege_type,
-                                         (aclexplode(COALESCE(pg_class.relacl, acldefault('S', pg_class.relowner)))).is_grantable AS is_grantable
-                                  FROM pg_class
-                                  WHERE pg_class.relkind = 'S') c(oid, relname, relnamespace, relkind, relowner, grantor, grantee, prtype, grantable),
-                            pg_namespace nc,
-                            pg_roles u_grantor,
-                            ( SELECT pg_roles.oid,
-                                    pg_roles.rolname
-                                   FROM pg_roles
-                                UNION ALL
-                                 SELECT (0)::oid AS oid,
-                                    'PUBLIC'::name) grantee(oid, rolname)
-                          WHERE ((c.relnamespace = nc.oid) AND (c.grantee = grantee.oid) AND (c.grantor = u_grantor.oid)
-                            AND (c.prtype = ANY (ARRAY['INSERT'::text, 'SELECT'::text, 'UPDATE'::text, 'DELETE'::text, 'TRUNCATE'::text, 'REFERENCES'::text, 'TRIGGER'::text]))
-                            AND (pg_has_role(u_grantor.oid, 'USAGE'::text) OR pg_has_role(grantee.oid, 'USAGE'::text) OR (grantee.rolname = 'PUBLIC'::name)))
-                ),
-                grants as (
-                    select
-                       coalesce(
-                        string_agg(format(
-                        	E'GRANT %s ON %s TO %s%s;\n',
-                            privilege_type,
-                            '{0}.{1}',
-                            case grantee
-                              when 'PUBLIC' then 'PUBLIC'
-                              else quote_ident(grantee)
-                            end,
-                    		case is_grantable
-                              when 'YES' then ' WITH GRANT OPTION'
-                              else ''
-                            end), ''),
-                        '') as text
-                     FROM privileges g
-                     join obj on (true)
-                     WHERE table_schema=obj.namespace
-                       AND table_name=obj.name
-                       AND grantee<>obj.owner
-                ),
-                columnsprivileges as (
-                    SELECT r.rolname AS grantee,
-                           c.name AS column_name,
-                           c.privilege_type
-                    FROM (
-                        SELECT name,
-                               (aclexplode(attacl)).grantee AS grantee,
-                               (aclexplode(attacl)).privilege_type AS privilege_type
-                        FROM columns
-                    ) c
-                    INNER JOIN pg_roles r
-                            ON c.grantee = r.oid
-                ),
-                columnsgrants as (
-                    SELECT coalesce(
-                               string_agg(
-                                   format(
-                                       E'GRANT %s(%s) ON %s TO %s;\n',
-                                       privilege_type,
-                                       column_name,
-                                       '{0}.{1}',
-                                       quote_ident(grantee)
-                                   ),
-                                   ''
-                               ),
-                               ''
-                           ) AS text
-                     FROM columnsprivileges
-                )
-                select (select text from createclass) ||
-                       (select text from altertabledefaults) ||
-                       (select text from createconstraints) ||
-                       (select text from createindexes) ||
-                       (select text from createtriggers) ||
-                       (select text from createrules) ||
-                       (select text from alterowner) ||
-                       (select text from grants) ||
-                       (SELECT text FROM columnsgrants)
-            '''.format(p_schema, p_object))
+    
     @lock_required
     def GetDDLTrigger(self, p_trigger, p_table, p_schema):
         return self.v_connection.ExecuteScalar('''
@@ -10835,6 +8293,7 @@ FROM #table_name#
               and quote_ident(t.trigger_name) = '{2}'
             ) x
         '''.format(p_schema, p_table, p_trigger))
+    
     @lock_required
     def GetDDLEventTrigger(self, p_trigger):
         return self.v_connection.ExecuteScalar('''
@@ -10866,192 +8325,101 @@ FROM #table_name#
             on r.oid = t.evtowner
             where quote_ident(t.evtname) = '{0}'
         '''.format(p_trigger))
+    
     @lock_required
     def GetDDLFunction(self, p_function):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.ExecuteScalar('''
-                with obj as (
-                    SELECT p.oid,
-                           p.proname AS name,
-                           n.nspname AS namespace,
-                           pg_get_userbyid(p.proowner) AS owner,
-                           '{0}'::text AS sql_identifier
-                    FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
-                    WHERE p.oid = '{0}'::text::regprocedure
-                ),
-                createfunction as (
-                    select substring(body from 1 for length(body)-1) || E';\n\n' as text
-                    from (
-                        select pg_get_functiondef(sql_identifier::regprocedure) as body
-                        from obj
-                    ) x
-                ),
-                alterowner as (
-                    select
-                       'ALTER FUNCTION '||sql_identifier||
-                              ' OWNER TO '||quote_ident(owner)||E';\n\n' as text
-                      from obj
-                ),
-                privileges as (
-                select (u_grantor.rolname)::information_schema.sql_identifier as grantor,
-                       (grantee.rolname)::information_schema.sql_identifier as grantee,
-                       (p.privilege_type)::information_schema.character_data as privilege_type,
-                       (case when (pg_has_role(grantee.oid, p.proowner, 'USAGE'::text) or p.is_grantable)
-                             then 'YES'::text
-                             else 'NO'::text
-                        end)::information_schema.yes_or_no AS is_grantable
+        return self.v_connection.ExecuteScalar('''
+            with obj as (
+                SELECT p.oid,
+                        p.proname AS name,
+                        n.nspname AS namespace,
+                        pg_get_userbyid(p.proowner) AS owner,
+                        '{0}'::text AS sql_identifier
+                FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+                WHERE p.prokind = 'f' AND p.oid = '{0}'::text::regprocedure
+            ),
+            createfunction as (
+                select substring(body from 1 for length(body)-1) || E';\n\n' as text
                 from (
-                    select p.pronamespace,
-                           p.proowner,
-                           (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantor as grantor,
-                           (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantee as grantee,
-                           (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).privilege_type as privilege_type,
-                           (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).is_grantable as is_grantable
-                    from pg_proc p
-                    where not p.proisagg
-                      and p.oid = '{0}'::regprocedure
-                ) p
-                inner join pg_namespace n
-                on n.oid = p.pronamespace
-                inner join pg_roles u_grantor
-                on u_grantor.oid = p.grantor
-                inner join (
-                    select r.oid,
-                           r.rolname
-                    from pg_roles r
-                    union all
-                    select (0)::oid AS oid,
-                           'PUBLIC'::name
-                ) grantee
-                on grantee.oid = p.grantee
-                ),
-                grants as (
-                select coalesce(
-                        string_agg(format(
-                    	E'GRANT %s ON FUNCTION {0} TO %s%s;\n',
-                        privilege_type,
-                        case grantee
-                          when 'PUBLIC' then 'PUBLIC'
-                          else quote_ident(grantee)
-                        end,
-                    	case is_grantable
-                          when 'YES' then ' WITH GRANT OPTION'
-                          else ''
-                        end), ''),
-                       '') as text
-                from privileges
-                ),
-                comments AS (
-                    SELECT coalesce(obj_description('{0}'::regprocedure, 'pg_proc'), '') AS description
-                ),
-                comment_on AS (
-                    SELECT (CASE WHEN description <> ''
-                                 THEN format(
-                                          E'\n\nCOMMENT ON FUNCTION %s IS %s;',
-                                          '{0}'::regprocedure,
-                                          quote_literal(description)
-                                      )
-                                 ELSE ''
-                            END) AS text
-                    FROM comments
-                )
-                select (select text from createfunction) ||
-                       (select text from alterowner) ||
-                       (select text from grants) ||
-                       (SELECT text FROM comment_on)
-            '''.format(p_function))
-        else:
-            return self.v_connection.ExecuteScalar('''
-                with obj as (
-                    SELECT p.oid,
-                           p.proname AS name,
-                           n.nspname AS namespace,
-                           pg_get_userbyid(p.proowner) AS owner,
-                           '{0}'::text AS sql_identifier
-                    FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
-                    WHERE p.prokind = 'f' AND p.oid = '{0}'::text::regprocedure
-                ),
-                createfunction as (
-                    select substring(body from 1 for length(body)-1) || E';\n\n' as text
-                    from (
-                        select pg_get_functiondef(sql_identifier::regprocedure) as body
-                        from obj
-                    ) x
-                ),
-                alterowner as (
-                    select
-                       'ALTER FUNCTION '||sql_identifier||
-                              ' OWNER TO '||quote_ident(owner)||E';\n\n' as text
-                      from obj
-                ),
-                privileges as (
-                select (u_grantor.rolname)::information_schema.sql_identifier as grantor,
-                       (grantee.rolname)::information_schema.sql_identifier as grantee,
-                       (p.privilege_type)::information_schema.character_data as privilege_type,
-                       (case when (pg_has_role(grantee.oid, p.proowner, 'USAGE'::text) or p.is_grantable)
-                             then 'YES'::text
-                             else 'NO'::text
-                        end)::information_schema.yes_or_no AS is_grantable
-                from (
-                    select p.pronamespace,
-                           p.proowner,
-                           (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantor as grantor,
-                           (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantee as grantee,
-                           (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).privilege_type as privilege_type,
-                           (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).is_grantable as is_grantable
-                    from pg_proc p
-                    where p.prokind = 'f'
-                      and p.oid = '{0}'::regprocedure
-                ) p
-                inner join pg_namespace n
-                on n.oid = p.pronamespace
-                inner join pg_roles u_grantor
-                on u_grantor.oid = p.grantor
-                inner join (
-                    select r.oid,
-                           r.rolname
-                    from pg_roles r
-                    union all
-                    select (0)::oid AS oid,
-                           'PUBLIC'::name
-                ) grantee
-                on grantee.oid = p.grantee
-                ),
-                grants as (
-                select coalesce(
-                        string_agg(format(
-                    	E'GRANT %s ON FUNCTION {0} TO %s%s;\n',
-                        privilege_type,
-                        case grantee
-                          when 'PUBLIC' then 'PUBLIC'
-                          else quote_ident(grantee)
-                        end,
-                    	case is_grantable
-                          when 'YES' then ' WITH GRANT OPTION'
-                          else ''
-                        end), ''),
-                       '') as text
-                from privileges
-                ),
-                comments AS (
-                    SELECT coalesce(obj_description('{0}'::regprocedure, 'pg_proc'), '') AS description
-                ),
-                comment_on AS (
-                    SELECT (CASE WHEN description <> ''
-                                 THEN format(
-                                          E'\n\nCOMMENT ON FUNCTION %s IS %s;',
-                                          '{0}'::regprocedure,
-                                          quote_literal(description)
-                                      )
-                                 ELSE ''
-                            END) AS text
-                    FROM comments
-                )
-                select (select text from createfunction) ||
-                       (select text from alterowner) ||
-                       (select text from grants) ||
-                       (SELECT text FROM comment_on)
-        '''.format(p_function))
+                    select pg_get_functiondef(sql_identifier::regprocedure) as body
+                    from obj
+                ) x
+            ),
+            alterowner as (
+                select
+                    'ALTER FUNCTION '||sql_identifier||
+                            ' OWNER TO '||quote_ident(owner)||E';\n\n' as text
+                    from obj
+            ),
+            privileges as (
+            select (u_grantor.rolname)::information_schema.sql_identifier as grantor,
+                    (grantee.rolname)::information_schema.sql_identifier as grantee,
+                    (p.privilege_type)::information_schema.character_data as privilege_type,
+                    (case when (pg_has_role(grantee.oid, p.proowner, 'USAGE'::text) or p.is_grantable)
+                            then 'YES'::text
+                            else 'NO'::text
+                    end)::information_schema.yes_or_no AS is_grantable
+            from (
+                select p.pronamespace,
+                        p.proowner,
+                        (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantor as grantor,
+                        (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantee as grantee,
+                        (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).privilege_type as privilege_type,
+                        (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).is_grantable as is_grantable
+                from pg_proc p
+                where p.prokind = 'f'
+                    and p.oid = '{0}'::regprocedure
+            ) p
+            inner join pg_namespace n
+            on n.oid = p.pronamespace
+            inner join pg_roles u_grantor
+            on u_grantor.oid = p.grantor
+            inner join (
+                select r.oid,
+                        r.rolname
+                from pg_roles r
+                union all
+                select (0)::oid AS oid,
+                        'PUBLIC'::name
+            ) grantee
+            on grantee.oid = p.grantee
+            ),
+            grants as (
+            select coalesce(
+                    string_agg(format(
+                    E'GRANT %s ON FUNCTION {0} TO %s%s;\n',
+                    privilege_type,
+                    case grantee
+                        when 'PUBLIC' then 'PUBLIC'
+                        else quote_ident(grantee)
+                    end,
+                    case is_grantable
+                        when 'YES' then ' WITH GRANT OPTION'
+                        else ''
+                    end), ''),
+                    '') as text
+            from privileges
+            ),
+            comments AS (
+                SELECT coalesce(obj_description('{0}'::regprocedure, 'pg_proc'), '') AS description
+            ),
+            comment_on AS (
+                SELECT (CASE WHEN description <> ''
+                                THEN format(
+                                        E'\n\nCOMMENT ON FUNCTION %s IS %s;',
+                                        '{0}'::regprocedure,
+                                        quote_literal(description)
+                                    )
+                                ELSE ''
+                        END) AS text
+                FROM comments
+            )
+            select (select text from createfunction) ||
+                    (select text from alterowner) ||
+                    (select text from grants) ||
+                    (SELECT text FROM comment_on)
+    '''.format(p_function))
+    
     @lock_required
     def GetDDLProcedure(self, p_procedure):
         return self.v_connection.ExecuteScalar('''
@@ -11145,6 +8513,7 @@ FROM #table_name#
                    (select text from grants) ||
                    (SELECT text FROM comment_on)
         '''.format(p_procedure))
+    
     @lock_required
     def GetDDLConstraint(self, p_schema, p_table, p_object):
         return self.v_connection.ExecuteScalar('''
@@ -11192,6 +8561,7 @@ FROM #table_name#
             GROUP BY cs.sql,
                      c.sql
         '''.format(p_schema, p_table, p_object))
+    
     @lock_required
     def GetDDLUserMapping(self, p_server, p_object):
         if p_object == 'PUBLIC':
@@ -11251,6 +8621,7 @@ FROM #table_name#
                 where quote_ident(s.srvname) = '{0}'
                   and quote_ident(r.rolname) = '{1}'
             '''.format(p_server, p_object))
+    
     @lock_required
     def GetDDLForeignServer(self, p_object):
         return self.v_connection.ExecuteScalar('''
@@ -11370,6 +8741,7 @@ FROM #table_name#
             inner join grants g on 1=1
             where quote_ident(s.srvname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetDDLForeignDataWrapper(self, p_object):
         return self.v_connection.ExecuteScalar('''
@@ -11486,6 +8858,7 @@ FROM #table_name#
             inner join grants g on 1=1
             where quote_ident(w.fdwname) = '{0}'
         '''.format(p_object))
+    
     @lock_required
     def GetDDLType(self, p_schema, p_object):
         v_type = self.v_connection.ExecuteScalar('''
@@ -11634,6 +9007,7 @@ FROM #table_name#
                 where quote_ident(n.nspname) = '{0}'
                   and quote_ident(t.typname) = '{1}'
             '''.format(p_schema, p_object))
+    
     @lock_required
     def GetDDLDomain(self, p_schema, p_object):
         return self.v_connection.ExecuteScalar('''
@@ -12090,796 +9464,253 @@ FROM #table_name#
 
     @lock_required
     def GetDDLAggregate(self, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 90600:
-            return self.v_connection.ExecuteScalar(
-                '''
-                    WITH procs AS (
-                        SELECT p.oid AS function_oid,
-                               quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS function_id,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(p.proname) AS function_name,
-                               format(
-                                   '%s.%s',
-                                   quote_ident(n.nspname),
-                                   quote_ident(p.proname)
-                               ) AS function_full_name,
-                               r.rolname AS function_owner,
-                               p.proisagg AS is_aggregate
+        return self.v_connection.ExecuteScalar(
+            '''
+                WITH procs AS (
+                    SELECT p.oid AS function_oid,
+                            quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS function_id,
+                            quote_ident(n.nspname) AS schema_name,
+                            quote_ident(p.proname) AS function_name,
+                            format(
+                                '%s.%s',
+                                quote_ident(n.nspname),
+                                quote_ident(p.proname)
+                            ) AS function_full_name,
+                            r.rolname AS function_owner,
+                            p.prokind AS function_kind,
+                            p.proparallel
+                    FROM pg_proc p
+                    INNER JOIN pg_namespace n
+                            ON p.pronamespace = n.oid
+                    INNER JOIN pg_roles r
+                            ON p.proowner = r.oid
+                ),
+                operators AS (
+                    SELECT o.oid AS operator_oid,
+                            quote_ident(n.nspname) AS schema_name,
+                            quote_ident(o.oprname) AS operator_name
+                    FROM pg_operator o
+                    INNER JOIN pg_namespace n
+                            ON o.oprnamespace = n.oid
+                ),
+                types AS (
+                    SELECT t.oid AS type_oid,
+                            quote_ident(n.nspname) AS schema_name,
+                            quote_ident(t.typname) AS type_name,
+                            format(
+                                '%s.%s',
+                                quote_ident(n.nspname),
+                                quote_ident(t.typname)
+                            )::regtype AS type_full_name
+                    FROM pg_type t
+                    INNER JOIN pg_namespace n
+                            ON t.typnamespace = n.oid
+                ),
+                privileges AS (
+                    SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor,
+                            (grantee.rolname)::information_schema.sql_identifier AS grantee,
+                            (p.privilege_type)::information_schema.character_data AS privilege_type,
+                            (CASE WHEN (pg_has_role(grantee.oid, p.proowner, 'USAGE'::text) OR p.is_grantable)
+                                    THEN 'YES'::text
+                                    ELSE 'NO'::text
+                            END)::information_schema.yes_or_no AS is_grantable
+                    FROM (
+                        SELECT p.pronamespace,
+                                p.proowner,
+                                (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantor AS grantor,
+                                (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantee AS grantee,
+                                (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).privilege_type AS privilege_type,
+                                (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).is_grantable AS is_grantable
                         FROM pg_proc p
-                        INNER JOIN pg_namespace n
-                                ON p.pronamespace = n.oid
-                        INNER JOIN pg_roles r
-                                ON p.proowner = r.oid
-                    ),
-                    operators AS (
-                        SELECT o.oid AS operator_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(o.oprname) AS operator_name
-                        FROM pg_operator o
-                        INNER JOIN pg_namespace n
-                                ON o.oprnamespace = n.oid
-                    ),
-                    types AS (
-                        SELECT t.oid AS type_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(t.typname) AS type_name,
-                               format(
-                                   '%s.%s',
-                                   quote_ident(n.nspname),
-                                   quote_ident(t.typname)
-                               )::regtype AS type_full_name
-                        FROM pg_type t
-                        INNER JOIN pg_namespace n
-                                ON t.typnamespace = n.oid
-                    ),
-                    privileges AS (
-                        SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor,
-                               (grantee.rolname)::information_schema.sql_identifier AS grantee,
-                               (p.privilege_type)::information_schema.character_data AS privilege_type,
-                               (CASE WHEN (pg_has_role(grantee.oid, p.proowner, 'USAGE'::text) OR p.is_grantable)
-                                     THEN 'YES'::text
-                                     ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS is_grantable
-                        FROM (
-                            SELECT p.pronamespace,
-                                   p.proowner,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantor AS grantor,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantee AS grantee,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).privilege_type AS privilege_type,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).is_grantable AS is_grantable
-                            FROM pg_proc p
-                            WHERE p.proisagg
-                              AND p.oid = '{0}'::regprocedure
-                        ) p
-                        INNER JOIN pg_namespace n
-                                ON n.oid = p.pronamespace
-                        INNER JOIN pg_roles u_grantor
-                                ON u_grantor.oid = p.grantor
-                        INNER JOIN (
-                            SELECT r.oid,
-                                   r.rolname
-                            FROM pg_roles r
+                        WHERE p.prokind = 'a'
+                            AND p.oid = '{0}'::regprocedure
+                    ) p
+                    INNER JOIN pg_namespace n
+                            ON n.oid = p.pronamespace
+                    INNER JOIN pg_roles u_grantor
+                            ON u_grantor.oid = p.grantor
+                    INNER JOIN (
+                        SELECT r.oid,
+                                r.rolname
+                        FROM pg_roles r
 
-                            UNION ALL
+                        UNION ALL
 
-                            SELECT (0)::oid AS oid,
-                                   'PUBLIC'::name
-                        ) grantee
-                                ON grantee.oid = p.grantee
-                    ),
-                    grants AS (
-                        SELECT coalesce(
-                                   string_agg(
-                                       format(
-                        	               E'GRANT %s ON FUNCTION {0} TO %s%s;\n',
-                                           privilege_type,
-                                           (CASE grantee WHEN 'PUBLIC'
-                                                         THEN 'PUBLIC'
-                                                         ELSE quote_ident(grantee)
-                                            END),
-                        	               (CASE is_grantable WHEN 'YES'
-                        	                                  THEN ' WITH GRANT OPTION'
-                        	                                  ELSE ''
-                                            END)
-                                        ),
-                                        ''
-                                   ),
-                                   ''
-                               ) AS text
-                        FROM privileges
-                    ),
-                    comments AS (
-                        SELECT format(
-                            E'\nCOMMENT ON AGGREGATE {0} is %s;',
-                            quote_literal(x.description)
-                        ) AS text
-                        FROM (
-                            SELECT obj_description ('{0}'::regprocedure, 'pg_proc') AS description
-                        ) x
-                        WHERE x.description IS NOT NULL
-                    )
+                        SELECT (0)::oid AS oid,
+                                'PUBLIC'::name
+                    ) grantee
+                            ON grantee.oid = p.grantee
+                ),
+                grants AS (
+                    SELECT coalesce(
+                                string_agg(
+                                    format(
+                                        E'GRANT %s ON FUNCTION {0} TO %s%s;\n',
+                                        privilege_type,
+                                        (CASE grantee WHEN 'PUBLIC'
+                                                        THEN 'PUBLIC'
+                                                        ELSE quote_ident(grantee)
+                                        END),
+                                        (CASE is_grantable WHEN 'YES'
+                                                            THEN ' WITH GRANT OPTION'
+                                                            ELSE ''
+                                        END)
+                                    ),
+                                    ''
+                                ),
+                                ''
+                            ) AS text
+                    FROM privileges
+                ),
+                comments AS (
                     SELECT format(
-                               E'CREATE AGGREGATE %s (\n\tSFUNC = %s\n  , STYPE = %s%s%s%s%s%s%s%s%s%s%s%s%s\n);\n\nALTER AGGREGATE %s OWNER TO %s;\n\n%s%s',
-                               p1.function_id,
-                               p2.function_full_name,
-                               t1.type_full_name,
-                               (CASE WHEN a.aggtransspace <> 0
-                                     THEN format(E'\n  , SSPACE = %s', a.aggtransspace)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p3.function_id IS NOT NULL
-                                     THEN format(E'\n  , FINALFUNC = %s', p3.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN aggfinalextra
-                                     THEN E'\n  , FINALFUNC_EXTRA'
-                                     ELSE ''
-                                END),
-                               (CASE WHEN a.agginitval IS NOT NULL
-                                     THEN format(E'\n  , INITCOND = %s', a.agginitval)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p7.function_id IS NOT NULL
-                                     THEN format(E'\n  , MSFUNC = %s', p7.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p8.function_id IS NOT NULL
-                                     THEN format(E'\n  , MINVFUNC = %s', p8.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN t2.type_oid IS NOT NULL
-                                     THEN format(E'\n  , MSTYPE = %s', t2.type_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN a.aggmtransspace <> 0
-                                     THEN format(E'\n  , MSSPACE = %s', a.aggmtransspace)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p9.function_id IS NOT NULL
-                                     THEN format(E'\n  , MFINALFUNC = %s', p9.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN aggmfinalextra
-                                     THEN E'\n  , MFINALFUNC_EXTRA'
-                                     ELSE ''
-                                END),
-                               (CASE WHEN a.aggminitval IS NOT NULL
-                                     THEN format(E'\n  , MINITCOND = %s', a.aggminitval)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN o.operator_oid IS NOT NULL
-                                     THEN format(E'\n  , SORTOP = %s', o.operator_oid::regoperator)
-                                     ELSE ''
-                                END),
-                               p1.function_id,
-                               p1.function_owner,
-                               g.text,
-                               c.text
-                           )
-                    FROM pg_aggregate a
-                    INNER JOIN procs p1
-                            ON a.aggfnoid = p1.function_oid
-                    LEFT JOIN procs p2
-                           ON a.aggtransfn = p2.function_oid
-                    LEFT JOIN procs p3
-                           ON a.aggfinalfn = p3.function_oid
-                    LEFT JOIN procs p7
-                           ON a.aggmtransfn = p7.function_oid
-                    LEFT JOIN procs p8
-                           ON a.aggminvtransfn = p8.function_oid
-                    LEFT JOIN procs p9
-                           ON a.aggmfinalfn = p9.function_oid
-                    LEFT JOIN operators o
-                           ON a.aggsortop = o.operator_oid
-                    LEFT JOIN types t1
-                           ON a.aggtranstype = t1.type_oid
-                    LEFT JOIN types t2
-                           ON a.aggmtranstype = t2.type_oid
-                    INNER JOIN grants g
-                            ON 1 = 1
-                    LEFT JOIN comments c
-                           ON 1 = 1
-                    WHERE p1.is_aggregate
-                      AND p1.function_id = '{0}'
-                '''.format(
-                    p_object
+                        E'\nCOMMENT ON AGGREGATE {0} is %s;',
+                        quote_literal(x.description)
+                    ) AS text
+                    FROM (
+                        SELECT obj_description ('{0}'::regprocedure, 'pg_proc') AS description
+                    ) x
+                    WHERE x.description IS NOT NULL
                 )
-            )
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) < 110000:
-            return self.v_connection.ExecuteScalar(
-                '''
-                    WITH procs AS (
-                        SELECT p.oid AS function_oid,
-                               quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS function_id,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(p.proname) AS function_name,
-                               format(
-                                   '%s.%s',
-                                   quote_ident(n.nspname),
-                                   quote_ident(p.proname)
-                               ) AS function_full_name,
-                               r.rolname AS function_owner,
-                               p.proisagg AS is_aggregate,
-                               p.proparallel
-                        FROM pg_proc p
-                        INNER JOIN pg_namespace n
-                                ON p.pronamespace = n.oid
-                        INNER JOIN pg_roles r
-                                ON p.proowner = r.oid
-                    ),
-                    operators AS (
-                        SELECT o.oid AS operator_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(o.oprname) AS operator_name
-                        FROM pg_operator o
-                        INNER JOIN pg_namespace n
-                                ON o.oprnamespace = n.oid
-                    ),
-                    types AS (
-                        SELECT t.oid AS type_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(t.typname) AS type_name,
-                               format(
-                                   '%s.%s',
-                                   quote_ident(n.nspname),
-                                   quote_ident(t.typname)
-                               )::regtype AS type_full_name
-                        FROM pg_type t
-                        INNER JOIN pg_namespace n
-                                ON t.typnamespace = n.oid
-                    ),
-                    privileges AS (
-                        SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor,
-                               (grantee.rolname)::information_schema.sql_identifier AS grantee,
-                               (p.privilege_type)::information_schema.character_data AS privilege_type,
-                               (CASE WHEN (pg_has_role(grantee.oid, p.proowner, 'USAGE'::text) OR p.is_grantable)
-                                     THEN 'YES'::text
-                                     ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS is_grantable
-                        FROM (
-                            SELECT p.pronamespace,
-                                   p.proowner,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantor AS grantor,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantee AS grantee,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).privilege_type AS privilege_type,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).is_grantable AS is_grantable
-                            FROM pg_proc p
-                            WHERE p.proisagg
-                              AND p.oid = '{0}'::regprocedure
-                        ) p
-                        INNER JOIN pg_namespace n
-                                ON n.oid = p.pronamespace
-                        INNER JOIN pg_roles u_grantor
-                                ON u_grantor.oid = p.grantor
-                        INNER JOIN (
-                            SELECT r.oid,
-                                   r.rolname
-                            FROM pg_roles r
-
-                            UNION ALL
-
-                            SELECT (0)::oid AS oid,
-                                   'PUBLIC'::name
-                        ) grantee
-                                ON grantee.oid = p.grantee
-                    ),
-                    grants AS (
-                        SELECT coalesce(
-                                   string_agg(
-                                       format(
-                        	               E'GRANT %s ON FUNCTION {0} TO %s%s;\n',
-                                           privilege_type,
-                                           (CASE grantee WHEN 'PUBLIC'
-                                                         THEN 'PUBLIC'
-                                                         ELSE quote_ident(grantee)
-                                            END),
-                        	               (CASE is_grantable WHEN 'YES'
-                        	                                  THEN ' WITH GRANT OPTION'
-                        	                                  ELSE ''
-                                            END)
-                                        ),
-                                        ''
-                                   ),
-                                   ''
-                               ) AS text
-                        FROM privileges
-                    ),
-                    comments AS (
-                        SELECT format(
-                            E'\nCOMMENT ON AGGREGATE {0} is %s;',
-                            quote_literal(x.description)
-                        ) AS text
-                        FROM (
-                            SELECT obj_description ('{0}'::regprocedure, 'pg_proc') AS description
-                        ) x
-                        WHERE x.description IS NOT NULL
-                    )
-                    SELECT format(
-                               E'CREATE AGGREGATE %s (\n\tSFUNC = %s\n  , STYPE = %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n);\n\nALTER AGGREGATE %s OWNER TO %s;\n\n%s%s',
-                               p1.function_id,
-                               p2.function_full_name,
-                               t1.type_full_name,
-                               (CASE WHEN a.aggtransspace <> 0
-                                     THEN format(E'\n  , SSPACE = %s', a.aggtransspace)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p3.function_id IS NOT NULL
-                                     THEN format(E'\n  , FINALFUNC = %s', p3.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN aggfinalextra
-                                     THEN E'\n  , FINALFUNC_EXTRA'
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p4.function_id IS NOT NULL
-                                     THEN format(E'\n  , COMBINEFUNC = %s', p4.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p5.function_id IS NOT NULL
-                                     THEN format(E'\n  , SERIALFUNC = %s', p5.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p6.function_id IS NOT NULL
-                                     THEN format(E'\n  , DESERIALFUNC = %s', p6.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN a.agginitval IS NOT NULL
-                                     THEN format(E'\n  , INITCOND = %s', a.agginitval)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p7.function_id IS NOT NULL
-                                     THEN format(E'\n  , MSFUNC = %s', p7.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p8.function_id IS NOT NULL
-                                     THEN format(E'\n  , MINVFUNC = %s', p8.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN t2.type_oid IS NOT NULL
-                                     THEN format(E'\n  , MSTYPE = %s', t2.type_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN a.aggmtransspace <> 0
-                                     THEN format(E'\n  , MSSPACE = %s', a.aggmtransspace)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p9.function_id IS NOT NULL
-                                     THEN format(E'\n  , MFINALFUNC = %s', p9.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN aggmfinalextra
-                                     THEN E'\n  , MFINALFUNC_EXTRA'
-                                     ELSE ''
-                                END),
-                               (CASE WHEN a.aggminitval IS NOT NULL
-                                     THEN format(E'\n  , MINITCOND = %s', a.aggminitval)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN o.operator_oid IS NOT NULL
-                                     THEN format(E'\n  , SORTOP = %s', o.operator_oid::regoperator)
-                                     ELSE ''
-                                END),
-                               format(
-                                   E'\n  , PARALLEL = %s',
-                                   (CASE p1.proparallel WHEN 's'
-                                                        THEN 'SAFE'
-                                                        WHEN 'r'
-                                                        THEN 'RESTRICTED'
-                                                        WHEN 'u'
-                                                        THEN 'UNSAFE'
-                                    END)
-                               ),
-                               p1.function_id,
-                               p1.function_owner,
-                               g.text,
-                               c.text
-                           )
-                    FROM pg_aggregate a
-                    INNER JOIN procs p1
-                            ON a.aggfnoid = p1.function_oid
-                    LEFT JOIN procs p2
-                           ON a.aggtransfn = p2.function_oid
-                    LEFT JOIN procs p3
-                           ON a.aggfinalfn = p3.function_oid
-                    LEFT JOIN procs p4
-                           ON a.aggcombinefn = p4.function_oid
-                    LEFT JOIN procs p5
-                           ON a.aggserialfn = p5.function_oid
-                    LEFT JOIN procs p6
-                           ON a.aggdeserialfn = p6.function_oid
-                    LEFT JOIN procs p7
-                           ON a.aggmtransfn = p7.function_oid
-                    LEFT JOIN procs p8
-                           ON a.aggminvtransfn = p8.function_oid
-                    LEFT JOIN procs p9
-                           ON a.aggmfinalfn = p9.function_oid
-                    LEFT JOIN operators o
-                           ON a.aggsortop = o.operator_oid
-                    LEFT JOIN types t1
-                           ON a.aggtranstype = t1.type_oid
-                    LEFT JOIN types t2
-                           ON a.aggmtranstype = t2.type_oid
-                    INNER JOIN grants g
-                            ON 1 = 1
-                    LEFT JOIN comments c
-                           ON 1 = 1
-                    WHERE p1.is_aggregate
-                      AND p1.function_id = '{0}'
-                '''.format(
-                    p_object
-                )
-            )
-        else:
-            return self.v_connection.ExecuteScalar(
-                '''
-                    WITH procs AS (
-                        SELECT p.oid AS function_oid,
-                               quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || oidvectortypes(p.proargtypes) || ')' AS function_id,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(p.proname) AS function_name,
-                               format(
-                                   '%s.%s',
-                                   quote_ident(n.nspname),
-                                   quote_ident(p.proname)
-                               ) AS function_full_name,
-                               r.rolname AS function_owner,
-                               p.prokind AS function_kind,
-                               p.proparallel
-                        FROM pg_proc p
-                        INNER JOIN pg_namespace n
-                                ON p.pronamespace = n.oid
-                        INNER JOIN pg_roles r
-                                ON p.proowner = r.oid
-                    ),
-                    operators AS (
-                        SELECT o.oid AS operator_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(o.oprname) AS operator_name
-                        FROM pg_operator o
-                        INNER JOIN pg_namespace n
-                                ON o.oprnamespace = n.oid
-                    ),
-                    types AS (
-                        SELECT t.oid AS type_oid,
-                               quote_ident(n.nspname) AS schema_name,
-                               quote_ident(t.typname) AS type_name,
-                               format(
-                                   '%s.%s',
-                                   quote_ident(n.nspname),
-                                   quote_ident(t.typname)
-                               )::regtype AS type_full_name
-                        FROM pg_type t
-                        INNER JOIN pg_namespace n
-                                ON t.typnamespace = n.oid
-                    ),
-                    privileges AS (
-                        SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor,
-                               (grantee.rolname)::information_schema.sql_identifier AS grantee,
-                               (p.privilege_type)::information_schema.character_data AS privilege_type,
-                               (CASE WHEN (pg_has_role(grantee.oid, p.proowner, 'USAGE'::text) OR p.is_grantable)
-                                     THEN 'YES'::text
-                                     ELSE 'NO'::text
-                                END)::information_schema.yes_or_no AS is_grantable
-                        FROM (
-                            SELECT p.pronamespace,
-                                   p.proowner,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantor AS grantor,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).grantee AS grantee,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).privilege_type AS privilege_type,
-                                   (aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))).is_grantable AS is_grantable
-                            FROM pg_proc p
-                            WHERE p.prokind = 'a'
-                              AND p.oid = '{0}'::regprocedure
-                        ) p
-                        INNER JOIN pg_namespace n
-                                ON n.oid = p.pronamespace
-                        INNER JOIN pg_roles u_grantor
-                                ON u_grantor.oid = p.grantor
-                        INNER JOIN (
-                            SELECT r.oid,
-                                   r.rolname
-                            FROM pg_roles r
-
-                            UNION ALL
-
-                            SELECT (0)::oid AS oid,
-                                   'PUBLIC'::name
-                        ) grantee
-                                ON grantee.oid = p.grantee
-                    ),
-                    grants AS (
-                        SELECT coalesce(
-                                   string_agg(
-                                       format(
-                        	               E'GRANT %s ON FUNCTION {0} TO %s%s;\n',
-                                           privilege_type,
-                                           (CASE grantee WHEN 'PUBLIC'
-                                                         THEN 'PUBLIC'
-                                                         ELSE quote_ident(grantee)
-                                            END),
-                        	               (CASE is_grantable WHEN 'YES'
-                        	                                  THEN ' WITH GRANT OPTION'
-                        	                                  ELSE ''
-                                            END)
-                                        ),
-                                        ''
-                                   ),
-                                   ''
-                               ) AS text
-                        FROM privileges
-                    ),
-                    comments AS (
-                        SELECT format(
-                            E'\nCOMMENT ON AGGREGATE {0} is %s;',
-                            quote_literal(x.description)
-                        ) AS text
-                        FROM (
-                            SELECT obj_description ('{0}'::regprocedure, 'pg_proc') AS description
-                        ) x
-                        WHERE x.description IS NOT NULL
-                    )
-                    SELECT format(
-                               E'CREATE AGGREGATE %s (\n\tSFUNC = %s\n  , STYPE = %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n);\n\nALTER AGGREGATE %s OWNER TO %s;\n\n%s%s',
-                               p1.function_id,
-                               p2.function_full_name,
-                               t1.type_full_name,
-                               (CASE WHEN a.aggtransspace <> 0
-                                     THEN format(E'\n  , SSPACE = %s', a.aggtransspace)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p3.function_id IS NOT NULL
-                                     THEN format(E'\n  , FINALFUNC = %s', p3.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN aggfinalextra
-                                     THEN E'\n  , FINALFUNC_EXTRA'
-                                     ELSE ''
-                                END),
-                               format(
-                                   E'\n  , FINALFUNC_MODIFY = %s',
-                                   (CASE aggfinalmodify WHEN 'r'
+                SELECT format(
+                            E'CREATE AGGREGATE %s (\n\tSFUNC = %s\n  , STYPE = %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n);\n\nALTER AGGREGATE %s OWNER TO %s;\n\n%s%s',
+                            p1.function_id,
+                            p2.function_full_name,
+                            t1.type_full_name,
+                            (CASE WHEN a.aggtransspace <> 0
+                                    THEN format(E'\n  , SSPACE = %s', a.aggtransspace)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN p3.function_id IS NOT NULL
+                                    THEN format(E'\n  , FINALFUNC = %s', p3.function_full_name)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN aggfinalextra
+                                    THEN E'\n  , FINALFUNC_EXTRA'
+                                    ELSE ''
+                            END),
+                            format(
+                                E'\n  , FINALFUNC_MODIFY = %s',
+                                (CASE aggfinalmodify WHEN 'r'
+                                                    THEN 'READ_ONLY'
+                                                    WHEN 's'
+                                                    THEN 'SHAREABLE'
+                                                    WHEN 'w'
+                                                    THEN 'READ_WRITE'
+                                END)
+                            ),
+                            (CASE WHEN p4.function_id IS NOT NULL
+                                    THEN format(E'\n  , COMBINEFUNC = %s', p4.function_full_name)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN p5.function_id IS NOT NULL
+                                    THEN format(E'\n  , SERIALFUNC = %s', p5.function_full_name)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN p6.function_id IS NOT NULL
+                                    THEN format(E'\n  , DESERIALFUNC = %s', p6.function_full_name)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN a.agginitval IS NOT NULL
+                                    THEN format(E'\n  , INITCOND = %s', a.agginitval)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN p7.function_id IS NOT NULL
+                                    THEN format(E'\n  , MSFUNC = %s', p7.function_full_name)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN p8.function_id IS NOT NULL
+                                    THEN format(E'\n  , MINVFUNC = %s', p8.function_full_name)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN t2.type_oid IS NOT NULL
+                                    THEN format(E'\n  , MSTYPE = %s', t2.type_full_name)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN a.aggmtransspace <> 0
+                                    THEN format(E'\n  , MSSPACE = %s', a.aggmtransspace)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN p9.function_id IS NOT NULL
+                                    THEN format(E'\n  , MFINALFUNC = %s', p9.function_full_name)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN aggmfinalextra
+                                    THEN E'\n  , MFINALFUNC_EXTRA'
+                                    ELSE ''
+                            END),
+                            format(
+                                E'\n  , MFINALFUNC_MODIFY = %s',
+                                (CASE aggmfinalmodify WHEN 'r'
                                                         THEN 'READ_ONLY'
                                                         WHEN 's'
                                                         THEN 'SHAREABLE'
                                                         WHEN 'w'
                                                         THEN 'READ_WRITE'
-                                    END)
-                               ),
-                               (CASE WHEN p4.function_id IS NOT NULL
-                                     THEN format(E'\n  , COMBINEFUNC = %s', p4.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p5.function_id IS NOT NULL
-                                     THEN format(E'\n  , SERIALFUNC = %s', p5.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p6.function_id IS NOT NULL
-                                     THEN format(E'\n  , DESERIALFUNC = %s', p6.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN a.agginitval IS NOT NULL
-                                     THEN format(E'\n  , INITCOND = %s', a.agginitval)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p7.function_id IS NOT NULL
-                                     THEN format(E'\n  , MSFUNC = %s', p7.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p8.function_id IS NOT NULL
-                                     THEN format(E'\n  , MINVFUNC = %s', p8.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN t2.type_oid IS NOT NULL
-                                     THEN format(E'\n  , MSTYPE = %s', t2.type_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN a.aggmtransspace <> 0
-                                     THEN format(E'\n  , MSSPACE = %s', a.aggmtransspace)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN p9.function_id IS NOT NULL
-                                     THEN format(E'\n  , MFINALFUNC = %s', p9.function_full_name)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN aggmfinalextra
-                                     THEN E'\n  , MFINALFUNC_EXTRA'
-                                     ELSE ''
-                                END),
-                               format(
-                                   E'\n  , MFINALFUNC_MODIFY = %s',
-                                   (CASE aggmfinalmodify WHEN 'r'
-                                                         THEN 'READ_ONLY'
-                                                         WHEN 's'
-                                                         THEN 'SHAREABLE'
-                                                         WHEN 'w'
-                                                         THEN 'READ_WRITE'
-                                    END)
-                               ),
-                               (CASE WHEN a.aggminitval IS NOT NULL
-                                     THEN format(E'\n  , MINITCOND = %s', a.aggminitval)
-                                     ELSE ''
-                                END),
-                               (CASE WHEN o.operator_oid IS NOT NULL
-                                     THEN format(E'\n  , SORTOP = %s', o.operator_oid::regoperator)
-                                     ELSE ''
-                                END),
-                               format(
-                                   E'\n  , PARALLEL = %s',
-                                   (CASE p1.proparallel WHEN 's'
-                                                        THEN 'SAFE'
-                                                        WHEN 'r'
-                                                        THEN 'RESTRICTED'
-                                                        WHEN 'u'
-                                                        THEN 'UNSAFE'
-                                    END)
-                               ),
-                               p1.function_id,
-                               p1.function_owner,
-                               g.text,
-                               c.text
-                           )
-                    FROM pg_aggregate a
-                    INNER JOIN procs p1
-                            ON a.aggfnoid = p1.function_oid
-                    LEFT JOIN procs p2
-                           ON a.aggtransfn = p2.function_oid
-                    LEFT JOIN procs p3
-                           ON a.aggfinalfn = p3.function_oid
-                    LEFT JOIN procs p4
-                           ON a.aggcombinefn = p4.function_oid
-                    LEFT JOIN procs p5
-                           ON a.aggserialfn = p5.function_oid
-                    LEFT JOIN procs p6
-                           ON a.aggdeserialfn = p6.function_oid
-                    LEFT JOIN procs p7
-                           ON a.aggmtransfn = p7.function_oid
-                    LEFT JOIN procs p8
-                           ON a.aggminvtransfn = p8.function_oid
-                    LEFT JOIN procs p9
-                           ON a.aggmfinalfn = p9.function_oid
-                    LEFT JOIN operators o
-                           ON a.aggsortop = o.operator_oid
-                    LEFT JOIN types t1
-                           ON a.aggtranstype = t1.type_oid
-                    LEFT JOIN types t2
-                           ON a.aggmtranstype = t2.type_oid
-                    INNER JOIN grants g
-                            ON 1 = 1
-                    LEFT JOIN comments c
-                           ON 1 = 1
-                    WHERE p1.function_kind = 'a'
-                      AND p1.function_id = '{0}'
-                '''.format(
-                    p_object
-                )
+                                END)
+                            ),
+                            (CASE WHEN a.aggminitval IS NOT NULL
+                                    THEN format(E'\n  , MINITCOND = %s', a.aggminitval)
+                                    ELSE ''
+                            END),
+                            (CASE WHEN o.operator_oid IS NOT NULL
+                                    THEN format(E'\n  , SORTOP = %s', o.operator_oid::regoperator)
+                                    ELSE ''
+                            END),
+                            format(
+                                E'\n  , PARALLEL = %s',
+                                (CASE p1.proparallel WHEN 's'
+                                                    THEN 'SAFE'
+                                                    WHEN 'r'
+                                                    THEN 'RESTRICTED'
+                                                    WHEN 'u'
+                                                    THEN 'UNSAFE'
+                                END)
+                            ),
+                            p1.function_id,
+                            p1.function_owner,
+                            g.text,
+                            c.text
+                        )
+                FROM pg_aggregate a
+                INNER JOIN procs p1
+                        ON a.aggfnoid = p1.function_oid
+                LEFT JOIN procs p2
+                        ON a.aggtransfn = p2.function_oid
+                LEFT JOIN procs p3
+                        ON a.aggfinalfn = p3.function_oid
+                LEFT JOIN procs p4
+                        ON a.aggcombinefn = p4.function_oid
+                LEFT JOIN procs p5
+                        ON a.aggserialfn = p5.function_oid
+                LEFT JOIN procs p6
+                        ON a.aggdeserialfn = p6.function_oid
+                LEFT JOIN procs p7
+                        ON a.aggmtransfn = p7.function_oid
+                LEFT JOIN procs p8
+                        ON a.aggminvtransfn = p8.function_oid
+                LEFT JOIN procs p9
+                        ON a.aggmfinalfn = p9.function_oid
+                LEFT JOIN operators o
+                        ON a.aggsortop = o.operator_oid
+                LEFT JOIN types t1
+                        ON a.aggtranstype = t1.type_oid
+                LEFT JOIN types t2
+                        ON a.aggmtranstype = t2.type_oid
+                INNER JOIN grants g
+                        ON 1 = 1
+                LEFT JOIN comments c
+                        ON 1 = 1
+                WHERE p1.function_kind = 'a'
+                    AND p1.function_id = '{0}'
+            '''.format(
+                p_object
             )
+        )
 
     @lock_required
     def GetDDLTableField(self, p_schema, p_table, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 100000:
-            return self.v_connection.ExecuteScalar(
-                '''
-                    WITH columns AS (
-                        SELECT format(
-                                   '%I %s%s%s',
-                                   a.attname::text,
-                                   format_type(t.oid, a.atttypmod),
-                                   (CASE WHEN length(col.collcollate) > 0
-                                         THEN ' COLLATE ' || quote_ident(col.collcollate::text)
-                                         ELSE ''
-                                    END),
-                                   (CASE WHEN a.attnotnull
-                                         THEN ' NOT NULL'::text
-                                         ELSE ''::text
-                                    END)
-                               ) AS definition,
-                               a.attname AS name,
-                               col_description(c.oid, a.attnum::integer) AS comment,
-                               pg_get_expr(def.adbin, def.adrelid) AS default_value,
-                               a.attacl
-                        FROM pg_class c
-                        INNER JOIN pg_namespace s
-                                ON s.oid = c.relnamespace
-                        INNER JOIN pg_attribute a
-                                ON c.oid = a.attrelid
-                        LEFT JOIN pg_attrdef def
-                               ON c.oid = def.adrelid
-                              AND a.attnum = def.adnum
-                        LEFT JOIN pg_constraint con
-                               ON con.conrelid = c.oid
-                              AND (a.attnum = ANY (con.conkey))
-                              AND con.contype = 'p'
-                        LEFT JOIN pg_type t
-                               ON t.oid = a.atttypid
-                        LEFT JOIN pg_collation col
-                               ON col.oid = a.attcollation
-                        INNER JOIN pg_namespace tn
-                                ON tn.oid = t.typnamespace
-                        WHERE c.relkind IN ('r', 'p')
-                          AND a.attnum > 0
-                          AND NOT a.attisdropped
-                          AND has_table_privilege(c.oid, 'select')
-                          AND has_schema_privilege(s.oid, 'usage')
-                          AND c.oid = '{0}.{1}'::regclass
-                          AND a.attname = '{2}'
-                    ),
-                    comments AS (
-                        SELECT format(
-                                   E'\n\nCOMMENT ON COLUMN %s.%s IS %s;',
-                                   '{0}.{1}',
-                                   quote_ident(name),
-                                   quote_nullable(comment)
-                               ) AS definition
-                        FROM columns
-                        WHERE comment IS NOT NULL
-                    ),
-                    defaults AS (
-                        SELECT format(
-                                   E'\n\nALTER TABLE %s\n\tALTER %s SET DEFAULT %s;',
-                                   '{0}.{1}'::regclass,
-                                   quote_ident(name),
-                                   default_value
-                               ) AS definition
-                        FROM columns
-                        WHERE default_value IS NOT NULL
-                    ),
-                    columnsprivileges as (
-                        SELECT r.rolname AS grantee,
-                               c.name AS column_name,
-                               c.privilege_type
-                        FROM (
-                            SELECT name,
-                                   (aclexplode(attacl)).grantee AS grantee,
-                                   (aclexplode(attacl)).privilege_type AS privilege_type
-                            FROM columns
-                        ) c
-                        INNER JOIN pg_roles r
-                                ON c.grantee = r.oid
-                    ),
-                    columnsgrants as (
-                        SELECT coalesce(
-                                   nullif(
-                                       format(
-                                           E'\n\n%s',
-                                           string_agg(
-                                               format(
-                                                   E'GRANT %s(%s) ON %s TO %s;\n',
-                                                   privilege_type,
-                                                   column_name,
-                                                   '{0}.{1}',
-                                                   quote_ident(grantee)
-                                               ),
-                                               ''
-                                           )
-                                       ),
-                                       '\n\n'
-                                   ),
-                                   ''
-                               ) AS definition
-                         FROM columnsprivileges
-                    )
-                    SELECT format(
-                                E'ALTER TABLE %s\n\tADD COLUMN %s;%s%s%s',
-                                '{0}.{1}'::regclass,
-                                col.definition,
-                                coalesce(com.definition, ''),
-                                coalesce(def.definition, ''),
-                                coalesce(cg.definition, '')
-                           )
-                    FROM columns col
-                    LEFT JOIN comments com
-                           ON 1 = 1
-                    LEFT JOIN defaults def
-                           ON 1 = 1
-                    LEFT JOIN columnsgrants cg
-                           ON 1 = 1
-                '''.format(
-                    p_schema,
-                    p_table,
-                    p_object
-                )
-            )
-        elif int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
             return self.v_connection.ExecuteScalar(
                 '''
                     WITH columns AS (

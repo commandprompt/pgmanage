@@ -56,7 +56,7 @@ class BatchJob:
             self._create_job(kwargs["description"], kwargs["cmd"], kwargs["args"])
 
     def _retrieve_job(self, job_id):
-        job = Job.objects.filter(id=job_id).first()
+        job = Job.objects.filter(id=job_id).select_related("user").first()
 
         if job is None:
             raise LookupError(PROCESS_NOT_FOUND)
@@ -371,6 +371,14 @@ class BatchJob:
             args_reader = csv.reader(args_csv, delimiter=str(","))
             for arg in args_reader:
                 args = args + arg
+
+            # Determine if the description is an old version
+            if not hasattr(description, '_connection_name'):
+                # Manually set the necessary attributes for old versions
+                description._connection_name = description.get_connection_name()
+                job.description = dumps(description).hex()
+                job.save()
+
             details = description.details(job.command)
             type_desc = description.type_desc
             description = description.message
@@ -379,7 +387,7 @@ class BatchJob:
 
     @staticmethod
     def list(user):
-        jobs = Job.objects.filter(user=user)
+        jobs = Job.objects.filter(user=user).select_related("connection")
         changed = False
 
         res = []

@@ -17,6 +17,8 @@ input {
 }
 
 .form-group {
+    margin-bottom: 1rem;
+    
     .form-control {
         border-radius: $borderRadius;
         font-size: $fontSize;
@@ -62,31 +64,6 @@ input {
         padding: 4px 8px;
         top: calc(100% + 5px);
         left: 5px;
-    }
-}
-
-//switch bg color
-.custom-control-input:checked~.custom-control-label::before {
-    border-color: $primaryBlue;
-    background-color: $primaryBlue;
-}
-
-.custom-switch {
-    .custom-control-label {
-        &::before {
-            height: 0.875rem;
-            background-color: transparent;
-        }
-
-        &:after {
-            top: calc(0.21875rem + 3px);
-            width: calc(0.875rem - 5px);
-            height: calc(0.875rem - 5px);
-        }
-    }
-
-    .custom-control-input:checked~.custom-control-label::after {
-        transform: translateX(.875rem);
     }
 }
 
@@ -141,4 +118,9 @@ input[type='checkbox'].custom-checkbox {
     right: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
+}
+
+.form-check-input:checked {
+    background-color: $primaryBlue;
+    border-color: $primaryBlue;
 }

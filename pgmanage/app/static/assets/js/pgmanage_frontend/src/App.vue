@@ -7,15 +7,27 @@
   <template v-if="initialized">
     <ConnectionsModal />
   </template>
+  <GenericMessageModal />
+  <CellDataModal />
+  <FileManager />
+  <UtilitiesMenu />
+  <template v-for="extraComp in enterpriseComps">
+    <component :is="extraComp">
+    </component>
+  </template>
 </template>
 
 <script>
 import SettingsModal from "./components/SettingsModal.vue";
 import SideBarTabs from "./components/SideBarTabs.vue";
 import PasswordModal from "./components/PasswordModal.vue";
-import MasterPasswordModal from './components/MasterPasswordModal.vue'
+import MasterPasswordModal from "./components/MasterPasswordModal.vue";
 import UtilityJobsJobDetail from "./components/UtilityJobsJobDetail.vue";
-import ConnectionsModal from './components/ConnectionsModal.vue'
+import ConnectionsModal from "./components/ConnectionsModal.vue";
+import GenericMessageModal from "./components/GenericMessageModal.vue";
+import CellDataModal from "./components/CellDataModal.vue";
+import FileManager from "./components/FileManager.vue";
+import UtilitiesMenu from "./components/UtilitiesMenu.vue";
 import { emitter } from "./emitter";
 import { startTutorial } from "./tutorial";
 
@@ -27,46 +39,52 @@ export default {
     PasswordModal,
     MasterPasswordModal,
     UtilityJobsJobDetail,
-    ConnectionsModal
+    ConnectionsModal,
+    GenericMessageModal,
+    CellDataModal,
+    FileManager,
+    UtilitiesMenu,
   },
   data() {
     return {
-      initialized: false
-    }
+      initialized: false,
+      enterpriseComps: []
+    };
   },
   mounted() {
-    this.createOmnisAssistant()
+    this.createOmnisAssistant();
     // Ask for master password
-    if (master_key === 'new') {
-      emitter.emit("show_master_pass_prompt", true)
-    } else if (master_key == 'False') {
-      emitter.emit("show_master_pass_prompt", false)
+    if (master_key === "new") {
+      emitter.emit("show_master_pass_prompt", true);
+    } else if (master_key == "False") {
+      emitter.emit("show_master_pass_prompt", false);
     } else {
-      this.initialSetup()
+      this.initialSetup();
     }
   },
   methods: {
     initialSetup() {
-      this.initialized = true
-      v_omnis.div.style.opacity = 1
+      this.initialized = true;
+      v_omnis.div.style.opacity = 1;
+
+      this.enterpriseComps = this?.enterpriseComponents ?? []
     },
     createOmnisAssistant() {
-      v_omnis.root = document.getElementById('app');
-      v_omnis.div = document.createElement('div');
-      v_omnis.div.setAttribute('id', 'omnis');
-      v_omnis.div.classList.add('omnis');
-      v_omnis.div.style.top = v_omnis.root.getBoundingClientRect().height - 45 + 'px';
-      v_omnis.div.style.left = v_omnis.root.getBoundingClientRect().width - 45 + 'px';
-      v_omnis.div.style['z-index'] = '99999999';
-      v_omnis.div.style.opacity = 0
+      v_omnis.root = document.getElementById("app");
+      v_omnis.div = document.createElement("div");
+      v_omnis.div.setAttribute("id", "omnis");
+      v_omnis.div.classList.add("omnis");
+      v_omnis.div.style.top =
+        v_omnis.root.getBoundingClientRect().height - 45 + "px";
+      v_omnis.div.style.left =
+        v_omnis.root.getBoundingClientRect().width - 45 + "px";
+      v_omnis.div.style["z-index"] = "99999999";
+      v_omnis.div.style.opacity = 0;
       v_omnis.div.innerHTML = v_omnis.template;
       document.body.appendChild(v_omnis.div);
-      v_omnis.div.addEventListener('click', function () {
-        startTutorial('getting_started');
+      v_omnis.div.addEventListener("click", function () {
+        startTutorial("getting_started");
       });
-
-      // Loads or Updates all tooltips.
-      $('[data-toggle="tooltip"]').tooltip({ animation: true });
     }
   }
 };

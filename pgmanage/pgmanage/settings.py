@@ -143,6 +143,11 @@ LOGGING = {
             'style': '{',
         },
     },
+    'filters': {
+        'masked_data_filter': {
+            '()': 'pgmanage.logging_filter.MaskedDataFilter',
+        },
+    },
     'handlers': {
         "logfile_frontend": {
             'class':'logging.handlers.RotatingFileHandler',
@@ -150,6 +155,7 @@ LOGGING = {
             'maxBytes': 1024*1024*5, # 5 MB
             'backupCount': 5,
             'formatter': 'frontend_error',
+            'filters': ['masked_data_filter'],
         },
         'logfile_pgmanage': {
             'class':'logging.handlers.RotatingFileHandler',

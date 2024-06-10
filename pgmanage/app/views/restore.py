@@ -14,6 +14,7 @@ class RestoreMessage(IJobDesc):
         self.backup_file = backup_file
         self.database = kwargs.get("database")
         self.cmd = ""
+        self._connection_name = self.get_connection_name()
 
         def cmd_arg(x):
             if x:
@@ -44,8 +45,7 @@ class RestoreMessage(IJobDesc):
 
     @property
     def message(self):
-        connection_name = self.get_connection_name()
-        return f"Restoring backup on the server '{connection_name}'"
+        return f"Restoring backup on the server '{self._connection_name}'"
 
     @property
     def type_desc(self):
@@ -59,7 +59,7 @@ class RestoreMessage(IJobDesc):
         return {
             "message": self.message,
             "cmd": command,
-            "server": self.get_connection_name(),
+            "server": self._connection_name,
             "object": getattr(self, "database", ""),
             "type": "Restore",
         }

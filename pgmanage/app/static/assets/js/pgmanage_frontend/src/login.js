@@ -1,6 +1,5 @@
 import 'vite/modulepreload-polyfill';
 import 'bootstrap/scss/bootstrap.scss'
-import 'bootstrap';
 import './assets/scss/omnidb.scss'
 import './assets/scss/login.scss'
 import { showAlert } from './notification_control';
@@ -32,7 +31,7 @@ function signIn() {
     {headers: { "X-CSRFToken": getCookie(v_csrf_cookie_name) }}
   ).then((resp) => {
       if(resp.data.v_data >= 0) {
-        window.open(v_url_folder + "/workspace", '_self');
+        window.open(app_base_path + "/workspace", '_self');
       } else if (resp.data.v_data >= 0) {
         showAlert('Invalid authentication token, use pgmanage-server to support multiple users.');
       } else {

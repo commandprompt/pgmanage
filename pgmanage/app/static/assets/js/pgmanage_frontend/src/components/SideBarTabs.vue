@@ -9,7 +9,7 @@
         <div class="nav nav-tabs">
           <a
             :id="tab.id"
-            data-toggle="tab"
+            data-bs-toggle="tooltip"
             :class="[
               'omnidb__tab-menu__link',
               'nav-item',

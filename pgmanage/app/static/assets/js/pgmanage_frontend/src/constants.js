@@ -20,6 +20,13 @@ const queryModes = {
   ROLLBACK: 4,
 };
 
+const consoleModes = {
+  DATA_OPERATION: 0,
+  FETCH_MORE: 1,
+  FETCH_ALL: 2,
+  SKIP_FETCH: 3,
+}
+
 /// <summary>
 /// Transaction codes of client requests.
 /// </summary>
@@ -85,4 +92,5 @@ export {
   maxFileSizeInKB,
   maxLinesForIndentSQL,
   mimeTypeMap,
+  consoleModes,
 };

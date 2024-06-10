@@ -10,13 +10,13 @@
       <div class="omnidb__tab-menu">
         <div class="nav nav-tabs" role="tablist">
           <a ref="dataTab" class="omnidb__tab-menu__link nav-item nav-link active" :id="`nav_data_tab_${tabId}`"
-            data-toggle="tab" :data-target="`#nav_data_${tabId}`" type="button" role="tab"
+          data-bs-toggle="tab" :data-bs-target="`#nav_data_${tabId}`" type="button" role="tab"
             :aria-controls="`nav_data_${tabId}`" aria-selected="true">
             <span class="omnidb__tab-menu__link-name"> Data </span>
           </a>
           <template v-if="postgresqlDialect">
             <a ref="messagesTab" class="omnidb__tab-menu__link nav-item nav-link" :id="`nav_messages_tab_${tabId}`"
-              data-toggle="tab" :data-target="`#nav_messages_${tabId}`" type="button" role="tab"
+            data-bs-toggle="tab" :data-bs-target="`#nav_messages_${tabId}`" type="button" role="tab"
               :aria-controls="`nav_messages_${tabId}`" aria-selected="true">
               <span class="omnidb__tab-menu__link-name">
                 Messages
@@ -24,7 +24,7 @@
               </span>
             </a>
             <a ref="explainTab" class="nav-item nav-link omnidb__tab-menu__link" :id="`nav_explain_tab_${tabId}`"
-              data-toggle="tab" :data-target="`#nav_explain_${tabId}`" type="button" role="tab"
+            data-bs-toggle="tab" :data-bs-target="`#nav_explain_${tabId}`" type="button" role="tab"
               :aria-controls="`nav_explain_${tabId}`" aria-selected="false">
               <span class="omnidb__tab-menu__link-name"> Explain </span>
             </a>
@@ -32,7 +32,7 @@
         </div>
       </div>
 
-      <div class="tab-content">
+      <div ref="tabContent" class="tab-content pb-3">
         <div class="tab-pane active pt-2" :id="`nav_data_${tabId}`" role="tabpanel"
           :aria-labelledby="`nav_data_tab_${tabId}`">
           <div class="result-div">
@@ -65,7 +65,6 @@
       </div>
     </div>
   </div>
-  <CellDataModal :cell-content="cellContent" :show-modal="cellModalVisible" @modal-hide="cellModalVisible = false" />
 </template>
 
 <script>
@@ -73,14 +72,15 @@ import ExplainTabContent from "./ExplainTabContent.vue";
 import { queryModes, tabStatusMap } from "../constants";
 import { emitter } from "../emitter";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-import CellDataModal from "./CellDataModal.vue";
-import { settingsStore, tabsStore } from "../stores/stores_initializer";
+import { settingsStore, tabsStore, cellDataModalStore } from "../stores/stores_initializer";
 import { showToast } from "../notification_control";
+import isNil from 'lodash/isNil';
+import isEmpty from 'lodash/isEmpty';
+import { Tab } from "bootstrap";
 
 export default {
   components: {
     ExplainTabContent,
-    CellDataModal,
   },
   props: {
     tabId: String,
@@ -94,8 +94,7 @@ export default {
     resizeDiv(newValue, oldValue) {
       if (newValue) {
         this.handleResize();
-        if (this.table)
-          this.table.redraw();
+        if (this.table) this.table.redraw();
         this.$emit("resized");
       }
     },
@@ -118,6 +117,7 @@ export default {
         columnDefaults: {
           headerHozAlign: "left",
           headerSort: false,
+          maxInitialWidth: 200,
         },
         clipboard: "copy",
         clipboardCopyRowRange: "selected",
@@ -128,8 +128,6 @@ export default {
       query: "",
       plan: "",
       table: null,
-      cellContent: "",
-      cellModalVisible: false,
       heightSubtract: 200,
     };
   },
@@ -145,9 +143,7 @@ export default {
     },
     showTable() {
       return !(
-        (!!this.exportFileName && !!this.exportDownloadName) ||
-        !!this.errorMessage ||
-        !!this.queryInfoText
+        (!!this.exportFileName && !!this.exportDownloadName) || !!this.errorMessage 
       );
     },
     resultTabHeight() {
@@ -157,13 +153,14 @@ export default {
   mounted() {
     this.handleResize();
     if (this.dialect === "postgresql") {
-      $(`#${this.$refs.explainTab.id}`).on("shown.bs.tab", () => {
+      
+      this.$refs.explainTab.addEventListener("shown.bs.tab", () => {
         this.$emit("enableExplainButtons");
         if (!(this.tabStatus === tabStatusMap.RUNNING))
           this.$emit("runExplain");
       });
 
-      $(`#${this.$refs.explainTab.id}`).on("hidden.bs.tab", () => {
+      this.$refs.explainTab.addEventListener("hidden.bs.tab", () => {
         this.$emit("enableExplainButtons");
       });
     }
@@ -178,8 +175,8 @@ export default {
 
     let table = new Tabulator(this.$refs.tabulator, this.tableSettings);
     table.on("tableBuilt", () => {
-      this.table = table
-    })
+      this.table = table;
+    });
     settingsStore.$onAction((action) => {
       if (action.name === "setFontSize") {
         if (
@@ -197,7 +194,7 @@ export default {
       }
     });
 
-    $(this.$refs.dataTab).on("shown.bs.tab", (event) => {
+    this.$refs.dataTab.addEventListener("shown.bs.tab", (event) => {
       this.table.redraw();
     });
   },
@@ -205,6 +202,19 @@ export default {
     this.handleResize();
   },
   methods: {
+    cellFormatter(cell, params, onRendered) {
+      let cellVal = cell.getValue()
+      if (isNil(cellVal)) {
+        return '<span class="text-muted">[null]</span>'
+      }
+
+      if(isEmpty(cellVal)) {
+        return '<span class="text-muted">[empty]</span>'
+      }
+
+      let filtered = cellVal.toString().replace(/\n/g, ' ↲ ');
+      return `${filtered}`
+    },
     renderResult(data, context) {
       this.clearData();
       if (data.v_error && context.cmd_type !== "explain") {
@@ -233,7 +243,7 @@ export default {
       }
     },
     showExplainTab(data) {
-      $(`#${this.$refs.explainTab.id}`).tab("show");
+      Tab.getOrCreateInstance(this.$refs.explainTab).show()
       if (data?.v_error) {
         this.query = this.editorContent;
         this.plan = data.v_data.message;
@@ -250,13 +260,13 @@ export default {
       }
     },
     showExport(data) {
-      $(`#${this.$refs.dataTab.id}`).tab("show");
+      Tab.getOrCreateInstance(this.$refs.dataTab).show()
 
       this.exportFileName = data.file_name;
       this.exportDownloadName = data.download_name;
     },
     showDataTab(data, context) {
-      $(`#${this.$refs.dataTab.id}`).tab("show");
+      Tab.getOrCreateInstance(this.$refs.dataTab).show()
 
       if (data.notices.length) {
         this.notices = data.notices;
@@ -287,12 +297,9 @@ export default {
       if (data.data.length === 0) {
         if (data.col_names.length === 0) {
           this.queryInfoText = data.status ? data.status : "Done";
-        } else {
-          this.queryInfoText = "No results";
         }
-      } else {
-        this.updateTableData(data);
       }
+      this.updateTableData(data);
     },
     updateTableData(data) {
       let cellContextMenu = [
@@ -307,18 +314,35 @@ export default {
           label:
             '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
           action: (e, cell) => {
-            this.cellContent = cell.getValue();
-            this.cellModalVisible = true;
+            cellDataModalStore.showModal(cell.getValue())
           },
         },
       ];
-
       let columns = data.col_names.map((col, idx) => {
+        let formatTitle = function(col, idx) {
+          if(data.col_types?.length === 0 )
+            return col
+          return `${col}<br><span class='subscript'>${data.col_types[idx]}</span>`
+        }
+
         return {
-          title: col,
+          title: formatTitle(col, idx),
           field: idx.toString(),
           resizable: "header",
+          formatter: this.cellFormatter,
           contextMenu: cellContextMenu,
+          headerDblClick: (e, column) => {
+            if (
+              column.getWidth() >
+              this.tableSettings.columnDefaults.maxInitialWidth
+            ) {
+              column.setWidth(
+                this.tableSettings.columnDefaults.maxInitialWidth
+              );
+            } else {
+              column.setWidth(true);
+            }
+          },
         };
       });
 
@@ -342,9 +366,8 @@ export default {
       this.table.on(
         "cellDblClick",
         function (e, cell) {
-          this.cellContent = cell.getValue();
-          if (this.cellContent) this.cellModalVisible = true;
-        }.bind(this)
+          if (cell.getValue()) cellDataModalStore.showModal(cell.getValue())
+        }
       );
     },
     fetchData(data) {
@@ -366,8 +389,7 @@ export default {
     handleResize() {
       if (this.$refs === null) return;
 
-      this.heightSubtract =
-        this.$refs.resultDiv.getBoundingClientRect().top + 25;
+      this.heightSubtract = this.$refs.tabContent.getBoundingClientRect().top;
     },
   },
 };

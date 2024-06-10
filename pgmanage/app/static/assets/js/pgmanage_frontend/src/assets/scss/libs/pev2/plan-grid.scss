@@ -1,0 +1,60 @@
+$grid-progress-padding-x: 0.5rem;
+$grid-progress-padding-y: 0.75rem;
+$grid-progress-margin: 1px;
+$progress-gutter: 2px;
+
+.plan-grid {
+  line-height: 0.85em;
+  > table {
+    border-collapse: separate;
+    border-spacing: 0;
+    > tbody, > thead, & {
+      > tr {
+        > th, > td {
+          min-width: 20px;
+          padding-left: $grid-progress-padding-x;
+          padding-right: $grid-progress-padding-x;
+          padding-top: $grid-progress-padding-y;
+          padding-bottom: $grid-progress-padding-y;
+        }
+      }
+    }
+  }
+
+  .detailed {
+    line-height: initial;
+    margin: 5px;
+    width: calc(100% - 10px) !important;
+    max-width: 700px;
+  }
+
+  .tree-lines {
+    font-family: 'monospace';
+  }
+
+  tr.node {
+    cursor: pointer;
+    .bg-light {
+        background-color: $primaryLight !important;
+        color: $primaryDark !important;
+    }
+  }
+  .grid-progress-cell {
+    position: relative;
+    // Without this bottom border disappareas on Firefox
+    background-color: transparent;
+
+    .grid-progress {
+      margin-top: 1px;
+    }
+  }
+  .grid-progress {
+    position: absolute;
+    left: calc(0.5rem - 2px);
+    top: calc(1px * -1 + 0.75rem - 2px);
+    height: calc(1em + 2px * 2);
+    width: calc(100% - 0.5rem * 2 + 2px * 2);
+    z-index: 0;
+    font-size: inherit;
+  }
+}

@@ -107,4 +107,8 @@
         border-radius: $borderRadius;
         border: $activeBorder !important;
     }
+    
+    &.show-calendar .ranges {
+        margin-top: 0;
+    }
 }

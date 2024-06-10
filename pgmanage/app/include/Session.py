@@ -197,9 +197,10 @@ class Session(object):
         self.v_databases = {}
 
         try:
-            current_user = UserDetails.objects.get(user__id=self.v_user_id)
+            current_user = UserDetails.objects.filter(user__id=self.v_user_id).select_related("user").first()
             key = key_manager.get(current_user.user)
-            for conn in Connection.objects.filter(Q(user=User.objects.get(id=self.v_user_id)) | Q(public=True)):
+            connections = Connection.objects.filter(Q(user=current_user.user) | Q(public=True)).prefetch_related("technology")
+            for conn in connections:
                 tunnel_information = {
                     'enabled': conn.use_tunnel,
                     'server': conn.ssh_server,

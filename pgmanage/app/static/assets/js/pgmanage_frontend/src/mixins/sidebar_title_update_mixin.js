@@ -1,4 +1,5 @@
 import { connectionsStore, tabsStore } from "../stores/stores_initializer";
+import { Tooltip } from "bootstrap";
 
 export default {
   methods: {
@@ -31,9 +32,9 @@ export default {
         }
         tab.tooltip = tooltipName;
         tab.name = databaseConnection.alias;
-
-        $(`#${tabId}`).tooltip("dispose");
-        $(`#${tabId}`).tooltip({
+        const tooltipEl = document.getElementById(`${tabId}`);
+        Tooltip.getInstance(tooltipEl).dispose();
+        new Tooltip(tooltipEl, {
           placement: "right",
           boundary: "window",
           sanitize: false,

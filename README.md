@@ -63,6 +63,26 @@ python3.9 -mvenv .env
     - Username: admin
     - Password: admin
 
+# PgManage 1.0.1 Bugfix Release
+
+## Release Date: May 16 2024
+
+## Release Notes
+
+  - Bugs fixed:
+   - trim explain/explain analyze prefix of the query when "explain" or "explain analyze" button is clicked
+   - disable unnecessary row selection in command/query history data grid
+   - fix cell data viewer modal working incorrectly when the cell contains numeric valueis Number
+   - clean-up backup/restore job status polling when corresponding backup/restore tab is closed
+   - make DB object tree resize line easier to grab when scrollbar is also present in DB object tree
+   - fixed query results data-grid autosizing
+   - fixed fetch more/fetch all records for SQLite3
+   - disable drag-n-drop of DB session tabs above Connections/Welcome/Snippets sidebar items
+   - don't hide connection/group form in connections dialog after connection/group is saved
+   - add confirmation for connection group deletion
+   - don't show the "unsaved changes" popup when user saved the new connection group and tries to select other group/connection
+
+
 # PgManage 1.0 Release
 
 ## Release Date: Apr 17 2024

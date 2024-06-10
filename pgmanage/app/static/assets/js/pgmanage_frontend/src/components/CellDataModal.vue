@@ -1,18 +1,35 @@
 <template>
-  <div ref="cellDataModal" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+  <div
+    id="cell_data_modal"
+    ref="cellDataModal"
+    class="modal fade"
+    aria-hidden="true"
+    role="dialog"
+    tabindex="-1"
+  >
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header align-items-center">
           <h2 class="modal-title font-weight-bold">Show Data</h2>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="hideCellDataModal()">
-            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+          <button
+            type="button"
+            class="btn-close"
+            data-dismiss="modal"
+            aria-label="Close"
+            @click="store.hideModal()"
+          >
           </button>
         </div>
         <div class="modal-body">
           <div ref="editor" class="ace-editor"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="hideCellDataModal()">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-dismiss="modal"
+            @click="store.hideModal()"
+          >
             Close
           </button>
         </div>
@@ -22,21 +39,46 @@
 </template>
 
 <script>
-import { settingsStore } from "../stores/stores_initializer";
+import {
+  settingsStore,
+  cellDataModalStore,
+} from "../stores/stores_initializer";
+import { Modal } from "bootstrap";
 
 export default {
   name: "CellDataModal",
-  props: {
-    cellContent: [String, Number],
-    showModal: Boolean,
+  data() {
+    return {
+      editor: null,
+      modalInstance: null,
+    };
   },
-  emits: ["modalHide"],
-  watch: {
-    showModal: function () {
-      if (this.showModal) {
-        this.showCellDataModal();
-      }
+  computed: {
+    store() {
+      return cellDataModalStore;
     },
+  },
+  mounted() {
+    cellDataModalStore.$onAction((action) => {
+      if (action.name === "showModal") {
+        action.after(() => {
+          this.setupEdidor();
+          this.setEditorContent();
+          this.modalInstance = Modal.getOrCreateInstance(this.$refs.cellDataModal, {
+            backdrop: "static",
+            keyboard: false,
+          });
+          this.modalInstance.show();
+        });
+      }
+
+      if (action.name === "hideModal") {
+        this.editor.destroy();
+        this.modalInstance.hide();
+        // erase leftover css classes left after editor destruction
+        this.$refs.editor.classList.remove('ace-omnidb', 'ace-omnidb_dark')
+      }
+    });
   },
   methods: {
     setupEdidor() {
@@ -53,21 +95,11 @@ export default {
       this.editor.commands.bindKey("Cmd-Delete", null);
       this.editor.commands.bindKey("Ctrl-Delete", null);
     },
-    showCellDataModal() {
-      this.setupEdidor();
-      let cellContent = this.cellContent;
-      if (cellContent) cellContent = this.cellContent.toString();
+    setEditorContent() {
+      let cellContent = this.store.cellContent;
+      if (cellContent) cellContent = this.store.cellContent.toString();
       this.editor.setValue(cellContent);
       this.editor.clearSelection();
-      $(this.$refs.cellDataModal).modal({
-        backdrop: "static",
-        keyboard: false,
-      });
-    },
-    hideCellDataModal() {
-      this.editor.destroy();
-      $(this.$refs.cellDataModal).modal("hide");
-      this.$emit("modalHide");
     },
   },
 };
@@ -81,7 +113,6 @@ export default {
 
 .ace-editor {
   height: 70vh;
-  border: 1px solid rgb(195, 195, 195);
 }
 
 .modal-body {

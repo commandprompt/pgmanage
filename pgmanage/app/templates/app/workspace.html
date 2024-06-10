@@ -7,17 +7,17 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="shortcut icon" type="image/x-icon" href="{{url_folder}}/static/assets/images/favicon.ico"/>
+    <link rel="shortcut icon" type="image/x-icon" href="{{base_path}}/static/assets/images/favicon.ico"/>
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" type="text/css" href="{{url_folder}}/static/assets/lib/handsontable/handsontable.full.css?v{{pgmanage_short_version}}">
-    <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/fa/css/all.css?v{{pgmanage_short_version}}">
+    <link rel="stylesheet" type="text/css" href="{{base_path}}/static/assets/lib/handsontable/handsontable.full.css?v{{pgmanage_short_version}}">
+    <link rel="stylesheet" href="{{base_path}}/static/assets/lib/fa/css/all.css?v{{pgmanage_short_version}}">
 
     <link id="ss_theme" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="{{url_folder}}/static/assets/lib/Passtrength/css/passtrength.css">
+    <link rel="stylesheet" href="{{base_path}}/static/assets/lib/Passtrength/css/passtrength.css">
 
-    <link rel="stylesheet" href="{{url_folder}}/static/assets/css/font-poppins.css?{{pgmanage_short_version}}">
-    <link rel="stylesheet" href="{{url_folder}}/static/assets/css/font-ubuntu-mono.css?{{pgmanage_short_version}}">
+    <link rel="stylesheet" href="{{base_path}}/static/assets/css/font-poppins.css?{{pgmanage_short_version}}">
+    <link rel="stylesheet" href="{{base_path}}/static/assets/css/font-ubuntu-mono.css?{{pgmanage_short_version}}">
     <title>PgManage</title>
   </head>
   <body>
@@ -30,14 +30,7 @@
   <!-- .IF CHROME -->
 
 
-  <div id="connections-modal-wrap">
-    <connections-modal></connections-modal>
-  </div>
-
   <div id="extension-modal-wrap">
-  </div>
-
-  <div id="generic-message-modal-wrap">
   </div>
 
   <div id="pgcron-modal-wrap">
@@ -46,56 +39,6 @@
   <div id="app" class="omnidb__main omnidb__explain--default" style="min-height: 100vh;">
   </div>
 
-
-  <div class="omnidb__utilities-menu omnidb__theme-bg--menu-utilities omnidb__rounded--lg">
-    <nav class="navbar p-0">
-      <span class="omnidb__utilities-menu__branding"></span>
-      <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarMain">
-        <div class="navbar-nav">
-        </div>
-      </div> -->
-
-      <form class="form-inline">
-        <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSecond" aria-controls="navbarSecond" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button> -->
-        <div id="navbarSecond">
-            <div class="navbar-nav flex-row">
-              <a id="omnidb__utilities-menu__link-versioning" class="omnidb__menu__btn-text-visible nav-item nav-link d-flex align-items-center justify-content-center">
-                <i class="fas fa-code-branch"></i>
-                <span class="badge badge-info">{{ pgmanage_short_version }}</span>
-              </a>
-              {% if not desktop_mode %}
-              <a id="omnidb__utilities-menu__link-username" class="omnidb__menu__btn-user omnidb__menu__btn-text nav-item nav-link d-flex align-items-center justify-content-center">
-                <!-- <i class="fas fa-user"></i> -->
-                <span>{{ user_name }}</span>
-              </a>
-              {% endif %}
-              {% if not desktop_mode %}
-              {% if super_user %}
-              <a id="omnidb__utilities-menu__link-user" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-user" title="Users"></i></a>
-              {% endif %}
-              {% endif %}
-              <a id="omnidb__utilities-menu__link-config" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-cog" title="Settings"></i></a>
-              <!-- <a id="omnidb__utilities-menu__link-plugins" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#" onclick="showPlugins();"><i class="fas fa-cube" title="Plugins"></i></a> -->
-              <a id="omnidb__utilities-menu__link-about" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-info-circle" title="About"></i></a>
-              {% if not desktop_mode %}
-              <a id="omnidb__utilities-menu__link-signout" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-sign-out-alt" title="Sign out"></i></a>
-              {% endif %}
-              <a id="omnidb__utilities-menu__link-toggle" class="omnidb__menu__btn nav-item nav-link d-flex align-items-center justify-content-center" href="#"><i class="fas fa-tools" title="Utilities Menu"></i></a>
-            </div>
-          </div>
-      </form>
-    </nav>
-  </div>
-
-    <!-- <div id="omnidb__main" class="omnidb__main" style="min-height: 100vh">
-      <div id="omnidb_main_tablist">
-      </div>
-    </div> -->
 
     <div id="div_loading" class="div_loading" style='z-index: 100005; display: block;'>
       <div class="div_loading_cover"></div>
@@ -109,58 +52,13 @@
       </div>
     </div>
 
-
-    <!-- Modal Query History -->
-    <div class="modal fade" id="modal_query_history" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button class="btn btn-danger">Delete History</button>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-
-              <div class="form-row">
-                <div class="col-md-3 mb-3">
-                  <label for="query_history_from">From</label>
-                  <input type="text" class="form-control" id="query_history_from" placeholder="From Date">
-                </div>
-                <div class="col-md-3 mb-3">
-                  <label for="query_history_to">To</label>
-                  <input type="text" class="form-control" id="query_history_to" placeholder="To Date">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="query_history_contains">Query Contains</label>
-                  <input type="text" class="form-control" id="query_history_contains" placeholder="Filter">
-                </div>
-              </div>
-
-              <div class="text-center">
-                <button class="btn btn-secondary btn-sm mr-1">First</button>
-                <button class="btn btn-secondary btn-sm mr-1">Previous</button>
-                <span class="mr-1"> 1 / 217 </span>
-                <button class="btn btn-secondary btn-sm mr-1">Next</button>
-                <button class="btn btn-secondary btn-sm mr-1">Last</button>
-              </div>
-
-              <div id="query_history_grid" style="width: 100%; height: 300px; overflow: hidden;"></div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Modal About -->
-    <div class="modal fade" id="modal_about" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade" id="modal_about" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header align-items-center">
             <h2 class="modal-title font-weight-bold">About</h2>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
 
           <div class="modal-body">
@@ -177,11 +75,11 @@
               </div>
 
               <div class="col-7 modal-about__db d-flex justify-content-between align-items-center">
-                <img src="{{url_folder}}/static/assets/images/postgresql_large.png" title="PostgreSQL"/>
-                <img src="{{url_folder}}/static/assets/images/oracle_large.png" title="Oracle"/>
-                <img src="{{url_folder}}/static/assets/images/mysql_large.png" title="MySQL"/>
-                <img src="{{url_folder}}/static/assets/images/sqlite_large.png" title="SQLite"/>
-                <img src="{{url_folder}}/static/assets/images/mariadb_large.png" title="MariaDB"/>
+                <img src="{{base_path}}/static/assets/images/postgresql_large.png" title="PostgreSQL"/>
+                <img src="{{base_path}}/static/assets/images/oracle_large.png" title="Oracle"/>
+                <img src="{{base_path}}/static/assets/images/mysql_large.png" title="MySQL"/>
+                <img src="{{base_path}}/static/assets/images/sqlite_large.png" title="SQLite"/>
+                <img src="{{base_path}}/static/assets/images/mariadb_large.png" title="MariaDB"/>
               </div>
             </div>
 
@@ -217,9 +115,7 @@
         <div class="modal-content" style="width: max-content;">
           <div class="modal-header align-items-center">
             <h2 class="modal-title font-weight-bold">User management</h2>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div id="div_user_list" style="width: 100%; overflow: hidden;"></div>
@@ -229,7 +125,7 @@
     </div>
 
     <!-- Modal Plugins -->
-    <div class="modal fade" id="modal_plugins" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- <div class="modal fade" id="modal_plugins" tabindex="-1" role="dialog" aria-hidden="true">
       <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
           <div class="modal-header align-items-center">
@@ -240,7 +136,7 @@
           </div>
           <div class="modal-body">
             <div class="custom-file mb-3">
-              <!-- <input type="file" class="custom-file-input" id="plugin_file_selector" onchange="upload(this)" required> -->
+              <input type="file" class="custom-file-input" id="plugin_file_selector" onchange="upload(this)" required>
               <label class="custom-file-label" for="plugin_file_selector">Select plugin package to be installed...</label>
             </div>
 
@@ -248,44 +144,41 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Modal Generic Message -->
-    <div class="modal show" id="modal_message" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade" id="modal_message" tabindex="-1" role="dialog" aria-hidden="true">
       <div id="modal_message_dialog" class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header align-items-center">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div id="modal_message_content" class="modal-body" style='white-space: pre-line; word-break: break-word;'>
           </div>
           <div class="modal-footer">
-            <button id="modal_message_yes" type="button" class="btn btn-primary" data-dismiss="modal">Yes</button>
-            <button id="modal_message_ok" type="button" class="btn btn-success" data-dismiss="modal">Ok</button>
-            <button id="modal_message_no" type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-            <button id="modal_message_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button id="modal_message_yes" type="button" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+            <button id="modal_message_ok" type="button" class="btn btn-success" data-bs-dismiss="modal">Ok</button>
+            <button id="modal_message_no" type="button" class="btn btn-danger" data-bs-dismiss="modal">No</button>
+            <button id="modal_message_cancel" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
         </div>
       </div>
     </div>
 
     {% vite_asset 'src/main.js' %}
-    <script src="{{url_folder}}/static/assets/lib/omnis_ui_assistant/omnis-control.js?v{{pgmanage_short_version}}"></script>
+    <script src="{{base_path}}/static/assets/lib/omnis_ui_assistant/omnis-control.js?v{{pgmanage_short_version}}"></script>
 
     <script type="text/javascript">
   	//Global variables
     var master_key = '{{master_key}}'
   	var v_user_id = {{ user_id }};
     var v_user_key = '{{ user_key }}';
-    var v_user_name = '{{ user_name }}';
+    var user_name = '{{ user_name }}';
     var v_session_key = v_user_key;
-    var v_user_login = v_user_name;
+    var v_user_login = user_name;
     var v_version = '{{ pgmanage_version }}';
-    var v_short_version = '{{ pgmanage_short_version }}';
-    var v_url_folder = '{{ url_folder }}'; //left for compatibility reasons, use app_base_path instead
-    var app_base_path = '{{ url_folder }}'
+    var short_version = '{{ pgmanage_short_version }}';
+    var app_base_path = '{{ base_path }}'
   	var gv_desktopMode = ('{{ desktop_mode }}' === 'True');
     var v_omnis = createOmnis();
     var v_explain_control = {context: 'default'};
@@ -297,6 +190,6 @@
     var v_super_user = {{ super_user|lower }};
     var v_csrf_cookie_name = '{{ csrf_cookie_name }}';
     </script>
-    <script type="text/javascript" src="{{url_folder}}/static/assets/lib/Passtrength/lib/jquery.passtrength.min.js" defer></script>
+    <script type="text/javascript" src="{{base_path}}/static/assets/lib/Passtrength/lib/jquery.passtrength.min.js" defer></script>
   </body>
 </html>
