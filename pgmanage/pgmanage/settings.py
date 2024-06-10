@@ -25,7 +25,7 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': HOME_DIR / 'pgmanage.db'
+        'NAME': os.path.join(HOME_DIR, 'pgmanage.db')
     }
 }
 
