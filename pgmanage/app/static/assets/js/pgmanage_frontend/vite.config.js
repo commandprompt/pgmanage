@@ -13,6 +13,7 @@ const outDir = path.join("..", "dist");
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd());
+  const isEnterprise = mode === 'enterprise';
   return {
     plugins: [
       inject({
@@ -53,12 +54,13 @@ export default defineConfig(({ command, mode }) => {
       outDir: outDir,
     },
     base: "/static/",
+    define: {
+      __VITE_ENTERPRISE__: isEnterprise
+    },
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
-        "@enterprise": env.VITE_ENTERPRISE
-          ? fileURLToPath(new URL("./enterprise", import.meta.url))
-          : "",
+        "@enterprise": fileURLToPath(new URL("./enterprise", import.meta.url)),
         vue: "vue/dist/vue.esm-bundler.js",
         "~bootstrap": path.resolve(__dirname, "node_modules/bootstrap"),
         moment: path.resolve(__dirname, "node_modules/moment/moment.js"),
