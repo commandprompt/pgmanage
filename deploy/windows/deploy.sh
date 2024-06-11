@@ -46,8 +46,8 @@ cd pgmanage/
 
 # set up versions in custom_settins.py
 echo "setting app version in sources to $APP_VERSION"
-sed -i "s/Dev/PgManage $APP_VERSION/" pgmanage/custom_settings.py
-sed -i "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
+sed -i "s/Dev/PgManage $APP_VERSION/" pgmanage/settings.py
+sed -i "s/dev/$APP_VERSION/" pgmanage/settings.py
 
 # building vite bundle
 cd app/static/assets/js/pgmanage_frontend/

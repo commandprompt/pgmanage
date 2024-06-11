@@ -7,7 +7,6 @@ import uuid
 from datetime import datetime,timedelta
 from django.contrib.sessions.backends.db import SessionStore
 from pgmanage import settings
-from pgmanage import custom_settings
 import sys
 sys.path.append('app/include')
 import paramiko

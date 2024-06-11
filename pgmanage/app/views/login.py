@@ -12,7 +12,7 @@ import app.include.Spartacus.Database as Database
 import app.include.Spartacus.Utils as Utils
 import app.include.OmniDatabase as OmniDatabase
 from app.include.Session import Session
-from pgmanage import settings, custom_settings
+from pgmanage import settings
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout as logout_django
@@ -102,7 +102,7 @@ def check_session_message(request):
 def sign_in_automatic(request, username, pwd):
 
     token = request.GET.get('token', '')
-    valid_token = custom_settings.APP_TOKEN
+    valid_token = settings.APP_TOKEN
 
     if valid_token and token != valid_token:
         return -1
@@ -139,7 +139,7 @@ def sign_in(request):
     v_return = create_response_template()
     v_return['v_data'] = -1
 
-    valid_token = custom_settings.APP_TOKEN
+    valid_token = settings.APP_TOKEN
 
     if valid_token:
         v_return['v_data'] = -2

@@ -54,11 +54,11 @@ pip3 install pyinstaller==5.13.0
 cd pgmanage/
 
 echo -n "Switching to Release Mode..."
-sed -i -e 's/DEV_MODE = True/DEV_MODE = False/g' pgmanage/custom_settings.py
+sed -i -e 's/DEV_MODE = True/DEV_MODE = False/g' pgmanage/settings.py
 echo "Done."
 
 echo -n "Switching to Desktop Mode... "
-sed -i -e 's/DESKTOP_MODE = False/DESKTOP_MODE = True/g' pgmanage/custom_settings.py
+sed -i -e 's/DESKTOP_MODE = False/DESKTOP_MODE = True/g' pgmanage/settings.py
 echo "Done."
 
 # building vite bundle
@@ -80,8 +80,8 @@ find ./ -name "*.scss" -delete
 touch pgmanage.db
 
 # set up versions in custom_settins.py
-sed -i '' "s/Dev/PgManage $APP_VERSION/" pgmanage/custom_settings.py
-sed -i '' "s/dev/$APP_VERSION/" pgmanage/custom_settings.py
+sed -i '' "s/Dev/PgManage $APP_VERSION/" pgmanage/settings.py
+sed -i '' "s/dev/$APP_VERSION/" pgmanage/settings.py
 
 echo "running pyinstaller"
 pyinstaller pgmanage-mac.spec

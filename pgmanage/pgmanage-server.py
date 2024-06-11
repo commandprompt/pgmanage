@@ -14,14 +14,15 @@ import configparser
 import threading
 
 import psutil
-import pgmanage.custom_settings
 import app.include.OmniDatabase as OmniDatabase
 import app.include.Spartacus.Utils as Utils
+import pgmanage.settings
+import pgmanage.logging_filter
 
-pgmanage.custom_settings.DEV_MODE = False
-pgmanage.custom_settings.DESKTOP_MODE = False
+pgmanage.settings.DEBUG = False
+pgmanage.settings.DESKTOP_MODE = False
 
-parser = optparse.OptionParser(version=pgmanage.custom_settings.PGMANAGE_VERSION)
+parser = optparse.OptionParser(version=pgmanage.settings.PGMANAGE_VERSION)
 
 group = optparse.OptionGroup(parser, "General Options")
 
@@ -97,8 +98,8 @@ parser.add_option_group(group)
 
 #Generate random token if in app mode
 if options.app:
-    pgmanage.custom_settings.DESKTOP_MODE = True
-    pgmanage.custom_settings.APP_TOKEN = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(50))
+    pgmanage.settings.DESKTOP_MODE = True
+    pgmanage.settings.APP_TOKEN = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(50))
     app_version = True
 else:
     app_version = False
@@ -108,16 +109,16 @@ if options.homedir!='':
         print("Home directory does not exist. Please specify a directory that exists.",flush=True)
         sys.exit()
     else:
-        pgmanage.custom_settings.HOME_DIR = options.homedir
+        pgmanage.settings.HOME_DIR = options.homedir
 else:
-    if pgmanage.custom_settings.DESKTOP_MODE:
-        pgmanage.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-app')
+    if pgmanage.settings.DESKTOP_MODE:
+        pgmanage.settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-app')
     else:
-        pgmanage.custom_settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-server')
+        pgmanage.settings.HOME_DIR = os.path.join(os.path.expanduser('~'), '.pgmanage', 'pgmanage-server')
 
-    if not os.path.exists(pgmanage.custom_settings.HOME_DIR):
+    if not os.path.exists(pgmanage.settings.HOME_DIR):
         print("Creating home directory.",flush=True)
-        os.makedirs(pgmanage.custom_settings.HOME_DIR)
+        os.makedirs(pgmanage.settings.HOME_DIR)
 
 
 if options.conf!='':
@@ -127,10 +128,10 @@ if options.conf!='':
     else:
         config_file = options.conf
 else:
-    config_file = os.path.join(pgmanage.custom_settings.HOME_DIR, 'config.py')
+    config_file = os.path.join(pgmanage.settings.HOME_DIR, 'config.py')
     if not os.path.exists(config_file):
         print("Copying config file to home directory.",flush=True)
-        shutil.copyfile(os.path.join(pgmanage.custom_settings.BASE_DIR, 'config.py'), config_file)
+        shutil.copyfile(os.path.join(pgmanage.settings.BASE_DIR, 'config.py'), config_file)
 
 if options.init:
     sys.exit()
@@ -161,16 +162,16 @@ else:
             listening_port = 8000
 
 if options.path!='':
-    pgmanage.custom_settings.PATH = options.path
+    pgmanage.settings.PATH = options.path
 else:
     if hasattr(pgmanage_settings,'CUSTOM_PATH'):
-        pgmanage.custom_settings.PATH = pgmanage_settings.CUSTOM_PATH
+        pgmanage.settings.PATH = pgmanage_settings.CUSTOM_PATH
 
 if hasattr(pgmanage_settings,'IS_SSL'):
     is_ssl = pgmanage_settings.IS_SSL
     if is_ssl:
-        pgmanage.custom_settings.SESSION_COOKIE_SECURE = True
-        pgmanage.custom_settings.CSRF_COOKIE_SECURE = True
+        pgmanage.settings.SESSION_COOKIE_SECURE = True
+        pgmanage.settings.CSRF_COOKIE_SECURE = True
 else:
     is_ssl = False
 
@@ -192,9 +193,7 @@ if hasattr(pgmanage_settings,'SSL_KEY_FILE'):
 else:
     ssl_key_file = ''
 
-#importing settings after setting HOME_DIR and other required parameters
-import pgmanage.settings
-import pgmanage.logging_filter
+
 # Adjust pgmanage settings based on the content of the config file
 for attribute, value in pgmanage_settings.__dict__.items():
     setattr(pgmanage.settings,attribute,value)
@@ -366,10 +365,10 @@ if maintenance_action == True:
 if platform.system() != 'Windows':
     import fcntl
     try:
-        lockfile_pointer = os.open(pgmanage.custom_settings.HOME_DIR, os.O_RDONLY)
+        lockfile_pointer = os.open(pgmanage.settings.HOME_DIR, os.O_RDONLY)
         fcntl.flock(lockfile_pointer, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except Exception as exc:
-        print("PgManage is already running pointing to directoy '{0}'.".format(pgmanage.custom_settings.HOME_DIR))
+        print("PgManage is already running pointing to directoy '{0}'.".format(pgmanage.settings.HOME_DIR))
         sys.exit()
 
 import html.parser
@@ -517,7 +516,7 @@ class DjangoApplication(object):
                     print ("Press Ctrl+C to exit",flush=True)
             else:
                 #Sending response to electron app
-                print ("http://localhost:{0}/pgmanage_login/?user=admin&pwd=admin&token={1}".format(str(port),pgmanage.custom_settings.APP_TOKEN),flush=True)
+                print ("http://localhost:{0}/pgmanage_login/?user=admin&pwd=admin&token={1}".format(str(port),pgmanage.settings.APP_TOKEN),flush=True)
 
             cherrypy.engine.block()
             cherrypy.engine.exit()

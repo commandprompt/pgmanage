@@ -15,8 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from pgmanage.settings import ENTERPRISE_EDITION
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('app.urls'))
 ]
+
+if ENTERPRISE_EDITION:
+    from .urls_enterprise import urlpatterns as enterprise_urls
+    urlpatterns += enterprise_urls

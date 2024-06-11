@@ -1,21 +1,22 @@
 import os
 import random
 import string
-from . import custom_settings
+from pathlib import Path
 
-
+ENTERPRISE_EDITION = True
 # Development Mode
-DEBUG = custom_settings.DEV_MODE
-DESKTOP_MODE = custom_settings.DESKTOP_MODE
-BASE_DIR = custom_settings.BASE_DIR
-HOME_DIR = custom_settings.HOME_DIR
+APP_TOKEN = None
+DEBUG = True
+DESKTOP_MODE = False
+BASE_DIR = Path(__file__).resolve().parent.parent
+HOME_DIR = Path(__file__).resolve().parent.parent
 TEMP_DIR = os.path.join(BASE_DIR,'app','static','temp')
 PLUGINS_DIR = os.path.join(BASE_DIR,'app','plugins')
 PLUGINS_STATIC_DIR = os.path.join(BASE_DIR,'app','static','plugins')
 APP_DIR = os.path.join(BASE_DIR,'app')
 
-SESSION_COOKIE_SECURE = custom_settings.SESSION_COOKIE_SECURE
-CSRF_COOKIE_SECURE = custom_settings.CSRF_COOKIE_SECURE
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = []
 SESSION_COOKIE_NAME = 'pgmanage_sessionid'
 CSRF_COOKIE_NAME = 'pgmanage_csrftoken'
@@ -103,7 +104,7 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-PATH = custom_settings.PATH
+PATH = ''
 # Processing PATH
 if PATH == '/':
     PATH = ''
@@ -202,12 +203,12 @@ LOGGING = {
 }
 
 #PgManage PARAMETERS
-PGMANAGE_VERSION                 = custom_settings.PGMANAGE_VERSION
-PGMANAGE_SHORT_VERSION           = custom_settings.PGMANAGE_SHORT_VERSION
-CH_CMDS_PER_PAGE               = 20
-PWD_TIMEOUT_TOTAL              = 1800
-PWD_TIMEOUT_REFRESH            = 300
-THREAD_POOL_MAX_WORKERS        = 2
+PGMANAGE_VERSION = 'Dev'
+PGMANAGE_SHORT_VERSION = 'dev'
+CH_CMDS_PER_PAGE = 20
+PWD_TIMEOUT_TOTAL = 1800
+PWD_TIMEOUT_REFRESH = 300
+THREAD_POOL_MAX_WORKERS = 2
 
 DJANGO_VITE_DEV_MODE = DEBUG
 
@@ -221,3 +222,7 @@ else:
 STATICFILES_DIRS = [
     DJANGO_VITE_ASSETS_PATH,
 ]
+
+if ENTERPRISE_EDITION:
+    from pgmanage.settings_enterprise import update_settings
+    update_settings()

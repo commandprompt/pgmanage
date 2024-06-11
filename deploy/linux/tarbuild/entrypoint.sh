@@ -27,16 +27,16 @@ fi
 cd pgmanage/
 
 echo "Switching to Release Mode..."
-sed -i -e 's/DEV_MODE = True/DEV_MODE = False/g' pgmanage/custom_settings.py
+sed -i -e 's/DEV_MODE = True/DEV_MODE = False/g' pgmanage/settings.py
 echo "Done."
 
 echo "Switching to Desktop Mode... "
-sed -i -e 's/DESKTOP_MODE = False/DESKTOP_MODE = True/g' pgmanage/custom_settings.py
+sed -i -e 's/DESKTOP_MODE = False/DESKTOP_MODE = True/g' pgmanage/settings.py
 echo "Done."
 
 # setting up versions in custom_settins.py
-sed -i "s/Dev/PgManage $VERSION/" pgmanage/custom_settings.py
-sed -i "s/dev/$VERSION/" pgmanage/custom_settings.py
+sed -i "s/Dev/PgManage $VERSION/" pgmanage/settings.py
+sed -i "s/dev/$VERSION/" pgmanage/settings.py
 
 # building vite bundle
 cd app/static/assets/js/pgmanage_frontend/
