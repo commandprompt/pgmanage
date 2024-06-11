@@ -1,9 +1,6 @@
 import os
-import sys
-import shutil
 import random
 import string
-import getpass
 from . import custom_settings
 
 
@@ -123,7 +120,7 @@ LOGIN_REDIRECT_URL = PATH + '/'
 STATIC_URL = PATH + '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "app/static")
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer' #TODO: remove PickleSerializer and fix upcomming errors
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
