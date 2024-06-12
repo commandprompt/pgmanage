@@ -77,6 +77,7 @@ import { showToast } from "../notification_control";
 import escape from 'lodash/escape';
 import isNil from 'lodash/isNil';
 import isEmpty from 'lodash/isEmpty';
+import mean from 'lodash/mean';
 import { Tab } from "bootstrap";
 
 export default {
@@ -118,7 +119,6 @@ export default {
         columnDefaults: {
           headerHozAlign: "left",
           headerSort: false,
-          headerTooltip: 'double-click to maximize/minimize',
           maxInitialWidth: 200,
         },
         clipboard: "copy",
@@ -345,14 +345,66 @@ export default {
               column.setWidth(true);
             }
           },
+          headerTooltip: 'double-click to maximize/minimize',
         };
       });
+
+      let headerMenu = [
+        {
+          label:"Adaptive",
+          action:function(e, column) {
+            column.getTable().blockRedraw();
+            const columns = column.getTable().getColumns();
+            columns.forEach((col, idx) => {
+              if(idx > 0) {
+                col.setWidth(100);
+                let widths = col.getCells().map((cell) => {return cell.getElement().scrollWidth})
+                col.setWidth(mean(widths));
+              }
+            });
+          }
+        },
+        {
+          label:"Compact",
+          action:function(e, column) {
+            column.getTable().blockRedraw();
+            const columns = column.getTable().getColumns();
+            columns.forEach((col, idx) => {
+              if(idx > 0)
+                col.setWidth(100);
+            });
+
+            column.getTable().restoreRedraw();
+          }
+        },{
+          label:"Fit Content",
+          action:function(e, column) {
+            column.getTable().blockRedraw();
+            const columns = column.getTable().getColumns();
+            columns.forEach((col, idx) => {
+              if(idx > 0)
+                col.setWidth(true);
+            });
+
+            column.getTable().restoreRedraw();
+          }
+        },{
+          label:"Reset Layout",
+          action:function(e, column){
+            column.getTable().blockRedraw();
+            column.getTable().setColumns(columns);
+            column.getTable().restoreRedraw();
+          }
+        },
+      ]
 
       columns.unshift({
         formatter: "rownum",
         hozAlign: "center",
         minWidth: 55,
         frozen: true,
+        headerMenu: headerMenu,
+        headerMenuIcon:'<i class="actions-menu fa-solid fa-ellipsis-vertical p-2"></i>'
       });
       this.table.setColumns(columns);
 

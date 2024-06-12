@@ -26,8 +26,19 @@
                     border: 1px solid transparent !important;
                     transition: border-left-color .2s ease-in-out;
 
+                    &-title:has(> .tabulator-header-popup-button) {
+                        // remove ellipsis mark from the header cell with context menu icon
+                        text-overflow: clip !important;
+                    }
+
                     &-content {
                         padding: 0 0.75rem!important;
+                    }
+                }
+
+                &-popup-button {
+                    &:hover {
+                        color: $primaryBlue;
                     }
                 }
             }
