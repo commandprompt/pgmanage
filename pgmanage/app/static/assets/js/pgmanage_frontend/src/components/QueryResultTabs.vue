@@ -352,48 +352,30 @@ export default {
       let headerMenu = [
         {
           label:"Adaptive",
-          action:function(e, column) {
-            column.getTable().blockRedraw();
-            const columns = column.getTable().getColumns();
-            columns.forEach((col, idx) => {
-              if(idx > 0) {
-                col.setWidth(100);
-                let widths = col.getCells().map((cell) => {return cell.getElement().scrollWidth})
-                col.setWidth(mean(widths));
-              }
-            });
+          action: () => {
+            this.customLayout = 'adaptive'
+            this.applyLayout()
           }
         },
         {
           label:"Compact",
-          action:function(e, column) {
-            column.getTable().blockRedraw();
-            const columns = column.getTable().getColumns();
-            columns.forEach((col, idx) => {
-              if(idx > 0)
-                col.setWidth(100);
-            });
-
-            column.getTable().restoreRedraw();
+          action: () => {
+            this.customLayout = 'compact'
+            this.applyLayout()
           }
         },{
           label:"Fit Content",
-          action:function(e, column) {
-            column.getTable().blockRedraw();
-            const columns = column.getTable().getColumns();
-            columns.forEach((col, idx) => {
-              if(idx > 0)
-                col.setWidth(true);
-            });
-
-            column.getTable().restoreRedraw();
+          action:() => {
+            this.customLayout = 'fitcontent'
+            this.applyLayout()
           }
         },{
           label:"Reset Layout",
-          action:function(e, column){
-            column.getTable().blockRedraw();
-            column.getTable().setColumns(columns);
-            column.getTable().restoreRedraw();
+          action:() => {
+            this.customLayout = undefined
+            this.table.blockRedraw();
+            this.table.setColumns(columns);
+            this.table.restoreRedraw();
           }
         },
       ]
@@ -404,7 +386,8 @@ export default {
         minWidth: 55,
         frozen: true,
         headerMenu: headerMenu,
-        headerMenuIcon:'<i class="actions-menu fa-solid fa-ellipsis-vertical p-2"></i>'
+        headerMenuIcon:'<i class="actions-menu fa-solid fa-ellipsis-vertical p-2"></i>',
+        headerTooltip: 'Layout'
       });
       this.table.setColumns(columns);
 
@@ -412,6 +395,7 @@ export default {
         .setData(data.data)
         .then(() => {
           this.table.redraw(true);
+          this.applyLayout();
         })
         .catch((error) => {
           this.errorMessage = error;
@@ -423,6 +407,31 @@ export default {
           if (cell.getValue()) cellDataModalStore.showModal(cell.getValue())
         }
       );
+    },
+    applyLayout() {
+      if(this.customLayout === undefined)
+        return
+
+      this.table.blockRedraw();
+
+      this.table.getColumns().forEach((col, idx) => {
+        if(idx > 0) {
+          if(this.customLayout == 'adaptive') {
+            let widths = col.getCells().map((cell) => {return cell.getElement().scrollWidth})
+            col.setWidth(mean(widths))
+          }
+
+          if(this.customLayout == 'compact') {
+            col.setWidth(100);
+          }
+
+          if(this.customLayout == 'fitcontent') {
+            col.setWidth(true);
+          }
+        }
+      });
+
+      this.table.restoreRedraw();
     },
     fetchData(data) {
       let initialData = this.table.getData();
