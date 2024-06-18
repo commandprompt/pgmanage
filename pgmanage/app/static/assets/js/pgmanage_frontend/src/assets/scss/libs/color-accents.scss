@@ -1,0 +1,63 @@
+//omnidb__tab-menu--container omnidb__tab-menu--container--secondary omnidb__tab-menu--container--menu-shown w-100
+
+
+.omnidb__tab-menu {
+    &--primary {
+        position: relative;
+        
+        .omnidb__tab-menu__link {
+            &::before {
+                content: '';
+                display: block;
+                background-color: transparent;
+                position: absolute;
+                top: 0;
+                width: 3px;
+                height: 100%;
+                left: 0;
+            }
+            
+            &.color-label {
+                &--green:before {
+                    @include themify() {
+                        background-color: themed($themedLabelGreen);
+                    }
+                }
+                
+                &--red:before {
+                    @include themify() {
+                        background-color: themed($themedLabeRed);
+                    }
+                }      
+            }  
+        }
+    }
+    
+    &--container--secondary {
+        .omnidb__tab-menu__link.active.color-label {
+            &--green {
+                @include themify() {
+                    border-top-color: themed($themedLabelGreen);
+                }
+                
+                .icon-tab-title {
+                    @include themify() {
+                        color: themed($themedLabelGreen);
+                    }
+                }
+            }
+            
+            &--red {
+                @include themify() {
+                    border-top-color: themed($themedLabeRed);
+                }
+                
+                .icon-tab-title {
+                    @include themify() {
+                        color: themed($themedLabeRed);
+                    }
+                }
+            }     
+        }
+    }
+}

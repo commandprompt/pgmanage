@@ -42,6 +42,10 @@ $primaryBlueWhiteSwitching: 'primaryBlueWhiteSwitching';
 $erdCardWrapBg: 'erdCardWrapBg';
 $popupBg: 'popupBg';
 
+//color label shortcuts
+$themedLabelGreen: 'themedLabelGreen';
+$themedLabeRed: 'themedLabelRed';
+
 $themes: (
     light: (
         borderColor: $borderColorLight,
@@ -83,6 +87,10 @@ $themes: (
         primaryBlueWhiteSwitching: $primaryBlue,
         erdCardWrapBg: $bgLightSecondary,
         popupBg: $bgSurfaceLight,
+        //labels
+        themedLabelGreen: $labelGreenLight,
+        themedLabelRed: $labelRedLight,
+
     ),
     dark: (
         borderColor: $borderColorDark,
@@ -124,6 +132,9 @@ $themes: (
         primaryBlueWhiteSwitching: $white,
         erdCardWrapBg: $bgDarkSecondary,
         popupBg: $bgDark,
+        //labels
+        themedLabelGreen: $labelGreenDark,
+        themedLabelRed: $labelRedDark,
     ),
 );
 
