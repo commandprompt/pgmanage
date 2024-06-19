@@ -75,6 +75,17 @@ const mimeTypeMap = {
   txt: "text/plain",
 };
 
+const colorLabelMap = {
+  0: '',
+  1: 'color-label--red',
+  2: 'color-label--orange',
+  3: 'color-label--yellow',
+  4: 'color-label--green',
+  5: 'color-label--cyan',
+  6: 'color-label--purple',
+  7: 'color-label--pink'
+}
+
 const maxFileSizeInMB = 50;
 
 const maxFileSizeInKB = 1024 ** 2 * maxFileSizeInMB;
@@ -93,4 +104,5 @@ export {
   maxLinesForIndentSQL,
   mimeTypeMap,
   consoleModes,
+  colorLabelMap
 };

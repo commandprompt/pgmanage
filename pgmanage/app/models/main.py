@@ -79,6 +79,7 @@ class Connection(models.Model):
     last_used_database = models.CharField(max_length=200, null=True)
     last_access_date = models.DateTimeField(null=True)
     autocomplete = models.BooleanField(default=True)
+    color_label = models.IntegerField(blank=False, default=0)
 
 class SnippetFolder(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)

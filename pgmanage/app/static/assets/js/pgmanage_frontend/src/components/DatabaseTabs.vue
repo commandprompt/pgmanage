@@ -21,6 +21,7 @@
                 'nav-item',
                 'nav-link',
                 { disabled: tab.disabled, active: tab.id == selectedTab.id },
+                tab.metaData?.colorLabelClass
               ]"
               role="tab"
               aria-selected="false"

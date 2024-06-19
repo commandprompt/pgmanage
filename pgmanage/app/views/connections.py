@@ -44,6 +44,7 @@ def get_connections(request, session):
                 'user': '',
                 'password': '',
                 'password_set': False,
+                'color_label': conn.color_label,
                 'tunnel': {
                     'enabled': conn.use_tunnel,
                     'server': conn.ssh_server,

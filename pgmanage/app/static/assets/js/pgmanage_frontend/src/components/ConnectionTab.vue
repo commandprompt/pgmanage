@@ -79,6 +79,7 @@
           <div
             :id="`${connTabId}_div_right`"
             class="omnidb__workspace__div-right col position-relative right-div-height"
+            :class='connectionTab.metaData?.colorLabelClass'
           >
             <div class="row">
               <DatabaseTabs
