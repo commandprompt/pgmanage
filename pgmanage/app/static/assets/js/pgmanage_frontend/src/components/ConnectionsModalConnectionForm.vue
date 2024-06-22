@@ -4,7 +4,22 @@
     <div class="modal-connections__forms_connection connection-form position-absolute">
         <div class="connection-form__header d-flex justify-content-between align-items-center pb-3">
         <!-- TODO: integrate with active connection list -->
-        <h3 class="connection-form__header_title mb-0">{{initialConnection.alias}} {{connectionLocal.locked ? "(Active/Read Only)": ""}}</h3>
+        <div class="d-flex align-items-center">
+          <h3 class="connection-form__header_title mb-0">{{initialConnection.alias}} {{connectionLocal.locked ? "(Active/Read Only)": ""}}</h3>
+          <button type="button" class="btn dropdown-toggle ms-3 color-picker__btn color-label--red" data-bs-toggle="dropdown"></button>
+          <div class="dropdown-menu dropdown-menu-sm color-picker__dropdown">
+            <a v-for="(label, index) in colorLabelOptions"
+              class="dropdown-item"
+              :class="label.class"
+              :key=index
+              :value="index">
+                <p class="d-flex align-items-center">
+                  <span class="d-inline-block me-2"></span>
+                  {{label.name}}
+                </p>
+            </a>
+          </div>
+        </div>
           <div>
             <button @click="testConnection(this.connectionLocal)" class="btn btn-outline-primary me-2" id="connectionTestButton" :disabled="testIsRunning">
               <template v-if="testIsRunning">
@@ -243,9 +258,8 @@
 <script>
 import { useVuelidate } from '@vuelidate/core'
 import { required, between, maxLength, helpers } from '@vuelidate/validators'
-
 import { connectionsStore, messageModalStore } from '../stores/stores_initializer';
-
+import { colorLabelMap } from '../constants'
 import ConfirmableButton from './ConfirmableButton.vue'
 import isEqual from 'lodash/isEqual';
 import { showToast } from '../notification_control';
@@ -392,6 +406,9 @@ import { Modal } from 'bootstrap';
       technologies: Array,
     },
     computed: {
+      colorLabelOptions() {
+        return colorLabelMap
+      },
       placeholder() {
         const placeholderMap = {
           'postgresql': {

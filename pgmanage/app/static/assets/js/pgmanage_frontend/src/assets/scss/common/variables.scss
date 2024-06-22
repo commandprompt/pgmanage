@@ -60,11 +60,10 @@ $warningColor: #F76707;
 $infoColor: $primaryBlue;
 
 //label colors:
-///light:
-$labelRedLight: #B32F61;
-$labelGreenLight: $successColor;
-
-
-///dark:
-$labelRedDark: #B32F61; 
-$labelGreenDark: $successColor;
+$labelRed: #DC3545;
+$labelGreen: $successColor;
+$labelCyan: #00DBD3;
+$labelYellow: #FFC107;
+$labelPurple: #AE37FF;
+$labelPink: #D63384;
+$labelOrange: $warningColor;

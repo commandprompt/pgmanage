@@ -76,14 +76,14 @@ const mimeTypeMap = {
 };
 
 const colorLabelMap = {
-  0: '',
-  1: 'color-label--red',
-  2: 'color-label--orange',
-  3: 'color-label--yellow',
-  4: 'color-label--green',
-  5: 'color-label--cyan',
-  6: 'color-label--purple',
-  7: 'color-label--pink'
+  0: { class: '', name: 'neutral' },
+  1: { class: 'color-label--red', name: 'red' },
+  2: { class: 'color-label--orange', name: 'orange' },
+  3: { class: 'color-label--yellow', name: 'yellow' },
+  4: { class: 'color-label--green', name: 'green' },
+  5: { class:'color-label--cyan', name: 'cyan' },
+  6: { class:'color-label--purple', name: 'purple' },
+  7: { class:'color-label--pink', name: 'pink' }
 }
 
 const maxFileSizeInMB = 50;

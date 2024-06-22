@@ -41,10 +41,7 @@ $schemaEditorColumnBg: 'schemaEditorColumnBg';
 $primaryBlueWhiteSwitching: 'primaryBlueWhiteSwitching';
 $erdCardWrapBg: 'erdCardWrapBg';
 $popupBg: 'popupBg';
-
-//color label shortcuts
-$themedLabelGreen: 'themedLabelGreen';
-$themedLabeRed: 'themedLabelRed';
+$colorPickerBtnBorder: 'colorPickerBtnBorder';
 
 $themes: (
     light: (
@@ -87,10 +84,7 @@ $themes: (
         primaryBlueWhiteSwitching: $primaryBlue,
         erdCardWrapBg: $bgLightSecondary,
         popupBg: $bgSurfaceLight,
-        //labels
-        themedLabelGreen: $labelGreenLight,
-        themedLabelRed: $labelRedLight,
-
+        colorPickerBtnBorder: $borderColorLight,
     ),
     dark: (
         borderColor: $borderColorDark,
@@ -132,9 +126,7 @@ $themes: (
         primaryBlueWhiteSwitching: $white,
         erdCardWrapBg: $bgDarkSecondary,
         popupBg: $bgDark,
-        //labels
-        themedLabelGreen: $labelGreenDark,
-        themedLabelRed: $labelRedDark,
+        colorPickerBtnBorder: $secondaryGrey,
     ),
 );
 
@@ -152,6 +144,6 @@ $themes: (
     }
   }
 
-  @function themed($key) {
+@function themed($key) {
     @return map-get($theme-map, $key);
-  }
+}

@@ -1,7 +1,7 @@
 .btn {
     color: $primaryLight !important;
     font-size: $fontSize;
-    border: 1px solid transparent !important;
+    border: 1px solid transparent;
     font-weight: 500;
     border-radius: $borderRadius;
     box-sizing: border-box;
@@ -184,5 +184,20 @@
     &-link {
         color: $primaryBlue!important; //workaround! to be removed when new stylesheets are implemented;
         flex-shrink: 0;
+    }
+
+    //color picker circle button
+    &.color-picker__btn {
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+
+        @include themify() {
+            border: 1px solid themed($colorPickerBtnBorder);
+        }
+
+        &:after {
+            content: none;
+        }
     }
 }
