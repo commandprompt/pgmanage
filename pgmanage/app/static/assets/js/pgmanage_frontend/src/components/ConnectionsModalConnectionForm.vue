@@ -409,7 +409,8 @@ import { Modal } from 'bootstrap';
           },
           connection_params: {
             sslmode: "prefer"
-          }
+          },
+          color_label: 0
         }
       },
       technologies: Array,

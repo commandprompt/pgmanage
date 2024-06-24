@@ -15,7 +15,7 @@
               'nav-item',
               'nav-link',
               { disabled: tab.disabled, active: tab.id == selectedTab.id },
-              tab.metaData?.colorLabelClass
+              tabColorLabelClass(tab)
             ]"
             role="tab"
             aria-selected="false"
@@ -66,7 +66,8 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import { tabsStore } from "../stores/stores_initializer";
+import { tabsStore, connectionsStore } from "../stores/stores_initializer";
+import { colorLabelMap } from "../constants";
 import WelcomeScreen from "./WelcomeScreen.vue";
 import SnippetPanel from "./SnippetPanel.vue";
 import TabsUtils from "../mixins/tabs_utils_mixin.js";
@@ -109,6 +110,12 @@ export default {
       };
       return componentsProps[tab.component];
     },
+    tabColorLabelClass(tab) {
+      let connection = connectionsStore.getConnection(tab.metaData?.selectedDatabaseIndex);
+      if(connection) {
+        return colorLabelMap[connection.color_label].class || ''
+      }
+    }
   },
 };
 </script>
