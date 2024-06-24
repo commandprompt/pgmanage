@@ -64,6 +64,8 @@ $colorLabels: (
     
     &__dropdown {
         .dropdown-item {
+            cursor: default;
+
             span {     
                 border-radius: 50%; 
                 width: 1rem;

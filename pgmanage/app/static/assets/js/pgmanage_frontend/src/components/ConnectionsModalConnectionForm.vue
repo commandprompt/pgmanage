@@ -6,10 +6,15 @@
         <!-- TODO: integrate with active connection list -->
         <div class="d-flex align-items-center">
           <h3 class="connection-form__header_title mb-0">{{initialConnection.alias}} {{connectionLocal.locked ? "(Active/Read Only)": ""}}</h3>
-          <button type="button" class="btn dropdown-toggle ms-3 color-picker__btn color-label--red" data-bs-toggle="dropdown"></button>
+          <button type="button"
+            class="btn dropdown-toggle ms-3 color-picker__btn"
+            :class='colorLabelPickerClass'
+            title="Color Label"
+            data-bs-toggle="dropdown"></button>
           <div class="dropdown-menu dropdown-menu-sm color-picker__dropdown">
-            <a v-for="(label, index) in colorLabelOptions"
+            <a v-for="(label, index) in colorLabelMap"
               class="dropdown-item"
+              @click="setColorLabel(index)"
               :class="label.class"
               :key=index
               :value="index">
@@ -273,7 +278,8 @@ import { Modal } from 'bootstrap';
     data() {
       return {
         connectionLocal: {
-          alias: ''
+          alias: '',
+          color_label: 0
         },
         postgresql_ssl_modes: ["allow", "prefer", "require", "disable", "verify-full", "verify-ca"],
         mysql_mariadb_modes: [
@@ -285,6 +291,9 @@ import { Modal } from 'bootstrap';
         tempMode: "ssl",
         testIsRunning: false,
       }
+    },
+    created() {
+      this.colorLabelMap = colorLabelMap
     },
     validations() {
       const needsServer = !['terminal', 'sqlite'].includes(this.connectionLocal.technology)
@@ -406,8 +415,8 @@ import { Modal } from 'bootstrap';
       technologies: Array,
     },
     computed: {
-      colorLabelOptions() {
-        return colorLabelMap
+      colorLabelPickerClass() {
+        return colorLabelMap[this.connectionLocal.color_label || 0].class
       },
       placeholder() {
         const placeholderMap = {
@@ -521,6 +530,10 @@ import { Modal } from 'bootstrap';
           Modal.getOrCreateInstance('#connections-modal').hide()
           connectionsStore.selectConnection(connection)
         }
+      },
+      setColorLabel(val) {
+        // without timeout bootstrap dropdown fails to close
+        setTimeout(() => {this.connectionLocal.color_label = val}, 100)
       },
       trySave() {
         this.v$.connectionLocal.$validate()

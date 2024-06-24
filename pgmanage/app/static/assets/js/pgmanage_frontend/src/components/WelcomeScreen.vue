@@ -17,7 +17,8 @@
                 <h2 class="mb-3">Recent Connections</h2>
                 <div class="recent-conections__list d-flex flex-column">
                   <div v-for="(connection, idx) in recentConnections" :key="idx" @click="selectConnection(connection)"
-                    class="recent-conections__item color-label--red">
+                    :class="colorLabelMap[connection.color_label].class || ''"
+                    class="recent-conections__item">
                     <div class="recent-conections__item_wrap d-flex align-items-center m-0">
                         <div class="recent-conections__item_logo me-3">
                             <div :class="['icon', 'icon-' + connection.technology]"></div>
@@ -91,6 +92,7 @@
 <script>
 import moment from 'moment'
 import { connectionsStore, settingsStore } from '../stores/stores_initializer'
+import { colorLabelMap } from "../constants";
 import { startTutorial } from '../tutorial'
 import { endLoading } from "../ajax_control";
 import { default_shortcuts } from '../shortcuts'
@@ -127,6 +129,9 @@ export default {
         gearsUrl: gearsUrl,
         logoUrl: logoUrl
     };
+  },
+  created() {
+    this.colorLabelMap = colorLabelMap;
   },
   mounted() {
     this.loadShortcuts()

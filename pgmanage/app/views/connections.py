@@ -341,7 +341,8 @@ def save_connection(request, session):
                 use_tunnel=conn_object['tunnel']['enabled'],
                 conn_string=conn_object['conn_string'],
                 public=False,
-                connection_params=conn_object['connection_params']
+                connection_params=conn_object['connection_params'],
+                color_label= conn_object['color_label']
             )
             conn.save()
         # update
@@ -393,6 +394,7 @@ def save_connection(request, session):
             conn.use_tunnel = conn_object['tunnel']['enabled']
             conn.conn_string = conn_object['conn_string']
             conn.autocomplete = conn_object.get('autocomplete')
+            conn.color_label= conn_object['color_label']
             conn.save()
 
 
