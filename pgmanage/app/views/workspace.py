@@ -374,12 +374,33 @@ def get_database_meta(request, database):
 
                 table_data['columns'] = list((c['column_name'] for c in table_columns))
                 schema_data['tables'].append(table_data)
+            
+            if database.v_has_schema:
+                views = database.QueryViews(p_all_schemas=False, p_schema=schema["schema_name"])
+            else:
+                views = database.QueryViews()
+
+            for view in views.Rows:
+                view_data = {
+                    "name": view["table_name"],
+                    "columns": []
+                }
+                view_name = view.get('name_raw') or view["table_name"]
+
+                if database.v_has_schema:
+                    view_columns = database.QueryViewFields(p_table=view_name, p_all_schemas=False, p_schema=schema["schema_name"])
+                else:
+                    view_columns = database.QueryViewFields(p_table=view_name)
+
+                view_data['columns'] = list((c['column_name'] for c in view_columns.Rows))
+                schema_data['tables'].append(view_data)
+
             schema_list.append(schema_data)
 
         response_data["schemas"] = schema_list
 
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(response_data)
 
