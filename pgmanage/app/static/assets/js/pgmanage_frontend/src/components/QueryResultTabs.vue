@@ -196,10 +196,6 @@ export default {
         });
       }
     });
-
-    this.$refs.dataTab.addEventListener("shown.bs.tab", (event) => {
-      this.table.redraw();
-    });
   },
   updated() {
     this.handleResize();
@@ -303,7 +299,7 @@ export default {
       }
       this.updateTableData(data);
     },
-    updateTableData(data) {
+    prepareColumns(colNames, colTypes) {
       let cellContextMenu = [
         {
           label:
@@ -320,11 +316,11 @@ export default {
           },
         },
       ];
-      let columns = data.col_names.map((col, idx) => {
+      let columns = colNames.map((col, idx) => {
         let formatTitle = function(col, idx) {
-          if(data.col_types?.length === 0 )
+          if(colTypes?.length === 0 )
             return col
-          return `${col}<br><span class='subscript'>${data.col_types[idx]}</span>`
+          return `${col}<br><span class='subscript'>${colTypes[idx]}</span>`
         }
 
         return {
@@ -389,8 +385,12 @@ export default {
         headerMenuIcon:'<i class="actions-menu fa-solid fa-ellipsis-vertical p-2"></i>',
         headerTooltip: 'Layout'
       });
+      return columns
+    },
+    updateTableData(data) {
+      const columns = this.prepareColumns(data.col_names, data.col_types)
+      this.table.clearData();
       this.table.setColumns(columns);
-
       this.table
         .setData(data.data)
         .then(() => {
@@ -435,8 +435,21 @@ export default {
     },
     fetchData(data) {
       let initialData = this.table.getData();
-      data.data.unshift(...initialData);
-      this.table.replaceData(data.data);
+      const allData = [...initialData, ...data.data]
+      if (allData.length > 50000) {
+        this.table.destroy()
+
+        const columns = this.prepareColumns(data.col_names, data.col_types)
+        this.tableSettings.data = allData
+        this.tableSettings.columns = columns
+        let table = new Tabulator(this.$refs.tabulator, this.tableSettings);
+        table.on("tableBuilt", () => {
+          this.table = table;
+        });
+
+      } else {
+        this.table.replaceData(allData);
+      }
     },
     clearData() {
       this.notices = [];

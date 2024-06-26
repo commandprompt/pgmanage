@@ -331,10 +331,8 @@ export default {
       }
     },
     querySQLReturn(data, context) {
-      clearInterval(this.queryInterval)
-      this.queryInterval = null;
       if (!data.v_error) {
-        this.tempData = this.tempData.concat(data.v_data.data)
+        Array.prototype.push.apply(this.tempData, data.v_data.data)
       }
 
       //Update tab_db_id if not null in response
@@ -346,9 +344,11 @@ export default {
 
       if (!this.idleState && (data.v_data.last_block || data.v_data.file_name || data.v_error )) {
         data.v_data.data = this.tempData;
+        this.tempData = [];
         this.readOnlyEditor = false;
         this.tabStatus = data.v_data.con_status;
-
+        clearInterval(this.queryInterval)
+        this.queryInterval = null;
         if (
           this.connId === tabsStore.selectedPrimaryTab.id &&
           this.tabId === tabsStore.selectedPrimaryTab.metaData.selectedTab.id

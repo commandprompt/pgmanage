@@ -303,13 +303,13 @@ export default {
       }
     },
     consoleReturn(data, context) {
-      clearInterval(this.queryInterval);
-      this.queryInterval = null;
-
-      this.tempData = this.tempData.concat(data.v_data.data);
-
+      this.tempData.push(data.v_data.data)
+      
       if (!this.idleState && (data.v_data.last_block || data.v_error)) {
+        clearInterval(this.queryInterval);
+        this.queryInterval = null;
         data.v_data.data = this.tempData;
+        this.tempData = []
         this.readOnlyEditor = false;
         this.tabStatus = data.v_data.con_status;
         if (
@@ -334,7 +334,7 @@ export default {
     },
     consoleReturnRender(data) {
       data.v_data.data.forEach((chunk) => {
-        this.terminal.write(chunk);
+        this.terminal.writeln(chunk);
       })
       this.fetchMoreData = data.v_data.show_fetch_button;
       this.queryDuration = data.v_data.duration;

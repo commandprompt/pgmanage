@@ -1,5 +1,6 @@
 import threading
 import time
+from collections import deque
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional, Union
 
@@ -16,7 +17,7 @@ class Client:
         id (str): The unique identifier of the client.
         polling_lock (threading.Lock): A lock used for synchronization during polling.
         returning_data_lock (threading.Lock): A lock used for synchronization while accessing returning_data.
-        returning_data (List[Any]): A list containing data returned by the client.
+        returning_data (deque): A list-like container containing data returned by the client.
         _connection_sessions (dict): A dictionary storing connection sessions for the client.
         last_update (datetime.datetime): The timestamp of the client's last update.
     """
@@ -27,7 +28,7 @@ class Client:
         self.id = client_id
         self.polling_lock = threading.Lock()
         self.returning_data_lock = threading.Lock()
-        self.returning_data = []
+        self.returning_data = deque()
         self._connection_sessions = {}
         self.last_update = datetime.now()
 

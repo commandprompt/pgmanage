@@ -136,10 +136,12 @@ def long_polling(request):
     client_object.returning_data_lock.acquire()
 
     while len(client_object.returning_data)>0:
-        v_returning_data.append(client_object.returning_data.pop(0))
+        try:
+            v_returning_data.append(client_object.returning_data.popleft())
+        except IndexError:
+            pass
 
     client_object.release_returning_data_lock()
-
     return JsonResponse(
     {
         'returning_rows': v_returning_data
@@ -1112,7 +1114,19 @@ def thread_console(self, args):
                 while has_more_records:
 
                     data = database.v_connection.QueryBlock('', 10000, True, True)
-                    data_return += '\n' + data.Pretty(database.v_connection.v_expanded) + '\n' + database.v_connection.GetStatus()
+                    data_return = '\n' + data.Pretty(database.v_connection.v_expanded) + '\n'
+                    data_return = data_return.replace("\n","\r\n")
+
+                    log_end_time = datetime.now(timezone.utc)
+                    duration = GetDuration(log_start_time, log_end_time)
+
+                    response_data['v_data'] = {
+                            'data' : data_return,
+                            'last_block': False,
+                            'duration': duration,
+                            'show_fetch_button': show_fetch_button,
+                            'con_status': '',
+                        }
 
                     if database.v_connection.v_start:
                         has_more_records = False
@@ -1121,9 +1135,11 @@ def thread_console(self, args):
                     else:
                         has_more_records = False
 
-
                     if self.cancel:
-                            break
+                        break
+
+                    if has_more_records:
+                        queue_response(client_object, response_data)
 
             if mode == consoleModes.SKIP_FETCH:
                 run_command_list = True
@@ -1183,7 +1199,7 @@ def thread_console(self, args):
             }
 
             #send data in chunks to avoid blocking the websocket server
-            chunks = [data_return[x:x+10000] for x in range(0, len(data_return), 10000)]
+            chunks = [data_return[x:x+10000] for x in range(0, len(data_return), 10000)] if not mode == consoleModes.FETCH_ALL else []
             if len(chunks)>0:
                 for idx, chunk in enumerate(chunks, 1):
                     response_data_copy = copy.deepcopy(response_data)
