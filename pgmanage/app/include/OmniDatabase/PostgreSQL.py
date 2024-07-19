@@ -1471,13 +1471,16 @@ class PostgreSQL:
             select quote_ident(c.relname) as table_name,
                    quote_ident(ci.relname) as name_raw,
                    ci.relname as index_name,
+                   i.indisprimary as is_primary,
                    (case when i.indisunique then 'Unique' else 'Non Unique' end) as uniqueness,
                    quote_ident(n.nspname) as schema_name,
                    format(
                        '%s;',
                        pg_get_indexdef(i.indexrelid)
                    ) AS definition,
-                   ci.oid
+                   ci.oid,
+                   array_agg(quote_ident(a.attname)) AS columns,
+                am.amname AS method
             from pg_index i
             inner join pg_class ci
             on ci.oid = i.indexrelid
@@ -1487,9 +1490,13 @@ class PostgreSQL:
             on c.oid = i.indrelid
             inner join pg_namespace n
             on n.oid = c.relnamespace
+            inner join pg_attribute a 
+            on a.attrelid = c.oid AND a.attnum = ANY(i.indkey)
+            inner join pg_am am on ci.relam = am.oid
             where i.indisvalid
               and i.indislive
               {0}
+            group by c.relname, ci.relname, ci.oid, i.indisprimary, i.indisunique, n.nspname, i.indexrelid, am.amname
             order by 1, 2
         '''.format(v_filter), True)
 

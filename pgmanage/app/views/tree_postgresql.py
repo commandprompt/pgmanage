@@ -1,3 +1,5 @@
+import ast
+
 from app.utils.crypto import pg_scram_sha256
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
@@ -409,8 +411,11 @@ def get_indexes(request, database):
             index_data = {
                 "index_name": index["index_name"],
                 "name_raw": index["name_raw"],
-                "uniqueness": index["uniqueness"],
+                "unique": index["uniqueness"] == "Unique",
                 "oid": index["oid"],
+                "is_primary": index["is_primary"] == "True",
+                "columns": list(ast.literal_eval(index["columns"])),
+                "method": index["method"],
             }
             list_indexes.append(index_data)
     except Exception as exc:

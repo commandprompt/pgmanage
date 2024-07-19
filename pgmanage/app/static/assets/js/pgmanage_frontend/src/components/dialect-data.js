@@ -10,12 +10,14 @@ export default Object.freeze({
         dataTypes: [
             'serial', 'smallserial', 'bigserial', 'int', 'int2', 'int4', 'int8', 'smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'float', 'float4', 'float8', 'double precision', 'money', 'character varying', 'varchar', 'character', 'char', 'text', 'citext', 'hstore', 'bytea', 'bit', 'varbit', 'bit varying', 'timetz', 'timestamptz', 'timestamp', 'timestamp without time zone', 'timestamp with time zone', 'date', 'time', 'time without time zone', 'time with time zone', 'interval', 'bool', 'boolean', 'enum', 'point', 'line', 'lseg', 'box', 'path', 'polygon', 'circle', 'cidr', 'inet', 'macaddr', 'tsvector', 'tsquery', 'uuid', 'xml', 'json', 'jsonb', 'int4range', 'int8range', 'numrange', 'tsrange', 'tstzrange', 'daterange', 'geometry', 'geography', 'cube', 'ltree'
         ],
+        indexMethods: ["btree", "hash", "gist", "spgist", "gin", "brin"],
         hasSchema: true,
         hasComments: true,
         formatterDialect: 'postgresql',
         api_endpoints: {
             schemas_url: "/get_schemas_postgresql/",
             types_url: "/get_types_postgresql/",
+            indexes_url: "/get_indexes_postgresql/",
             table_definition_url: "/get_table_definition_postgresql/"
         },
     },

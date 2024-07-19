@@ -4180,7 +4180,7 @@ export default {
             schema: node.data.schema,
             schema_raw: node.data.schema_raw,
             oid: el.oid,
-            uniqueness: el.uniqueness,
+            unique: el.unique ? 'Unique' : "Non unique",
             raw_value: el.name_raw,
           });
         });

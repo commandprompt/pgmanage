@@ -1,45 +1,103 @@
 <template>
   <div class="schema-editor-scrollable px-2 pt-3">
+    <template v-if="mode === 'alter'"> <!-- ALTER SCHEMA -->
+      <div class="row">
+        <div class="form-group col-2">
+            <label class="fw-bold mb-2" :for="`${tabId}_tableNameInput`">Table Name</label>
+            <input v-model.trim="localTable.tableName" class="form-control" :id="`${tabId}_tableNameInput`" name="tableName" placeholder="table name..." />
+        </div>
+        <div class="form-group col d-flex align-items-end">
+          <button :disabled="!hasChanges || queryIsRunning" @click='applyChanges' type="button"
+            class="btn btn-success mt-4 ms-auto">
+            Apply Changes
+          </button>
+        </div>
+      </div>
+      <ul class="nav nav-tabs justify-content-center" role="tablist">
+        <li ref="columnsTab" class="nav-item" role="presentation">
+          <button class="nav-link active" :id="`${tabId}-columns-tab`" data-bs-toggle="tab" :data-bs-target="`#${tabId}-columns-tab-pane`" type="button" role="tab" aria-selected="true">Columns</button>
+        </li>
+        <li ref="indexesTab" class="nav-item" role="presentation">
+          <button class="nav-link" :id="`${tabId}-indexes-tab`" data-bs-toggle="tab" :data-bs-target="`#${tabId}-indexes-tab-pane`" type="button" role="tab" aria-selected="false">Indexes</button>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" :id="`${tabId}-columns-tab-pane`" role="tabpanel">
+
+          <div class="row">
+            <div class="col">
+              <label class="fw-bold mb-2 me-2">Columns</label>
+
+            <!-- TODO -->
+            <!-- <button @click='addColumn' class="btn btn-icon btn-icon-success" title="Add column">
+              <i class="fa-solid fa-circle-plus fa-xl"></i>
+            </button> -->
+            </div>
+          </div>
+
+          <ColumnList
+            :initialColumns="localTable.columns"
+            :dataTypes="dataTypes"
+            :commentable="commentable"
+            :mode="getMode"
+            :multiPKeys="multiPrimaryKeys"
+            @columns:changed="changeColumns" />
+        </div>
+        <div class="tab-pane fade" :id="`${tabId}-indexes-tab-pane`" role="tabpanel"  >
+          <IndexesList
+          :initialIndexes="localIndexes"
+          :indexTypes="[]"
+          :columns="initialTable.columns"
+          :index-methods="indexMethods"
+          @indexes:changed="changeIndexes"
+          />
+        </div>
+      </div>
+    </template>
+
+  <template v-if="mode !== 'alter'"> <!-- CREATE SCHEMA -->
+
     <div class="row">
-      <div class="form-group col-2">
-          <label class="fw-bold mb-2" :for="`${tabId}_tableNameInput`">Table Name</label>
-          <input v-model.trim="localTable.tableName" class="form-control" :id="`${tabId}_tableNameInput`" name="tableName" placeholder="table name..." />
-      </div>
-
-      <div v-if="showSchema" class="form-group col-3">
-        <label class="fw-bold mb-2" :for="`${tabId}_selectSchema`">Schema</label>
-        <select class="form-select text-truncate pe-4" :id="`${tabId}_selectSchema`" v-model="localTable.schema">
-          <option v-for="(schema, index) in schemas" :value="schema" :key="index">
-            {{ schema }}
-          </option>
-        </select>
-      </div>
-      <div class="form-group col d-flex align-items-end">
-        <button :disabled="!hasChanges || queryIsRunning" @click='applyChanges' type="button"
-          class="btn btn-success mt-4 ms-auto">
-          Apply Changes
-        </button>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <label class="fw-bold mb-2 me-2">Columns</label>
-
-      <!-- TODO -->
-      <!-- <button @click='addColumn' class="btn btn-icon btn-icon-success" title="Add column">
-        <i class="fa-solid fa-circle-plus fa-xl"></i>
-      </button> -->
-      </div>
-    </div>
-
-    <ColumnList
-      :initialColumns="localTable.columns"
-      :dataTypes="dataTypes"
-      :commentable="commentable"
-      :mode="getMode"
-      :multiPKeys="multiPrimaryKeys"
-      @columns:changed="changeColumns" />
+          <div class="form-group col-2">
+              <label class="fw-bold mb-2" :for="`${tabId}_tableNameInput`">Table Name</label>
+              <input v-model.trim="localTable.tableName" class="form-control" :id="`${tabId}_tableNameInput`" name="tableName" placeholder="table name..." />
+          </div>
+    
+          <div v-if="showSchema" class="form-group col-3">
+            <label class="fw-bold mb-2" :for="`${tabId}_selectSchema`">Schema</label>
+            <select class="form-select text-truncate pe-4" :id="`${tabId}_selectSchema`" v-model="localTable.schema">
+              <option v-for="(schema, index) in schemas" :value="schema" :key="index">
+                {{ schema }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group col d-flex align-items-end">
+            <button :disabled="!hasChanges || queryIsRunning" @click='applyChanges' type="button"
+              class="btn btn-success mt-4 ms-auto">
+              Apply Changes
+            </button>
+          </div>
+        </div>
+    
+        <div class="row">
+          <div class="col">
+            <label class="fw-bold mb-2 me-2">Columns</label>
+    
+          <!-- TODO -->
+          <!-- <button @click='addColumn' class="btn btn-icon btn-icon-success" title="Add column">
+            <i class="fa-solid fa-circle-plus fa-xl"></i>
+          </button> -->
+          </div>
+        </div>
+    
+        <ColumnList
+          :initialColumns="localTable.columns"
+          :dataTypes="dataTypes"
+          :commentable="commentable"
+          :mode="getMode"
+          :multiPKeys="multiPrimaryKeys"
+          @columns:changed="changeColumns" />
+  </template>
 
     <div class="form-group mb-2">
         <p class="fw-bold mb-2">Generated SQL</p>
@@ -60,6 +118,7 @@ import { queryRequestCodes } from '../constants'
 import axios from 'axios'
 import { showToast } from '../notification_control'
 import { settingsStore } from '../stores/stores_initializer'
+import IndexesList from './SchemaEditorIndexesList.vue'
 
 
 function formatDefaultValue(defaultValue, dataType, table) {
@@ -95,7 +154,8 @@ export default {
     treeNode: Object,
   },
   components: {
-    ColumnList
+    ColumnList,
+    IndexesList
   },
   setup(props) {
     // FIXME: add column nam not-null validations
@@ -125,9 +185,13 @@ export default {
             editable: true
           }]
         },
+        localIndexes: [],// I tried to to use indexes in existing initialTable/localTable implementation but after saving it is not possible
+        // to keep not saved changes on columns/indexes save
+        initialIndexes: [],
         generatedSQL: '',
         hasChanges: false,
-        queryIsRunning: false
+        queryIsRunning: false,
+        tabType: "Columns"
     };
   },
   mounted() {
@@ -138,7 +202,17 @@ export default {
     this.loadDialectData(this.dialect)
     this.setupEditor()
     if(this.$props.mode==='alter') {
+      this.loadIndexes()
       this.loadTableDefinition()
+      this.$refs.indexesTab.addEventListener("shown.bs.tab", () => {
+        this.tabType = "Indexes"
+        this.generateSQL()
+      });
+
+      this.$refs.columnsTab.addEventListener("shown.bs.tab", () => {
+        this.tabType= "Columns"
+        this.generateSQL()
+      });
       // localTable for ALTER case is being set via watcher
     } else {
       this.initialTable.schema = this.$props.schema
@@ -206,12 +280,29 @@ export default {
             }
           })
           this.initialTable.columns = coldefs
-          this.initialTable.tableName = this.localTable.tableName || this.$props.table
+          this.initialTable.tableName = this.$props.table || this.localTable.tableName
           this.initialTable.schema = this.$props.schema
         })
         .catch((error) => {
           console.log(error)
         })
+    },
+    loadIndexes() {
+      const indexesUrl = this.dialectData?.api_endpoints?.indexes_url ?? null;
+      if (!indexesUrl) return;
+
+      axios.post(indexesUrl, {
+        database_index: this.databaseIndex,
+        tab_id: this.connId,
+        schema: this.schema,
+        table: this.localTable.tableName || this.table
+      })
+      .then((resp) => {
+        this.initialIndexes = resp.data
+      })
+      .catch((error) => {
+        console.log(error)
+      })
     },
     setupEditor() {
       this.editor = ace.edit(this.$refs.editor);
@@ -228,14 +319,49 @@ export default {
         this.editor.setFontSize(state.fontSize);
       });
     },
-    generateSQL() {
-      //add knex error handing with notification to the user
-      let tabledef = this.localTable
-      let k = this.knex.schema.withSchema(tabledef.schema)
+    generateIndexesSQL(knexInstance) {
+      let indexChanges = {
+          'adds': [],
+          'drops': [],
+          'typeChanges': [],
+          'renames': [],
+        }
+        let originalIndexes = this.initialIndexes
+        this.localIndexes.forEach((index, idx) => {
+          if(index.deleted) indexChanges.drops.push(originalIndexes[idx].index_name)
+          if(index.new) indexChanges.adds.push(index)
+          if(index.deleted || index.new) return 
+          if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
+        })
 
-      this.hasChanges = false
-      if(this.mode === 'alter') {
-        let changes = {
+        let knexOperations = knexInstance.alterTable(this.initialTable.tableName, function(table) {
+          indexChanges.adds.forEach((indexDef) => {
+            if (indexDef.unique) {
+              table.unique(indexDef.columns?.split(","), {
+                indexName: indexDef.index_name,
+                useConstraint: false,
+                storageEngineIndexType: indexDef.method,
+              })
+            } else {
+              table.index(indexDef.columns?.split(","), indexDef.index_name, indexDef.method
+            )
+            }
+          })
+
+          indexChanges.drops.forEach((indexName) => {
+            table.dropIndex(null, indexName)
+          })
+
+          // renames index doesn't supported by knex.js
+          // indexChanges.renames.forEach((rename) => {
+          //   table.renameIndex(rename.oldName, rename.newName)
+          // })
+        })
+
+        return knexOperations.toQuery()
+    },
+    generateColumnsSQL(knexInstance) {
+      let changes = {
           'adds': [],
           'drops': [],
           'typeChanges': [],
@@ -260,7 +386,7 @@ export default {
 
         // we use initial table name here since localTable.tableName may be changed
         // which results in broken SQL
-        let knexOperations = k.alterTable(this.initialTable.tableName, function(table) {
+        let knexOperations = knexInstance.alterTable(this.initialTable.tableName, function(table) {
           changes.adds.forEach((coldef) => {
             // use Knex's magic to create a proper auto-incrementing column in database-agnostic way
             let col = coldef.dataType === 'autoincrement' ?
@@ -309,10 +435,10 @@ export default {
           })
 
           // FIXME: commenting generates drop default - how to avoid this?
-          changes.comments.forEach((coldef) => {
-            //table.specificType(coldef.name, coldef.dataType).comment('test').alter({alterNullable : false, alterType: false})
-            // table.raw(`comment on column "${tabledef.schema}"."${table._tableName}"."${coldef.name}" is '${coldef.comment}'`)
-          })
+          // changes.comments.forEach((coldef) => {
+          //   //table.specificType(coldef.name, coldef.dataType).comment('test').alter({alterNullable : false, alterType: false})
+          //   // table.raw(`comment on column "${tabledef.schema}"."${table._tableName}"."${coldef.name}" is '${coldef.comment}'`)
+          // })
 
           changes.renames.forEach((rename) => {
             table.renameColumn(rename.oldName, rename.newName)
@@ -322,7 +448,21 @@ export default {
         if(this.initialTable.tableName !== this.localTable.tableName) {
           knexOperations.renameTable(this.initialTable.tableName, this.localTable.tableName)
         }
-        this.generatedSQL = knexOperations.toQuery()
+
+        return knexOperations.toQuery()
+    },
+    generateSQL() {
+      //add knex error handing with notification to the user
+      let tabledef = this.localTable
+      let k = this.knex.schema.withSchema(tabledef.schema)
+
+      this.hasChanges = false
+      if(this.mode === 'alter') {
+        if (this.tabType === "Indexes") {
+          this.generatedSQL = this.generateIndexesSQL(k)
+        } else if (this.tabType === "Columns") {
+          this.generatedSQL = this.generateColumnsSQL(k)
+        }
 
       } else {
         // mode==create
@@ -354,6 +494,9 @@ export default {
     },
     changeColumns(columns) {
       this.localTable.columns = [...columns]
+    },
+    changeIndexes(indexes) {
+      this.localIndexes = [...indexes]
     },
     applyChanges() {
       let message_data = {
@@ -396,7 +539,11 @@ export default {
         emitter.emit(`schemaChanged_${this.connId}`, { database_name: this.databaseName, schema_name: this.localTable.schema })
         // ALTER: load table changes into UI
         if(this.mode === 'alter') {
-          this.loadTableDefinition()
+          if (this.tabType === "Indexes") {
+            this.loadIndexes()
+          } else if (this.tabType === "Columns") {
+            this.loadTableDefinition()
+          }
         } else {
           // CREATE:reset the editor
           this.initialTable.schema = this.$props.schema
@@ -429,6 +576,9 @@ export default {
     multiPrimaryKeys() {
       return !this.dialectData?.disabledFeatures?.multiPrimaryKeys
     },
+    indexMethods() {
+      return this.dialectData.indexMethods
+    }
   },
   watch: {
     generatedSQL() {
@@ -451,12 +601,22 @@ export default {
       },
       deep: true
     },
+    initialIndexes: {
+      handler(newVal, oldVal) {
+        this.localIndexes = JSON.parse(JSON.stringify(newVal))
+      }
+    },
     // watch our local working copy for changes, generate new SQL when the change occcurs
     localTable: {
       handler(newVal, oldVal) {
         this.generateSQL()
       },
       deep: true
+    },
+    localIndexes: {
+      handler(newVal, oldVal) {
+        this.generateSQL()
+      }
     }
   }
 };

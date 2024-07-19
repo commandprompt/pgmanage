@@ -82,7 +82,7 @@
         // const regOption = new RegExp(this.searchFilter, 'ig');
         for (const option of this.options) {
           // if (this.searchFilter.length < 1 || option.name.match(regOption)){
-          if (this.searchFilter.length < 1 || option.name.includes(this.searchFilter)){
+          if (this.searchFilter?.length < 1 || option.name.includes(this.searchFilter)){
             if (filtered.length < this.maxItem) filtered.push(option);
           }
         }
@@ -134,7 +134,6 @@
         this.$emit('filter', this.searchFilter);
       },
       modelValue() {
-        console.log('changed', this.modelValue)
         this.searchFilter = this.modelValue
       }
     }
