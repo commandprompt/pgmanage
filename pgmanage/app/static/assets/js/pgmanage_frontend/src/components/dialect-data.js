@@ -1,5 +1,7 @@
 import TableCompiler_SQLite3 from 'knex/lib/dialects/sqlite3/schema/sqlite-tablecompiler'
 import TableCompiler_MySQL from 'knex/lib/dialects/mysql/schema/mysql-tablecompiler'
+import TableCompiler_PG from 'knex/lib/dialects/postgres/schema/pg-tablecompiler';
+import knex from 'knex';
 import identity from 'lodash/identity';
 import flatten from 'lodash/flatten';
 
@@ -20,6 +22,29 @@ export default Object.freeze({
             indexes_url: "/get_indexes_postgresql/",
             table_definition_url: "/get_table_definition_postgresql/"
         },
+        overrides: [
+            () => {
+                knex.TableBuilder.extend(
+                  "renameIndex",
+                  function (oldIndexName, newIndexName) {
+                    this._statements.push({
+                      grouping: "alterTable",
+                      method: "renameIndex",
+                      args: [oldIndexName, newIndexName],
+                    });
+                  }
+                );
+
+                TableCompiler_PG.prototype.renameIndex = function (from, to) {
+                  const sql = `ALTER INDEX ${this.formatter.wrap(
+                    from
+                  )} RENAME TO ${this.formatter.wrap(to)}`;
+                  this.pushQuery({
+                    sql: sql,
+                  });
+                };
+            },
+        ],
     },
     'sqlite3': {
         dataTypes: [

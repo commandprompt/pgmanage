@@ -352,10 +352,10 @@ export default {
             table.dropIndex(null, indexName)
           })
 
-          // renames index doesn't supported by knex.js
-          // indexChanges.renames.forEach((rename) => {
-          //   table.renameIndex(rename.oldName, rename.newName)
-          // })
+          // TODO: add renameIndex support on other database dialects
+          indexChanges.renames.forEach((rename) => {
+            table.renameIndex(rename.oldName, rename.newName)
+          })
         })
 
         return knexOperations.toQuery()
