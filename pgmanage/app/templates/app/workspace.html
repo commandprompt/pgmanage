@@ -90,22 +90,11 @@
     <script type="text/javascript">
   	//Global variables
     var master_key = '{{master_key}}'
-  	var v_user_id = {{ user_id }};
-    var v_user_key = '{{ user_key }}';
-    var user_name = '{{ user_name }}';
-    var v_session_key = v_user_key;
-    var v_user_login = user_name;
     var pgmanage_version = '{{ pgmanage_version }}';
     var short_version = '{{ pgmanage_short_version }}';
     var app_base_path = '{{ base_path }}'
   	var gv_desktopMode = ('{{ desktop_mode }}' === 'True');
     var v_omnis = undefined ;
-    var v_explain_control = {context: 'default'};
-
-    var ht;
-    var network;
-    var v_canEditContent;
-    var v_editContentObject;
     var v_super_user = {{ super_user|lower }};
     var v_csrf_cookie_name = '{{ csrf_cookie_name }}';
     </script>

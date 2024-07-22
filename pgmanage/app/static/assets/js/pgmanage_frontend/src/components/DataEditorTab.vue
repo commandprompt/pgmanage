@@ -247,13 +247,13 @@ export default {
     },
     getTableData() {
       var message_data = {
-        v_table: this.table,
-        v_schema: this.schema,
-        v_db_index: this.databaseIndex,
-        v_filter : this.queryFilter,
-        v_count: this.rowLimit,
-        v_conn_tab_id: this.connId,
-        v_tab_id: this.tabId
+        table: this.table,
+        schema: this.schema,
+        db_index: this.databaseIndex,
+        query_filter : this.queryFilter,
+        count: this.rowLimit,
+        conn_tab_id: this.connId,
+        tab_id: this.tabId
       }
 
       var context = {
@@ -305,12 +305,12 @@ export default {
 
     },
     handleResponse(response) {
-      if(response.v_error == true) {
-        showToast("error", response.v_data)
+      if(response.error == true) {
+        showToast("error", response.data)
       } else {
         //store table data into original var, clone it to the working copy
         let pkIndex = this.tableColumns.findIndex((col) => col.is_primary) || 0
-        this.tableData = response.v_data.rows.map((row) => {
+        this.tableData = response.data.rows.map((row) => {
           let rowMeta = {
             is_dirty: false,
             is_new: false,
@@ -325,8 +325,8 @@ export default {
       }
     },
     handleSaveResponse(response) {
-      if(response.v_error == true) {
-        showToast("error", response.v_data)
+      if(response.error == true) {
+        showToast("error", response.data)
       } else {
         showToast("success", 'data updated')
         setTimeout(() => {
@@ -401,12 +401,12 @@ export default {
       let query = this.generateSQL()
 
       let message_data = {
-        v_sql_cmd : query,
-        v_sql_save : false,
-        v_db_index: this.databaseIndex,
-        v_conn_tab_id: this.connId,
-        v_tab_id: this.tabId,
-        v_tab_db_id: this.databaseIndex,
+        sql_cmd : query,
+        sql_save : false,
+        db_index: this.databaseIndex,
+        conn_tab_id: this.connId,
+        tab_id: this.tabId,
+        tab_db_id: this.databaseIndex,
       }
 
       let context = {

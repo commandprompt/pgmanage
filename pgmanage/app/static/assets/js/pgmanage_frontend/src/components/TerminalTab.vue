@@ -114,11 +114,11 @@ export default {
     terminalRun(spawn = true, query = "\r") {
       this.lastCommand = query;
       let messageData = {
-        v_cmd: query,
-        v_tab_id: this.tabId,
-        v_db_index: null,
-        v_spawn: spawn,
-        v_ssh_id: this.databaseIndex,
+        cmd: query,
+        tab_id: this.tabId,
+        db_index: null,
+        spawn: spawn,
+        ssh_id: this.databaseIndex,
       };
 
       createRequest(queryRequestCodes.Terminal, messageData, this.contextCode);
@@ -133,7 +133,7 @@ export default {
 
       this.state = requestState.Idle;
 
-      this.term.write(data.v_data.v_data);
+      this.term.write(data.data.data);
     },
     resizeBrowserHandler() {
       if (this.tabId === tabsStore.selectedPrimaryTab.id) {

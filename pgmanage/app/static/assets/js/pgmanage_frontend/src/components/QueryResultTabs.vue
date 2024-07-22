@@ -221,19 +221,19 @@ export default {
     },
     renderResult(data, context) {
       this.clearData();
-      if (data.v_error && context.cmd_type !== "explain") {
-        this.errorMessage = data.v_data.message;
+      if (data.error && context.cmd_type !== "explain") {
+        this.errorMessage = data.data.message;
       } else {
         if (context.cmd_type === "explain") {
           this.showExplainTab(data);
         } else if (!!context.cmd_type && context.cmd_type.includes("export")) {
-          this.showExport(data.v_data);
+          this.showExport(data.data);
         } else {
-          this.showDataTab(data.v_data, context);
+          this.showDataTab(data.data, context);
 
           let mode = ["CREATE", "DROP", "ALTER"];
-          if (!!data.v_data.status && isNaN(data.v_data.status)) {
-            let status = data.v_data.status?.split(" ");
+          if (!!data.data.status && isNaN(data.data.status)) {
+            let status = data.data.status?.split(" ");
             if (mode.includes(status[0])) {
               let node_type = status[1]
                 ? `${status[1].toLowerCase()}_list`
@@ -248,15 +248,15 @@ export default {
     },
     showExplainTab(data) {
       Tab.getOrCreateInstance(this.$refs.explainTab).show()
-      if (data?.v_error) {
+      if (data?.error) {
         this.query = this.editorContent;
-        this.plan = data.v_data.message;
-        showToast("error", data.v_data.message);
+        this.plan = data.data.message;
+        showToast("error", data.data.message);
         return;
       }
 
       // Adjusting data.
-      let explain_text = data.v_data.data.join("\n");
+      let explain_text = data.data.data.join("\n");
 
       if (explain_text.length > 0) {
         this.query = this.editorContent;

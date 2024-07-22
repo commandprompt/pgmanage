@@ -14,7 +14,7 @@ from subprocess import Popen
 
 import psutil
 from app.models.main import Connection, Job
-from app.views.polling import GetDuration
+from app.views.polling import get_duration
 from django.utils.timezone import make_aware
 
 PROCESS_NOT_STARTED = 0
@@ -281,7 +281,7 @@ class BatchJob:
                 stime = self.start_time
                 etime = self.end_time or make_aware(datetime.now())
 
-                duration = GetDuration(stime, etime)
+                duration = get_duration(stime, etime)
 
             if process_output:
                 out, out_completed = self.read_log(
@@ -400,7 +400,7 @@ class BatchJob:
 
             start_time = job.start_time
             end_time = job.end_time or make_aware(datetime.now())
-            duration = GetDuration(start_time, end_time)
+            duration = get_duration(start_time, end_time)
 
             (
                 description,

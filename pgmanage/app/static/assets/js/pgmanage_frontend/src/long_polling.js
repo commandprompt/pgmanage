@@ -30,7 +30,7 @@ function call_polling(startup) {
     polling_busy = true
     axios.post(
       `${app_base_path}/long_polling/`,
-      {p_startup: startup}
+      {startup: startup}
     ).then((resp) => {
       polling_busy = false
       resp.data.returning_rows.forEach(chunk => {
@@ -48,7 +48,7 @@ function call_polling(startup) {
     })
     .catch((error) => {
       polling_busy = false
-      console.log(error)
+      console.log(error?.response?.data?.data)
     })
 }
 
@@ -57,15 +57,15 @@ function polling_response(message) {
   let context_code = null;
   let context = null;
 
-  if(message.v_context_code) {
-    let entry = request_map.get(message.v_context_code)
+  if(message.context_code) {
+    let entry = request_map.get(message.context_code)
     if(entry) {
       context_code = entry.code
       context = entry.context
     }
   }
 
-  switch(message.v_code) {
+  switch(message.response_type) {
     case parseInt(queryResponseCodes.Pong): {
       websocketPong();
       break;
@@ -75,13 +75,13 @@ function polling_response(message) {
       break;
     }
     case parseInt(queryResponseCodes.MessageException): {
-      showToast("error", message.v_data);
+      showToast("error", message.data);
       break;
     }
     case parseInt(queryResponseCodes.PasswordRequired): {
       if (context) {
         SetAcked(context);
-        QueryPasswordRequired(context, message.v_data);
+        QueryPasswordRequired(context, message.data);
         break;
       }
     }
@@ -100,7 +100,7 @@ function polling_response(message) {
           context.callback(message, context)
         }
         //Remove context
-        if (!message.v_data.chunks || message.v_data.last_block || message.v_error) {
+        if (!message.data.chunks || message.data.last_block || message.error) {
           removeContext(context_code)
         }
 
@@ -121,7 +121,7 @@ function polling_response(message) {
         context.callback(message, context)
 
         //Remove context
-        if (message.v_data.last_block || message.v_error) {
+        if (message.data.last_block || message.error) {
           removeContext(context_code);
         }
       }
@@ -151,7 +151,7 @@ function polling_response(message) {
       if (context) {
         SetAcked(context);
         debugResponse(message, context);
-        if (message.v_data.v_remove_context) {
+        if (message.data.remove_context) {
           removeContext(context_code);
         }
       }
@@ -177,17 +177,17 @@ function polling_response(message) {
   }
 }
 
-function QueryPasswordRequired(p_context, p_message) {
-  if(["query", "console"].includes(p_context.tab.metaData.mode)) {
+function QueryPasswordRequired(context, message) {
+  if(["query", "console"].includes(context.tab.metaData.mode)) {
     emitter.emit("show_password_prompt", {
-      databaseIndex: p_context.database_index,
+      databaseIndex: context.database_index,
       successCallback: function() {
-        p_context.passwordSuccessCallback(p_context)
+        context.passwordSuccessCallback(context)
       },
       cancelCallback: function() {
-        p_context.passwordFailCalback()
+        context.passwordFailCalback()
 			},
-      message: p_message
+      message: message
     })
   }
 }
@@ -209,7 +209,7 @@ function removeContext(context_code) {
   request_map.delete(context_code)
 }
 
-function createRequest(message_code, message_data, context) {
+function createRequest(request_type, message_data, context) {
   let context_code = undefined;
 	if (context != null) {
 		if (typeof(context) === 'object') {
@@ -237,9 +237,9 @@ function createRequest(message_code, message_data, context) {
   axios.post(
     `${app_base_path}/create_request/`,
     {
-      v_code: message_code,
-      v_context_code: context_code || 0,
-      v_data: message_data
+      request_type: request_type,
+      context_code: context_code || 0,
+      data: message_data
     }
   )
 }

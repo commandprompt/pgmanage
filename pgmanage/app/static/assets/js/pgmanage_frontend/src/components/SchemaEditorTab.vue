@@ -503,9 +503,9 @@ export default {
 				sql_cmd : this.editor.getValue(), //use formatted SQL from the editor instead of single-line returned by generatedSQL
 				sql_save : false,
 				cmd_type: null,
-				v_db_index: this.databaseIndex,
-				v_conn_tab_id: this.connId,
-				v_tab_id: this.tabId,
+				db_index: this.databaseIndex,
+				conn_tab_id: this.connId,
+				tab_id: this.tabId,
 				tab_db_id: this.databaseIndex,
 				mode: 0,
 				all_data: false,
@@ -530,10 +530,10 @@ export default {
       createRequest(queryRequestCodes.Query, message_data, context)
     },
     handleResponse(response) {
-      if(response.v_error == true) {
-        showToast("error", response.v_data.message)
+      if(response.error == true) {
+        showToast("error", response.data.message)
       } else {
-        let msg = response.v_data.v_status === "CREATE TABLE" ? `Table "${this.localTable.tableName}" created` : `Table "${this.localTable.tableName}" updated`
+        let msg = response.data.status === "CREATE TABLE" ? `Table "${this.localTable.tableName}" created` : `Table "${this.localTable.tableName}" updated`
         showToast("success", msg)
 
         emitter.emit(`schemaChanged_${this.connId}`, { database_name: this.databaseName, schema_name: this.localTable.schema })

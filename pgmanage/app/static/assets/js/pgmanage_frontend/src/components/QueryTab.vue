@@ -273,9 +273,9 @@ export default {
             sql_cmd: query,
             mode: mode,
             autocommit: this.autocommit,
-            v_db_index: this.databaseIndex,
-            v_conn_tab_id: this.connId,
-            v_tab_id: this.tabId,
+            db_index: this.databaseIndex,
+            conn_tab_id: this.connId,
+            tab_id: this.tabId,
             tab_db_id: this.tabDatabaseId,
             sql_save: save_query,
             database_name: this.databaseName,
@@ -326,22 +326,22 @@ export default {
       }
     },
     querySQLReturn(data, context) {
-      if (!data.v_error) {
-        Array.prototype.push.apply(this.tempData, data.v_data.data)
+      if (!data.error) {
+        Array.prototype.push.apply(this.tempData, data.data.data)
       }
 
       //Update tab_db_id if not null in response
-      if (data.v_data.inserted_id) {
-        this.tabDatabaseId = data.v_data.inserted_id;
+      if (data.data.inserted_id) {
+        this.tabDatabaseId = data.data.inserted_id;
       }
 
       //If query wasn't canceled already
 
-      if (!this.idleState && (data.v_data.last_block || data.v_data.file_name || data.v_error )) {
-        data.v_data.data = this.tempData;
+      if (!this.idleState && (data.data.last_block || data.data.file_name || data.error )) {
+        data.data.data = this.tempData;
         this.tempData = [];
         this.readOnlyEditor = false;
-        this.tabStatus = data.v_data.con_status;
+        this.tabStatus = data.data.con_status;
         clearInterval(this.queryInterval)
         this.queryInterval = null;
         if (
@@ -354,7 +354,7 @@ export default {
           this.queryState = requestState.Idle;
           this.$refs.queryResults.renderResult(data, context);
 
-          this.queryDuration = data.v_data.duration;
+          this.queryDuration = data.data.duration;
 
           context.tab.metaData.isReady = false;
           context.tab.metaData.isLoading = false;

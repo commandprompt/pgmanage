@@ -250,9 +250,9 @@ export default {
             let message_data = {
               sql_cmd: command,
               mode: mode,
-              v_db_index: this.databaseIndex,
-              v_conn_tab_id: this.connId,
-              v_tab_id: this.tabId,
+              db_index: this.databaseIndex,
+              conn_tab_id: this.connId,
+              tab_id: this.tabId,
               autocommit: this.autocommit,
               block_size: this.blockSize
             };
@@ -299,15 +299,15 @@ export default {
       }
     },
     consoleReturn(data, context) {
-      this.tempData.push(data.v_data.data)
+      this.tempData.push(data.data.data)
       
-      if (!this.idleState && (data.v_data.last_block || data.v_error)) {
+      if (!this.idleState && (data.data.last_block || data.error)) {
         clearInterval(this.queryInterval);
         this.queryInterval = null;
-        data.v_data.data = this.tempData;
+        data.data.data = this.tempData;
         this.tempData = []
         this.readOnlyEditor = false;
-        this.tabStatus = data.v_data.con_status;
+        this.tabStatus = data.data.con_status;
         if (
           this.connId === tabsStore.selectedPrimaryTab.id &&
           this.tabId === tabsStore.selectedPrimaryTab.metaData.selectedTab.id
@@ -329,15 +329,15 @@ export default {
       }
     },
     consoleReturnRender(data) {
-      data.v_data.data.forEach((chunk) => {
+      data.data.data.forEach((chunk) => {
         this.terminal.writeln(chunk);
       })
-      this.fetchMoreData = data.v_data.show_fetch_button;
-      this.queryDuration = data.v_data.duration;
+      this.fetchMoreData = data.data.show_fetch_button;
+      this.queryDuration = data.data.duration;
 
-      if (!data.v_error && !!data?.v_data?.status && isNaN(data.v_data.status)) {
+      if (!data.error && !!data?.data?.status && isNaN(data.data.status)) {
         let mode = ["CREATE", "DROP", "ALTER"];
-        let status = data.v_data.status.split(" ");
+        let status = data.data.status.split(" ");
 
         if (mode.includes(status[0])) {
           let node_type = status[1] ? `${status[1].toLowerCase()}_list` : null;

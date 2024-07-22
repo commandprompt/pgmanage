@@ -1,7 +1,5 @@
 import json
 import os
-import random
-import string
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -41,18 +39,10 @@ def index(request):
         session.RefreshDatabaseList()
 
     context = {
-        "session": None,
-        "user_id": request.user.id,
-        "user_key": request.session.session_key,
-        "user_name": request.user.username,
         "super_user": request.user.is_superuser,
         "desktop_mode": settings.DESKTOP_MODE,
         "pgmanage_version": settings.PGMANAGE_VERSION,
         "pgmanage_short_version": settings.PGMANAGE_SHORT_VERSION,
-        "menu_item": "workspace",
-        "tab_token": "".join(
-            random.choice(string.ascii_lowercase + string.digits) for i in range(20)
-        ),
         "base_path": settings.PATH,
         "csrf_cookie_name": settings.CSRF_COOKIE_NAME,
         "master_key": "new"
