@@ -7,6 +7,17 @@ import flatten from 'lodash/flatten';
 
 // TODO: Mysql - add PrimaryKey and Comment handling in alter table
 
+knex.TableBuilder.extend(
+  "renameIndex",
+  function (oldIndexName, newIndexName) {
+    this._statements.push({
+      grouping: "alterTable",
+      method: "renameIndex",
+      args: [oldIndexName, newIndexName],
+    });
+  }
+);
+
 export default Object.freeze({
     'postgres': {
         dataTypes: [
@@ -24,17 +35,6 @@ export default Object.freeze({
         },
         overrides: [
             () => {
-                knex.TableBuilder.extend(
-                  "renameIndex",
-                  function (oldIndexName, newIndexName) {
-                    this._statements.push({
-                      grouping: "alterTable",
-                      method: "renameIndex",
-                      args: [oldIndexName, newIndexName],
-                    });
-                  }
-                );
-
                 TableCompiler_PG.prototype.renameIndex = function (from, to) {
                   const sql = `ALTER INDEX ${this.formatter.wrap(
                     from
