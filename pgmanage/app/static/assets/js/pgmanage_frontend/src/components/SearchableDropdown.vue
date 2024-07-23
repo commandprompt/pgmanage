@@ -18,10 +18,12 @@
       v-show="optionsShown">
       <div
         class="dropdown-searchable__content_item"
-        @mousedown="selectOption(option)"
+        @mousedown="toggleOption(option)"
         v-for="(option, index) in filteredOptions"
-        :key="index">
-          {{ option.name || option.id || '-' }}
+        :key="index"
+        :class="{ 'selected': isSelected(option) }"
+        >
+            {{  option }}
       </div>
     </div>
   </div>
@@ -63,18 +65,20 @@
         note: 'Max items showing'
       },
       modelValue: {
-        default: ''
+        default: null
+      },
+      multiSelect: {
+        type: Boolean,
+        default: false
       }
     },
+    emits: ['update:modelValue'],
     data() {
       return {
-        selected: {},
+        selected: this.multiSelect ? [] : null,
         optionsShown: false,
         searchFilter: this.modelValue
       }
-    },
-    created() {
-      this.$emit('selected', this.selected);
     },
     computed: {
       filteredOptions() {
@@ -82,7 +86,7 @@
         // const regOption = new RegExp(this.searchFilter, 'ig');
         for (const option of this.options) {
           // if (this.searchFilter.length < 1 || option.name.match(regOption)){
-          if (this.searchFilter?.length < 1 || option.name.includes(this.searchFilter)){
+          if (this.searchFilter?.length < 1 || option.includes(this.searchFilter)){
             if (filtered.length < this.maxItem) filtered.push(option);
           }
         }
@@ -90,12 +94,21 @@
       }
     },
     methods: {
-      selectOption(option) {
-        this.selected = option;
-        this.optionsShown = false;
-        this.searchFilter = this.selected.name;
-        this.$emit('selected', this.selected);
-        this.$emit('update:modelValue', this.selected.name);
+      toggleOption(option) {
+        if (this.multiSelect) {
+          const index = this.selected.findIndex(selectedOption => selectedOption === option);
+          if (index === -1) {
+            this.selected.push(option);
+          } else {
+            this.selected.splice(index, 1);
+          }
+          this.$emit('update:modelValue', this.selected);
+        } else {
+          this.selected = option;
+          this.$emit('update:modelValue', this.selected);
+          this.optionsShown = false;
+          this.searchFilter = this.selected;
+        }
       },
       showOptions(){
         if (!this.disabled) {
@@ -105,15 +118,12 @@
         }
       },
       exit() {
-        if (!this.selected.id && this.searchFilter.length > 0) {
-          // this.selected = {};
-          this.selected = { name: this.searchFilter }
-          // this.searchFilter = ''
+        if (!this.selected && this.searchFilter.length > 0) {
+          this.selected = this.searchFilter
         } else {
-          this.searchFilter = this.selected.name;
+          this.searchFilter = this.selected;
         }
-        this.$emit('selected', this.selected);
-        this.$emit('update:modelValue', this.selected.name);
+        this.$emit('update:modelValue', this.selected);
         this.optionsShown = false;
       },
       // Selecting when pressing Enter
@@ -121,21 +131,35 @@
       // TODO: add arrow navigation
       keyMonitor: function(event) {
         if (event.key === "Enter" && this.filteredOptions[0])
-          this.selectOption(this.filteredOptions[0]);
-      }
+          this.toggleOption(this.filteredOptions[0]);
+      },
+      isSelected(option) {
+        if (this.multiSelect) {
+          return this.selected.some(selectedOption => selectedOption === option);
+        } else {
+          return this.selected && this.selected === option;
+        }
+      },
     },
     watch: {
-      searchFilter() {
-        if (this.filteredOptions.length === 0) {
-          this.selected = {};
-        } else {
-          this.selected = this.filteredOptions[0];
-        }
-        this.$emit('filter', this.searchFilter);
+      modelValue: {
+        handler(newVal) {
+          if (this.multiSelect) {
+            this.selected = this.options.filter(option => newVal.includes(option));
+          } else {
+            this.selected = this.options.find(option => option === newVal) || null;
+          }
+        },
+        immediate: true
       },
-      modelValue() {
-        this.searchFilter = this.modelValue
-      }
     }
   };
 </script>
+
+<style scoped>
+/*TODO: change this to proper color styling for selected options */
+.dropdown-searchable__content_item.selected {
+  background-color: #007bff;
+  color: white;
+}
+</style>

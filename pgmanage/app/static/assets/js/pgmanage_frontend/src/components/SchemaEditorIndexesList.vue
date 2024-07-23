@@ -86,6 +86,7 @@
           :options="columns"
           :maxItem="20"
           v-model="index.columns"
+          :multi-select="true"
           :disabled="!index.new"
         />
       </div>
@@ -150,7 +151,7 @@ export default {
         index_name: indexName,
         unique: true,
         is_primary: false,
-        columns: null,
+        columns: [],
         new: true,
         editable: true,
         method: "btree",

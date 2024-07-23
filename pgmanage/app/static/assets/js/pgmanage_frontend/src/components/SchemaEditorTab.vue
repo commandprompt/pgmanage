@@ -47,7 +47,7 @@
           <IndexesList
           :initialIndexes="localIndexes"
           :indexTypes="[]"
-          :columns="initialTable.columns"
+          :columns="columnNames"
           :index-methods="indexMethods"
           @indexes:changed="changeIndexes"
           />
@@ -337,13 +337,13 @@ export default {
         let knexOperations = knexInstance.alterTable(this.initialTable.tableName, function(table) {
           indexChanges.adds.forEach((indexDef) => {
             if (indexDef.unique) {
-              table.unique(indexDef.columns?.split(","), {
+              table.unique(indexDef.columns, {
                 indexName: indexDef.index_name,
                 useConstraint: false,
                 storageEngineIndexType: indexDef.method,
               })
             } else {
-              table.index(indexDef.columns?.split(","), indexDef.index_name, indexDef.method
+              table.index(indexDef.columns, indexDef.index_name, indexDef.method
             )
             }
           })
@@ -373,7 +373,7 @@ export default {
         // TODO: add support for altering Primary Keys
         // TODO: add support for composite PKs
         let originalColumns = this.initialTable.columns
-        this.localTable.columns.forEach((column, idx) => {
+        this.localTable.columns?.forEach((column, idx) => {
           if(column.deleted) changes.drops.push(originalColumns[idx].name)
           if(column.new) changes.adds.push(column)
           if(column.deleted || column.new) return //no need to do further steps for new or deleted cols
@@ -559,7 +559,7 @@ export default {
       let rawTypes = ['autoincrement']
         .concat(this.dialectData.dataTypes)
         .concat(this.customTypes)
-      return rawTypes.map((t, idx) => {return {id: idx, name: t}})
+      return rawTypes
     },
     showSchema() {
       return this.mode !== 'alter' && this.dialectData.hasSchema
@@ -578,6 +578,9 @@ export default {
     },
     indexMethods() {
       return this.dialectData.indexMethods
+    },
+    columnNames() {
+      return this.initialTable.columns.map((col) => col.name)
     }
   },
   watch: {
