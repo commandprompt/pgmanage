@@ -306,9 +306,11 @@ import { Modal } from 'bootstrap';
         // absolute paths without .. . and ~
         const pathre = /^\/$|(^(?=\/))(\/(?=[^/\0])[^/\0]+)*\/?$/
 
-        if(['postgresql', 'mariadb', 'mysql'].includes(this.connectionLocal.technology)) {
+        if(['mariadb', 'mysql'].includes(this.connectionLocal.technology)) {
+          return ipv4re.test(value) || ipv6re.test(value) || hostre.test(value) || pathre.test(value)
+        }else if (this.connectionLocal.technology === 'postgresql'){
           return ipv4re.test(value) || ipv6re.test(value) || hostre.test(value) || pathre.test(value) || !helpers.req(value)
-        }else {
+        } else {
           return ipv4re.test(value) || ipv6re.test(value) || hostre.test(value)
         }
       }
