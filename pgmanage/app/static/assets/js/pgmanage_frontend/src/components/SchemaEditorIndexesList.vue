@@ -1,22 +1,16 @@
 <template>
   <div class="mb-2">
     <div class="d-flex row fw-bold text-muted schema-editor__header">
-      <div class="col-1">
-        <p class="h6">Id</p>
-      </div>
-      <div class="col-3">
+      <div class="col-2">
         <p class="h6">Name</p>
       </div>
       <div class="col-1">
         <p class="h6">Unique</p>
       </div>
       <div class="col-1">
-        <p class="h6">Primary</p>
-      </div>
-      <div class="col-1">
         <p class="h6">Method</p>
       </div>
-      <div class="col">
+      <div class="col-3">
         <p class="h6">Columns</p>
       </div>
       <div class="col-1">
@@ -32,16 +26,12 @@
         { 'schema-editor__column-new': index.new },
       ]"
     >
-      <div class="col-1">
-        <input
-          type="text"
-          v-model="index.oid"
-          class="form-control mb-0"
-          disabled
-        />
-      </div>
-
-      <div class="col-3">
+      <div class="col-2 d-flex align-items-center">
+        <i
+          v-if="index.is_primary"
+          title="Primary key"
+          class="fas fa-key action-key text-secondary me-1"
+        ></i>
         <input
           type="text"
           v-model="index.index_name"
@@ -51,20 +41,11 @@
       </div>
 
       <div class="col-1 d-flex align-items-center">
-        <!-- need to check if it is new or old, if old disable it -->
         <input
           type="checkbox"
           class="custom-checkbox"
           v-model="index.unique"
           :disabled="!index.new"
-        />
-      </div>
-      <div class="col-1 d-flex align-items-center">
-        <input
-          type="checkbox"
-          class="custom-checkbox"
-          v-model="index.is_primary"
-          disabled
         />
       </div>
 
@@ -80,7 +61,7 @@
         </select>
       </div>
 
-      <div class="col">
+      <div class="col-3">
         <SearchableDropdown
           placeholder="type to search"
           :options="columns"
