@@ -7,7 +7,7 @@
       <div class="col-1">
         <p class="h6">Unique</p>
       </div>
-      <div class="col-1">
+      <div v-if="hasIndexMethods" class="col-1">
         <p class="h6">Method</p>
       </div>
       <div class="col-3">
@@ -40,6 +40,7 @@
           v-model="index.index_name"
           class="form-control mb-0"
           placeholder="NULL"
+          :disabled="!editable && !index.new"
         />
       </div>
 
@@ -52,7 +53,7 @@
         />
       </div>
 
-      <div class="col-1 d-flex align-items-center">
+      <div v-if="hasIndexMethods" class="col-1 d-flex align-items-center">
         <select
           class="form-select"
           v-model="index.method"
@@ -133,8 +134,13 @@ export default {
       type: Array,
       default: [],
     },
-    indexMethods: Array,
+    indexMethods: {
+      type: Array,
+      default: [],
+    },
     columns: Array,
+    hasIndexMethods: Boolean,
+    editable: Boolean
   },
   emits: ["indexes:changed"],
   methods: {

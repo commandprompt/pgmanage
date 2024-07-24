@@ -172,7 +172,10 @@ def get_indexes(request, database):
         for index in indexes.Rows:
             index_data = {
                 "index_name": index["index_name"],
-                "uniqueness": index["uniqueness"],
+                "unique": index["unique"],
+                "is_primary": index["is_primary"],
+                "columns": index["columns"],
+                "predicate": index["constraint"]
             }
             list_indexes.append(index_data)
     except Exception as exc:

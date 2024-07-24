@@ -49,6 +49,8 @@
           :indexTypes="[]"
           :columns="columnNames"
           :index-methods="indexMethods"
+          :has-index-methods="hasIndexMethods"
+          :editable="editableIndex"
           @indexes:changed="changeIndexes"
           />
         </div>
@@ -584,6 +586,12 @@ export default {
     },
     columnNames() {
       return this.initialTable.columns.map((col) => col.name)
+    },
+    hasIndexMethods() {
+      return !!this.dialectData?.hasIndexMethods
+    },
+    editableIndex() {
+      return !this.dialectData?.disabledFeatures?.alterIndex
     }
   },
   watch: {

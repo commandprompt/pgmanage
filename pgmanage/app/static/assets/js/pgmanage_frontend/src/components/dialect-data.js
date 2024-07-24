@@ -26,6 +26,7 @@ export default Object.freeze({
         indexMethods: ["btree", "hash", "gist", "spgist", "gin", "brin"],
         hasSchema: true,
         hasComments: true,
+        hasIndexMethods: true,
         formatterDialect: 'postgresql',
         api_endpoints: {
             schemas_url: "/get_schemas_postgresql/",
@@ -55,11 +56,13 @@ export default Object.freeze({
         formatterDialect: 'sqlite',
         api_endpoints: {
             table_definition_url: "/get_table_definition_sqlite/",
+            indexes_url: "/get_indexes_sqlite/",
         },
         disabledFeatures: {
             alterColumn: true,
             multiStatement: true,
             multiPrimaryKeys: true,
+            alterIndex: true
         },
         overrides: [
             () => {
