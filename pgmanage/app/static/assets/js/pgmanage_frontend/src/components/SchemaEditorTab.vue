@@ -344,7 +344,7 @@ export default {
               })
             } else {
               table.index(indexDef.columns, indexDef.index_name, {
-                indexType: indexDef.method,
+                storageEngineIndexType: indexDef.method,
                 predicate: this.knex.where(this.knex.raw(indexDef.predicate)),
               }
             )
