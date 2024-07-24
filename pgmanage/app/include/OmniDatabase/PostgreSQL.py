@@ -1480,7 +1480,8 @@ class PostgreSQL:
                    ) AS definition,
                    ci.oid,
                    array_agg(quote_ident(a.attname)) AS columns,
-                am.amname AS method
+                am.amname AS method,
+                pg_get_expr(i.indpred, i.indrelid, true) AS constraint
             from pg_index i
             inner join pg_class ci
             on ci.oid = i.indexrelid

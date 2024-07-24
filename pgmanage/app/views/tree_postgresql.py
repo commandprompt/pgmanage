@@ -416,6 +416,7 @@ def get_indexes(request, database):
                 "is_primary": index["is_primary"] == "True",
                 "columns": list(ast.literal_eval(index["columns"])),
                 "method": index["method"],
+                "predicate": index["constraint"],
             }
             list_indexes.append(index_data)
     except Exception as exc:

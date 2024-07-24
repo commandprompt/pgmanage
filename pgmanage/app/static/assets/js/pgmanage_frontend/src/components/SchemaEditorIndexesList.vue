@@ -13,6 +13,9 @@
       <div class="col-3">
         <p class="h6">Columns</p>
       </div>
+      <div class="col">
+        <p class="h6">Predicate</p>
+      </div>
       <div class="col-1">
         <p class="h6">Actions</p>
       </div>
@@ -53,7 +56,7 @@
         <select
           class="form-select"
           v-model="index.method"
-          :disabled="!index.new"
+          :disabled="!index.new || index.unique"
         >
           <option v-for="method in indexMethods" :value="method">
             {{ method }}
@@ -68,6 +71,15 @@
           :maxItem="20"
           v-model="index.columns"
           :multi-select="true"
+          :disabled="!index.new"
+        />
+      </div>
+
+      <div class="col d-flex align-items-center">
+        <input
+          type="text"
+          v-model="index.predicate"
+          class="form-control mb-0"
           :disabled="!index.new"
         />
       </div>
@@ -136,6 +148,7 @@ export default {
         new: true,
         editable: true,
         method: "btree",
+        predicate: ""
       };
       this.indexes.push(defaultIndex);
     },

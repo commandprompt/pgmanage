@@ -334,16 +334,19 @@ export default {
           if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
         })
 
-        let knexOperations = knexInstance.alterTable(this.initialTable.tableName, function(table) {
+        let knexOperations = knexInstance.alterTable(this.initialTable.tableName, (table)  => {
           indexChanges.adds.forEach((indexDef) => {
             if (indexDef.unique) {
               table.unique(indexDef.columns, {
                 indexName: indexDef.index_name,
                 useConstraint: false,
-                storageEngineIndexType: indexDef.method,
+                predicate: this.knex.where(this.knex.raw(indexDef.predicate))
               })
             } else {
-              table.index(indexDef.columns, indexDef.index_name, indexDef.method
+              table.index(indexDef.columns, indexDef.index_name, {
+                indexType: indexDef.method,
+                predicate: this.knex.where(this.knex.raw(indexDef.predicate)),
+              }
             )
             }
           })
