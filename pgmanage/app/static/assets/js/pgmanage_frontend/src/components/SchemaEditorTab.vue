@@ -203,8 +203,9 @@ export default {
     this.loadDialectData(this.dialect)
     this.setupEditor()
     if(this.$props.mode==='alter') {
-      this.loadIndexes()
-      this.loadTableDefinition()
+      this.loadTableDefinition().then(() => {
+        this.loadIndexes();
+      });
       this.$refs.indexesTab.addEventListener("shown.bs.tab", () => {
         this.tabType = "Indexes"
         this.generateSQL()
@@ -261,15 +262,16 @@ export default {
         console.log(error)
       })
     },
-    loadTableDefinition() {
-        axios.post(this.dialectData.api_endpoints.table_definition_url, {
+    async loadTableDefinition() {
+      try {
+        const response = await axios.post(this.dialectData.api_endpoints.table_definition_url, {
           database_index: this.databaseIndex,
           tab_id: this.connId,
           table: this.localTable.tableName || this.table,
           schema: this.schema
         })
-        .then((response) => {
-          let coldefs = response.data.data.map((col) => {
+
+        let coldefs = response.data.data.map((col) => {
             return {
               dataType: col.data_type,
               name: col.name,
@@ -283,10 +285,9 @@ export default {
           this.initialTable.columns = coldefs
           this.initialTable.tableName = this.$props.table || this.localTable.tableName
           this.initialTable.schema = this.$props.schema
-        })
-        .catch((error) => {
-          console.log(error)
-        })
+      } catch (error) {
+        console.log(error)
+      }
     },
     loadIndexes() {
       const indexesUrl = this.dialectData?.api_endpoints?.indexes_url ?? null;
