@@ -5,18 +5,18 @@
         <p class="h6">Name</p>
       </div>
       <div class="col-1">
-        <p class="h6">Unique</p>
+        <p class="h6">indexType</p>
       </div>
-      <div v-if="hasIndexMethods" class="col-1">
+      <div v-if="!disabledFeatures?.indexMethod" class="col-1">
         <p class="h6">Method</p>
       </div>
       <div class="col-3">
         <p class="h6">Columns</p>
       </div>
-      <div class="col">
+      <div v-if="!disabledFeatures?.indexPredicate" class="col">
         <p class="h6">Predicate</p>
       </div>
-      <div class="col-1">
+      <div class="col">
         <p class="h6">Actions</p>
       </div>
     </div>
@@ -40,24 +40,26 @@
           v-model="index.index_name"
           class="form-control mb-0"
           placeholder="NULL"
-          :disabled="!editable && !index.new"
+          :disabled="disabledFeatures?.renameIndex && !index.new"
         />
       </div>
 
       <div class="col-1 d-flex align-items-center">
-        <input
-          type="checkbox"
-          class="custom-checkbox"
-          v-model="index.unique"
-          :disabled="!index.new"
-        />
+        <select class="form-select" v-model="index.type" :disabled="!index.new">
+          <option v-for="indexType in indexTypes" :value="indexType">
+            {{ indexType }}
+          </option>
+        </select>
       </div>
 
-      <div v-if="hasIndexMethods" class="col-1 d-flex align-items-center">
+      <div
+        v-if="!disabledFeatures?.indexMethod"
+        class="col-1 d-flex align-items-center"
+      >
         <select
           class="form-select"
           v-model="index.method"
-          :disabled="!index.new || index.unique"
+          :disabled="!index.new || index.type == 'unique'"
         >
           <option v-for="method in indexMethods" :value="method">
             {{ method }}
@@ -76,7 +78,10 @@
         />
       </div>
 
-      <div class="col d-flex align-items-center">
+      <div
+        v-if="!disabledFeatures?.indexPredicate"
+        class="col d-flex align-items-center"
+      >
         <input
           type="text"
           v-model="index.predicate"
@@ -85,7 +90,7 @@
         />
       </div>
 
-      <div class="col-1 d-flex me-2 justify-content-end">
+      <div class="col d-flex me-2 justify-content-end">
         <button
           v-if="index.deleted && !index.new"
           @click="index.deleted = false"
@@ -138,9 +143,15 @@ export default {
       type: Array,
       default: [],
     },
+    indexTypes: {
+      type: Array,
+      default: [],
+    },
+    disabledFeatures: {
+      type: Object,
+      default: {},
+    },
     columns: Array,
-    hasIndexMethods: Boolean,
-    editable: Boolean
   },
   emits: ["indexes:changed"],
   methods: {
@@ -148,13 +159,13 @@ export default {
       let indexName = `index_${this.indexes.length}`;
       const defaultIndex = {
         index_name: indexName,
-        unique: true,
         is_primary: false,
         columns: [],
         new: true,
         editable: true,
-        method: "btree",
-        predicate: ""
+        method: null,
+        predicate: "",
+        type: "regular",
       };
       this.indexes.push(defaultIndex);
     },

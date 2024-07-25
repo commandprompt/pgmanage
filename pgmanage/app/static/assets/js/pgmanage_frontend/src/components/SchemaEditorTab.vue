@@ -46,11 +46,10 @@
         <div class="tab-pane fade" :id="`${tabId}-indexes-tab-pane`" role="tabpanel"  >
           <IndexesList
           :initialIndexes="localIndexes"
-          :indexTypes="[]"
+          :indexTypes="indexTypes"
           :columns="columnNames"
           :index-methods="indexMethods"
-          :has-index-methods="hasIndexMethods"
-          :editable="editableIndex"
+          :disabled-features="disabledFeatures"
           @indexes:changed="changeIndexes"
           />
         </div>
@@ -338,7 +337,7 @@ export default {
 
         let knexOperations = knexInstance.alterTable(this.initialTable.tableName, (table)  => {
           indexChanges.adds.forEach((indexDef) => {
-            if (indexDef.unique) {
+            if (indexDef.type === "unique") {
               table.unique(indexDef.columns, {
                 indexName: indexDef.index_name,
                 useConstraint: false,
@@ -346,6 +345,7 @@ export default {
               })
             } else {
               table.index(indexDef.columns, indexDef.index_name, {
+                indexType: indexDef.type === 'regular' ? '' : indexDef.type,
                 storageEngineIndexType: indexDef.method,
                 predicate: this.knex.where(this.knex.raw(indexDef.predicate)),
               }
@@ -587,11 +587,12 @@ export default {
     columnNames() {
       return this.initialTable.columns.map((col) => col.name)
     },
-    hasIndexMethods() {
-      return !!this.dialectData?.hasIndexMethods
+    indexTypes() {
+      let defaultTypes = ["regular", "unique"]
+      return this.dialectData?.indexTypes ? [...defaultTypes, ...this.dialectData.indexTypes] : defaultTypes
     },
-    editableIndex() {
-      return !this.dialectData?.disabledFeatures?.alterIndex
+    disabledFeatures() {
+      return this.dialectData?.disabledFeatures
     }
   },
   watch: {

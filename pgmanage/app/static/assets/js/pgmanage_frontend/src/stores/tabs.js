@@ -672,10 +672,7 @@ const useTabsStore = defineStore("tabs", {
       this.selectTab(tab);
     },
     createSchemaEditorTab(node, mode, dialect) {
-      let tableName =
-        dialect === "mysql"
-          ? `${node.data.database}.${node.title}`
-          : node.title.replace(/^"(.*)"$/, "$1");
+      let tableName = node.title.replace(/^"(.*)"$/, "$1");
 
       let tabTitle = mode === "alter" ? `Alter: ${tableName}` : "New Table";
       let icon = `<i class="fas ${mode === 'create' ? 'fa-plus' : 'fa-edit'} cm-all icon-tab-title"></i>`;
@@ -695,7 +692,7 @@ const useTabsStore = defineStore("tabs", {
 
       tab.metaData.dialect = dialect || "postgres";
       tab.metaData.editMode = mode;
-      tab.metaData.schema = node.data.schema;
+      tab.metaData.schema = dialect === "mysql" ? node.data.database : node.data.schema;
       tab.metaData.table = mode === "alter" ? tableName : null;
       tab.metaData.treeNode = node;
       tab.metaData.databaseIndex =

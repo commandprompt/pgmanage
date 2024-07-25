@@ -26,7 +26,6 @@ export default Object.freeze({
         indexMethods: ["btree", "hash", "gist", "spgist", "gin", "brin"],
         hasSchema: true,
         hasComments: true,
-        hasIndexMethods: true,
         formatterDialect: 'postgresql',
         api_endpoints: {
             schemas_url: "/get_schemas_postgresql/",
@@ -62,7 +61,8 @@ export default Object.freeze({
             alterColumn: true,
             multiStatement: true,
             multiPrimaryKeys: true,
-            alterIndex: true
+            renameIndex: true,
+            indexMethod: true
         },
         overrides: [
             () => {
@@ -87,12 +87,19 @@ export default Object.freeze({
           'smallint', 'smallint unsigned', 'mediumint', 'mediumint unsigned', 'bigint', 'bigint unsigned',
           'float', 'double', 'double precision', 'dec', 'decimal', 'numeric', 'fixed', 'bool', 'boolean', 'date', 'datetime', 'timestamp', 'time', 'year', 'char', 'nchar', 'national char', 'varchar', 'nvarchar', 'national varchar', 'text', 'tinytext', 'mediumtext', 'blob', 'longtext', 'tinyblob', 'mediumblob', 'longblob', 'enum', 'set', 'json', 'binary', 'varbinary', 'geometry', 'point', 'linestring', 'polygon', 'multipoint', 'multilinestring', 'multipolygon', 'geometrycollection',
         ],
+        indexTypes: ["fulltext", "spatial"],
         hasSchema: false,
         hasComments: true,
         formatterDialect: 'mysql',
         api_endpoints: {
-          table_definition_url: "/get_table_definition_mysql/"
+          table_definition_url: "/get_table_definition_mysql/",
+          indexes_url: "/get_indexes_mysql/",
         },
+        disabledFeatures: {
+          indexPredicate: true,
+          indexMethod: true,
+          renameIndex: true
+      },
         overrides: [
           () => {
               TableCompiler_MySQL.prototype._setNullableState = function (

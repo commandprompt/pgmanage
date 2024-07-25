@@ -173,9 +173,10 @@ def get_indexes(request, database):
             index_data = {
                 "index_name": index["index_name"],
                 "unique": index["unique"],
+                "type": "unique" if index["unique"] else "regular",
                 "is_primary": index["is_primary"],
                 "columns": index["columns"],
-                "predicate": index["constraint"]
+                "predicate": index["constraint"],
             }
             list_indexes.append(index_data)
     except Exception as exc:
