@@ -22,7 +22,7 @@
     </div>
     <div
       v-for="(index, idx) in indexes"
-      :key="idx"
+      :key="index.oid"
       :class="[
         'schema-editor__column d-flex row flex-nowrap form-group g-0',
         { 'schema-editor__column-deleted': index.deleted },

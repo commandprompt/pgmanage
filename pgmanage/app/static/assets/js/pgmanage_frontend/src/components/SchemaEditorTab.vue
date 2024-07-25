@@ -27,11 +27,6 @@
           <div class="row">
             <div class="col">
               <label class="fw-bold mb-2 me-2">Columns</label>
-
-            <!-- TODO -->
-            <!-- <button @click='addColumn' class="btn btn-icon btn-icon-success" title="Add column">
-              <i class="fa-solid fa-circle-plus fa-xl"></i>
-            </button> -->
             </div>
           </div>
 
@@ -186,8 +181,7 @@ export default {
             editable: true
           }]
         },
-        localIndexes: [],// I tried to to use indexes in existing initialTable/localTable implementation but after saving it is not possible
-        // to keep not saved changes on columns/indexes save
+        localIndexes: [],
         initialIndexes: [],
         generatedSQL: '',
         hasChanges: false,

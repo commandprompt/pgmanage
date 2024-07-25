@@ -166,9 +166,8 @@ export default {
       this.refreshTree(node);
     },
     formatTitle(node) {
-      // node.data.unique is temporary
-      if (node.data.uniqueness !== undefined || node.data.unique) {
-        return `${node.title} (${node.data.uniqueness ?? node.data.unique})`;
+      if (node.data.unique !== undefined) {
+        return `${node.title} (${node.data.unique})`;
       }
       return node.title;
     },

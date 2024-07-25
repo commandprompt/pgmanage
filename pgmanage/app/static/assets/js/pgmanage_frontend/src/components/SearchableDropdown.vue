@@ -44,7 +44,7 @@
         type: Array,
         required: true,
         default: [],
-        note: 'Options of dropdown. An array of options with id and name',
+        note: 'Options of dropdown. An array of options',
       },
       placeholder: {
         type: String,

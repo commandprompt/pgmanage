@@ -1103,7 +1103,7 @@ export default {
               icon: "fas node-all fa-thumbtack node-index",
               type: "index",
               contextMenu: "cm_index",
-              uniqueness: el.uniqueness,
+              unique: el.unique ? 'Unique' : "Non unique",
             });
           });
         })
