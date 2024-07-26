@@ -27,6 +27,7 @@
         'schema-editor__column d-flex row flex-nowrap form-group g-0',
         { 'schema-editor__column-deleted': index.deleted },
         { 'schema-editor__column-new': index.new },
+        { 'schema-editor__column-dirty': index.is_dirty },
       ]"
     >
       <div class="col-2 d-flex align-items-center">
@@ -92,8 +93,8 @@
 
       <div class="col d-flex me-2 justify-content-end">
         <button
-          v-if="index.deleted && !index.new"
-          @click="index.deleted = false"
+          v-if="(index.deleted && !index.new) || index.is_dirty"
+          @click="revertIndex(idx)"
           type="button"
           class="btn btn-icon btn-icon-success"
           title="Revert"
@@ -102,7 +103,7 @@
         </button>
 
         <button
-          v-if="!index.deleted"
+          v-if="!index.deleted && !index.is_dirty"
           @click="removeIndex(idx)"
           type="button"
           class="btn btn-icon btn-icon-danger"
@@ -122,15 +123,9 @@
 
 <script>
 import SearchableDropdown from "./SearchableDropdown.vue";
-import isEqual from "lodash/isEqual";
 
 export default {
   name: "SchemaEditorIndexesList",
-  data() {
-    return {
-      indexes: [],
-    };
-  },
   components: {
     SearchableDropdown,
   },
@@ -154,6 +149,11 @@ export default {
     columns: Array,
   },
   emits: ["indexes:changed"],
+  data() {
+    return {
+      indexes: [],
+    };
+  },
   methods: {
     addIndex() {
       let indexName = `index_${this.indexes.length}`;
@@ -166,6 +166,7 @@ export default {
         method: null,
         predicate: "",
         type: "regular",
+        is_dirty: false,
       };
       this.indexes.push(defaultIndex);
     },
@@ -175,6 +176,11 @@ export default {
       } else {
         this.indexes.splice(index, 1);
       }
+    },
+    revertIndex(index) {
+      this.indexes[index] = JSON.parse(
+        JSON.stringify(this.initialIndexes[index])
+      );
     },
   },
   watch: {
@@ -186,9 +192,7 @@ export default {
     },
     indexes: {
       handler(newVal, oldVal) {
-        if (!isEqual(newVal, this.initialIndexes)) {
-          this.$emit("indexes:changed", newVal);
-        }
+        this.$emit("indexes:changed", newVal);
       },
       deep: true,
     },

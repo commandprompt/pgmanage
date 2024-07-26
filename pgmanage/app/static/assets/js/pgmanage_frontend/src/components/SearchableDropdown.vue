@@ -86,7 +86,7 @@
         // const regOption = new RegExp(this.searchFilter, 'ig');
         for (const option of this.options) {
           // if (this.searchFilter.length < 1 || option.name.match(regOption)){
-          if (this.searchFilter?.length < 1 || option.includes(this.searchFilter)){
+          if (this.searchFilter?.length < 1 || option?.includes(this.searchFilter)){
             if (filtered.length < this.maxItem) filtered.push(option);
           }
         }
@@ -142,12 +142,18 @@
       },
     },
     watch: {
+      searchFilter() {
+        if (this.filteredOptions.length === 0 && !this.multiSelect) {
+          this.selected = null;
+        }
+      },
       modelValue: {
         handler(newVal) {
           if (this.multiSelect) {
             this.selected = this.options.filter(option => newVal.includes(option));
           } else {
-            this.selected = this.options.find(option => option === newVal) || null;
+            this.selected = this.options.find(option => option === newVal) || newVal;
+            this.searchFilter = this.selected;
           }
         },
         immediate: true

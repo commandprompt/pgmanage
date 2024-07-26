@@ -25,6 +25,10 @@
             &-new {
                 background-color: rgba($successColor, 0.25)
             }
+
+            &-dirty {
+                background-color: rgba($warningColor, 0.25);
+            }
         }
 
         .form-control, input[type='text']  {

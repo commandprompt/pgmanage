@@ -31,7 +31,7 @@
           </div>
 
           <ColumnList
-            :initialColumns="localTable.columns"
+            :initialColumns="initialTable.columns"
             :dataTypes="dataTypes"
             :commentable="commentable"
             :mode="getMode"
@@ -40,7 +40,7 @@
         </div>
         <div class="tab-pane fade" :id="`${tabId}-indexes-tab-pane`" role="tabpanel"  >
           <IndexesList
-          :initialIndexes="localIndexes"
+          :initialIndexes="initialIndexes"
           :indexTypes="indexTypes"
           :columns="columnNames"
           :index-methods="indexMethods"
@@ -115,6 +115,7 @@ import axios from 'axios'
 import { showToast } from '../notification_control'
 import { settingsStore } from '../stores/stores_initializer'
 import IndexesList from './SchemaEditorIndexesList.vue'
+import isEqual from 'lodash/isEqual';
 
 
 function formatDefaultValue(defaultValue, dataType, table) {
@@ -273,12 +274,15 @@ export default {
               nullable: col.nullable,
               isPK: col.is_primary,
               comment: col.comment,
-              editable: this.editable
+              editable: this.editable,
+              is_dirty: false,
+              deleted: false,
             }
           })
           this.initialTable.columns = coldefs
           this.initialTable.tableName = this.localTable.tableName || this.$props.table
           this.initialTable.schema = this.$props.schema
+          this.localTable = JSON.parse(JSON.stringify(this.initialTable));
       } catch (error) {
         console.log(error)
       }
@@ -294,7 +298,10 @@ export default {
         table: this.localTable.tableName || this.table
       })
       .then((resp) => {
-        this.initialIndexes = resp.data
+        this.initialIndexes = resp.data.map((index) => {
+          return {...index, is_dirty: false}
+        });
+        this.localIndexes = JSON.parse(JSON.stringify(this.initialIndexes));
       })
       .catch((error) => {
         console.log(error)
@@ -326,7 +333,15 @@ export default {
         this.localIndexes.forEach((index, idx) => {
           if(index.deleted) indexChanges.drops.push(originalIndexes[idx].index_name)
           if(index.new) indexChanges.adds.push(index)
-          if(index.deleted || index.new) return 
+          if(index.deleted || index.new) return
+
+          if (!isEqual(index, originalIndexes[idx])) {
+            index.is_dirty = true;
+            originalIndexes[idx].is_dirty = true;
+          } else {
+            index.is_dirty = false;
+            originalIndexes[idx].is_dirty = false;
+          }
           if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
         })
 
@@ -377,6 +392,16 @@ export default {
           if(column.deleted) changes.drops.push(originalColumns[idx].name)
           if(column.new) changes.adds.push(column)
           if(column.deleted || column.new) return //no need to do further steps for new or deleted cols
+
+
+          if (!isEqual(column, originalColumns[idx])) {
+            column.is_dirty = true;
+            originalColumns[idx].is_dirty = true;
+          } else {
+            column.is_dirty = false;
+            originalColumns[idx].is_dirty = false;
+          }
+  
           if(column.dataType !== originalColumns[idx].dataType) changes.typeChanges.push(column)
           if(column.nullable !== originalColumns[idx].nullable) changes.nullableChanges.push(column)
           if(column.defaultValue !== originalColumns[idx].defaultValue) changes.defaults.push(column)
@@ -604,18 +629,6 @@ export default {
       ))
       this.editor.clearSelection();
     },
-    // watch initialTable for changes for cases when it is changed by requesting tabledef from the back-end
-    initialTable: {
-      handler(newVal, oldVal) {
-        this.localTable = JSON.parse(JSON.stringify(newVal))
-      },
-      deep: true
-    },
-    initialIndexes: {
-      handler(newVal, oldVal) {
-        this.localIndexes = JSON.parse(JSON.stringify(newVal))
-      }
-    },
     // watch our local working copy for changes, generate new SQL when the change occcurs
     localTable: {
       handler(newVal, oldVal) {
@@ -626,7 +639,8 @@ export default {
     localIndexes: {
       handler(newVal, oldVal) {
         this.generateSQL()
-      }
+      },
+      deep: true
     }
   }
 };

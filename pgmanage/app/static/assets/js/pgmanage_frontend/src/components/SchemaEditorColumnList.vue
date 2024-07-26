@@ -26,7 +26,9 @@
     <div v-for="(column, index) in columns" :key="column.index"
         :class="['schema-editor__column d-flex row flex-nowrap form-group g-0',
           { 'schema-editor__column-deleted': column.deleted },
-          { 'schema-editor__column-new': column.new }]">
+          { 'schema-editor__column-new': column.new },
+          { 'schema-editor__column-dirty': column.is_dirty }]"
+          >
           <div :class="commentable ? 'col-2' : 'col-3'">
               <input type="text" v-model="column.name" class="form-control mb-0" placeholder="column name..." />
           </div>
@@ -61,7 +63,7 @@
           </div>
 
           <div :class="['col d-flex me-2', this.movable(column) ? 'justify-content-between': 'justify-content-end']">
-            <button v-if="column.deleted && !column.new" @click='column.deleted = false' type="button"
+            <button v-if="column.deleted && !column.new || column.is_dirty" @click='revertColumn(index)' type="button"
               class="btn btn-icon btn-icon-success" title="Revert">
               <i class="fas fa-rotate-left"></i>
             </button>
@@ -76,7 +78,7 @@
               <i class="fas fa-circle-down"></i>
             </button>
 
-            <button v-if="!column.deleted" @click='removeColumn(index)' type="button"
+            <button v-if="!column.deleted && !column.is_dirty" @click='removeColumn(index)' type="button"
               class="btn btn-icon btn-icon-danger" title="Remove column">
               <i class="fas fa-circle-xmark"></i>
             </button>
@@ -92,7 +94,6 @@
 
 <script>
   import SearchableDropdown from "./SearchableDropdown.vue";
-  import isEqual from 'lodash/isEqual';
 
   export default {
     name: 'SchemaEditorColumnList',
@@ -135,7 +136,8 @@
           isPK: false,
           comment:null,
           new: this.mode === 'alter',
-          editable: true
+          editable: true,
+          is_dirty: false
         }
         this.columns.push(defaultCol)
       },
@@ -166,6 +168,9 @@
         let col = this.columns.splice(index, 1)[0]
         this.columns.splice(index+1, 0, col)
       },
+      revertColumn(index) {
+        this.columns[index] = JSON.parse(JSON.stringify(this.initialColumns[index]));
+      }
     },
     watch: {
       initialColumns: {
@@ -189,9 +194,7 @@
             });
           }
 
-          if (!isEqual(newVal, this.initialColumns)) {
-            this.$emit("columns:changed", newVal);
-          }
+          this.$emit("columns:changed", newVal);
         },
         deep: true,
       },
