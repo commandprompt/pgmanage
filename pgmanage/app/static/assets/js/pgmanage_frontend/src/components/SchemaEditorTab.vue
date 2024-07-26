@@ -87,7 +87,7 @@
         </div>
     
         <ColumnList
-          :initialColumns="localTable.columns"
+          :initialColumns="initialTable.columns"
           :dataTypes="dataTypes"
           :commentable="commentable"
           :mode="getMode"
