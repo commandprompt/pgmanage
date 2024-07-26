@@ -277,7 +277,7 @@ export default {
             }
           })
           this.initialTable.columns = coldefs
-          this.initialTable.tableName = this.$props.table || this.localTable.tableName
+          this.initialTable.tableName = this.localTable.tableName || this.$props.table
           this.initialTable.schema = this.$props.schema
       } catch (error) {
         console.log(error)
