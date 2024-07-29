@@ -94,6 +94,14 @@
       }
     },
     methods: {
+      addOption(option) {
+        if (this.multiSelect) {
+          const index = this.selected.findIndex(selectedOption => selectedOption === option);
+          if (index === -1) {
+            this.selected.push(option);
+          }
+        }
+      },
       toggleOption(option) {
         if (this.multiSelect) {
           const index = this.selected.findIndex(selectedOption => selectedOption === option);
@@ -130,8 +138,15 @@
       // FIXME: use hovered element instead of first one
       // TODO: add arrow navigation
       keyMonitor: function(event) {
-        if (event.key === "Enter" && this.filteredOptions[0])
+        if (event.key === "Enter" && this.filteredOptions[0]) {
           this.toggleOption(this.filteredOptions[0]);
+        } else if (event.key === "Enter" && this.filteredOptions.length === 0 && this.multiSelect) {
+          let options = this.searchFilter.split(',');
+          options.forEach((option) => {
+            this.addOption(option.trim())
+          });
+          this.$emit('update:modelValue', this.selected);
+        }
       },
       isSelected(option) {
         if (this.multiSelect) {

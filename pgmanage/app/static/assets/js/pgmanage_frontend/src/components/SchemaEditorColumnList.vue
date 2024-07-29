@@ -122,7 +122,8 @@
         return this.columns.filter(obj => obj.isPK === true).length
       },
       disabledPrimaryKey() {
-        return this.mode === "alter" && !this.multiPKeys && this.countOfPrimaryKeys == 1
+        // return this.mode === "alter" && !this.multiPKeys && this.countOfPrimaryKeys == 1
+        return this.mode === "alter" // TODO: add support for altering Primary Keys and then fix this
       }
     },
     methods: {

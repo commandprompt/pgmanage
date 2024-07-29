@@ -201,15 +201,6 @@ export default {
       this.loadTableDefinition().then(() => {
         this.loadIndexes();
       });
-      this.$refs.indexesTab.addEventListener("shown.bs.tab", () => {
-        this.tabType = "Indexes"
-        this.generateSQL()
-      });
-
-      this.$refs.columnsTab.addEventListener("shown.bs.tab", () => {
-        this.tabType= "Columns"
-        this.generateSQL()
-      });
       // localTable for ALTER case is being set via watcher
     } else {
       this.initialTable.schema = this.$props.schema
@@ -273,7 +264,7 @@ export default {
               defaultValue: col.default_value,
               nullable: col.nullable,
               isPK: col.is_primary,
-              comment: col.comment,
+              comment: col.comment ?? null,
               editable: this.editable,
               is_dirty: false,
               deleted: false,
@@ -322,13 +313,49 @@ export default {
         this.editor.setFontSize(state.fontSize);
       });
     },
-    generateIndexesSQL(knexInstance) {
-      let indexChanges = {
+    generateAlterSQL(knexInstance) {
+      let columnChanges = {
+          'adds': [],
+          'drops': [],
+          'typeChanges': [],
+          'nullableChanges': [],
+          'defaults': [],
+          'renames': [],
+          'comments': []
+        }
+
+        let indexChanges = {
           'adds': [],
           'drops': [],
           'typeChanges': [],
           'renames': [],
         }
+
+        // TODO: add support for altering Primary Keys
+        // TODO: add support for composite PKs
+        let originalColumns = this.initialTable.columns
+        this.localTable.columns?.forEach((column, idx) => {
+          if(column.deleted) columnChanges.drops.push(originalColumns[idx].name)
+          if(column.new) columnChanges.adds.push(column)
+          if(column.deleted || column.new) return //no need to do further steps for new or deleted cols
+
+
+          if (!isEqual(column, originalColumns[idx])) {
+            column.is_dirty = true;
+            originalColumns[idx].is_dirty = true;
+          } else {
+            column.is_dirty = false;
+            originalColumns[idx].is_dirty = false;
+          }
+  
+          if(column.dataType !== originalColumns[idx].dataType) columnChanges.typeChanges.push(column)
+          if(column.nullable !== originalColumns[idx].nullable) columnChanges.nullableChanges.push(column)
+          if(column.defaultValue !== originalColumns[idx].defaultValue) columnChanges.defaults.push(column)
+          if(column.name !== originalColumns[idx].name) columnChanges.renames.push({'oldName': originalColumns[idx].name, 'newName': column.name})
+          if(column.comment !== originalColumns[idx].comment) columnChanges.comments.push(column)
+        })
+
+
         let originalIndexes = this.initialIndexes
         this.localIndexes.forEach((index, idx) => {
           if(index.deleted) indexChanges.drops.push(originalIndexes[idx].index_name)
@@ -345,74 +372,10 @@ export default {
           if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
         })
 
-        let knexOperations = knexInstance.alterTable(this.initialTable.tableName, (table)  => {
-          indexChanges.adds.forEach((indexDef) => {
-            if (indexDef.type === "unique") {
-              table.unique(indexDef.columns, {
-                indexName: indexDef.index_name,
-                useConstraint: false,
-                predicate: this.knex.where(this.knex.raw(indexDef.predicate))
-              })
-            } else {
-              table.index(indexDef.columns, indexDef.index_name, {
-                indexType: indexDef.type === 'regular' ? '' : indexDef.type,
-                storageEngineIndexType: indexDef.method,
-                predicate: this.knex.where(this.knex.raw(indexDef.predicate)),
-              }
-            )
-            }
-          })
-
-          indexChanges.drops.forEach((indexName) => {
-            table.dropIndex(null, indexName)
-          })
-
-          // TODO: add renameIndex support on other database dialects
-          indexChanges.renames.forEach((rename) => {
-            table.renameIndex(rename.oldName, rename.newName)
-          })
-        })
-
-        return knexOperations.toQuery()
-    },
-    generateColumnsSQL(knexInstance) {
-      let changes = {
-          'adds': [],
-          'drops': [],
-          'typeChanges': [],
-          'nullableChanges': [],
-          'defaults': [],
-          'renames': [],
-          'comments': []
-        }
-        // TODO: add support for altering Primary Keys
-        // TODO: add support for composite PKs
-        let originalColumns = this.initialTable.columns
-        this.localTable.columns?.forEach((column, idx) => {
-          if(column.deleted) changes.drops.push(originalColumns[idx].name)
-          if(column.new) changes.adds.push(column)
-          if(column.deleted || column.new) return //no need to do further steps for new or deleted cols
-
-
-          if (!isEqual(column, originalColumns[idx])) {
-            column.is_dirty = true;
-            originalColumns[idx].is_dirty = true;
-          } else {
-            column.is_dirty = false;
-            originalColumns[idx].is_dirty = false;
-          }
-  
-          if(column.dataType !== originalColumns[idx].dataType) changes.typeChanges.push(column)
-          if(column.nullable !== originalColumns[idx].nullable) changes.nullableChanges.push(column)
-          if(column.defaultValue !== originalColumns[idx].defaultValue) changes.defaults.push(column)
-          if(column.name !== originalColumns[idx].name) changes.renames.push({'oldName': originalColumns[idx].name, 'newName': column.name})
-          if(column.comment !== originalColumns[idx].comment) changes.comments.push(column)
-        })
-
         // we use initial table name here since localTable.tableName may be changed
         // which results in broken SQL
-        let knexOperations = knexInstance.alterTable(this.initialTable.tableName, function(table) {
-          changes.adds.forEach((coldef) => {
+        let knexOperations = knexInstance.alterTable(this.initialTable.tableName, (table) => {
+          columnChanges.adds.forEach((coldef) => {
             // use Knex's magic to create a proper auto-incrementing column in database-agnostic way
             let col = coldef.dataType === 'autoincrement' ?
               table.increments(coldef.name) :
@@ -428,9 +391,9 @@ export default {
             if(coldef.comment) col.comment(coldef.comment)
           })
 
-          if(changes.drops.length) table.dropColumns(changes.drops)
+          if(columnChanges.drops.length) table.dropColumns(columnChanges.drops)
 
-          changes.typeChanges.forEach((coldef) => {
+          columnChanges.typeChanges.forEach((coldef) => {
             if (coldef.dataType === 'autoincrement') {
               table.increments(coldef.name).alter()
             } else {
@@ -440,7 +403,7 @@ export default {
             }
           })
 
-          changes.defaults.forEach(function (coldef) {
+          columnChanges.defaults.forEach(function (coldef) {
             if (!!coldef?.skipDefaults) return
             let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table)
             table.specificType(coldef.name, coldef.dataType).alter().defaultTo(formattedDefault).alter({ alterNullable: false, alterType: false })
@@ -451,7 +414,7 @@ export default {
             // }
           })
 
-          changes.nullableChanges.forEach((coldef) => {
+          columnChanges.nullableChanges.forEach((coldef) => {
             if (table.client.dialect === "mysql") {
               coldef.nullable ? table.setNullable(coldef) : table.dropNullable(coldef)
             } else {
@@ -460,13 +423,40 @@ export default {
           })
 
           // FIXME: commenting generates drop default - how to avoid this?
-          // changes.comments.forEach((coldef) => {
+          // columnChanges.comments.forEach((coldef) => {
           //   //table.specificType(coldef.name, coldef.dataType).comment('test').alter({alterNullable : false, alterType: false})
           //   // table.raw(`comment on column "${tabledef.schema}"."${table._tableName}"."${coldef.name}" is '${coldef.comment}'`)
           // })
 
-          changes.renames.forEach((rename) => {
+          columnChanges.renames.forEach((rename) => {
             table.renameColumn(rename.oldName, rename.newName)
+          })
+
+          indexChanges.adds.forEach((indexDef) => {
+            const strippedPredicate = indexDef.predicate.trimStart().replace(/^where/i, "");
+            if (indexDef.type === "unique") {
+              table.unique(indexDef.columns, {
+                indexName: indexDef.index_name,
+                useConstraint: false,
+                predicate: this.knex.where(this.knex.raw(strippedPredicate)),
+              })
+            } else {
+              table.index(indexDef.columns, indexDef.index_name, {
+                indexType: indexDef.type === 'non-unique' ? '' : indexDef.type,
+                storageEngineIndexType: indexDef.method,
+                predicate: this.knex.where(this.knex.raw(strippedPredicate)),
+              }
+            )
+            }
+          })
+
+          indexChanges.drops.forEach((indexName) => {
+            table.dropIndex(null, indexName)
+          })
+
+          // TODO: add renameIndex support on other database dialects
+          indexChanges.renames.forEach((rename) => {
+            table.renameIndex(rename.oldName, rename.newName)
           })
         })
         // handle table rename last
@@ -483,12 +473,7 @@ export default {
 
       this.hasChanges = false
       if(this.mode === 'alter') {
-        if (this.tabType === "Indexes") {
-          this.generatedSQL = this.generateIndexesSQL(k)
-        } else if (this.tabType === "Columns") {
-          this.generatedSQL = this.generateColumnsSQL(k)
-        }
-
+        this.generatedSQL = this.generateAlterSQL(k);
       } else {
         // mode==create
         this.generatedSQL = k.createTable(tabledef.tableName, function (table) {
@@ -564,11 +549,9 @@ export default {
         emitter.emit(`schemaChanged_${this.connId}`, { database_name: this.databaseName, schema_name: this.localTable.schema })
         // ALTER: load table changes into UI
         if(this.mode === 'alter') {
-          if (this.tabType === "Indexes") {
-            this.loadIndexes()
-          } else if (this.tabType === "Columns") {
-            this.loadTableDefinition()
-          }
+          this.loadTableDefinition().then(() => {
+            this.loadIndexes();
+          });
         } else {
           // CREATE:reset the editor
           this.initialTable.schema = this.$props.schema
@@ -605,10 +588,10 @@ export default {
       return this.dialectData.indexMethods
     },
     columnNames() {
-      return this.initialTable.columns.map((col) => col.name)
+      return this.localTable.columns?.map((col) => col.name);
     },
     indexTypes() {
-      let defaultTypes = ["regular", "unique"]
+      let defaultTypes = ["non-unique", "unique"]
       return this.dialectData?.indexTypes ? [...defaultTypes, ...this.dialectData.indexTypes] : defaultTypes
     },
     disabledFeatures() {

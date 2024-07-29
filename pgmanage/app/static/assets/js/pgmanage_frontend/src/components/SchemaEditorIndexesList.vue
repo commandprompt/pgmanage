@@ -165,7 +165,7 @@ export default {
         editable: true,
         method: null,
         predicate: "",
-        type: "regular",
+        type: "non-unique",
         is_dirty: false,
       };
       this.indexes.push(defaultIndex);

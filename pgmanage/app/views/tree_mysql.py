@@ -245,7 +245,7 @@ def get_indexes(request, database):
             ]:
                 index_type = index["index_type"].lower()
             else:
-                index_type = "unique" if index["uniqueness"] == "Unique" else "regular"
+                index_type = "unique" if index["uniqueness"] == "Unique" else "non-unique"
             index_data = {
                 "index_name": index["index_name"],
                 "unique": index["uniqueness"] == "Unique",

@@ -173,7 +173,7 @@ def get_indexes(request, database):
             index_data = {
                 "index_name": index["index_name"],
                 "unique": index["unique"],
-                "type": "unique" if index["unique"] else "regular",
+                "type": "unique" if index["unique"] else "non-unique",
                 "is_primary": index["is_primary"],
                 "columns": index["columns"],
                 "predicate": index["constraint"],

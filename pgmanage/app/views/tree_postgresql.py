@@ -412,7 +412,7 @@ def get_indexes(request, database):
                 "index_name": index["index_name"],
                 "name_raw": index["name_raw"],
                 "unique": index["uniqueness"] == "Unique",
-                "type": "unique" if index["uniqueness"] == "Unique" else "regular",
+                "type": "unique" if index["uniqueness"] == "Unique" else "non-unique",
                 "oid": index["oid"],
                 "is_primary": index["is_primary"] == "True",
                 "columns": list(ast.literal_eval(index["columns"])),
