@@ -830,6 +830,18 @@ class PostgreSQL:
         ''', True)
 
     @lock_required
+    def QueryRoleDetails(self, oid):
+        return self.v_connection.Query('''
+            select quote_ident(rolname) as name_raw,
+            rolname as role_name, oid, rolcanlogin,
+            rolsuper, rolinherit, rolcreaterole,
+            rolcreatedb, rolreplication, rolbypassrls,
+            rolconnlimit, rolpassword, rolvaliduntil
+            from pg_roles
+            where oid={0}
+        '''.format(oid), True)
+
+    @lock_required
     def QueryTablespaces(self):
         return self.v_connection.Query('''
             select quote_ident(spcname) as tablespace_name,

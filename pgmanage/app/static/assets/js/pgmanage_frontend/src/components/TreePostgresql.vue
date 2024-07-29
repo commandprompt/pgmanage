@@ -34,7 +34,7 @@ import {
   TemplateInsertPostgresql,
   TemplateSelectFunctionPostgresql,
 } from "../tree_context_functions/tree_postgresql";
-import { createExtensionModal, createPgCronModal } from "./postgresql_modals";
+import { createExtensionModal, createPgCronModal, createRoleModal } from "./postgresql_modals";
 import { showConfirm, showToast } from "../notification_control";
 import { connectionsStore, messageModalStore, tabsStore } from "../stores/stores_initializer";
 import ContextMenu from "@imengyu/vue3-context-menu";
@@ -2750,6 +2750,13 @@ export default {
         cm_roles: [
           this.cmRefreshObject,
           {
+            label: "Create Role UI",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              createRoleModal(this.selectedNode, "Create");
+            },
+          },
+          {
             label: "Create Role",
             icon: "fas cm-all fa-edit",
             onClick: () => {
@@ -2834,6 +2841,13 @@ export default {
             icon: "fas cm-all fa-edit",
             onClick: () => {
               this.getObjectDescriptionPostgresql(this.selectedNode);
+            },
+          },//
+          {
+            label: "Edit Role",
+            icon: "fas cm-all fa-edit",
+            onClick: () => {
+              createRoleModal(this.selectedNode, "Edit");
             },
           },
           {

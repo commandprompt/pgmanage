@@ -865,6 +865,41 @@ def get_roles(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data={"data": list_roles})
 
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_role_details(request, database):
+    role_oid = request.data["oid"]
+
+    try:
+        role = database.QueryRoleDetails(role_oid)
+        if not role.Rows:
+            return JsonResponse(
+                {"data": f"Role with oid '{role_oid}' does not exist."}, status=400
+            )
+
+        rolerow = role.Rows[0]
+
+        role_details = {
+            'name': rolerow["role_name"],
+            'name_raw': rolerow["name_raw"],
+            'rolsuper': bool(rolerow["rolsuper"]),
+            'rolinherit': bool(rolerow["rolinherit"]),
+            'rolcanlogin': bool(rolerow["rolcanlogin"]),
+            'rolcreaterole': bool(rolerow["rolcreaterole"]),
+            'rolcreatedb': bool(rolerow["rolcreatedb"]),
+            'rolbypassrls': bool(rolerow["rolbypassrls"]),
+            'rolreplication': bool(rolerow["rolreplication"]),
+            'rolconnlimit': int(rolerow["rolconnlimit"]),
+            'rolpassword': rolerow["rolpassword"],
+            'rolvaliduntil': None if rolerow["rolvaliduntil"] == 'infinity' else int(rolerow["rolvaliduntil"]),
+        }
+
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+
+    return JsonResponse(data=role_details)
+
 
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)

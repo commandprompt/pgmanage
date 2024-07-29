@@ -117,6 +117,7 @@ base_urlpatterns = [
     path('get_databases_postgresql/', views.tree_postgresql.get_databases, name='get_databases'),
     path('get_tablespaces_postgresql/', views.tree_postgresql.get_tablespaces, name='get_tablespaces'),
     path('get_roles_postgresql/', views.tree_postgresql.get_roles, name='get_roles'),
+    path('get_role_details/', views.tree_postgresql.get_role_details, name='get_role_details'),
     path('get_extensions_postgresql/', views.tree_postgresql.get_extensions, name='get_extensions'),
     path('get_extension_details/', views.tree_postgresql.get_extension_details, name='get_extension_details'),
     path('save_postgresql_extension/', views.tree_postgresql.save_extension, name="save_postgresql_extension"),
