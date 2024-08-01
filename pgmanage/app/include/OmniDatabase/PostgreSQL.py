@@ -836,10 +836,25 @@ class PostgreSQL:
             rolname as role_name, oid, rolcanlogin,
             rolsuper, rolinherit, rolcreaterole,
             rolcreatedb, rolreplication, rolbypassrls,
-            rolconnlimit, rolpassword, rolvaliduntil
-            from pg_roles
+            rolconnlimit, rolpassword, rolvaliduntil,
+            ARRAY(
+                SELECT
+                    array[rm.rolname, CASE WHEN pgam.admin_option THEN 'true' ELSE 'false' END]
+                FROM
+                    (SELECT * FROM pg_catalog.pg_auth_members WHERE member = pgr.oid) pgam
+                    LEFT JOIN pg_catalog.pg_roles rm ON (rm.oid = pgam.roleid)
+                ORDER BY rm.rolname
+            ) AS member_of,
+            ARRAY(
+                SELECT
+                    array[pgrm.usename, CASE WHEN pgrm.admin_option THEN 'true' ELSE 'false' END]
+                FROM
+                    (SELECT pg_roles.rolname AS usename, pg_auth_members.admin_option AS admin_option FROM pg_roles
+                    JOIN pg_auth_members ON pg_roles.oid=pg_auth_members.member AND pg_auth_members.roleid={0}) pgrm
+            ) members
+            from pg_roles pgr
             where oid={0}
-        '''.format(oid), True)
+        '''.format(oid), False)
 
     @lock_required
     def QueryTablespaces(self):

@@ -4,7 +4,6 @@ from app.utils.crypto import pg_scram_sha256
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
 
-
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def get_tree_info(request, database):
@@ -891,7 +890,9 @@ def get_role_details(request, database):
             'rolreplication': bool(rolerow["rolreplication"]),
             'rolconnlimit': int(rolerow["rolconnlimit"]),
             'rolpassword': rolerow["rolpassword"],
-            'rolvaliduntil': None if rolerow["rolvaliduntil"] == 'infinity' else int(rolerow["rolvaliduntil"]),
+            'rolvaliduntil': None if rolerow["rolvaliduntil"] == 'infinity' else rolerow["rolvaliduntil"],
+            'members': rolerow["members"],
+            'member_of': rolerow["member_of"],
         }
 
     except Exception as exc:
