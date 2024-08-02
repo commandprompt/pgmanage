@@ -13,23 +13,26 @@
           </button>
         </div>
       </div>
-      <ul class="nav nav-tabs justify-content-center" role="tablist">
+      <ul class="nav nav-tabs mb-3" role="tablist">
         <li ref="columnsTab" class="nav-item" role="presentation">
-          <button class="nav-link active" :id="`${tabId}-columns-tab`" data-bs-toggle="tab" :data-bs-target="`#${tabId}-columns-tab-pane`" type="button" role="tab" aria-selected="true">Columns</button>
+          <button class="nav-item nav-link active" :id="`${tabId}-columns-tab`"
+            data-bs-toggle="tab" :data-bs-target="`#${tabId}-columns-tab-pane`"
+            type="button" role="tab"
+            aria-selected="true">
+            Columns
+          </button>
         </li>
         <li ref="indexesTab" class="nav-item" role="presentation">
-          <button class="nav-link" :id="`${tabId}-indexes-tab`" data-bs-toggle="tab" :data-bs-target="`#${tabId}-indexes-tab-pane`" type="button" role="tab" aria-selected="false">Indexes</button>
+          <button class="nav-item nav-link" :id="`${tabId}-indexes-tab`"
+            data-bs-toggle="tab"
+            :data-bs-target="`#${tabId}-indexes-tab-pane`"
+            type="button" role="tab" aria-selected="false">
+            Indexes
+          </button>
         </li>
       </ul>
       <div class="tab-content">
         <div class="tab-pane fade show active" :id="`${tabId}-columns-tab-pane`" role="tabpanel">
-
-          <div class="row">
-            <div class="col">
-              <label class="fw-bold mb-2 me-2">Columns</label>
-            </div>
-          </div>
-
           <ColumnList
             :initialColumns="initialTable.columns"
             :dataTypes="dataTypes"
@@ -58,7 +61,7 @@
               <label class="fw-bold mb-2" :for="`${tabId}_tableNameInput`">Table Name</label>
               <input v-model.trim="localTable.tableName" class="form-control" :id="`${tabId}_tableNameInput`" name="tableName" placeholder="table name..." />
           </div>
-    
+
           <div v-if="showSchema" class="form-group col-3">
             <label class="fw-bold mb-2" :for="`${tabId}_selectSchema`">Schema</label>
             <select class="form-select text-truncate pe-4" :id="`${tabId}_selectSchema`" v-model="localTable.schema">
@@ -74,18 +77,18 @@
             </button>
           </div>
         </div>
-    
+
         <div class="row">
           <div class="col">
             <label class="fw-bold mb-2 me-2">Columns</label>
-    
+
           <!-- TODO -->
           <!-- <button @click='addColumn' class="btn btn-icon btn-icon-success" title="Add column">
             <i class="fa-solid fa-circle-plus fa-xl"></i>
           </button> -->
           </div>
         </div>
-    
+
         <ColumnList
           :initialColumns="initialTable.columns"
           :dataTypes="dataTypes"

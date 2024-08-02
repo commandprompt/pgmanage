@@ -7,12 +7,12 @@
 
     <!-- DATA, MESSAGE, EXPLAIN tabs-->
     <div :id="`query_result_tabs_${tabId}`" class="h-100">
-      <div class="omnidb__tab-menu">
-        <div class="nav nav-tabs" role="tablist">
+      <div class="omnidb__tab-menu ps-2">
+        <div class="nav nav-tabs justi" role="tablist">
           <a ref="dataTab" class="omnidb__tab-menu__link nav-item nav-link active" :id="`nav_data_tab_${tabId}`"
           data-bs-toggle="tab" :data-bs-target="`#nav_data_${tabId}`" type="button" role="tab"
             :aria-controls="`nav_data_${tabId}`" aria-selected="true">
-            <span class="omnidb__tab-menu__link-name"> Data </span>
+            <span class="omnidb__tab-menu__link-name">Data</span>
           </a>
           <template v-if="postgresqlDialect">
             <a ref="messagesTab" class="omnidb__tab-menu__link nav-item nav-link" :id="`nav_messages_tab_${tabId}`"

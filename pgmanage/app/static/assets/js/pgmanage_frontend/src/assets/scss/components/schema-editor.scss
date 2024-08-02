@@ -1,7 +1,7 @@
 .schema-editor {
     &__header {
         & > [class*=col-] {
-            padding-left: calc(0.75rem + 5px);
+            padding-left: 0.75rem;
         }
     }
 
@@ -21,7 +21,7 @@
             &-deleted {
                 background-color: rgba($dangerColor, 0.25);
             }
-    
+
             &-new {
                 background-color: rgba($successColor, 0.25)
             }
@@ -48,8 +48,8 @@
                     transition: $transition;
                     backdrop-filter: brightness(95%);
                 }
-            }   
-        } 
+            }
+        }
 
         .custom-checkbox {
            margin-left: 0.75rem;

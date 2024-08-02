@@ -101,12 +101,6 @@ SOFTWARE.
     }
   }
 
-  .omnis-legere__control-panel {
-    button {
-      background-color: #6a6a6a38;
-    }
-  }
-
   /* ICONS */
   .close,
   i.icon-close {
@@ -251,6 +245,9 @@ SOFTWARE.
         border-width: 0 0 2px 0;
         border-style: solid;
         border-radius: 0;
+        transition: border-color 0.15s ease-in-out;
+        padding-left: 0;
+        padding-right: 0;
 
         &.active {
           background-color: #FFFFFF;
@@ -260,6 +257,14 @@ SOFTWARE.
 
         &-name {
           color: #16171E !important;
+        }
+
+        &:hover:not(.active) {
+          border-color: #90949a67;
+        }
+
+        &:not(:last-of-type) {
+          margin-right: 0.5rem;
         }
       }
     }
@@ -324,13 +329,6 @@ SOFTWARE.
     color: #EC2424;
   }
 
-  /* DISABLED */
-  // .form-control{
-  //   &:disabled,
-  //   &[readonly] {
-  //     background-color: #E9ECEF !important;
-  //   }
-  // }
   .custom-file > input[disabled]+label {
     background-color: #E9ECEF;
   }
@@ -398,16 +396,6 @@ SOFTWARE.
     .cellEven {
       background-color: #FFFFFF;
     }
-
-    // thead th,
-    // tr th,
-    // td {
-    //   border-color: #E6E7E9 !important;
-    //   border-bottom-color: #E6E7E9 !important;
-    //   border-left-color: #E6E7E9 !important;
-    //   border-right-color: #E6E7E9 !important;
-    //   border-top-color: #E6E7E9 !important;
-    // }
   }
 
   .handsontable.simple {
@@ -427,10 +415,6 @@ SOFTWARE.
 
   .omnidb__ht__first-col-actions td:first-child {
     color: #4A81D4;
-  }
-
-  select {
-    font-size: inherit;
   }
 
   /* Query Info */
@@ -461,14 +445,6 @@ SOFTWARE.
 .cellRemove {
 	background-color: rgb(255, 213, 213) !important;
 }
-
-.cellReadOnly {
-	// background-color: rgb(242, 242, 242) !important;
-}
-
-/*.cellEven {
-	background-color: rgb(234, 237, 249) !important;
-}*/
 
 #horizontal-resize-line {
   border-left-color: black;

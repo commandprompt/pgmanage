@@ -90,24 +90,6 @@ SOFTWARE.
     background-color: #2FB344;
   }
 
-  .omnis-legere__control-panel {
-    button {
-      background-color: #606980C4;
-      border: 1px solid #4A5266C4;
-    }
-  }
-
-  .omnis-legere__card {
-    .node-data {
-      background-color: #CCDBFF57;
-      border-color: #CCDBFF57;
-      color: #C9D4F0;
-      .text-danger {
-        color: #fff !important;
-      }
-    }
-  }
-
   /* ICONS */
   .close,
   i.icon-close {
@@ -267,6 +249,8 @@ SOFTWARE.
         border-width: 0 0 2px 0;
         border-style: solid;
         opacity: .7;
+        padding-left: 0;
+        padding-right: 0;
 
         &.active {
           background-color: #16171E;
@@ -282,6 +266,14 @@ SOFTWARE.
 
         &-icon {
           background-color: #2F3136 !important;
+        }
+
+        &:hover:not(.active) {
+          border-color: #90949a67;
+        }
+
+        &:not(:last-of-type) {
+          margin-right: 0.5rem;
         }
       }
     }
@@ -465,17 +457,11 @@ SOFTWARE.
   .div_right ul.tree li.last {
     background-color: #373b41 !important;
   }
-  .aimara_tree a.nav-link:hover {
-    background-color: #2c3d3e;
-  }
   .node:hover a {
     color: white !important;
   }
   .node a {
     color: #ffffff !important;
-  }
-  .aimara_tree a.nav-link:hover {
-    background-color: #2f3136;
   }
   span.node_selected span {
     color: inherit;
@@ -537,13 +523,6 @@ SOFTWARE.
   .div_right .tabs > li {
     background-color: #373b41 !important;
     color: #ffffff !important;
-  }
-
-  select {
-    background-color: #1A2234 !important;
-    border: 1px solid #243049 !important;
-    color: #F8FAFC !important;
-    font-size: inherit;
   }
 
   .handsontable .wtBorder.corner {
@@ -610,20 +589,6 @@ SOFTWARE.
 
   .div_left h2 {
   	color: #d7d7d7 !important;
-  }
-  /* ----------------------
-  				Aimara Menu
-  -----------------------*/
-  .aimara_menu,
-  .aimara_sub-menu {
-    background-color: #25282c !important;
-    border-color: #4c5365 !important;
-    box-shadow: none !important;
-  }
-  .aimara_menu li:hover,
-  .aimara_sub-menu li:hover {
-    background-color: #373b46 !important;
-    color: white !important;
   }
   .cm-all {
       color: inherit !important;

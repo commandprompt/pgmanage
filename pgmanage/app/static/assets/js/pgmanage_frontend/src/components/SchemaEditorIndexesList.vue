@@ -1,7 +1,7 @@
 <template>
   <div class="mb-2">
-    <div class="d-flex row fw-bold text-muted schema-editor__header">
-      <div class="col-2">
+    <div class="d-flex row fw-bold text-muted schema-editor__header g-0">
+      <div class="col-3">
         <p class="h6">Name</p>
       </div>
       <div class="col-1">
@@ -16,7 +16,7 @@
       <div v-if="!disabledFeatures?.indexPredicate" class="col">
         <p class="h6">Predicate</p>
       </div>
-      <div class="col">
+      <div class="col-1">
         <p class="h6">Actions</p>
       </div>
     </div>
@@ -30,23 +30,23 @@
         { 'schema-editor__column-dirty': index.is_dirty },
       ]"
     >
-      <div class="col-2 d-flex align-items-center">
-        <i
-          v-if="index.is_primary"
-          title="Primary key"
-          class="fas fa-key action-key text-secondary me-1"
+      <div class="col-3 d-flex align-items-center">
+        <i title="Primary key"
+          :class="['fas fa-key action-key text-secondary ms-2',
+          {'invisible': !index.is_primary}
+        ]"
         ></i>
         <input
           type="text"
           v-model="index.index_name"
-          class="form-control mb-0"
+          class="form-control mb-0 ps-2"
           placeholder="NULL"
           :disabled="disabledFeatures?.renameIndex && !index.new"
         />
       </div>
 
       <div class="col-1 d-flex align-items-center">
-        <select class="form-select" v-model="index.type" :disabled="!index.new">
+        <select class="form-select form-select-oblique" v-model="index.type" :disabled="!index.new">
           <option v-for="indexType in indexTypes" :value="indexType">
             {{ indexType }}
           </option>
@@ -58,7 +58,7 @@
         class="col-1 d-flex align-items-center"
       >
         <select
-          class="form-select"
+          class="form-select form-select-oblique"
           v-model="index.method"
           :disabled="!index.new || index.type == 'unique'"
         >
@@ -91,7 +91,7 @@
         />
       </div>
 
-      <div class="col d-flex me-2 justify-content-end">
+      <div class="col-1 d-flex me-2 justify-content-end">
         <button
           v-if="(index.deleted && !index.new) || index.is_dirty"
           @click="revertIndex(idx)"

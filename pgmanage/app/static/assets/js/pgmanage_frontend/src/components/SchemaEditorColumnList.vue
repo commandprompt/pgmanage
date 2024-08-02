@@ -1,6 +1,6 @@
 <template>
   <div class="mb-2">
-    <div class="d-flex row fw-bold text-muted schema-editor__header">
+    <div class="d-flex row fw-bold text-muted schema-editor__header g-0">
       <div :class="commentable ? 'col-2' : 'col-3'">
         <p class="h6">Name</p>
       </div>
