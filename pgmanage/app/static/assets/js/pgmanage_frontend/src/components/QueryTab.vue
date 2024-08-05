@@ -71,15 +71,13 @@
           </template>
 
           <!-- Query ACTIONS BUTTONS-->
-          <template v-if="showFetchButtons">
-            <button class="btn btn-sm btn-secondary" title="Fetch More"
-              @click="querySQL(queryModes.FETCH_MORE)">
-              Fetch More
-            </button>
-            <BlockSizeSelector v-model="blockSize"/>
-          </template>
+          <button v-show="showFetchButtons" class="btn btn-sm btn-secondary" title="Fetch More"
+            @click="querySQL(queryModes.FETCH_MORE)">
+            Fetch More
+          </button>
+          <BlockSizeSelector v-show="showFetchButtons" v-model="blockSize"/>
 
-          <button class="btn btn-sm btn-secondary" title="Fetch All" v-if="showFetchButtons"
+          <button class="btn btn-sm btn-secondary" title="Fetch All" v-show="showFetchButtons"
             @click="querySQL(queryModes.FETCH_ALL)">
             Fetch all
           </button>
@@ -96,22 +94,20 @@
             </button>
           </template>
 
-          <CancelButton v-if="executingState && longQuery" :tab-id="tabId" :conn-id="connId"
+          <CancelButton v-show="executingState && longQuery" :tab-id="tabId" :conn-id="connId"
             @cancelled="cancelSQLTab()" />
 
-          <!-- QUERY INFO DIV-->
-          <div>
-            <p class="m-0 h6" v-if="cancelled">
-              <b>Cancelled</b>
-            </p>
-            <p v-else-if="queryStartTime && queryDuration" class="h6 m-0  me-2">
-              <b>Start time:</b> {{ queryStartTime.format() }}<br/>
-              <b>Duration:</b> {{ queryDuration }}
-            </p>
-            <p v-else-if="queryStartTime" class=" m-0 h6">
-              <b>Start time:</b> {{ queryStartTime.format() }}
-            </p>
-          </div>
+          <!-- QUERY INFO-->
+          <p class="m-0 h6" v-show="cancelled">
+            <b>Cancelled</b>
+          </p>
+          <p v-show="showStartTimeAndDuration" class="h6 m-0  me-2">
+            <b>Start time:</b> {{ formattedStartTime }}<br/>
+            <b>Duration:</b> {{ queryDuration }}
+          </p>
+          <p v-show="showStartTime" class=" m-0 h6">
+            <b>Start time:</b> {{ formattedStartTime }}
+          </p>
 
           <!-- EXPORT BUTTON with SELECT OPTIONS -->
           <button class="btn btn-square btn-primary ms-auto" title="Export Data" @click="exportData()">
@@ -228,6 +224,15 @@ export default {
     },
     hasChanges() {
       return this.activeTransaction || this.executingState || (!!this.lastQuery && this.lastQuery !== this.editorContent);
+    },
+    showStartTimeAndDuration() {
+      return !this.cancelled && this.queryStartTime && this.queryDuration;
+    },
+    showStartTime() {
+      return !this.cancelled && this.queryStartTime && !this.queryDuration;
+    },
+    formattedStartTime() {
+      return this.queryStartTime ? this.queryStartTime.format() : '';
     }
   },
   mounted() {

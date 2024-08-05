@@ -14,6 +14,7 @@ export default {
     tabId: String,
     connId: String,
   },
+  emits: ['cancelled'],
   methods: {
     cancelSQL() {
       let tab = tabsStore.getSelectedSecondaryTab(this.connId);
