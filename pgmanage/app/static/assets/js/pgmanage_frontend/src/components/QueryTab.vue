@@ -82,17 +82,15 @@
             Fetch all
           </button>
 
-          <template v-if="activeTransaction">
-            <button class="btn btn-sm btn-primary" title="Commit"
-              @click="querySQL(queryModes.COMMIT)">
-              Commit
-            </button>
+          <button v-show="activeTransaction" class="btn btn-sm btn-primary" title="Commit"
+            @click="querySQL(queryModes.COMMIT)">
+            Commit
+          </button>
 
-            <button class="btn btn-sm btn-secondary" title="Rollback"
-              @click="querySQL(queryModes.ROLLBACK)">
-              Rollback
-            </button>
-          </template>
+          <button v-show="activeTransaction" class="btn btn-sm btn-secondary" title="Rollback"
+            @click="querySQL(queryModes.ROLLBACK)">
+            Rollback
+          </button>
 
           <CancelButton v-show="executingState && longQuery" :tab-id="tabId" :conn-id="connId"
             @cancelled="cancelSQLTab()" />
