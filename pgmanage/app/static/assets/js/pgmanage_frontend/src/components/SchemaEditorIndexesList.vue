@@ -31,10 +31,12 @@
       ]"
     >
       <div class="col-3 d-flex align-items-center">
-        <i title="Primary key"
-          :class="['fas fa-key action-key text-secondary ms-2',
-          {'invisible': !index.is_primary}
-        ]"
+        <i
+          title="Primary key"
+          :class="[
+            'fas fa-key action-key text-secondary ms-2',
+            { invisible: !index.is_primary },
+          ]"
         ></i>
         <input
           type="text"
@@ -46,26 +48,24 @@
       </div>
 
       <div class="col-1 d-flex align-items-center">
-        <select class="form-select form-select-oblique" v-model="index.type" :disabled="!index.new">
-          <option v-for="indexType in indexTypes" :value="indexType">
-            {{ indexType }}
-          </option>
-        </select>
+        <SearchableDropdown
+          placeholder="type to search"
+          :options="indexTypes"
+          v-model="index.type"
+          :disabled="!index.new"
+        />
       </div>
 
       <div
         v-if="!disabledFeatures?.indexMethod"
         class="col-1 d-flex align-items-center"
       >
-        <select
-          class="form-select form-select-oblique"
+        <SearchableDropdown
+          placeholder="type to search"
+          :options="indexMethods"
           v-model="index.method"
           :disabled="!index.new || index.type == 'unique'"
-        >
-          <option v-for="method in indexMethods" :value="method">
-            {{ method }}
-          </option>
-        </select>
+        />
       </div>
 
       <div class="col-3">
