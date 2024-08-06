@@ -287,30 +287,23 @@ export default {
       );
     },
     startEditSnippetText(node) {
-      // Checking if there is a tab for this snippet.
-
-      let snippetPanel = tabsStore.tabs.find((tab) => tab.name === "Snippets");
-      let existing_tab = snippetPanel.metaData.secondaryTabs.find(
-        (snippet_tab) => {
-          return snippet_tab.metaData?.snippetObject?.id === node.data.id;
-        }
-      );
-
-      if (existing_tab) {
-        tabsStore.selectTab(existing_tab);
-      } else {
-        tabsStore.createSnippetTab(this.tabId, node.data)
-      }
-
       this.api
-        .post("/get_snippet_text/", {
-          snippet_id: node.data.id,
-        })
-        .then((resp) => {
-          emitter.emit(
-            `${snippetPanel.metaData.selectedTab.id}_copy_to_editor`,
-            resp.data.data
-          );
+      .post("/get_snippet_text/", {
+        snippet_id: node.data.id,
+      })
+      .then((resp) => {
+        // Checking if there is a tab for this snippet.
+        let snippetPanel = tabsStore.tabs.find((tab) => tab.name === "Snippets");
+        let existing_tab = snippetPanel.metaData.secondaryTabs.find(
+          (snippet_tab) => {
+            return snippet_tab.metaData?.snippetObject?.id === node.data.id;
+          }
+        );
+        if (existing_tab) {
+          tabsStore.selectTab(existing_tab);
+        } else {
+          tabsStore.createSnippetTab(this.tabId, {...node.data, text: resp.data.data})
+        }
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

@@ -9,7 +9,6 @@ import { emitter } from "../emitter";
 import { queryRequestCodes } from "../constants";
 import { showMenuNewTabOuter, renameTab } from "../workspace";
 import { h } from "vue";
-import { Tooltip } from "bootstrap";
 
 const useTabsStore = defineStore("tabs", {
   state: () => ({
@@ -343,10 +342,6 @@ const useTabsStore = defineStore("tabs", {
               this.checkTabStatus();
             },
             closeFunction: (e, primaryTab) => {
-              const tooltipEl = document.getElementById(`${primaryTab.id}`).querySelector("[data-bs-toggle='tooltip']")
-              if(tooltipEl)
-                Tooltip.getInstance(tooltipEl).hide();
-
               this.beforeCloseTab(e, () => {
                 let tabsToRemove = [];
 
@@ -443,9 +438,17 @@ const useTabsStore = defineStore("tabs", {
           emitter.emit(`${this.id}_check_console_status`);
         },
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
+          if (tab.metaData.hasUnsavedChanges) {
+            messageModalStore.showModal(
+              "Are you sure you wish to discard unsaved console changes?",
+              () => {
+                this.closeTab(tab);
+              },
+              null
+            );
+          } else {
             this.closeTab(tab);
-          });
+          }
         },
       });
       const primaryTab = !!parentId
@@ -474,9 +477,17 @@ const useTabsStore = defineStore("tabs", {
           emitter.emit(`${this.id}_check_query_status`);
         },
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
+          if (tab.metaData.hasUnsavedChanges) {
+            messageModalStore.showModal(
+              "Are you sure you wish to discard unsaved query changes?",
+              () => {
+                this.closeTab(tab);
+              },
+              null
+            );
+          } else {
             this.closeTab(tab);
-          });
+          }
         },
         dblClickFunction: renameTab,
       });
@@ -506,6 +517,7 @@ const useTabsStore = defineStore("tabs", {
         snippetDetails = {
           id: snippet.id,
           name: snippetName,
+          text: snippet.text,
           parent: snippet.id_parent,
           type: "snippet",
         };
@@ -521,9 +533,17 @@ const useTabsStore = defineStore("tabs", {
           emitter.emit(`${this.id}_resize`);
         },
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
+          if (tab.metaData.hasUnsavedChanges) {
+            messageModalStore.showModal(
+              "Are you sure you wish to discard unsaved changes?",
+              () => {
+                this.closeTab(tab);
+              },
+              null
+            );
+          } else {
+            this.closeTab(tab);
+          }
         },
       });
 
@@ -542,9 +562,7 @@ const useTabsStore = defineStore("tabs", {
           emitter.emit(`${this.id}_redraw_widget_grid`);
         },
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.closeTab(tab);
-          });
+          this.closeTab(tab);
         },
         dblClickFunction: renameTab,
       });
@@ -596,9 +614,7 @@ const useTabsStore = defineStore("tabs", {
         mode: mode,
         component: `${utility}Tab`,
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.removeTab(tab);
-          });
+          this.closeTab(tab);
         },
       });
 
@@ -621,9 +637,7 @@ const useTabsStore = defineStore("tabs", {
           document.title = "PgManage";
         },
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.closeTab(tab);
-          });
+          this.closeTab(tab);
         },
       });
 
@@ -647,9 +661,17 @@ const useTabsStore = defineStore("tabs", {
         component: "DataEditorTab",
         mode: "edit",
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
+          if (tab.metaData.hasUnsavedChanges) {
+            messageModalStore.showModal(
+              "Are you sure you wish to discard unsaved data editor changes?",
+              () => {
+                this.closeTab(tab);
+              },
+              null
+            );
+          } else {
             this.closeTab(tab);
-          });
+          }
         },
       });
 
@@ -684,9 +706,17 @@ const useTabsStore = defineStore("tabs", {
         component: "SchemaEditorTab",
         mode: "alter",
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
+          if (tab.metaData.hasUnsavedChanges) {
+            messageModalStore.showModal(
+              "Are you sure you wish to discard unsaved schema editor changes?",
+              () => {
+                this.closeTab(tab);
+              },
+              null
+            );
+          } else {
             this.closeTab(tab);
-          });
+          }
         },
       });
 
@@ -716,9 +746,7 @@ const useTabsStore = defineStore("tabs", {
           document.title = "PgManage";
         },
         closeFunction: (e, tab) => {
-          this.beforeCloseTab(e, () => {
-            this.closeTab(tab);
-          });
+          this.closeTab(tab);
         },
         dblClickFunction: renameTab,
       });

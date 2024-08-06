@@ -430,6 +430,12 @@ export default {
       },
       deep: true
     },
+    hasChanges() {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.connId);
+      if (tab) {
+        tab.metaData.hasUnsavedChanges = this.hasChanges;
+      }
+    },
   }
 };
 </script>

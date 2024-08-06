@@ -47,7 +47,7 @@ export default {
         schema: this.schema,
       })
       .then((response) => {
-        this.nodes = response.data.v_data.nodes.map((node) => (
+        this.nodes = response.data.nodes.map((node) => (
           {
             data: {
               id: node.id,
@@ -70,7 +70,7 @@ export default {
           }
         ))
 
-        this.edges = response.data.v_data.edges.map((edge) => (
+        this.edges = response.data.edges.map((edge) => (
           {
             data: {
               source: edge.from,
@@ -85,7 +85,7 @@ export default {
       })
       .then(() => { this.initGraph() })
       .catch((error) => {
-        console.log(error)
+        console.log(error?.response?.data?.data)
       })
     },
     shortDataType(typename) {

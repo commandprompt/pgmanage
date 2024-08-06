@@ -299,9 +299,20 @@ import { Modal } from 'bootstrap';
       const needsServer = !['terminal', 'sqlite'].includes(this.connectionLocal.technology)
       const needsTunnel = this.connectionLocal.technology === 'terminal' || (this.connectionLocal.tunnel && this.connectionLocal.tunnel.enabled)
       const hostOrIp = function(value) {
-        const ipre = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
         const hostre = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
-        return ipre.test(value) || hostre.test(value)
+        const ipv4re = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+        // yes, this one is pretty long and cannot be easily made multi-line without extra tricks
+        const ipv6re = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/
+        // absolute paths without .. . and ~
+        const pathre = /^\/$|(^(?=\/))(\/(?=[^/\0])[^/\0]+)*\/?$/
+
+        if(['mariadb', 'mysql'].includes(this.connectionLocal.technology)) {
+          return ipv4re.test(value) || ipv6re.test(value) || hostre.test(value) || pathre.test(value)
+        }else if (this.connectionLocal.technology === 'postgresql'){
+          return ipv4re.test(value) || ipv6re.test(value) || hostre.test(value) || pathre.test(value) || !helpers.req(value)
+        } else {
+          return ipv4re.test(value) || ipv6re.test(value) || hostre.test(value)
+        }
       }
 
       let baseRules = {
@@ -328,9 +339,15 @@ import { Modal } from 'bootstrap';
 
       if(needsServer) {
         if(!this.connectionLocal.conn_string) {
-          baseRules.connectionLocal.server = {
-            required,
-            hostOrIp: helpers.withMessage('Must be a valid hostname or IP', hostOrIp)
+          if(['postgresql', 'mariadb', 'mysql'].includes(this.connectionLocal.technology)){
+            baseRules.connectionLocal.server = {
+              hostOrIp: helpers.withMessage('Must be a valid hostname, IP or a UNIX socket base path', hostOrIp)
+            }
+          } else {
+            baseRules.connectionLocal.server = {
+              required,
+              hostOrIp: helpers.withMessage('Must be a valid hostname or IP', hostOrIp)
+            }
           }
 
           baseRules.connectionLocal.port = {

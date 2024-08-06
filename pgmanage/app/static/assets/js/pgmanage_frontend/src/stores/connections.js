@@ -53,6 +53,7 @@ const useConnectionsStore = defineStore({
             );
         })
         .catch((error) => {
+          this.changeActiveDatabaseCallRunning = false;
           console.log(error);
         });
     },

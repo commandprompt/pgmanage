@@ -28,6 +28,7 @@ import datetime
 import decimal
 import json
 import math
+import re
 
 import app.include.Spartacus as Spartacus
 import app.include.Spartacus.prettytable as prettytable
@@ -54,7 +55,7 @@ except ImportError:
     pass
 try:
     import pymysql
-    from pymysql.constants import CLIENT
+    from pymysql.constants import CLIENT, ER
     v_supported_rdbms.append('MySQL')
     v_supported_rdbms.append('MariaDB')
 except ImportError:
@@ -83,6 +84,9 @@ except ImportError:
 
 
 class Exception(Exception):
+    pass
+
+class InvalidPasswordException(Exception):
     pass
 
 class DataTable(object):
@@ -1428,7 +1432,10 @@ class PostgreSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except psycopg2.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            msg = str(exc)
+            if 'FATAL:  password authentication failed for user' in msg:
+                raise InvalidPasswordException(msg) from exc
+            raise Spartacus.Database.Exception(msg)
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
     def Query(self, p_sql, p_alltypesstr=False, p_simple=False):
@@ -1905,6 +1912,11 @@ class MySQL(Generic):
     def __init__(self, p_host, p_port, p_service, p_user, p_password, p_conn_string='', p_encoding=None, connection_params=None):
         if 'MySQL' in v_supported_rdbms:
             self.v_host = p_host
+            if re.match(r'^\/$|(^(?=\/))(\/(?=[^/\0])[^/\0]+)*\/?$', p_host):
+                self.server_params = {'unix_socket': p_host}
+            else:
+                self.server_params = {'host': p_host}
+
             if p_port is None or p_port == '':
                 self.v_port = 3306
             else:
@@ -1964,7 +1976,6 @@ class MySQL(Generic):
     def Open(self, p_autocommit=True):
         try:
             self.v_con = pymysql.connect(
-                host=self.v_host,
                 port=int(self.v_port),
                 db=self.v_service,
                 user=self.v_user,
@@ -1972,13 +1983,17 @@ class MySQL(Generic):
                 autocommit=p_autocommit,
                 read_default_file='~/.my.cnf',
                 client_flag=CLIENT.MULTI_STATEMENTS,
-                **self.connection_params
+                **self.connection_params,
+                **self.server_params
                 )
             self.v_cur = self.v_con.cursor()
             self.v_start = True
             self.v_status = 0
             self.v_con_id = self.ExecuteScalar('select connection_id()')
         except pymysql.Error as exc:
+            code, msg = exc.args
+            if code == ER.ACCESS_DENIED_ERROR:
+                raise InvalidPasswordException(msg) from exc
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
@@ -2298,6 +2313,11 @@ class MariaDB(Generic):
     def __init__(self, p_host, p_port, p_service, p_user, p_password, p_conn_string='', p_encoding=None, connection_params=None):
         if 'MariaDB' in v_supported_rdbms:
             self.v_host = p_host
+            if re.match(r'^\/$|(^(?=\/))(\/(?=[^/\0])[^/\0]+)*\/?$', p_host):
+                self.server_params = {'unix_socket': p_host}
+            else:
+                self.server_params = {'host': p_host}
+
             if p_port is None or p_port == '':
                 self.v_port = 3306
             else:
@@ -2357,7 +2377,6 @@ class MariaDB(Generic):
     def Open(self, p_autocommit=True):
         try:
             self.v_con = pymysql.connect(
-                host=self.v_host,
                 port=int(self.v_port),
                 db=self.v_service,
                 user=self.v_user,
@@ -2366,12 +2385,16 @@ class MariaDB(Generic):
                 read_default_file='~/.my.cnf',
                 client_flag=CLIENT.MULTI_STATEMENTS,
                 **self.connection_params,
+                **self.server_params
                 )
             self.v_cur = self.v_con.cursor()
             self.v_start = True
             self.v_status = 0
             self.v_con_id = self.ExecuteScalar('select connection_id()')
         except pymysql.Error as exc:
+            code, msg = exc.args
+            if code == ER.ACCESS_DENIED_ERROR:
+                raise InvalidPasswordException(msg) from exc
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
@@ -3005,6 +3028,9 @@ class Oracle(Generic):
             self.v_cur = self.v_con.cursor()
             self.v_start = True
         except oracledb.Error as exc:
+            error_obj, = exc.args
+            if error_obj.code == 1017: # ORA-01017 invalid credential or not authorized; logon denied:
+                raise InvalidPasswordException(str(exc)) from exc
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))

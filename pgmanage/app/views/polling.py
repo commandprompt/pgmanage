@@ -1152,7 +1152,6 @@ def thread_query(self, args) -> None:
 
                 response_data["data"] = {
                     "col_names": None,
-                    "col_types": data.ColumnTypes,
                     "data": [],
                     "last_block": True,
                     "duration": duration,

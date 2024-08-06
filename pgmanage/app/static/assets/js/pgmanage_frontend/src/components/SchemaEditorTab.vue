@@ -116,7 +116,7 @@ import { createRequest } from '../long_polling'
 import { queryRequestCodes } from '../constants'
 import axios from 'axios'
 import { showToast } from '../notification_control'
-import { settingsStore } from '../stores/stores_initializer'
+import { settingsStore, tabsStore } from '../stores/stores_initializer'
 import IndexesList from './SchemaEditorIndexesList.vue'
 import isEqual from 'lodash/isEqual';
 
@@ -627,7 +627,13 @@ export default {
         this.generateSQL()
       },
       deep: true
-    }
+    },
+    hasChanges() {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.connId);
+      if (tab) {
+        tab.metaData.hasUnsavedChanges = this.hasChanges;
+      }
+    },
   }
 };
 </script>

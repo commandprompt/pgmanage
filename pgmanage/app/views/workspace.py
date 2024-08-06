@@ -12,7 +12,6 @@ from app.utils.key_manager import key_manager
 from app.utils.master_password import (reset_master_pass,
                                        set_masterpass_check_text,
                                        validate_master_password)
-from app.utils.response_helpers import create_response_template, error_response
 from app.views.connections import session_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -206,7 +205,6 @@ def renew_password(request, session):
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def draw_graph(request, database):
-    response_data = create_response_template()
     schema = request.data.get("schema", '')
     edge_dict = {}
     node_dict = {}
@@ -260,24 +258,25 @@ def draw_graph(request, database):
             edge['from_col'] = fkcol['column_name']
             edge['to_col'] = fkcol['r_column_name']
             edge['cgid'] = cgid
-            table = node_dict[fkcol['table_name']]
-            r_table = node_dict[fkcol['r_table_name']]
-            for col in table['columns']:
-                if col['name'] == fkcol['column_name']:
-                    col['is_fk'] = True
-                    col['cgid'] = cgid
+            table = node_dict.get(fkcol['table_name'])
+            r_table = node_dict.get(fkcol['r_table_name'])
+            if table and r_table:
+                for col in table['columns']:
+                    if col['name'] == fkcol['column_name']:
+                        col['is_fk'] = True
+                        col['cgid'] = cgid
 
-            for col in r_table['columns']:
-                if col['name'] == fkcol['r_column_name']:
-                    # FIXME: this is incomplete, seting PK based on FK constraints is not enough
-                    # there may be unreferenced PKs which will be missed
-                    col['is_pk'] = True
-                    col['cgid'] = f"{fkcol['r_table_name']}-{fkcol['r_column_name']}"
+                for col in r_table['columns']:
+                    if col['name'] == fkcol['r_column_name']:
+                        # FIXME: this is incomplete, seting PK based on FK constraints is not enough
+                        # there may be unreferenced PKs which will be missed
+                        col['is_pk'] = True
+                        col['cgid'] = f"{fkcol['r_table_name']}-{fkcol['r_column_name']}"
 
-        response_data["v_data"] = {"nodes": list(node_dict.values()), "edges": list(edge_dict.values())}
+        response_data = {"nodes": list(node_dict.values()), "edges": list(edge_dict.values())}
 
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
     return JsonResponse(response_data)
 
@@ -369,7 +368,7 @@ def get_database_meta(request, database):
         response_data["schemas"] = schema_list
 
     except Exception as exc:
-        return error_response(message=str(exc), password_timeout=True)
+        return JsonResponse(data={'data': str(exc)}, status=400)
 
     return JsonResponse(response_data)
 

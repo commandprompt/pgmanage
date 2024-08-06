@@ -65,18 +65,16 @@
         <CancelButton v-if="executingState && longQuery" :tab-id="tabId" :conn-id="connId"
           @cancelled="cancelConsoleTab()" />
 
-        <div>
-          <p class="m-0 h6" v-if="cancelled">
-            <b>Cancelled</b>
-          </p>
-          <p v-else-if="queryStartTime && queryDuration" class="m-0 h6 me-2">
-            <b>Start time:</b> {{ queryStartTime.format() }}<br/>
-            <b>Duration:</b> {{ queryDuration }}
-          </p>
-          <p v-else-if="queryStartTime" class="m-0 h6 me-2">
-            <b>Start time:</b> {{ queryStartTime.format() }}
-          </p>
-        </div>
+        <p class="m-0 h6" v-if="cancelled">
+          <b>Cancelled</b>
+        </p>
+        <p v-else-if="queryStartTime && queryDuration" class="m-0 h6 me-2">
+          <b>Start time:</b> {{ queryStartTime.format() }}<br/>
+          <b>Duration:</b> {{ queryDuration }}
+        </p>
+        <p v-else-if="queryStartTime" class="m-0 h6 me-2">
+          <b>Start time:</b> {{ queryStartTime.format() }}
+        </p>
       </div>
       <!--FIXME: add proper editor height recalculation-->
         <QueryEditor ref="editor" class="custom-editor me-2" :read-only="readOnlyEditor" :tab-id="tabId" tab-mode="console"
@@ -159,6 +157,15 @@ export default {
     consoleModes() {
       return consoleModes;
     },
+    activeTransaction() {
+      return [
+        tabStatusMap.IDLE_IN_TRANSACTION,
+        tabStatusMap.IDLE_IN_TRANSACTION_ABORTED,
+      ].includes(this.tabStatus);
+    },
+    hasChanges() {
+      return this.activeTransaction || this.executingState || !!this.editorContent
+    }
   },
   updated() { 
     if (!this.terminal) {
@@ -392,6 +399,14 @@ export default {
       }
     },
   },
+  watch: {
+    hasChanges() {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.connId);
+      if (tab) {
+        tab.metaData.hasUnsavedChanges = this.hasChanges;
+      }
+    },
+  }
 };
 </script>
 

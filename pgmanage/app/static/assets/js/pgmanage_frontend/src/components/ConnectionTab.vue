@@ -195,6 +195,7 @@ export default {
 
     new Tooltip(`#${this.connTabId}_switch`, {
       boundary: "window",
+      trigger: 'hover'
     });
   },
   methods: {

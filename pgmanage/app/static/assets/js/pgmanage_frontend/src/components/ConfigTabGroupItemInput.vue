@@ -133,7 +133,8 @@ export default {
           title: this.tooltipTitle,
           boundary: "window",
           html: true,
-          delay: { show: 500, hide: 100 }
+          delay: { show: 500, hide: 100 },
+          trigger: 'hover'
         })
       }
       if (buttonEl) {
@@ -142,7 +143,8 @@ export default {
           sanitize: false,
           boundary: "window",
           html: true,
-          delay: { show: 500, hide: 100 }
+          delay: { show: 500, hide: 100 },
+          trigger: 'hover'
         })
       }
     });

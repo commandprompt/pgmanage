@@ -80,7 +80,9 @@ export default {
   },
   methods: {
     togglePanel() {
-      $(".omnidb__panel-view--full").removeClass("omnidb__panel-view--full");
+      document.querySelectorAll('.omnidb__panel-view--full').forEach(element => {
+        element.classList.remove('omnidb__panel-view--full');
+      });
       this.isVisible = !this.isVisible;
     },
     hidePanel() {

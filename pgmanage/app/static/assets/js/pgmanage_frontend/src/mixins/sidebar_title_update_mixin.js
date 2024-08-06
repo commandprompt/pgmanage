@@ -41,7 +41,8 @@ export default {
           title: tab.tooltip,
           html: true,
           delay: { show: 500, hide: 100 },
-          offset: [0, 10]
+          offset: [0, 10],
+          trigger: 'hover'
         });
       });
     },

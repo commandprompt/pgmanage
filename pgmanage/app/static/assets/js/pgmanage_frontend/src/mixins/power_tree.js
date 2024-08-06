@@ -73,9 +73,9 @@ export default {
       if (node.isExpanded) return;
       this.refreshTree(node);
       if(settingsStore.scrollTree) {
-        this.getNodeEl(node.path).scrollIntoView({
+        this.getNodeEl(node.path).querySelector('.vue-power-tree-title').scrollIntoView({
           block: "start",
-          inline: "nearest",
+          inline: "end",
           behavior: "smooth",
         })
       }

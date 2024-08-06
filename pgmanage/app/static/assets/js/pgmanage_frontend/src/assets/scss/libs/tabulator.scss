@@ -18,11 +18,11 @@
                 @include themify() {
                     background-color: themed($surfaceBg);
                 }
-                
+
                 .subscript {
                     font-size: 0.7rem;
                 }
-                
+
                 &:hover .tabulator-col {
                     border-left-color: rgba($primaryMutedColor, 0.4) !important;
                 }
@@ -42,9 +42,8 @@
                 }
 
                 &-popup-button {
-                    &:hover {
-                        color: $primaryBlue;
-                    }
+                    color: $primaryBlue;
+                    opacity: 1 !important;
                 }
             }
 

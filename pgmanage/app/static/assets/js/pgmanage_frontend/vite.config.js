@@ -71,6 +71,10 @@ export default defineConfig(({ command, mode }) => {
     },
     test: {
       environment: "happy-dom",
+      coverage: {
+        reporter: ["html"],
+        enabled: true
+      }
     },
   };
 });

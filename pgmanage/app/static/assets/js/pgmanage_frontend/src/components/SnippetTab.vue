@@ -70,6 +70,7 @@ export default {
       default: {
         id: null,
         name: null,
+        text: null,
         parent: null,
         type: "snippet",
       },
@@ -86,6 +87,7 @@ export default {
       },
       heightSubtract: 100 + settingsStore.fontSize,
       fileSaveDisabled: true,
+      editorValue: "",
     };
   },
   computed: {
@@ -93,9 +95,13 @@ export default {
       return `calc(100vh - ${this.heightSubtract}px)`;
     },
     snippetPanel() {
-      return tabsStore.tabs.find(
-          (tab) => tab.name === "Snippets"
-        );
+      return tabsStore.tabs.find((tab) => tab.name === "Snippets");
+    },
+    hasChanges() {
+      return (
+        (!!this.snippet?.id && this.snippet.text !== this.editorValue) ||
+        (this.snippet?.id === null && !!this.editorValue)
+      );
     },
   },
   beforeMount() {
@@ -123,6 +129,9 @@ export default {
 
       this.editor.setFontSize(settingsStore.fontSize);
       this.editor.setShowPrintMargin(false);
+      this.editor.setValue(this.snippet.text);
+      this.editorValue = this.snippet.text;
+      this.editor.clearSelection();
 
       this.editor.commands.bindKey("ctrl-space", null);
 
@@ -135,7 +144,9 @@ export default {
       this.editor.commands.bindKey("Ctrl-Down", null);
 
       this.editor.on("change", () => {
-        this.fileSaveDisabled = !this.editor.getValue();
+        const editorValue = this.editor.getValue();
+        this.fileSaveDisabled = !editorValue;
+        this.editorValue = editorValue;
       });
 
       this.editor.focus();
@@ -293,6 +304,14 @@ export default {
       }
     },
   },
+  watch: {
+    hasChanges() {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.snippetPanel?.id);
+      if (tab) {
+        tab.metaData.hasUnsavedChanges = this.hasChanges;
+      }
+    },
+  }
 };
 </script>
 
