@@ -251,6 +251,23 @@ export default {
           behavior: "smooth",
         });
       } 
-    }
+    },
+    shouldUpdateNode(node) {
+      if (!!node?.data?.last_update) {
+        const now = new Date();
+        const lastUpdateDate = new Date(node.data.last_update);
+        const interval = (now - lastUpdateDate) / 1000;
+        if (interval < 60) return false;
+        this.$refs.tree.updateNode(node.path, {
+          data: { ...node.data, last_update: new Date() },
+        });
+      } else {
+        const now = new Date();
+        this.$refs.tree.updateNode(node.path, {
+          data: { ...node.data, last_update: now.toISOString() },
+        });
+      }
+      return true;
+    },
   },
 };

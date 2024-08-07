@@ -3161,6 +3161,7 @@ export default {
         true,
         () => {
           setTimeout(() => {
+            if (!this.shouldUpdateNode(node)) return
             if (node.children.length == 0) this.insertSpinnerNode(node);
             this.refreshTreePostgresqlConfirm(node).then(() => {
               this.$hooks?.add_tree_node_item?.forEach((hook) => {
