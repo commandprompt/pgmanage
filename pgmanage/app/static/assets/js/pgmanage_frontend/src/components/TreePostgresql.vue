@@ -3014,7 +3014,7 @@ export default {
         return node.data.type === "table_list";
       });
       // this is to handle cases when tables_node is absent because schema_node is not expanded and therefore empty
-      this.refreshTree(tables_node || schema_node);
+      this.refreshTree(tables_node || schema_node, true);
     });
   },
   methods: {
@@ -3155,13 +3155,13 @@ export default {
         return Promise.resolve('success');
       }
     },
-    refreshTree(node) {
+    refreshTree(node, force) {
       this.checkCurrentDatabase(
         node,
         true,
         () => {
           setTimeout(() => {
-            if (!this.shouldUpdateNode(node)) return
+            if (!this.shouldUpdateNode(node, force)) return
             if (node.children.length == 0) this.insertSpinnerNode(node);
             this.refreshTreePostgresqlConfirm(node).then(() => {
               this.$hooks?.add_tree_node_item?.forEach((hook) => {

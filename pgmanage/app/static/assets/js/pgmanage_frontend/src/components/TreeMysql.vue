@@ -622,7 +622,7 @@ export default {
       let tables_node = tree.getNextNode(db_node.path, (node) => {
         return node.data.type === "table_list";
       });
-      this.refreshTree(tables_node);
+      this.refreshTree(tables_node, true);
     });
   },
   methods: {
@@ -679,12 +679,13 @@ export default {
         if (callback_continue) callback_continue();
       }
     },
-    refreshTree(node) {
+    refreshTree(node, force) {
       this.checkCurrentDatabase(
         node,
         true,
         () => {
           setTimeout(() => {
+            if (!this.shouldUpdateNode(node, force)) return
             this.refreshTreeConfirm(node)
           }, 100);
         },

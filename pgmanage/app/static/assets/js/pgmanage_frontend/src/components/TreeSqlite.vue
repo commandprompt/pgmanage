@@ -330,11 +330,12 @@ export default {
         return node.data.type === "table_list";
       });
 
-      this.refreshTree(tables_node);
+      this.refreshTree(tables_node, true);
     });
   },
   methods: {
-    refreshTree(node) {
+    refreshTree(node, force) {
+      if (!this.shouldUpdateNode(node, force)) return
       if (node.children.length == 0) this.insertSpinnerNode(node);
       if (node.data.type == "server") {
         this.getTreeDetailsSqlite(node);

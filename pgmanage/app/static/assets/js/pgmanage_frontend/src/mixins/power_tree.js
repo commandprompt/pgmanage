@@ -45,7 +45,7 @@ export default {
     axiosHooks(logger, this.api)
 
     emitter.on(`refreshNode_${this.tabId}`, (e) => {
-      this.refreshTree(e.node);
+      this.refreshTree(e.node, true);
     });
 
     emitter.on(`removeNode_${this.tabId}`, (e) => {
@@ -161,7 +161,7 @@ export default {
     refreshNode() {
       const node = this.getSelectedNode();
       this.expandNode(node);
-      this.refreshTree(node);
+      this.refreshTree(node, true);
     },
     formatTitle(node) {
       if (node.data.unique !== undefined) {
@@ -202,7 +202,7 @@ export default {
       const getInnerNode = (node, node_type) => {
         if (!!node.children.length) {
           if (node.data.type === node_type) {
-            this.refreshTree(node);
+            this.refreshTree(node, true);
             this.expandNode(node);
           }
 
@@ -214,7 +214,7 @@ export default {
                 childNode.data.type === "database" &&
                 node_type === "extension_list"
               ) {
-                this.refreshTree(childNode);
+                this.refreshTree(childNode, true);
 
                 setTimeout(() => {
                   getInnerNode(childNode, node_type);
@@ -252,17 +252,16 @@ export default {
         });
       } 
     },
-    shouldUpdateNode(node) {
-      if (!!node?.data?.last_update) {
-        const now = new Date();
+    shouldUpdateNode(node, force) {
+      const now = new Date();
+      if (!force && !!node?.data?.last_update) {
         const lastUpdateDate = new Date(node.data.last_update);
         const interval = (now - lastUpdateDate) / 1000;
         if (interval < 60) return false;
         this.$refs.tree.updateNode(node.path, {
-          data: { ...node.data, last_update: new Date() },
+          data: { ...node.data, last_update: now.toISOString() },
         });
       } else {
-        const now = new Date();
         this.$refs.tree.updateNode(node.path, {
           data: { ...node.data, last_update: now.toISOString() },
         });
