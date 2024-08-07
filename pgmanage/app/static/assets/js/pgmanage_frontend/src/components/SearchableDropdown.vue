@@ -176,11 +176,3 @@
     }
   };
 </script>
-
-<style scoped>
-/*TODO: change this to proper color styling for selected options */
-.dropdown-searchable__content_item.selected {
-  background-color: #007bff;
-  color: white;
-}
-</style>

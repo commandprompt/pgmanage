@@ -70,9 +70,10 @@ $dropdownMinWidth: 11rem;
             box-shadow: $dropdownBoxShadow;
             overflow: auto;
             z-index: 200;
+            border-radius: 0 0 $borderRadius $borderRadius;
 
             @include themify() {
-                background-color: themed($surfaceBg);
+                background-color: themed($popupBg);
                 border: themed($border);
             }
 
@@ -87,6 +88,10 @@ $dropdownMinWidth: 11rem;
 
                 &:hover {
                     background-color: rgba($primaryMutedColor, 0.15);
+                }
+
+                &.selected {
+                    background-color: rgba($primaryBlue, 0.15);
                 }
             }
         }

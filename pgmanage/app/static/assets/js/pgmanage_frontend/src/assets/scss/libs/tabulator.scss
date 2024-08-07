@@ -156,9 +156,9 @@
                         }
 
                         &-dirty {
-                            background-color: rgba($warningColor, 0.25) !important;
+                            background-color: rgba($warningColor, 0.35) !important;
                             .tabulator-frozen-left:after {
-                                background-color: rgba($warningColor, 0.25) !important;
+                                background-color: rgba($warningColor, 0.35) !important;
                             }
                         }
                         &-new {
