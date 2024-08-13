@@ -32,15 +32,6 @@ describe("TreePropertiesDDL.vue", () => {
 
     expect(wrapper.emitted()).toHaveProperty("toggleTreeTabs");
   });
-  test("emits dataCleared event on clearData prop change to true", async () => {
-    const wrapper = mount(TreePropertiesDDL);
-
-    wrapper.vm.table.clearData = vi.fn();
-
-    await wrapper.setProps({ clearData: true });
-
-    expect(wrapper.emitted()).toHaveProperty("dataCleared");
-  });
   test("shows loading spinner when showLoading prop is true", async () => {
     const wrapper = mount(TreePropertiesDDL);
 

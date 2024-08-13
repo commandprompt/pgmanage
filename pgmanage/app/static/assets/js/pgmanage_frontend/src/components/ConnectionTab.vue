@@ -52,7 +52,7 @@
                         :tab-id="connTabId"
                         :database-index="databaseIndex"
                         @tree-tabs-update="getProperties"
-                        @clear-tabs="clearTreeTabsData = true"
+                        @clear-tabs="clearTreeTabsData"
                       ></component>
                     </div>
                   </pane>
@@ -68,9 +68,7 @@
                       :ddl-data="ddlData"
                       :properties-data="propertiesData"
                       :show-loading="showTreeTabsLoading"
-                      :clear-data="clearTreeTabsData"
                       @toggle-tree-tabs="toggleTreeTabPane"
-                      @data-cleared="clearTreeTabsData = false"
                     />
                   </pane>
                 </splitpanes>
@@ -135,7 +133,6 @@ export default {
       treeTabsPaneSize: 2,
       lastTreeTabsPaneSize: null,
       showTreeTabsLoading: false,
-      clearTreeTabsData: false,
       lastTreeTabsData: null,
       lastTreeTabsView: null,
     };
@@ -306,6 +303,10 @@ export default {
         this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
         this.treeTabsPaneSize = 2;
       }
+    },
+    clearTreeTabsData() {
+      this.ddlData='';
+      this.propertiesData=[];
     },
   },
 };

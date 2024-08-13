@@ -95,9 +95,8 @@ export default {
       type: Boolean,
       default: false,
     },
-    clearData: false,
   },
-  emits: ["toggleTreeTabs", "dataCleared"],
+  emits: ["toggleTreeTabs"],
   data() {
     return {
       table: null,
@@ -111,19 +110,7 @@ export default {
       this.editor.gotoLine(0, 0, true);
     },
     propertiesData(newValue, oldValue) {
-      this.table.setData(this.propertiesData);
-      this.table.redraw(true);
-    },
-    clearData(newValue, oldValue) {
-      if (newValue) {
-        this.table.clearData();
-
-        this.editor.setValue("");
-        this.editor.clearSelection();
-        this.editor.gotoLine(0, 0, true);
-
-        this.$emit("dataCleared");
-      }
+      this.table.setData(newValue);
     },
   },
   mounted() {
@@ -142,6 +129,7 @@ export default {
   methods: {
     setupTable() {
       this.table = new Tabulator(this.$refs.tabulator, {
+        renderVertical: "basic",
         columnDefaults: {
           headerHozAlign: "left",
           headerSort: false,
@@ -167,13 +155,13 @@ export default {
     setupEditor() {
       // TODO: DRY editor initialization. possibly move common setup stuff into a mixin
       const EDITOR_MODEMAP = {
-        'postgresql': 'pgsql',
-        'mysql': 'mysql',
-        'mariadb': 'mysql',
-        'oracle': 'plsql'
-      }
+        postgresql: "pgsql",
+        mysql: "mysql",
+        mariadb: "mysql",
+        oracle: "plsql",
+      };
 
-      let editor_mode = EDITOR_MODEMAP[this.databaseTechnology] || 'sql'
+      let editor_mode = EDITOR_MODEMAP[this.databaseTechnology] || "sql";
 
       this.editor = ace.edit(this.$refs.editor);
       this.editor.$blockScrolling = Infinity;
