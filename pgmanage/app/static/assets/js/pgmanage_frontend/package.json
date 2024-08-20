@@ -60,7 +60,7 @@
     "pinia": "^2.1.6",
     "short-unique-id": "^4.4.4",
     "splitpanes": "^3.1.5",
-    "sql-autocomplete": "^1.1.1",
+    "sql-autocomplete": "git://github.com/commandprompt/sql-autocomplete.git#b7341adf641b1ffa708d405b7bfed32cbafa78ac",
     "sql-formatter": "^12.2.4",
     "tabulator-tables": "6.2",
     "vue": "^3.3.11",
