@@ -190,6 +190,7 @@ export default {
         'mysql': SQLDialect.MYSQL,
         'mariadb': SQLDialect.MYSQL,
         'oracle': SQLDialect.PLpgSQL,
+        'sqlite': SQLDialect.SQLITE,
       }
 
       this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, tableNames, columnNames);
