@@ -118,7 +118,7 @@
 
               <!-- Memberships tab -->
               <div class="tab-pane fade show" id="role_memberships" role="tabpanel"
-                  aria-labelledby="role_memberships-tab" style="height: 50vh">
+                  aria-labelledby="role_memberships-tab">
                   <div>
                     <div class='pb-3'>
                       <h3 class="mb-0">Members:</h3>
@@ -127,18 +127,80 @@
                           <div class="col-8">
                             <p class="h6">Role Name</p>
                           </div>
-                          <div class="col-4">
+                          <div class="col-3">
                             <p class="h6">Admin</p>
                           </div>
                         </div>
 
-                        <div :class="['schema-editor__column d-flex row flex-nowrap form-group g-0']">
+                        <div v-for="(member, index) in filterDeleted(localRole?.members)" :key="member.index"
+                          :class="['schema-editor__column d-flex row flex-nowrap form-group g-0']">
                           <div class="col-8">
-                            smth
+                            <SearchableDropdown
+                              placeholder="type to search"
+                              :options="existingRoleOptions"
+                              :default="{ name: 'integer' }"
+                              :maxItem=20
+                              v-model="member.name"
+                            />
                           </div>
-                          <div class="col-4 d-flex align-items-center">
-                            <input type='checkbox' class="custom-checkbox"/>
+                          <div class="col-3 d-flex align-items-center">
+                            <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
                           </div>
+
+                          <div :class="['col d-flex me-2', 'justify-content-end']">
+                            <button @click='removeMember(filterDeleted(localRole?.members), index)' type="button"
+                              class="btn btn-icon btn-icon-danger" title="Remove">
+                              <i class="fas fa-circle-xmark"></i>
+                            </button>
+                          </div>
+                        </div>
+
+                        <div class="d-flex g-0 fw-bold mt-2">
+                          <button @click='addMember(localRole.members)' class="btn btn-outline-success btn-sm ms-auto">
+                            Add Member
+                          </button>
+                        </div>
+                    </div>
+
+                    <div class='pb-3'>
+                      <h3 class="mb-0">Member Of:</h3>
+
+                        <div class="d-flex row fw-bold text-muted schema-editor__header">
+                          <div class="col-8">
+                            <p class="h6">Role Name</p>
+                          </div>
+                          <div class="col-3">
+                            <p class="h6">Admin</p>
+                          </div>
+                        </div>
+
+                        <div v-for="(member, index) in filterDeleted(localRole?.memberOf)" :key="member.index"
+                          :class="['schema-editor__column d-flex row flex-nowrap form-group g-0']">
+                          <div class="col-8">
+                            <SearchableDropdown
+                              placeholder="type to search"
+                              :options="existingRoleOptions"
+                              :default="{ name: 'integer' }"
+                              :maxItem=20
+                              v-model="member.name"
+                            />
+                          </div>
+                          <div class="col-3 d-flex align-items-center">
+                            <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
+                          </div>
+
+                          <div :class="['col d-flex me-2', 'justify-content-end']">
+                            <button @click='removeMember(filterDeleted(localRole?.memberOf), index)' type="button"
+                              class="btn btn-icon btn-icon-danger" title="Remove">
+                              <i class="fas fa-circle-xmark"></i>
+                            </button>
+                          </div>
+                        </div>
+
+                        <div class="d-flex g-0 fw-bold mt-2">
+                          <button @click='addMember(localRole.memberOf)' class="btn btn-outline-success btn-sm ms-auto">
+                            Add Member
+                          </button>
                         </div>
                     </div>
 
@@ -161,8 +223,8 @@
   </template>
 
   <script>
-
   import ConfirmableButton from './ConfirmableButton.vue'
+  import SearchableDropdown from './SearchableDropdown.vue'
   import { required, between, maxLength, helpers } from '@vuelidate/validators'
   import { useVuelidate } from '@vuelidate/core'
   import { isEmpty, capitalize } from 'lodash';
@@ -176,7 +238,8 @@
   export default {
     name: 'RoleModal',
     components: {
-        ConfirmableButton
+        ConfirmableButton,
+        SearchableDropdown
     },
     props: {
       mode: String,
@@ -186,9 +249,6 @@
     },
     data() {
       return {
-        error: '',
-        manualInput: false,
-        jobName: '',
         localRole: {},
         initialRole: {
           name: 'NewRole',
@@ -202,8 +262,12 @@
           inherit: false,
           canReplicate: false,
           canBypassRLS: false,
+          members: [],
+          memberOf: []
         },
+        existingRoles: [],
         generatedSQL: null,
+        modalInstance: null,
       }
     },
 
@@ -241,6 +305,9 @@
         if (this.mode === 'Edit') return 'Edit Role'
         return 'Create Role'
       },
+      existingRoleOptions() {
+        return this.existingRoles.map((role) => role.name)
+      }
     },
 
     watch: {
@@ -255,7 +322,7 @@
         },
         deep: true
       },
-      // watch our local working copy for changes, generate new SQL when the change occcurs
+      // watch our local working copy for changes, generate new SQL when the change occurs
       localRole: {
         handler(newVal, oldVal) {
           this.v$.$validate()
@@ -273,17 +340,27 @@
     mounted() {
       if (this.mode === 'Edit') {
           this.getRoleDetails()
-          // let tabEl = document.getElementById('role_memberships-tab')
-          // tabEl.addEventListener('shown.bs.tab', this.setupRoleMembershipsTab)
       } else {
         this.localRole = {...this.initialRole}
       }
+      this.getExistingRoles()
       this.setupEditor()
       this.setupDatePicker()
-      Modal.getOrCreateInstance('#roleModal').show()
+      let tabEl = document.getElementById('role_general-tab')
+      tabEl.addEventListener('shown.bs.tab', () => {
+        this.editor.setValue(this.generatedSQL)
+        this.editor.clearSelection()
+      })
+      this.modalInstance = Modal.getOrCreateInstance('#roleModal')
+      this.modalInstance.show()
     },
 
     methods: {
+      filterDeleted(collection) {
+        if(!collection)
+          return []
+        return collection.filter(item => !item.deleted)
+      },
       getRoleDetails() {
         axios.post('/get_role_details/', {
           database_index: this.databaseIndex,
@@ -302,10 +379,37 @@
             this.initialRole.superuser = resp.data.rolsuper
             this.initialRole.canReplicate = resp.data.rolreplication
             this.initialRole.canBypassRLS = resp.data.rolbypassrls
+            this.initialRole.members = resp.data.members.map((m) => { return {name: m[0], withAdmin: m[1] == 'true'}})
+            this.initialRole.memberOf = resp.data.member_of.map((m) => { return {name: m[0], withAdmin: m[1] == 'true'}})
           })
           .catch((error) => {
               console.log(error)
           })
+      },
+
+      getExistingRoles() {
+        axios.post('/get_roles_postgresql/', {
+          database_index: this.databaseIndex,
+          tab_id: this.connId,
+          oid: this.treeNode.data.oid
+        })
+          .then((resp) => {
+            this.existingRoles = resp.data.data
+          })
+          .catch((error) => {
+              console.log(error)
+          })
+      },
+      addMember(collection) {
+        const defaultRole = {name: this.existingRoles[0].name, withAdmin: false, new: true}
+        collection.push(defaultRole)
+      },
+      removeMember(collection, index) {
+        if(this.mode === 'Edit' && !collection[index].new) {
+          collection[index].deleted = true;
+        } else {
+          collection.splice(index, 1)
+        }
       },
       generateSQL() {
         let ret = ''
@@ -326,59 +430,95 @@
         }
 
         if (this.mode === 'Create') {
-          let permissions = Object.keys(permVals).map(
-              (k) => {  return formatPermission(k) }
-            )
+          let permissions = Object.keys(permVals)
+            .map(k => formatPermission(k))
             .filter(item => typeof item ==='string')
             .join(' ')
 
-          let parts = [
+          let roleParts = [
             `CREATE ROLE "${this.localRole.name}"`,
             `${permissions}`
           ]
 
           if(this.localRole.password)
-            parts.push(`PASSWORD '${this.localRole.password}'`)
+            roleParts.push(`PASSWORD '${this.localRole.password}'`)
 
           if(!isEmpty(this.localRole.validUntil))
-            parts.push(`VALID UNTIL \'${moment(this.localRole.validUntil).toISOString() || 'infinity'}\'`)
+            roleParts.push(`VALID UNTIL \'${moment(this.localRole.validUntil).toISOString() || 'infinity'}\'`)
 
           if(this.localRole.connectionLimit)
-            parts.push(`CONNECTION LIMIT ${this.localRole.connectionLimit}`)
+            roleParts.push(`CONNECTION LIMIT ${this.localRole.connectionLimit}`)
 
-          ret = parts.join('\n')
+          let membershipParts = []
+          this.localRole.members?.forEach((member) => {
+            let withAdminPart = member.withAdmin ? ' WITH ADMIN OPTION' : '';
+            membershipParts.push(`GRANT "${this.localRole.name}" to "${member.name}"${withAdminPart};`)
+          })
+
+          this.localRole.memberOf?.forEach((member) => {
+            let withAdminPart = member.withAdmin ? ' WITH ADMIN OPTION' : '';
+            membershipParts.push(`GRANT "${member.name}" to "${this.localRole.name}"${withAdminPart};`)
+          })
+
+          ret = `${roleParts.join('\n')};\n${membershipParts.join('\n')}`
         } else if (this.mode === 'Edit') {
           ret = '-- No changes --'
-          let parts = []
+          let roleParts = []
           let permissions = Object.keys(permVals)
-          .filter(key => this.initialRole[key] != this.localRole[key])
-          .map((k) => { return formatPermission(k) })
-          .filter(item => typeof item ==='string')
-          .join('\n')
+            .filter(key => this.initialRole[key] != this.localRole[key])
+            .map(k => formatPermission(k))
+            .filter(item => typeof item ==='string')
+            .join(' ')
 
           if(permissions)
-            parts.push(permissions)
+            roleParts.push(permissions)
 
-            if(this.initialRole.password != this.localRole.password)
-            parts.push(`PASSWORD '${this.localRole.password}'`)
+          if(this.initialRole.password != this.localRole.password)
+            roleParts.push(`PASSWORD '${this.localRole.password}'`)
 
           if(this.initialRole.validUntil != this.localRole.validUntil)
             if(this.localRole.validUntil)
-              parts.push(`VALID UNTIL \'${moment(this.localRole.validUntil).toISOString()}\'`)
+              roleParts.push(`VALID UNTIL \'${moment(this.localRole.validUntil).toISOString()}\'`)
             else
-              parts.push(`VALID UNTIL 'infinity'`)
+              roleParts.push(`VALID UNTIL 'infinity'`)
 
           if(this.initialRole.connectionLimit != this.localRole.connectionLimit)
-            parts.push(`CONNECTION LIMIT ${this.localRole.connectionLimit}`)
+            roleParts.push(`CONNECTION LIMIT ${this.localRole.connectionLimit}`)
 
-          if(parts.length > 0)
-            parts.unshift(`ALTER ROLE "${this.localRole.name}"`)
+          if(roleParts.length > 0)
+            roleParts.unshift(`ALTER ROLE "${this.localRole.name}"`)
 
           if(this.initialRole.name != this.localRole.name)
-            parts.unshift(`ALTER ROLE "${this.initialRole.name}" RENAME TO "${this.localRole.name}";`)
+            roleParts.unshift(`ALTER ROLE "${this.initialRole.name}" RENAME TO "${this.localRole.name}";`)
 
-          if(parts.length > 0)
-            ret = parts.join('\n')
+
+          let membershipParts = []
+          this.localRole.members?.forEach((member) => {
+            if(member.new) {
+              let withAdminPart = member.withAdmin ? ' WITH ADMIN OPTION' : '';
+              membershipParts.push(`GRANT "${this.localRole.name}" to "${member.name}"${withAdminPart};`)
+            }
+            if(member.deleted) {
+              membershipParts.push(`REVOKE "${member.name}" FROM "${this.localRole.name}";`)
+            }
+          })
+
+          this.localRole.memberOf?.forEach((member) => {
+            if(member.new) {
+              let withAdminPart = member.withAdmin ? ' WITH ADMIN OPTION' : '';
+              membershipParts.push(`GRANT "${member.name}" to "${this.localRole.name}"${withAdminPart};`)
+            }
+            if(member.deleted) {
+              membershipParts.push(`REVOKE "${this.localRole.name}" FROM "${member.name}";`)
+            }
+          })
+
+          if(roleParts.length > 0)
+            ret = `${roleParts.join('\n')};`
+
+          if(membershipParts)
+            ret = `${ret}\n${membershipParts.join('\n')}`
+
         }
         this.generatedSQL = ret
       },
@@ -399,19 +539,21 @@
           this.localRole.validUntil = moment(start).format('YYYY-MM-DD HH:mm:ssZ')
         });
       },
-      // setupRoleMembershipsTab() {
-
-      // },
       saveRole() {
         this.v$.$validate()
         if(!this.v$.$invalid) {
-          // .then((resp) => {
-          //   emitter.emit(`refreshNode_${this.connId}`, {"node": this.treeNode})
-          //   Modal.getOrCreateInstance('#pgCronModal').hide()
-          // })
-          // .catch((error) => {
-          //   showToast("error", error.response.data.data)
-          // })
+          axios.post('/save_role_postgresql/', {
+            database_index: this.databaseIndex,
+            tab_id: this.tabId,
+            query: this.generatedSQL
+          })
+          .then((resp) => {
+            emitter.emit(`refreshNode_${this.connId}`, {"node": this.treeNode})
+            this.modalInstance.hide()
+          })
+          .catch((error) => {
+            showToast("error", error.response.data.data)
+          })
         }
       },
       setupEditor() {
@@ -421,26 +563,7 @@
         this.editor.setFontSize(Number(settingsStore.fontSize));
         this.editor.setReadOnly(true);
         this.editor.$blockScrolling = Infinity;
-
-        // this.editor.setValue(this.generatedSQL)
-        // this.editor.clearSelection();
       },
     },
   }
   </script>
-
-
-  <style scoped>
-  /* .modal-content {
-    min-height: calc(100vh - 200px);
-  }
-
-  .modal-body {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .modal-footer {
-    z-index: unset;
-  } */
-</style>
