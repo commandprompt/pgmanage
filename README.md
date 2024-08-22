@@ -63,6 +63,92 @@ python3.9 -mvenv .env
     - Username: admin
     - Password: admin
 
+
+# PgManage 1.1.1 Release
+
+## Release Date: Aug 22 2024
+
+## Release Notes
+
+  - New features:
+    - added IPv6 support for database connections
+    - allow using UNIX domain socket paths in connection form -> server field (#438)
+    - allow empty server values in the connection form for Postgres connections
+    - password prompt will now be shown when user tries to establish database connection with wrong password
+    - queries in console query history modal can now be copied to query tab with a double-click
+    - console history buffer is now cleared from memory when "clear console" button is clicked
+
+  - Bugs fixed:
+    - fixed Entity Relationship not rendering diagram for some database layouts
+    - fixes issue when expanded DB object tree node was not always scrolled to the top of viewport
+    - fixed missing GRANT statements when roles is displayed in DDL tab
+    - fixed a bug when application tabs may become unresponsive some cases
+    - various minor layout fixes and tweaks
+
+
+# PgManage 1.1 Release
+
+## Release Date: Jul 16 2024
+
+## Release Notes
+
+ - New features:
+   - pgmanage now uses database-specific syntax highlighting rules in SQL editors depending on the database type
+   - added support for displaying column data types in query results data grid
+   - columns in query results data grid can now be minimized/maximized by double-clicking the column header
+   - switchable data grid layouts in query tabs: adaptive, compact and fit-content can be selected by clicking the ellipsis icon on the top-left corner of the grid
+   - existing DB connection can now be cloned in connection manager dialog
+   - the size of the next loaded data chunk can now be selcted when using "fetch-more" feature for large query results
+   - added multi-statement queries support for SQlite3
+   - database connections can now have a color label to make it easier to differentiate between different environments
+   - scram-sha256 password hashing is now used when changing Postgres role passwords
+   
+ - Major Bugs fixed:
+   - fixed documentation urls in Postgres DB object tree context menus
+   - disable connection test button when test is in progress
+   - fixed 'fetch all records' feature when running queries on non-postgres databases
+   - fixed reversed DB object tree node ordering for inherited tables, foreign tables, sequences views, materialized views, trigger functions, event triggers, procedures, aggregates, types, fdw and tablespaces
+   - fixed incorrect count of table partitions displayed in DB object tree when tree is refreshed
+   - fixed Postgres unique indexes not being displayed in DDL tab
+   - fixed live theme switching issues for some modal dialogs
+   - improved escaping of HTML characters in data grid cells to prevent potential XSS
+   - fixes issue when query execution timer may not be stopped when user cancels the query
+   - fixed data saving issues in table data editor when using a database other than the one specified in DB connection properties (databases other than Postgres were affected)
+   - fixed data editor issues when user tried to apply multiple row changes at once on SQlite3
+   - improved back-end query thread termination when long-running query is cancelled by the user
+   - fixed long polling request clean-up when user closes application tabs
+   - fixed memory leak when working with DB console or SSH terminals
+   - fixed updating last used date for SSH connections
+   - fixed intermittent pgmanage startup issues on Windows platform
+   - fixed query results data export when query contains explain or explain analyze keywords
+   
+ - UI/UX Improvements:
+   - 'fetch all records' is now also supported DB console tabs
+   - removed unnecessary schema name prefixes from table partition names in DB object tree
+   - added warning about unsaved changes in Postgres Seever configuration tab before close
+   - added confirmation when deleting configuration change histore records in Postgres Server configuration tab
+   - added support for showing newline characters in query results data grid cells
+   - added support for showing null and blank values in query results data grid cells
+   - data grid is no longer hidden for queries that return 0 rows
+   - added visual hints for column resize handles in data grid headers
+   - improved DB console and SSH terminal performance when displaying large amounts of text
+   - significantly improved performance of query result data grids when working with large amounts of data
+   - it is now possible to reuse a query from the history dialog by double clicking on the correspoding query cell
+  
+ - Other changes
+   - sshtunnel bumped from 0.1.5 to 0.4.0
+   - optimized front-end imports to reduce js bundle size
+   - optimized peformance of several back-end queries
+   - project migrated from bootstrap 4 to bootstrap 5
+   - pev2 bumped from 1.8 to 1.11
+   - legacy code clean-up
+   - removed support for EOL Postgres versions
+   - added support for creating debug .appimage builds
+   - added support for masking sensitive data in error logs
+   - project migrated from django 3.2 to django 4.2
+   - bumped xterm.js from 5.2 to 5.5
+
+
 # PgManage 1.0.1 Bugfix Release
 
 ## Release Date: May 16 2024
