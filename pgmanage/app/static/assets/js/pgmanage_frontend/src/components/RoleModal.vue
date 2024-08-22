@@ -508,7 +508,8 @@
           })
 
           if(roleParts.length > 0)
-            ret = `${roleParts.join('\n')};`
+            ret = `${roleParts.join('\n')}`
+            ret += ret.endsWith(";") ? "" : ";"
 
           if(membershipParts)
             ret = `${ret}\n${membershipParts.join('\n')}`
@@ -542,7 +543,7 @@
             query: this.generatedSQL
           })
           .then((resp) => {
-            emitter.emit(`refreshNode_${this.connId}`, {"node": this.treeNode})
+            emitter.emit(`refreshTreeRecursive_${this.connId}`, 'role_list');
             this.modalInstance.hide()
           })
           .catch((error) => {
