@@ -505,9 +505,10 @@
             }
           })
 
-          if(roleParts.length > 0)
+          if(roleParts.length > 0){
             ret = `${roleParts.join('\n')}`
             ret += ret.endsWith(";") ? "" : ";"
+          }
 
           if(membershipParts)
             ret = `${ret}\n${membershipParts.join('\n')}`
