@@ -131,30 +131,29 @@
                             <p class="h6">Admin</p>
                           </div>
                         </div>
+                        <template v-for="(member, index) in localRole.members" :key="member.index">
+                          <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
+                            <div class="col-8">
+                              <SearchableDropdown
+                                placeholder="type to search"
+                                :options="existingRoleOptions"
+                                :default="{ name: 'integer' }"
+                                :maxItem=20
+                                v-model="member.name"
+                              />
+                            </div>
+                            <div class="col-3 d-flex align-items-center">
+                              <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
+                            </div>
 
-                        <div v-for="(member, index) in filterDeleted(localRole?.members)" :key="member.index"
-                          :class="['schema-editor__column d-flex row flex-nowrap form-group g-0']">
-                          <div class="col-8">
-                            <SearchableDropdown
-                              placeholder="type to search"
-                              :options="existingRoleOptions"
-                              :default="{ name: 'integer' }"
-                              :maxItem=20
-                              v-model="member.name"
-                            />
+                            <div :class="['col d-flex me-2', 'justify-content-end']">
+                              <button @click='removeMember(localRole.members, index)' type="button"
+                                class="btn btn-icon btn-icon-danger" title="Remove">
+                                <i class="fas fa-circle-xmark"></i>
+                              </button>
+                            </div>
                           </div>
-                          <div class="col-3 d-flex align-items-center">
-                            <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
-                          </div>
-
-                          <div :class="['col d-flex me-2', 'justify-content-end']">
-                            <button @click='removeMember(filterDeleted(localRole?.members), index)' type="button"
-                              class="btn btn-icon btn-icon-danger" title="Remove">
-                              <i class="fas fa-circle-xmark"></i>
-                            </button>
-                          </div>
-                        </div>
-
+                        </template>
                         <div class="d-flex g-0 fw-bold mt-2">
                           <button @click='addMember(localRole.members)' class="btn btn-outline-success btn-sm ms-auto">
                             Add Member
@@ -174,28 +173,29 @@
                           </div>
                         </div>
 
-                        <div v-for="(member, index) in filterDeleted(localRole?.memberOf)" :key="member.index"
-                          :class="['schema-editor__column d-flex row flex-nowrap form-group g-0']">
-                          <div class="col-8">
-                            <SearchableDropdown
-                              placeholder="type to search"
-                              :options="existingRoleOptions"
-                              :default="{ name: 'integer' }"
-                              :maxItem=20
-                              v-model="member.name"
-                            />
-                          </div>
-                          <div class="col-3 d-flex align-items-center">
-                            <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
-                          </div>
+                        <template v-for="(member, index) in localRole.memberOf" :key="member.index">
+                          <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
+                            <div class="col-8">
+                              <SearchableDropdown
+                                placeholder="type to search"
+                                :options="existingRoleOptions"
+                                :default="{ name: 'integer' }"
+                                :maxItem=20
+                                v-model="member.name"
+                              />
+                            </div>
+                            <div class="col-3 d-flex align-items-center">
+                              <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
+                            </div>
 
-                          <div :class="['col d-flex me-2', 'justify-content-end']">
-                            <button @click='removeMember(filterDeleted(localRole?.memberOf), index)' type="button"
-                              class="btn btn-icon btn-icon-danger" title="Remove">
-                              <i class="fas fa-circle-xmark"></i>
-                            </button>
+                            <div :class="['col d-flex me-2', 'justify-content-end']">
+                              <button @click='removeMember(localRole.memberOf, index)' type="button"
+                                class="btn btn-icon btn-icon-danger" title="Remove">
+                                <i class="fas fa-circle-xmark"></i>
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        </template>
 
                         <div class="d-flex g-0 fw-bold mt-2">
                           <button @click='addMember(localRole.memberOf)' class="btn btn-outline-success btn-sm ms-auto">
@@ -356,11 +356,6 @@
     },
 
     methods: {
-      filterDeleted(collection) {
-        if(!collection)
-          return []
-        return collection.filter(item => !item.deleted)
-      },
       getRoleDetails() {
         axios.post('/get_role_details/', {
           database_index: this.databaseIndex,

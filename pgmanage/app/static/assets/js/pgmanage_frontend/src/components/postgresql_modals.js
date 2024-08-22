@@ -71,9 +71,6 @@ function createPgCronModal(node, mode) {
 }
 
 function createRoleModal(node, mode) {
-  // vuejs keep track of installed plugins, but since we reinstantiate app each time
-  // we need to reset this flag in order to make the component work on next modal show
-  cronLight.install.installed = false;
   const wrap_div = document.getElementById("role-modal-wrap");
 
   wrap_div.innerHTML = `<role-modal :mode=mode :tree-node=treeNode :database-index="databaseIndex" :conn-id="connId"></role-modal>`;
@@ -100,7 +97,6 @@ function createRoleModal(node, mode) {
       }, 500);
     },
   });
-  app.use(cronLight);
   app.mount(`#role-modal-wrap`);
 }
 
