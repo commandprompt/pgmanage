@@ -221,7 +221,6 @@
   </template>
 
   <script>
-  import ConfirmableButton from './ConfirmableButton.vue'
   import SearchableDropdown from './SearchableDropdown.vue'
   import { required, between, maxLength, helpers } from '@vuelidate/validators'
   import { useVuelidate } from '@vuelidate/core'
@@ -236,7 +235,6 @@
   export default {
     name: 'RoleModal',
     components: {
-        ConfirmableButton,
         SearchableDropdown
     },
     props: {
@@ -493,7 +491,7 @@
               membershipParts.push(`GRANT "${this.localRole.name}" to "${member.name}"${withAdminPart};`)
             }
             if(member.deleted) {
-              membershipParts.push(`REVOKE "${member.name}" FROM "${this.localRole.name}";`)
+              membershipParts.push(`REVOKE "${this.localRole.name}" FROM "${member.name}";`)
             }
           })
 
@@ -503,7 +501,7 @@
               membershipParts.push(`GRANT "${member.name}" to "${this.localRole.name}"${withAdminPart};`)
             }
             if(member.deleted) {
-              membershipParts.push(`REVOKE "${this.localRole.name}" FROM "${member.name}";`)
+              membershipParts.push(`REVOKE "${member.name}" FROM "${this.localRole.name}";`)
             }
           })
 
