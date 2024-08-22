@@ -137,7 +137,6 @@
                               <SearchableDropdown
                                 placeholder="type to search"
                                 :options="existingRoleOptions"
-                                :default="{ name: 'integer' }"
                                 :maxItem=20
                                 v-model="member.name"
                               />
@@ -179,7 +178,6 @@
                               <SearchableDropdown
                                 placeholder="type to search"
                                 :options="existingRoleOptions"
-                                :default="{ name: 'integer' }"
                                 :maxItem=20
                                 v-model="member.name"
                               />
@@ -302,7 +300,8 @@
 
     computed: {
       modalTitle() {
-        if (this.mode === 'Edit') return 'Edit Role'
+        if (this.mode === 'Edit')
+          return 'Edit Role'
         return 'Create Role'
       },
       existingRoleOptions() {
