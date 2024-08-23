@@ -49,256 +49,263 @@ $modalPadding: 20px;
             background-color: themed($popupBg);
             border-top: themed($border);
         }
-
-        &.fixed-bottom{
-            position: fixed;
-        }
-    }
-}
-
-.modal-connections {
-    &__content {
-        height: 500px;
     }
 
-    &__body {
-        overflow-y: hidden;
-        height: 500px;
-    }
-
-    &__panel {
-        @include themify() {
-            border-right: themed($border);
+    &-connections {
+        &__content {
+            height: 500px;
         }
 
-        .add-connection {
-            border: 0;
-            padding: 16px 16px 16px 20px;
-        }
-    }
-
-    &__list, &__forms {
-        overflow: hidden auto;
-    }
-
-    &__list {
-        height: calc(100% - 62px);
-
-        @include themify() {
-            border-right: themed($border);
+        &__body {
+            overflow-y: hidden;
+            height: 500px;
         }
 
-        .connection {
-            padding: 8px 20px;
-            border-radius: 0;
-            border: 0;
-            cursor: pointer;
+        &__panel {
+            @include themify() {
+                border-right: themed($border);
+            }
+
+            .add-connection {
+                border: 0;
+                padding: 16px 16px 16px 20px;
+            }
+        }
+
+        &__list, &__forms {
+            overflow: hidden auto;
+        }
+
+        &__list {
+            height: calc(100% - 62px);
 
             @include themify() {
-                background-color: themed($surfaceBgSecondary);
+                border-right: themed($border);
             }
 
-            &.active {
+            .connection {
+                padding: 8px 20px;
+                border-radius: 0;
+                border: 0;
+                cursor: pointer;
+
                 @include themify() {
-                    color: themed($color);
-                    background-color: themed($accordionItemActiveBg);
+                    background-color: themed($surfaceBgSecondary);
+                }
+
+                &.active {
+                    @include themify() {
+                        color: themed($color);
+                        background-color: themed($accordionItemActiveBg);
+                    }
+                }
+
+                &__subtitle {
+                    white-space: nowrap;
                 }
             }
+        }
 
-            &__subtitle {
-                white-space: nowrap;
+        &__forms  {
+            height: calc(100% - 62px);
+            padding: 16px 20px;
+
+            .group-edit-form,  .connection-form {
+                width: calc(100% - 40px);
             }
-        }
-    }
 
-    &__forms  {
-        height: calc(100% - 62px);
-        padding: 16px 20px;
+            .group-edit-form {
+                &__list {
+                    margin: -8px -8px;
+                    .group-list {
+                        &__item {
+                            position: relative;
+                            margin: 8px;
+                            flex: 0 1 auto;
+                            width: calc(33.3% - 16px);
+                            cursor: pointer;
 
-        .group-edit-form,  .connection-form {
-            width: calc(100% - 40px);
-        }
+                            &_wrap {
+                                transition: all .2s ease-in-out;
+                                padding: 8px 16px 8px 27px;
+                                border-radius: $borderRadius;
 
-        .group-edit-form {
-            &__list {
-                margin: -8px -8px;
-                .group-list {
-                    &__item {
-                        position: relative;
-                        margin: 8px;
-                        flex: 0 1 auto;
-                        width: calc(33.3% - 16px);
-                        cursor: pointer;
-
-                        &_wrap {
-                            transition: all .2s ease-in-out;
-                            padding: 8px 16px 8px 27px;
-                            border-radius: $borderRadius;
-
-                            @include themify() {
-                                border: themed($border);
-                            }
-                        }
-
-                        &_text {
-                            max-width: calc(100% - 90px);
-                        }
-
-                        &_title {
-                            font-weight: 500;
-                            white-space: nowrap;
-                        }
-
-                        &_logo {
-                            width: 50px;
-                            height: 50px;
-                            border-radius: $borderRadius;
-                            overflow: hidden;
-                            flex-shrink: 0;
-
-                            @include themify() {
-                                border: themed($border);
-                            }
-
-                            & > .icon {
-                                height: 100%;
-                                mask-position: center;
-                                mask-size: 40px 40px;
-                                mask-repeat: no-repeat;
-                                -webkit-mask-position: center;
-                                -webkit-mask-size: 40px 40px;
-                                -webkit-mask-repeat: no-repeat;
-
-                                background-color: $secondaryGrey;
-
-                                &-mariadb {
-                                    mask-image: url("../images/db_icons/mariadb.svg");
-                                    -webkit-mask-image: url("../images/db_icons/mariadb.svg");
-                                }
-
-                                &-mysql {
-                                    mask-image: url("../images/db_icons/mysql.svg");
-                                    -webkit-mask-image: url("../images/db_icons/mysql.svg");
-                                }
-
-                                &-oracle {
-                                    mask-image: url("../images/db_icons/oracle.svg");
-                                    -webkit-mask-image: url("../images/db_icons/oracle.svg");
-                                }
-
-                                &-postgresql {
-                                    mask-image: url("../images/db_icons/postgresql.svg");
-                                    -webkit-mask-image: url("../images/db_icons/postgresql.svg");
-                                }
-
-                                &-sqlite {
-                                    mask-image: url("../../images/db_icons/sqlite.svg");
-                                    -webkit-mask-image: url("../images/db_icons/sqlite.svg");
-                                }
-
-                                &-terminal {
-                                    mask-image: url("../images/db_icons/terminal.svg");
-                                    -webkit-mask-image: url("../images/db_icons/terminal.svg");
+                                @include themify() {
+                                    border: themed($border);
                                 }
                             }
-                        }
 
-                        input[type='checkbox'] {
-                            position: absolute;
-                            left: 12px;
-                            top: 50%;
-                            transform: translateY(-50%);
-                        }
+                            &_text {
+                                max-width: calc(100% - 90px);
+                            }
 
-                        input[type='checkbox']:checked ~ .group-list__item_wrap {
-                            background-color: rgba($primaryBlue, .15);
-                            border: 1px solid $primaryBlue;
+                            &_title {
+                                font-weight: 500;
+                                white-space: nowrap;
+                            }
 
-                            .group-list__item_logo {
-                                border: 1px solid $primaryBlue;
+                            &_logo {
+                                width: 50px;
+                                height: 50px;
+                                border-radius: $borderRadius;
+                                overflow: hidden;
+                                flex-shrink: 0;
+
+                                @include themify() {
+                                    border: themed($border);
+                                }
+
                                 & > .icon {
-                                    background-color: $primaryBlue;
+                                    height: 100%;
+                                    mask-position: center;
+                                    mask-size: 40px 40px;
+                                    mask-repeat: no-repeat;
+                                    -webkit-mask-position: center;
+                                    -webkit-mask-size: 40px 40px;
+                                    -webkit-mask-repeat: no-repeat;
+
+                                    background-color: $secondaryGrey;
+
+                                    &-mariadb {
+                                        mask-image: url("../images/db_icons/mariadb.svg");
+                                        -webkit-mask-image: url("../images/db_icons/mariadb.svg");
+                                    }
+
+                                    &-mysql {
+                                        mask-image: url("../images/db_icons/mysql.svg");
+                                        -webkit-mask-image: url("../images/db_icons/mysql.svg");
+                                    }
+
+                                    &-oracle {
+                                        mask-image: url("../images/db_icons/oracle.svg");
+                                        -webkit-mask-image: url("../images/db_icons/oracle.svg");
+                                    }
+
+                                    &-postgresql {
+                                        mask-image: url("../images/db_icons/postgresql.svg");
+                                        -webkit-mask-image: url("../images/db_icons/postgresql.svg");
+                                    }
+
+                                    &-sqlite {
+                                        mask-image: url("../../images/db_icons/sqlite.svg");
+                                        -webkit-mask-image: url("../images/db_icons/sqlite.svg");
+                                    }
+
+                                    &-terminal {
+                                        mask-image: url("../images/db_icons/terminal.svg");
+                                        -webkit-mask-image: url("../images/db_icons/terminal.svg");
+                                    }
+                                }
+                            }
+
+                            input[type='checkbox'] {
+                                position: absolute;
+                                left: 12px;
+                                top: 50%;
+                                transform: translateY(-50%);
+                            }
+
+                            input[type='checkbox']:checked ~ .group-list__item_wrap {
+                                background-color: rgba($primaryBlue, .15);
+                                border: 1px solid $primaryBlue;
+
+                                .group-list__item_logo {
+                                    border: 1px solid $primaryBlue;
+                                    & > .icon {
+                                        background-color: $primaryBlue;
+                                    }
                                 }
                             }
                         }
                     }
+
                 }
 
             }
 
+            .connection-form {
+                &__header {
+                    @include themify() {
+                        border-bottom: themed($border);
+                    }
+
+                    &_title {
+                        font-weight: 500;
+                    }
+                }
+
+                &__divider {
+                    position: relative;
+
+                    &:before, &:after {
+                        content: "";
+                        display: block;
+                        width: calc((100% - 50px) / 2);
+                        background-color: $primaryMutedColor;
+                        height: 1px;
+                    }
+
+                    &_text {
+                        display: block;
+                        margin: 0 auto;
+                        font-weight: 500;
+                        color: $primaryMutedColor;
+                    }
+                }
+            }
+        }
+    }
+
+    &-about {
+        &__db {
+            img {
+                width: 35px;
+                height: auto;
+                filter: grayscale(1);
+                transition: .2s ease-in;
+
+                &:hover {
+                    filter: grayscale(0);
+                    transform: scale(1.1);
+                }
+            }
         }
 
-        .connection-form {
-            &__header {
+        a {
+            color: $primaryBlue;
+            text-decoration: underline;
+        }
+    }
+
+    &-file-manager {
+        .files-grid {
+            &__item {
+                width: 80px;
+                padding: 5px;
+                border-radius: $borderRadius;
+                cursor: pointer;
+
                 @include themify() {
-                    border-bottom: themed($border);
+                    color: themed($color);
                 }
 
-                &_title {
-                    font-weight: 500;
-                }
-            }
-
-            &__divider {
-                position: relative;
-
-                &:before, &:after {
-                    content: "";
-                    display: block;
-                    width: calc((100% - 50px) / 2);
-                    background-color: $primaryMutedColor;
-                    height: 1px;
-                }
-
-                &_text {
-                    display: block;
-                    margin: 0 auto;
-                    font-weight: 500;
-                    color: $primaryMutedColor;
+                &.active {
+                    @include themify() {
+                        background-color: themed($fileItemBgActive);
+                    }
                 }
             }
         }
     }
-}
 
-.modal-about {
-    &__db {
-        img {
-            width: 35px;
-            height: auto;
-            filter: grayscale(1);
-            transition: .2s ease-in;
+    &-role {
+        &__content {
 
-            &:hover {
-                filter: grayscale(0);
-                transform: scale(1.1);
-            }
         }
-    }
 
-    a {
-        color: $primaryBlue;
-        text-decoration: underline;
-    }
-}
-
-.modal-file-manager {
-    .files-grid {
-        &__item {
-            width: 80px;
-            padding: 5px;
-            border-radius: $borderRadius;
-            cursor: pointer;
-
-            @include themify() {
-                color: themed($color);
-            }
-
-            &.active {
-                @include themify() {
-                    background-color: themed($fileItemBgActive);
-                }
-            }
+        &__body {
+            max-height: 500px;
+            overflow-y: scroll;
         }
     }
 }

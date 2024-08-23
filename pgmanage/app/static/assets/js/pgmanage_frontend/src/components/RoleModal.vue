@@ -1,13 +1,13 @@
 <template>
-    <div class="modal fade" id="roleModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade modal-role" id="roleModal" tabindex="-1" role="dialog" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
+        <div class="modal-content modal-role__content">
           <div class="modal-header align-items-center">
             <h2 class="modal-title fw-bold">{{ modalTitle }}</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
 
-          <div class="modal-body">
+          <div class="modal-body modal-role__body">
             <ul class="nav nav-tabs" role="tablist">
               <li class="nav-item">
                 <a class="nav-link active" id="role_general-tab" data-bs-toggle="tab" href="#role_general"
@@ -18,34 +18,42 @@
                   aria-controls="role_memberships" aria-selected="false">Memberships</a>
               </li>
             </ul>
-            <div class="tab-content p-3  flex-grow-1">
+            <div class="tab-content p-3 flex-grow-1">
               <!-- General tab -->
               <div class="tab-pane fade show active" id="role_general" role="tabpanel"
                   aria-labelledby="role_general-tab">
                 <div class="row">
                   <!-- left col -->
-                  <div class="form-group col-6 mb-2">
-                    <label for="role_name" class="fw-bold mb-2">Name</label>
-                    <input
-                      v-model="localRole.name" id="role_name" type="text"
-                      :class="['form-control', { 'is-invalid': v$.localRole.name.$invalid }]">
+                  <div class="col-6">
+                    <div class="form-group mb-2">
+                      <label for="role_name" class="fw-bold mb-2">Name</label>
+                      <input
+                        v-model="localRole.name" id="role_name" type="text"
+                        :class="['form-control', { 'is-invalid': v$.localRole.name.$invalid }]">
+                    </div>
 
-                    <label for="role_password" class="fw-bold mb-2">Password</label>
-                    <input
-                      v-model="localRole.password" id="role_password" type="password"
-                      :class="['form-control', { 'is-invalid': v$.localRole.password.$invalid }]">
+                    <div class="form-group mb-2">
+                      <label for="role_password" class="fw-bold mb-2">Password</label>
+                      <input
+                        v-model="localRole.password" id="role_password" type="password"
+                        :class="['form-control', { 'is-invalid': v$.localRole.password.$invalid }]">
+                    </div>
 
-                    <label for="role_valid_until" class="fw-bold mb-2">Valid Until</label>
-                    <input
-                      v-model="localRole.validUntil" id="role_valid_until" ref="datepicker"
-                      :class="['form-control', { 'is-invalid': v$.localRole.validUntil.$invalid }]">
+                    <div class="form-group mb-2">
+                      <label for="role_valid_until" class="fw-bold mb-2">Valid Until</label>
+                      <input
+                        v-model="localRole.validUntil" id="role_valid_until" ref="datepicker"
+                        :class="['form-control', { 'is-invalid': v$.localRole.validUntil.$invalid }]">
+                    </div>
 
                     <div ref="daterangePicker" class="position-relative"></div>
 
-                    <label for="role_connlimit" class="fw-bold mb-2">Connection Limit</label>
-                    <input
-                      v-model="localRole.connectionLimit" id="role_connlimit" type="text"
-                      :class="['form-control', { 'is-invalid': v$.localRole.connectionLimit.$invalid }]">
+                    <div class="form-group mb-2">
+                      <label for="role_connlimit" class="fw-bold mb-2">Connection Limit</label>
+                      <input
+                        v-model="localRole.connectionLimit" id="role_connlimit" type="text"
+                        :class="['form-control', { 'is-invalid': v$.localRole.connectionLimit.$invalid }]">
+                    </div>
                   </div>
 
                   <!-- right col -->
@@ -120,87 +128,84 @@
               <div class="tab-pane fade show" id="role_memberships" role="tabpanel"
                   aria-labelledby="role_memberships-tab">
                 <div>
-                  <div class='pb-3'>
-                    <h3 class="mb-0">Members:</h3>
 
-                    <div class="d-flex row fw-bold text-muted schema-editor__header">
-                      <div class="col-8">
-                        <p class="h6">Role Name</p>
-                      </div>
-                      <div class="col-3">
-                        <p class="h6">Admin</p>
-                      </div>
+                  <p class="fw-bold mb-0">Members:</p>
+
+                  <div class="d-flex row fw-bold text-muted schema-editor__header">
+                    <div class="col-8">
+                      <p class="h6">Role Name</p>
                     </div>
-
-                    <template v-for="(member, index) in localRole.members" :key="member.index">
-                      <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
-                        <div class="col-8">
-                          <SearchableDropdown
-                            placeholder="type to search"
-                            :options="existingRoleOptions"
-                            :maxItem=20
-                            v-model="member.name"
-                          />
-                        </div>
-                        <div class="col-3 d-flex align-items-center">
-                          <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
-                        </div>
-
-                        <div :class="['col d-flex me-2', 'justify-content-end']">
-                          <button @click='removeMember(localRole.members, index)' type="button"
-                            class="btn btn-icon btn-icon-danger" title="Remove">
-                            <i class="fas fa-circle-xmark"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </template>
-
-                    <div class="d-flex g-0 fw-bold mt-2">
-                      <button @click='addMember(localRole.members)' class="btn btn-outline-success btn-sm ms-auto">
-                        Add Member
-                      </button>
+                    <div class="col-3">
+                      <p class="h6">Admin</p>
                     </div>
                   </div>
 
-                  <div class='pb-3'>
-                    <h3 class="mb-0">Member Of:</h3>
-                    <div class="d-flex row fw-bold text-muted schema-editor__header">
+                  <template v-for="(member, index) in localRole.members" :key="member.index">
+                    <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
                       <div class="col-8">
-                        <p class="h6">Role Name</p>
+                        <SearchableDropdown
+                          placeholder="type to search"
+                          :options="existingRoleOptions"
+                          :maxItem=20
+                          v-model="member.name"
+                        />
                       </div>
-                      <div class="col-3">
-                        <p class="h6">Admin</p>
+                      <div class="col-3 d-flex align-items-center">
+                        <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
+                      </div>
+
+                      <div :class="['col d-flex me-2', 'justify-content-end']">
+                        <button @click='removeMember(localRole.members, index)' type="button"
+                          class="btn btn-icon btn-icon-danger" title="Remove">
+                          <i class="fas fa-circle-xmark"></i>
+                        </button>
                       </div>
                     </div>
+                  </template>
 
-                    <template v-for="(member, index) in localRole.memberOf" :key="member.index">
-                      <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
-                        <div class="col-8">
-                          <SearchableDropdown
-                            placeholder="type to search"
-                            :options="existingRoleOptions"
-                            :maxItem=20
-                            v-model="member.name"
-                          />
-                        </div>
-                        <div class="col-3 d-flex align-items-center">
-                          <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
-                        </div>
+                  <div class="d-flex g-0 fw-bold mt-2">
+                    <button @click='addMember(localRole.members)' class="btn btn-outline-success btn-sm ms-auto">
+                      Add Member
+                    </button>
+                  </div>
 
-                        <div :class="['col d-flex me-2', 'justify-content-end']">
-                          <button @click='removeMember(localRole.memberOf, index)' type="button"
-                            class="btn btn-icon btn-icon-danger" title="Remove">
-                            <i class="fas fa-circle-xmark"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </template>
-
-                    <div class="d-flex g-0 fw-bold mt-2">
-                      <button @click='addMember(localRole.memberOf)' class="btn btn-outline-success btn-sm ms-auto">
-                        Add Member
-                      </button>
+                  <p class="fw-bold mb-0">Member Of:</p>
+                  <div class="d-flex row fw-bold text-muted schema-editor__header">
+                    <div class="col-8">
+                      <p class="h6">Role Name</p>
                     </div>
+                    <div class="col-3">
+                      <p class="h6">Admin</p>
+                    </div>
+                  </div>
+
+                  <template v-for="(member, index) in localRole.memberOf" :key="member.index">
+                    <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
+                      <div class="col-8">
+                        <SearchableDropdown
+                          placeholder="type to search"
+                          :options="existingRoleOptions"
+                          :maxItem=20
+                          v-model="member.name"
+                        />
+                      </div>
+                      <div class="col-3 d-flex align-items-center">
+                        <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
+                      </div>
+
+                      <div :class="['col d-flex me-2', 'justify-content-end']">
+                        <button @click='removeMember(localRole.memberOf, index)' type="button"
+                          class="btn btn-icon btn-icon-danger" title="Remove">
+                          <i class="fas fa-circle-xmark"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <div class="d-flex g-0 fw-bold mt-2">
+                    <button @click='addMember(localRole.memberOf)' class="btn btn-outline-success btn-sm ms-auto">
+                      Add Member
+                    </button>
                   </div>
                 </div>
               </div>
