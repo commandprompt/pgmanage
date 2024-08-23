@@ -119,90 +119,90 @@
               <!-- Memberships tab -->
               <div class="tab-pane fade show" id="role_memberships" role="tabpanel"
                   aria-labelledby="role_memberships-tab">
-                  <div>
-                    <div class='pb-3'>
-                      <h3 class="mb-0">Members:</h3>
+                <div>
+                  <div class='pb-3'>
+                    <h3 class="mb-0">Members:</h3>
 
-                        <div class="d-flex row fw-bold text-muted schema-editor__header">
-                          <div class="col-8">
-                            <p class="h6">Role Name</p>
-                          </div>
-                          <div class="col-3">
-                            <p class="h6">Admin</p>
-                          </div>
-                        </div>
-                        <template v-for="(member, index) in localRole.members" :key="member.index">
-                          <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
-                            <div class="col-8">
-                              <SearchableDropdown
-                                placeholder="type to search"
-                                :options="existingRoleOptions"
-                                :maxItem=20
-                                v-model="member.name"
-                              />
-                            </div>
-                            <div class="col-3 d-flex align-items-center">
-                              <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
-                            </div>
-
-                            <div :class="['col d-flex me-2', 'justify-content-end']">
-                              <button @click='removeMember(localRole.members, index)' type="button"
-                                class="btn btn-icon btn-icon-danger" title="Remove">
-                                <i class="fas fa-circle-xmark"></i>
-                              </button>
-                            </div>
-                          </div>
-                        </template>
-                        <div class="d-flex g-0 fw-bold mt-2">
-                          <button @click='addMember(localRole.members)' class="btn btn-outline-success btn-sm ms-auto">
-                            Add Member
-                          </button>
-                        </div>
+                    <div class="d-flex row fw-bold text-muted schema-editor__header">
+                      <div class="col-8">
+                        <p class="h6">Role Name</p>
+                      </div>
+                      <div class="col-3">
+                        <p class="h6">Admin</p>
+                      </div>
                     </div>
 
-                    <div class='pb-3'>
-                      <h3 class="mb-0">Member Of:</h3>
-
-                        <div class="d-flex row fw-bold text-muted schema-editor__header">
-                          <div class="col-8">
-                            <p class="h6">Role Name</p>
-                          </div>
-                          <div class="col-3">
-                            <p class="h6">Admin</p>
-                          </div>
+                    <template v-for="(member, index) in localRole.members" :key="member.index">
+                      <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
+                        <div class="col-8">
+                          <SearchableDropdown
+                            placeholder="type to search"
+                            :options="existingRoleOptions"
+                            :maxItem=20
+                            v-model="member.name"
+                          />
+                        </div>
+                        <div class="col-3 d-flex align-items-center">
+                          <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
                         </div>
 
-                        <template v-for="(member, index) in localRole.memberOf" :key="member.index">
-                          <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
-                            <div class="col-8">
-                              <SearchableDropdown
-                                placeholder="type to search"
-                                :options="existingRoleOptions"
-                                :maxItem=20
-                                v-model="member.name"
-                              />
-                            </div>
-                            <div class="col-3 d-flex align-items-center">
-                              <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
-                            </div>
-
-                            <div :class="['col d-flex me-2', 'justify-content-end']">
-                              <button @click='removeMember(localRole.memberOf, index)' type="button"
-                                class="btn btn-icon btn-icon-danger" title="Remove">
-                                <i class="fas fa-circle-xmark"></i>
-                              </button>
-                            </div>
-                          </div>
-                        </template>
-
-                        <div class="d-flex g-0 fw-bold mt-2">
-                          <button @click='addMember(localRole.memberOf)' class="btn btn-outline-success btn-sm ms-auto">
-                            Add Member
+                        <div :class="['col d-flex me-2', 'justify-content-end']">
+                          <button @click='removeMember(localRole.members, index)' type="button"
+                            class="btn btn-icon btn-icon-danger" title="Remove">
+                            <i class="fas fa-circle-xmark"></i>
                           </button>
                         </div>
-                    </div>
+                      </div>
+                    </template>
 
+                    <div class="d-flex g-0 fw-bold mt-2">
+                      <button @click='addMember(localRole.members)' class="btn btn-outline-success btn-sm ms-auto">
+                        Add Member
+                      </button>
+                    </div>
                   </div>
+
+                  <div class='pb-3'>
+                    <h3 class="mb-0">Member Of:</h3>
+                    <div class="d-flex row fw-bold text-muted schema-editor__header">
+                      <div class="col-8">
+                        <p class="h6">Role Name</p>
+                      </div>
+                      <div class="col-3">
+                        <p class="h6">Admin</p>
+                      </div>
+                    </div>
+
+                    <template v-for="(member, index) in localRole.memberOf" :key="member.index">
+                      <div v-if="!member?.deleted" class="schema-editor__column d-flex row flex-nowrap form-group g-0">
+                        <div class="col-8">
+                          <SearchableDropdown
+                            placeholder="type to search"
+                            :options="existingRoleOptions"
+                            :maxItem=20
+                            v-model="member.name"
+                          />
+                        </div>
+                        <div class="col-3 d-flex align-items-center">
+                          <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
+                        </div>
+
+                        <div :class="['col d-flex me-2', 'justify-content-end']">
+                          <button @click='removeMember(localRole.memberOf, index)' type="button"
+                            class="btn btn-icon btn-icon-danger" title="Remove">
+                            <i class="fas fa-circle-xmark"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+
+                    <div class="d-flex g-0 fw-bold mt-2">
+                      <button @click='addMember(localRole.memberOf)' class="btn btn-outline-success btn-sm ms-auto">
+                        Add Member
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -217,7 +217,6 @@
         </div>
       </div>
     </div>
-
   </template>
 
   <script>
@@ -333,10 +332,9 @@
         deep: true
       }
     },
-
     mounted() {
       if (this.mode === 'Edit') {
-          this.getRoleDetails()
+        this.getRoleDetails()
       } else {
         this.localRole = {...this.initialRole}
       }
@@ -351,7 +349,6 @@
       this.modalInstance = Modal.getOrCreateInstance('#roleModal')
       this.modalInstance.show()
     },
-
     methods: {
       getRoleDetails() {
         axios.post('/get_role_details/', {
@@ -359,24 +356,24 @@
           tab_id: this.connId,
           oid: this.treeNode.data.oid
         })
-          .then((resp) => {
-            this.initialRole.name = resp.data.name
-            this.initialRole.connectionLimit = resp.data.rolconnlimit
-            this.initialRole.validUntil = resp.data.rolvaliduntil ? moment(resp.data.rolvaliduntil).format('YYYY-MM-DD HH:mm:ssZ') : null
+        .then((resp) => {
+          this.initialRole.name = resp.data.name
+          this.initialRole.connectionLimit = resp.data.rolconnlimit
+          this.initialRole.validUntil = resp.data.rolvaliduntil ? moment(resp.data.rolvaliduntil).format('YYYY-MM-DD HH:mm:ssZ') : null
 
-            this.initialRole.canLogin = resp.data.rolcanlogin
-            this.initialRole.canCreateDatabases = resp.data.rolcreatedb
-            this.initialRole.canCreateUsers = resp.data.rolcreaterole
-            this.initialRole.inherit = resp.data.rolinherit
-            this.initialRole.superuser = resp.data.rolsuper
-            this.initialRole.canReplicate = resp.data.rolreplication
-            this.initialRole.canBypassRLS = resp.data.rolbypassrls
-            this.initialRole.members = resp.data.members.map((m) => { return {name: m[0], withAdmin: m[1] == 'true'}})
-            this.initialRole.memberOf = resp.data.member_of.map((m) => { return {name: m[0], withAdmin: m[1] == 'true'}})
-          })
-          .catch((error) => {
-              console.log(error)
-          })
+          this.initialRole.canLogin = resp.data.rolcanlogin
+          this.initialRole.canCreateDatabases = resp.data.rolcreatedb
+          this.initialRole.canCreateUsers = resp.data.rolcreaterole
+          this.initialRole.inherit = resp.data.rolinherit
+          this.initialRole.superuser = resp.data.rolsuper
+          this.initialRole.canReplicate = resp.data.rolreplication
+          this.initialRole.canBypassRLS = resp.data.rolbypassrls
+          this.initialRole.members = resp.data.members.map((m) => { return {name: m[0], withAdmin: m[1] == 'true'}})
+          this.initialRole.memberOf = resp.data.member_of.map((m) => { return {name: m[0], withAdmin: m[1] == 'true'}})
+        })
+        .catch((error) => {
+            console.log(error)
+        })
       },
 
       getExistingRoles() {
@@ -385,12 +382,12 @@
           tab_id: this.connId,
           oid: this.treeNode.data.oid
         })
-          .then((resp) => {
-            this.existingRoles = resp.data.data
-          })
-          .catch((error) => {
-              console.log(error)
-          })
+        .then((resp) => {
+          this.existingRoles = resp.data.data
+        })
+        .catch((error) => {
+            console.log(error)
+        })
       },
       addMember(collection) {
         const defaultRole = {name: this.existingRoles[0].name, withAdmin: false, new: true}
@@ -406,13 +403,13 @@
       generateSQL() {
         let ret = ''
         const permVals = {
-            'canLogin': ['NOLOGIN', 'LOGIN'],
-            'superuser': ['NOSUPERUSER', 'SUPERUSER'],
-            'canCreateUsers': ['NOCREATEROLE', 'CREATEROLE'],
-            'canCreateDatabases': ['NOCREATEDB', 'CREATEDB'],
-            'inherit': ['NOINHERIT', 'INHERIT'],
-            'canReplicate': ['NOREPLICATION', 'REPLICATION'],
-            'canBypassRLS': ['NOBYPASSRLS', 'BYPASSRLS']
+          'canLogin': ['NOLOGIN', 'LOGIN'],
+          'superuser': ['NOSUPERUSER', 'SUPERUSER'],
+          'canCreateUsers': ['NOCREATEROLE', 'CREATEROLE'],
+          'canCreateDatabases': ['NOCREATEDB', 'CREATEDB'],
+          'inherit': ['NOINHERIT', 'INHERIT'],
+          'canReplicate': ['NOREPLICATION', 'REPLICATION'],
+          'canBypassRLS': ['NOBYPASSRLS', 'BYPASSRLS']
         }
         let formatPermission = (permName) => {
           if(!Object.keys(permVals).includes(permName))
@@ -483,25 +480,54 @@
           if(this.initialRole.name != this.localRole.name)
             roleParts.unshift(`ALTER ROLE "${this.initialRole.name}" RENAME TO "${this.localRole.name}";`)
 
-
           let membershipParts = []
-          this.localRole.members?.forEach((member) => {
+          this.localRole.members?.forEach((member, idx) => {
+            let withAdminPart = member.withAdmin ? ' WITH ADMIN OPTION' : ''
             if(member.new) {
-              let withAdminPart = member.withAdmin ? ' WITH ADMIN OPTION' : '';
               membershipParts.push(`GRANT "${this.localRole.name}" to "${member.name}"${withAdminPart};`)
+              return
             }
             if(member.deleted) {
               membershipParts.push(`REVOKE "${this.localRole.name}" FROM "${member.name}";`)
+              return
+            }
+            let orig = this.initialRole.members[idx]
+            if(orig.name !== member.name) {
+              //selected role in membership was changed
+              membershipParts.push(`REVOKE "${this.localRole.name}" FROM "${orig.name}";`);
+              membershipParts.push(`GRANT "${this.localRole.name}" to "${member.name}"${withAdminPart};`)
+            } else if (orig.withAdmin !== member.withAdmin) {
+              // withAdmin flag changed
+              if(member.withAdmin) {
+                membershipParts.push(`GRANT "${this.localRole.name}" to "${member.name}"${withAdminPart};`)
+              } else {
+                membershipParts.push(`REVOKE ADMIN OPTION FOR "${this.localRole.name}" FROM "${member.name}";`);
+              }
             }
           })
 
-          this.localRole.memberOf?.forEach((member) => {
+          this.localRole.memberOf?.forEach((member, idx) => {
+            let withAdminPart = member.withAdmin ? ' WITH ADMIN OPTION' : ''
             if(member.new) {
-              let withAdminPart = member.withAdmin ? ' WITH ADMIN OPTION' : '';
               membershipParts.push(`GRANT "${member.name}" to "${this.localRole.name}"${withAdminPart};`)
+              return
             }
             if(member.deleted) {
               membershipParts.push(`REVOKE "${member.name}" FROM "${this.localRole.name}";`)
+              return
+            }
+            let orig = this.initialRole.memberOf[idx]
+            if(orig.name !== member.name) {
+              //selected role in membership was changed
+              membershipParts.push(`REVOKE "${orig.name}" FROM "${this.localRole.name}";`);
+              membershipParts.push(`GRANT "${member.name}" to "${this.localRole.name}"${withAdminPart};`)
+            } else if (orig.withAdmin !== member.withAdmin) {
+              // withAdmin flag changed
+              if(member.withAdmin) {
+                membershipParts.push(`GRANT "${member.name}" to "${this.localRole.name}"${withAdminPart};`)
+              } else {
+                membershipParts.push(`REVOKE ADMIN OPTION FOR "${member.name}" FROM "${this.localRole.name}";`);
+              }
             }
           })
 
@@ -512,11 +538,9 @@
 
           if(membershipParts)
             ret = `${ret}\n${membershipParts.join('\n')}`
-
         }
         this.generatedSQL = ret
       },
-
       setupDatePicker(){
         $(this.$refs.datepicker).daterangepicker({
           autoUpdateInput: false,
