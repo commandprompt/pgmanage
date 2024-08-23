@@ -4,14 +4,13 @@
 </template>
 <script>
 import ContextMenu from "@imengyu/vue3-context-menu";
-import { snippetsStore, settingsStore } from "../stores/stores_initializer";
+import { snippetsStore, settingsStore, dbMetadataStore  } from "../stores/stores_initializer";
 import { buildSnippetContextMenuObjects } from "../tree_context_functions/tree_snippets";
 import { emitter } from "../emitter";
 import { format } from "sql-formatter";
 import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_plugins";
 import { maxLinesForIndentSQL } from "../constants";
 import { showToast } from "../notification_control";
-import { dbMetadataStore } from "../stores/stores_initializer";
 import { SQLAutocomplete, SQLDialect } from 'sql-autocomplete';
 
 export default {
@@ -100,10 +99,19 @@ export default {
         dbMetadataStore.fetchDbMeta(this.databaseIndex, this.tabId, this.databaseName)
     },
     setupEditor() {
+      const EDITOR_MODEMAP = {
+        'postgresql': 'pgsql',
+        'mysql': 'mysql',
+        'mariadb': 'mysql',
+        'oracle': 'plsql'
+      }
+
+      let editor_mode = EDITOR_MODEMAP[this.dialect] || 'sql'
+
       this.editor = ace.edit(this.$refs.editor);
       this.editor.$blockScrolling = Infinity;
       this.editor.setTheme(`ace/theme/${settingsStore.editorTheme}`);
-      this.editor.session.setMode("ace/mode/sql");
+      this.editor.session.setMode(`ace/mode/${editor_mode}`);
       this.editor.setFontSize(settingsStore.fontSize);
       this.editor.setShowPrintMargin(false);
 
@@ -182,6 +190,7 @@ export default {
         'mysql': SQLDialect.MYSQL,
         'mariadb': SQLDialect.MYSQL,
         'oracle': SQLDialect.PLpgSQL,
+        'sqlite': SQLDialect.SQLITE,
       }
 
       this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, tableNames, columnNames);

@@ -1,13 +1,9 @@
-import { format } from 'sql-formatter'
 import ContextMenu from '@imengyu/vue3-context-menu'
-import { createRequest } from './long_polling'
-import { queryRequestCodes } from './constants'
-import { checkDebugStatus } from './debug'
 import { startLoading } from './ajax_control'
-import axios from 'axios'
 import { showAlert, showConfirm } from './notification_control'
 import { emitter } from './emitter'
 import { tabsStore, connectionsStore } from './stores/stores_initializer.js'
+import { Modal } from 'bootstrap'
 
 
 /// <summary>
@@ -111,7 +107,7 @@ function showMenuNewTabOuter(e) {
     let tooltip_name = "";
     let name = "";
     if (conn.public) {
-      conn_name += '<i class="fas fa-users mr-3" style="color:#c57dd2;"></i>';
+      conn_name += '<i class="fas fa-users me-3" style="color:#c57dd2;"></i>';
     }
     if (conn.alias) {
       name = conn.alias;
@@ -171,9 +167,7 @@ function showMenuNewTabOuter(e) {
     !connectionsStore.connections ||
     connectionsStore.connections.length === 0
   ) {
-    $("#connections-modal").modal({
-      show: true,
-    });
+    Modal.getOrCreateInstance("#connections-modal").show()
   } else {
     let items = [];
 
@@ -236,9 +230,7 @@ function showMenuNewTabOuter(e) {
         label: "Manage Connections",
         icon: "fas cm-all fa-gears",
         onClick: () => {
-          $("#connections-modal").modal({
-            show: true,
-          });
+          Modal.getOrCreateInstance("#connections-modal").show()
         },
       });
 

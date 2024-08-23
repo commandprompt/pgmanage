@@ -45,7 +45,7 @@ export default {
     axiosHooks(logger, this.api)
 
     emitter.on(`refreshNode_${this.tabId}`, (e) => {
-      this.refreshTree(e.node);
+      this.refreshTree(e.node, true);
     });
 
     emitter.on(`removeNode_${this.tabId}`, (e) => {
@@ -56,6 +56,11 @@ export default {
       this.refreshTreeRecursive(node_type);
     });
 
+    this.$watch("selectedNode", (newVal) => {
+      if (newVal === undefined) {
+        this.$emit("clearTabs");
+      }
+    });
   },
   unmounted() {
     emitter.all.delete(`refreshNode_${this.id}`);
@@ -73,10 +78,8 @@ export default {
       if (node.isExpanded) return;
       this.refreshTree(node);
       if(settingsStore.scrollTree) {
-        this.getNodeEl(node.path).scrollIntoView({
-          block: "start",
-          inline: "nearest",
-          behavior: "smooth",
+        this.$nextTick(() => {
+          this.scrollIntoViewIfPossible(node)
         })
       }
     },
@@ -163,11 +166,11 @@ export default {
     refreshNode() {
       const node = this.getSelectedNode();
       this.expandNode(node);
-      this.refreshTree(node);
+      this.refreshTree(node, true);
     },
     formatTitle(node) {
-      if (node.data.uniqueness !== undefined) {
-        return `${node.title} (${node.data.uniqueness})`;
+      if (node.data.unique !== undefined) {
+        return `${node.title} (${node.data.unique})`;
       }
       return node.title;
     },
@@ -204,7 +207,7 @@ export default {
       const getInnerNode = (node, node_type) => {
         if (!!node.children.length) {
           if (node.data.type === node_type) {
-            this.refreshTree(node);
+            this.refreshTree(node, true);
             this.expandNode(node);
           }
 
@@ -216,7 +219,7 @@ export default {
                 childNode.data.type === "database" &&
                 node_type === "extension_list"
               ) {
-                this.refreshTree(childNode);
+                this.refreshTree(childNode, true);
 
                 setTimeout(() => {
                   getInnerNode(childNode, node_type);
@@ -232,6 +235,40 @@ export default {
       for (let i = 0; i < rootNode.children.length; i++) {
         getInnerNode(rootNode.children[i], node_type);
       }
+    },
+    scrollIntoViewIfPossible(node) {
+      const nodeElement = this.getNodeEl(node.path).querySelector('.vue-power-tree-title');
+      const nodeRect = nodeElement.getBoundingClientRect();
+      const parentElement = this.$refs.tree.$el.parentElement
+
+      const scrollTop = parentElement.scrollTop;
+      const scrollHeight = parentElement.scrollHeight;
+      const clientHeight = parentElement.clientHeight;
+
+      // Calculate the space needed to scroll the node to the top
+      const spaceAvailableForScroll = scrollHeight - scrollTop - clientHeight;
+      const spaceNeededForScroll = nodeRect.top - 40
+
+      if (spaceNeededForScroll <= spaceAvailableForScroll) {
+        nodeElement.scrollIntoView({
+          block: "start",
+          inline: "end",
+          behavior: "smooth",
+        });
+      } 
+    },
+    shouldUpdateNode(node, force) {
+      const now = new Date();
+      if (!force && !!node?.data?.last_update) {
+        const lastUpdateDate = new Date(node.data.last_update);
+        const interval = (now - lastUpdateDate) / 1000;
+        if (interval < 60) return false;
+      }
+
+      this.$refs.tree.updateNode(node.path, {
+        data: { ...node.data, last_update: now.toISOString() },
+      });
+      return true;
     },
   },
 };

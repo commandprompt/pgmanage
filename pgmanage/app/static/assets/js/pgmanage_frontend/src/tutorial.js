@@ -27,8 +27,9 @@ SOFTWARE.
 */
 
 import { emitter } from "./emitter";
-import { listUsers, newUser } from "./users";
 import { tabsStore } from "./stores/stores_initializer";
+import { Modal } from "bootstrap";
+import { createOmnisUiAssistant } from "./omnis-control";
 
 function startTutorial(p_tutorial_name) {
   if (v_omnis.omnis_ui_assistant) {
@@ -58,7 +59,7 @@ function startTutorial(p_tutorial_name) {
   var v_button_inner_query =
   '<li class="mb-2">' +
     `<button id="connection_tab_tutorial" ` + v_button_inner_query_attr + ` type="button" class="btn btn-primary d-flex align-items-center">` +
-      '<i class="fas fa-list mr-2"></i>The Connection Tab' +
+      '<i class="fas fa-list me-2"></i>The Connection Tab' +
     '</button>' +
   '</li>';
   // Configuring the available tutorials.
@@ -84,10 +85,10 @@ function startTutorial(p_tutorial_name) {
         <p>Contains general settings and options:</p>
         <ul>
         <li>Username and versioning.</li>
-        <li><i class="fas fa-user omnidb__theme__text--primary mr-2"></i>User management.</li>
-        <li><i class="fas fa-cog omnidb__theme__text--primary mr-2"></i>UI settings (shortcuts, theme, fonts...).</li>
-        <li><i class="fas fa-info-circle omnidb__theme__text--primary mr-2"></i>About.</li>
-        <li><i class="fas fa-sign-out-alt omnidb__theme__text--primary mr-2"></i>Sign Out.</li>
+        <li><i class="fas fa-user omnidb__theme__text--primary me-2"></i>User management.</li>
+        <li><i class="fas fa-cog omnidb__theme__text--primary me-2"></i>UI settings (shortcuts, theme, fonts...).</li>
+        <li><i class="fas fa-info-circle omnidb__theme__text--primary me-2"></i>About.</li>
+        <li><i class="fas fa-sign-out-alt omnidb__theme__text--primary me-2"></i>Sign Out.</li>
         </ul>
         `,
         p_target: document.getElementsByClassName('omnidb__utilities-menu')[0],
@@ -110,7 +111,7 @@ function startTutorial(p_tutorial_name) {
         p_callback_start: function() { listUsers();},
         p_callback_after_update_start: function() {setTimeout(function(){
             if (v_omnis.omnis_ui_assistant.divClonedElement.children[0]) {
-              v_omnis.omnis_ui_assistant.divClonedElement.children[0].classList.remove('ml-2');
+              v_omnis.omnis_ui_assistant.divClonedElement.children[0].classList.remove('ms-2');
             }
           },50);
         },
@@ -127,9 +128,9 @@ function startTutorial(p_tutorial_name) {
         p_callback_start: function() { newUser() },
         p_message: `
         <ul>
-        <li><i class="fas fa-user omnidb__theme__text--primary mr-2"></i>PgManage login name.</li>
-        <li><i class="fas fa-key omnidb__theme__text--primary mr-2"></i>PgManage login password.</li>
-        <li><i class="fas fa-star omnidb__theme__text--primary mr-2"></i>Defines if the user can manage other PgManage users.</li>
+        <li><i class="fas fa-user omnidb__theme__text--primary me-2"></i>PgManage login name.</li>
+        <li><i class="fas fa-key omnidb__theme__text--primary me-2"></i>PgManage login password.</li>
+        <li><i class="fas fa-star omnidb__theme__text--primary me-2"></i>Defines if the user can manage other PgManage users.</li>
         </ul>
         <div class="alert alert-danger">The default <strong>admin user</strong> should be deleted once a new super user has been created.</div>
         `,
@@ -149,7 +150,7 @@ function startTutorial(p_tutorial_name) {
         <li>Welcome, tutorial and useful links.</li>
         <li>Snippets panel toggler.</li>
         </ul>
-        <p>Let's first <span class="badge badge-info">add a new connection</span>.</p>
+        <p>Let's first <span class="badge bg-info">add a new connection</span>.</p>
         <p>Please, click on the <i class="fas fa-bolt"></i> button.</p>
         `,
         p_target: document.querySelectorAll('.omnidb__tab-menu--primary .omnidb__tab-menu__link .omnidb__tab-menu__link-icon')[0],
@@ -157,9 +158,7 @@ function startTutorial(p_tutorial_name) {
       },
       {
         p_callback_start: function() {
-          $('#connections-modal').modal({
-            show: true
-          });
+          Modal.getOrCreateInstance("#connections-modal").show()
           setTimeout(function() {
             document.getElementById('add_connection_button').click()
           }, 100)
@@ -168,9 +167,6 @@ function startTutorial(p_tutorial_name) {
           setTimeout(function() {
             v_omnis.omnis_ui_assistant.divClonedElement.firstChild.style.transform = ''
           }, 100)
-        },
-        p_callback_end: function() {
-          document.getElementById('add_connection_dropdown_item').click()
         },
         p_message: `
         <p>Click on <strong> Connection <strong></p>
@@ -182,6 +178,9 @@ function startTutorial(p_tutorial_name) {
         p_next_button: false,
       },
       {
+        p_callback_start: function() {
+          document.getElementById('add_connection_dropdown_item').click()
+        },
         p_message: `
         <p>Select the proper DBMS technology.</p>
         `,
@@ -260,9 +259,7 @@ function startTutorial(p_tutorial_name) {
       {
         // p_callback_after_update_start: function() {setTimeout(function(){var v_target = document.getElementById('button_new_connection'); v_omnis.omnis_ui_assistant.divClonedElement.children[0].classList.remove('ml-2');},50);},
         p_callback_start: function() {
-          $('#connections-modal').modal({
-            show: true
-          })
+          Modal.getOrCreateInstance("#connections-modal").show()
           setTimeout(function() {
             document.getElementById('add_connection_button').click()
           }, 100)
@@ -271,9 +268,6 @@ function startTutorial(p_tutorial_name) {
           setTimeout(function() {
             v_omnis.omnis_ui_assistant.divClonedElement.firstChild.style.transform = ''
           }, 100)
-        },
-        p_callback_end: function() {
-          document.getElementById('add_connection_dropdown_item').click()
         },
         p_clone_target: true,
         p_message: `
@@ -285,6 +279,9 @@ function startTutorial(p_tutorial_name) {
         p_update_delay: 1000
       },
       {
+        p_callback_start: function() {
+          document.getElementById('add_connection_dropdown_item').click()
+        },
         p_message: `
         <p>Select the Terminal technology.</p>
         `,
@@ -305,6 +302,9 @@ function startTutorial(p_tutorial_name) {
         p_title: 'Title'
       },
       {
+        p_callback_start: function() {
+          document.getElementById('sshSettings').scrollIntoView()
+        },
         p_message: `
         <p>The terminal utilizes SSH technology.</p>
         <p>As you can see, in this case SSH parameters are mandatory.</p>
@@ -341,7 +341,6 @@ function startTutorial(p_tutorial_name) {
         <p>This is <strong>optional</strong>.</p>
         <p>If you want you can save the Passphrase of your user.</p>
         <p>* Leaving this empty will force the tool to request for your passphrase everytime you open a terminal connection.</p>
-        <p>i.e: If you are on linux, your linux user is available for a local connection.</p>
         `,
         p_target: function() {var v_target = document.getElementById('sshPassphrase'); return v_target},
         p_title: 'SSH Passphrase'
@@ -522,46 +521,46 @@ function startTutorial(p_tutorial_name) {
           if (!v_target) {
             v_target = document.querySelector(`#${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_content .ace-editor`);
           }
-          return {x:v_target.getBoundingClientRect().x + 200,y:v_target.getBoundingClientRect().y + 40}},
+          return {x:v_target?.getBoundingClientRect()?.x + 200,y:v_target?.getBoundingClientRect()?.y + 40}},
         p_target: function(){var v_target = document.querySelector(`#${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_content .tab-actions`); return v_target;},
         p_title: 'Query Result'
       }
     ]
   }
   // Configuring tutorial getting started, changes based on gv_desktopMode
-
-  let v_tutorial_link_creating_user = (gv_desktopMode || !v_super_user)
-  ? ''
-  : `
+  
+  let v_tutorial_link_creating_user = !gv_desktopMode && v_super_user && __VITE_ENTERPRISE__
+  ? `
   <li class="mb-2">
     <button id="utilities_menu_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
-      <i class="fas fa-user-plus mr-2"></i>Create an pgmanage user
+      <i class="fas fa-user-plus me-2"></i>Create an pgmanage user
     </button>
-  </li>`;
+  </li>`
+  : ''
   v_tutorials.getting_started = [
     {
       p_message:
-      '<ol class="ml-2" style="padding-left: 1.5rem;">' +
+      '<ol class="ms-2" style="padding-left: 1.5rem;">' +
         v_tutorial_link_creating_user +
         `
         <li class="mb-2">
           <button id="connections_menu_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
-            <i class="fas fa-plus mr-2"></i>Create a database connection
+            <i class="fas fa-plus me-2"></i>Create a database connection
           </button>
         </li>
         <li class="mb-2">
           <button id="terminal_connection_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
-            <i class="fas fa-terminal mr-2"></i>Create a terminal connection
+            <i class="fas fa-terminal me-2"></i>Create a terminal connection
           </button>
         </li>
         <li class="mb-2">
           <button id="snippets_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
-            <i class="fas fa-file-code mr-2"></i>Meet the snippets panel
+            <i class="fas fa-file-code me-2"></i>Meet the snippets panel
           </button>
         </li>
         <li class="mb-2">
           <button id="using_connection_tutorial" type="button" class="btn btn-primary d-flex align-items-center">
-            <i class="fas fa-plug mr-2"></i>Using a connection
+            <i class="fas fa-plug me-2"></i>Using a connection
           </button>
         </li>
         ` +

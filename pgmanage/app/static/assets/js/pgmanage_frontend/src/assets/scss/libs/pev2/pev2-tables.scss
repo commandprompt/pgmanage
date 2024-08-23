@@ -1,0 +1,179 @@
+.plan-container {
+  //general pev2 table styles
+  .table {
+    border-radius: $borderRadius;
+    overflow: hidden;
+    
+    & > :not(caption) > * > * {
+      @include themify() {
+        color: themed($color) !important;
+        background-color: themed($pev2StatsTableBg) !important;
+      }
+    }
+
+    thead {
+      &:first-of-type {
+        @include themify() {
+          border-bottom: themed($border);
+        }
+      }
+    }
+
+    &.table-nonfluid {
+      width: auto !important;
+    }
+  
+    &.table-bordered {
+      border: none !important;
+      border-width: 0 !important;
+      
+      & > :not(caption) > * {
+        border-width: 0 !important;
+      }
+  
+      td,
+      th {
+        border: none !important;
+      }
+    }
+  }
+
+  //tables inside plan-node-body
+  .plan-node-body {
+    .table {
+      background-color: $primaryLight;
+      font-weight: 500;
+      color: $primaryDark !important;
+    
+      .thead-dark th {
+        background-color: $primaryBlue;
+      }
+    
+      .thead-light th {
+        background-color: $bgLight;
+        color: $primaryDark;
+      }
+    
+      a {
+        color: $primaryBlue;
+      }
+    }  
+  }
+
+  //tables inside "Stats" tab
+  .stats {
+    .table {
+      @include themify() {
+        color: themed($color) !important;
+        background-color: themed($pev2StatsTableBg) !important;
+      }
+
+      thead {
+        &:first-of-type {
+          @include themify() {
+            border-bottom: themed($border);
+          }
+        }
+
+        &.thead-light th {
+          @include themify() {
+            color: themed($color) !important;
+            background-color: themed($pev2StatsTableTheadLight) !important;
+          }
+        }
+
+        &.table-secondary th {
+          @include themify() {
+            color: themed($color) !important;
+            background-color: themed($pev2StatsTableTheadDark) !important;
+          }
+        }
+        
+        a {
+          @include themify() {
+            color: themed($color) !important;
+          }
+        }
+      }
+      tbody {
+        a {
+          color: map-get($severity-colors, 3);
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  // table inside "Grid" tab
+  .plan-grid {
+    .table {
+      border-radius: 0;
+
+      & > :not(caption) > * > * {
+        background-color: transparent !important;
+      }
+
+      thead {
+        &:first-of-type {
+          @include themify() {
+            background-color: themed($surfaceBgSecondary);
+          }
+        }
+      }
+
+      tbody > tr:hover > * {
+        @include themify() {
+          background-color: themed($surfaceBgSecondary) !important;
+          box-shadow: none;
+          transition: all 0.15s ease-in;
+        } 
+      }
+
+      .node {
+        cursor: pointer;
+        background-color: transparent !important;
+
+        & > .node-index {
+          .font-weight-normal.small {
+            font-weight: bold;
+          }
+        }
+
+        .grid-progress-cell {
+          .grid-progress > .bg-secondary {
+            background-color: $primaryBlue !important;
+            opacity: 0.5 !important;
+          }
+
+          .small.text-body-secondary {
+            line-height: 1.4;
+            margin-top: 0.4rem;
+          }
+        }
+
+        .plan-node.detailed {
+          .nav-tabs {
+            border-bottom: 1px solid rgba($primaryMutedColor, 0.3);
+
+            .nav-link{
+              &.active {
+                @include themify {
+                  border-color: rgba($primaryMutedColor, 0.3);
+                  border-bottom-color: themed($surfaceBg);
+                  background: themed($surfaceBg);
+                }
+              }
+            }
+          }
+
+          .tab-pane.border {
+            border-color: rgba($primaryMutedColor, 0.3) !important;
+            @include themify {
+              background: themed($surfaceBg);
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -10,19 +10,6 @@ import { useSettingsStore } from "../../src/stores/settings.js";
 
 vi.mock("axios");
 
-window.$ = vi.fn().mockImplementation(() => {
-  return {
-    modal: vi.fn(),
-    on: vi.fn(),
-  };
-});
-
-vi.mock("@/workspace.js", () => {
-  const renameTab = vi.fn();
-  const showMenuNewTabOuter = vi.fn();
-  return { renameTab, showMenuNewTabOuter };
-});
-
 describe("MonitoringWidgetEditModal", () => {
   let wrapper, settingsStore;
 

@@ -15,13 +15,13 @@
       <i class="fas fa-arrows-alt-v"></i>
     </button>
 
-    <div class="container-fluid h-100 position-relative">
+    <div class="container-fluid h-100 position-relative g-0">
       <div :id="`${tabId}_snippet_div_layout_grid`" class="row h-100">
         <splitpanes class="default-theme">
-          <pane size="20">
+          <pane min-size="18" size="25">
             <div class="omnidb__snippets__div-left col h-100">
-              <div class="row h-100">
-                <div class="omnidb__snippets__content-left border-right">
+              <div class="row h-100 g-0">
+                <div class="omnidb__snippets__content-left border-end">
                   <div class="snippets-tree">
                     <TreeSnippets
                       :tab-id="tabId"
@@ -32,7 +32,7 @@
               </div>
             </div>
           </pane>
-          <pane>
+          <pane min-size="2">
             <div
               class="omnidb__snippets__div-right pt-0 col h-100 position-relative"
             >
@@ -80,7 +80,9 @@ export default {
   },
   methods: {
     togglePanel() {
-      $(".omnidb__panel-view--full").removeClass("omnidb__panel-view--full");
+      document.querySelectorAll('.omnidb__panel-view--full').forEach(element => {
+        element.classList.remove('omnidb__panel-view--full');
+      });
       this.isVisible = !this.isVisible;
     },
     hidePanel() {

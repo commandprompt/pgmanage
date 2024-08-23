@@ -16,13 +16,13 @@
     }
 }
 
-.border-left {
+.border-start {
     @include themify() {
         border-left: themed($border) !important;
     }
 }
 
-.border-right {
+.border-end {
     @include themify() {
         border-right: themed($border) !important;
     }
@@ -62,4 +62,8 @@
     &-primary {
         background-color: $primaryBlue;
     }
+}
+
+:root{
+    --nav-bar-height: 2.35rem;
 }

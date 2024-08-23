@@ -58,7 +58,7 @@ def get_configuration_history(request):
     config_history = ConfigHistory.objects.filter(
         Q(user=request.user)
         & Q(connection=Connection.objects.filter(id=data.get("database_index")).first())
-    ).order_by("-start_time")
+    ).select_related("user", "connection").order_by("-start_time")
 
     data = []
 

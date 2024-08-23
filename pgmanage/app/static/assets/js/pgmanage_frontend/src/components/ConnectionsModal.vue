@@ -1,26 +1,24 @@
 <template>
-  <div class="modal modal-blurr modal-connections" id="connections-modal" refs="connmodal" tabindex="-1">
+  <div class="modal modal-connections fade" id="connections-modal" ref="connmodal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-connections__dialog">
       <div class="modal-content modal-connections__content h-100">
         <div class="modal-header align-items-center">
-          <h2 class="modal-title font-weight-bold">Manage connections</h2>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-          </button>
+          <h2 class="modal-title fw-bold">Manage connections</h2>
+          <button type="btn" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body modal-connections__body p-0">
-          <div class="row no-gutters h-100">
-            <div class="col-3">
+          <div class="row g-0 h-100">
+            <div class="col-3 position-relative">
               <div class="modal-connections__panel">
                 <div class="modal-connections__panel_add add-connection d-flex justify-content-between align-items-center">
                   <p class="add-connection__title p-0 m-0"><span>{{ this.connections.length }}</span> connections</p>
                   <div class="btn-group" role="group" >
-                    <button type="button" class="btn btn-success add-connection__btn dropdown-toggle" data-toggle="dropdown" id="add_connection_button">
+                    <button type="button" class="btn btn-success add-connection__btn dropdown-toggle" data-bs-toggle="dropdown" id="add_connection_button">
                       <i class="fa-solid fa-circle-plus"></i> Add
                     </button>
                     <div class="dropdown-menu dropdown-menu-sm" id="add_connection_dropdown_menu">
-                      <a class="dropdown-item" @click="newConnection" href="#" id="add_connection_dropdown_item">Connection</a>
-                      <a class="dropdown-item" @click="newGroup" href="#">Group</a>
+                      <a class="dropdown-item" @click="showForm('connection')" href="#" id="add_connection_dropdown_item">Connection</a>
+                      <a class="dropdown-item" @click="showForm('group')" href="#">Group</a>
                     </div>
                   </div>
                 </div>
@@ -28,19 +26,19 @@
                 <div class="modal-connections__list position-absolute w-100" id="connectionsList">
                   <div class="accordion">
                       <!-- GROUP ITEM -->
-                    <div v-for="(group, index) in groupedConnections" :key=index class="card">
-                      <div @click="showForm('group', group)" class="card-header d-flex justify-content-between align-items-center collapsed" v-bind:id="'group-header-' + group.id" v-bind:data-target="'#collapse-group-' + group.id" data-toggle="collapse">
+                    <div v-for="(group, index) in groupedConnections" :key=index class="card rounded-0 border-0">
+                      <div @click.prevent.stop="showForm('group', group)" class="card-header d-flex justify-content-between align-items-center" v-bind:id="'group-header-' + group.id" v-bind:data-target="'#collapse-group-' + group.id" data-bs-toggle="collapse">
                         <h4 class="clipped-text mb-0">
                           {{ group.name }}
                         </h4>
                         <i class="fa-solid fa-chevron-down"></i>
                       </div>
 
-                      <div v-bind:id="'collapse-group-' + group.id" class="collapse" data-parent="#connectionsList">
+                      <div v-bind:id="'collapse-group-' + group.id" class="collapse" data-bs-parent="#connectionsList">
                         <div class="card-body p-0">
                           <ul class="list-group">
                             <li @click="showForm('connection', connection)" v-for="(connection, index) in group.connections" :key=index
-                              :class="['connection', 'list-group-item', { 'active':connection===selectedConnection }]">
+                              :class="['connection', 'list-group-item', { 'active':connection?.id===selectedConnection?.id }]">
                               <p class="connection__name">{{ connection.alias }}</p>
                               <p class="connection__subtitle muted-text clipped-text">{{ connectionSubtitle(connection) }}</p>
                             </li>
@@ -78,7 +76,7 @@
                 <ConnectionsModalConnectionForm
                   @connection:save="saveConnection"
                   @connection:delete="deleteConnection"
-                  @connection:test="testConnection"
+                  @connection:clone="cloneConnection"
                   :initialConnection="selectedConnection"
                   :technologies="technologies"
                   :visible="activeForm == 'connection'"
@@ -96,11 +94,10 @@ import ConnectionsModalConnectionForm from './ConnectionsModalConnectionForm.vue
 import ConnectionsModalGroupForm from './ConnectionsModalGroupForm.vue'
 import { startLoading, endLoading } from '../ajax_control'
 import axios from 'axios'
-import { showToast, createMessageModal } from '../notification_control'
 import { emitter } from '../emitter'
-import { tabsStore } from '../stores/stores_initializer'
-import { settingsStore, connectionsStore } from "../stores/stores_initializer";
+import { messageModalStore, tabsStore, settingsStore, connectionsStore } from '../stores/stores_initializer';
 import { useVuelidate } from '@vuelidate/core'
+import { Modal, Collapse } from 'bootstrap'
 
 export default {
   name: 'ConnectionsModal',
@@ -114,7 +111,7 @@ export default {
         technologies: [],
         selectedConnection: {},
         selectedGroup: undefined,
-        activeForm: 'group'
+        activeForm: undefined
       }
   },
   components: {
@@ -189,32 +186,21 @@ export default {
     loadData(init) {
       this.getGroups();
       this.getConnections(init);
-      this.activeForm = undefined
     },
 
     saveConnection(connection) {
       axios.post('/save_connection/', connection)
       .then((response) => {
+        let unsubscribe = connectionsStore.$subscribe((mutation, state) => {
+          if (mutation.type === 'patch object' && mutation.payload.connections) {
+            this.selectedConnection = state.connections.find((conn) => 
+            conn.id === connection.id || conn.alias === connection.alias) ?? {}
+            unsubscribe()
+          }
+        });
         this.loadData()
-        this.selectedConnection = {}
       })
       .catch((error) => {
-        console.log(error)
-      })
-    },
-    testConnection(connection) {
-      axios.post('/test_connection/', connection)
-      .then((response) => {
-        if(response.data.status !== 'success') {
-            showToast("error", response.data.data)
-        } else {
-            showToast("success", response.data.data)
-        }
-      })
-      .catch((error) => {
-        if(error.response && error.response?.data) {
-          showToast("error", error.response.data.data)
-        }
         console.log(error)
       })
     },
@@ -222,18 +208,34 @@ export default {
       axios.post('/delete_connection/', connection)
       .then((response) => {
         this.loadData()
+        this.selectedConnection = {}
+        this.activeForm = undefined
       })
       .catch((error) => {
         console.log(error)
       })
     },
+    cloneConnection(connection) {
+      let clone = {...connection}
+      clone.id = null
+      clone.password_set = false
+      clone.tunnel.password_set = false
+      clone.tunnel.key_set = false
+      clone.alias = `${clone.alias} - clone`
+      this.selectedConnection = {}
+      this.showForm('connection', clone)
+    },
     saveGroup(group) {
       axios.post('/save_group/', group)
       .then((response) => {
+        let unsubscribe = connectionsStore.$subscribe((mutation, state) => {
+          if (mutation.type === 'patch object' && mutation.payload.groups) {
+            this.selectedGroup = this.groupedConnections.find((groupedConn) => 
+            groupedConn.id === group.id || groupedConn.name === group.name) ?? {}
+            unsubscribe()
+          }
+        });
         this.loadData()
-        // set selected group to something so that if "new group"
-        // is clicked again the watcher in group form will fire
-        this.selectedGroup = {}
       })
       .catch((error) => {
         console.log(error)
@@ -243,6 +245,9 @@ export default {
       axios.post('/delete_group/', group)
       .then((response) => {
         this.loadData()
+        Collapse.getOrCreateInstance(`#collapse-group-${group.id}`).hide()
+        this.selectedGroup = {}
+        this.activeForm = undefined
       })
       .catch((error) => {
         console.log(error)
@@ -266,34 +271,33 @@ export default {
       if(connection.technology === 'terminal') return `${techname} - ${connection.tunnel.server}:${connection.tunnel.port}`
       return `${techname} - ${connection.server}:${connection.port}`
     },
-    showForm(form_type, object) {
+    showForm(form_type, object = undefined) {
       if (this.v$.$anyDirty) {
-        createMessageModal(
+        messageModalStore.showModal(
           "Are you sure you wish to discard the current changes?",
           () => {
-            this.v$.$reset()
-            this.showForm(form_type, object)
+            this.v$.$reset();
+            this.showForm(form_type, object);
           },
           null
         );
       } else {
         if (form_type === 'group') {
-          this.activeForm = 'group'
-          this.selectedGroup = object
+          this.activeForm = 'group';
+          this.selectedConnection = {};
+          if (object) {
+            Collapse.getOrCreateInstance(`#collapse-group-${object.id}`).toggle()
+            this.selectedGroup = object;
+          } else {
+            this.selectedGroup = undefined;
+          }
         }
         if (form_type === 'connection') {
-          this.activeForm = 'connection'
-          this.selectedConnection = object
+          this.selectedGroup = {};
+          this.activeForm = 'connection';
+          this.selectedConnection = object ? object : undefined;
         }
       }
-    },
-    newConnection() {
-      this.activeForm = 'connection'
-      this.selectedConnection = undefined
-    },
-    newGroup() {
-      this.activeForm = 'group'
-      this.selectedGroup = undefined
     },
     getExistingTabs() {
       axios
@@ -358,18 +362,19 @@ export default {
   mounted() {
     this.loadData(settingsStore.restoreTabs)
 
-    $('#connections-modal').on("shown.bs.modal", () => {
+    
+    this.$refs.connmodal.addEventListener("shown.bs.modal", () => {
       this.loadData(false)})
     
-    $('#connections-modal').on("hide.bs.modal", (event) => {
+    this.$refs.connmodal.addEventListener("hide.bs.modal", (event) => {
       if (this.v$.$anyDirty) {
         event.preventDefault()
-        createMessageModal(
+        messageModalStore.showModal(
           "Are you sure you wish to discard the current changes?",
           () => {
             this.v$.$reset()
             this.$refs.connectionForm.reset()
-            $('#connections-modal').modal('hide')
+            Modal.getOrCreateInstance(this.$refs.connmodal).hide()
           },
           null
         );

@@ -10,8 +10,8 @@ from django.utils.timezone import make_aware
 
 @session_required(include_session=False)
 def get_all_snippets(request):
-    folders = SnippetFolder.objects.filter(user=request.user)
-    files = SnippetFile.objects.filter(user=request.user)
+    folders = SnippetFolder.objects.filter(user=request.user).select_related("parent")
+    files = SnippetFile.objects.filter(user=request.user).select_related("parent")
 
     root = {"id": None, "files": [], "folders": []}
 

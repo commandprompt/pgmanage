@@ -1,6 +1,5 @@
-import { createApp } from "vue";
-import GenericMessageModal from "./components/GenericMessageModal.vue";
 import { useToast } from 'vue-toast-notification';
+import { Modal } from "bootstrap";
 
 let v_message_modal_animating = false;
 let v_message_modal_queued = false;
@@ -8,69 +7,34 @@ let v_message_modal_queued_function = null;
 let v_shown_callback = null;
 
 $(function () {
-  $('#modal_message').on('hide.bs.modal', function (e) {
-    v_message_modal_animating = true;
-  });
-  $('#modal_message').on('show.bs.modal', function (e) {
-    v_message_modal_animating = true;
-  });
-  $('#modal_message').on('hidden.bs.modal', function (e) {
-		document.getElementById('modal_message_content').innerHTML = '';
-    v_message_modal_animating = false;
-    if (v_message_modal_queued == true) {
-			if (v_message_modal_queued_function!=null)
-				v_message_modal_queued_function();
-      $('#modal_message').modal();
-		}
-    v_message_modal_queued = false;
-		v_message_modal_queued_function = null;
-  });
-  $('#modal_message').on('shown.bs.modal', function (e) {
-    v_message_modal_animating = false;
-    if (v_shown_callback) {
-      v_shown_callback();
-      v_shown_callback = null;
-    }
-  });
+  let messageModalEl = document.getElementById("modal_message")
+  if ( messageModalEl) {
+    messageModalEl.addEventListener('hide.bs.modal', function (e) {
+      v_message_modal_animating = true;
+    });
+    messageModalEl.addEventListener('show.bs.modal', function (e) {
+      v_message_modal_animating = true;
+    });
+    messageModalEl.addEventListener('hidden.bs.modal', function (e) {
+      document.getElementById('modal_message_content').innerHTML = '';
+      v_message_modal_animating = false;
+      if (v_message_modal_queued == true) {
+        if (v_message_modal_queued_function!=null)
+          v_message_modal_queued_function();
+        Modal.getInstance(messageModalEl).show()
+      }
+      v_message_modal_queued = false;
+      v_message_modal_queued_function = null;
+    });
+    messageModalEl.addEventListener('shown.bs.modal', function (e) {
+      v_message_modal_animating = false;
+      if (v_shown_callback) {
+        v_shown_callback();
+        v_shown_callback = null;
+      }
+    });
+  }
 });
-
-/**
- * Creates a generic message modal using Vue.js.
- * @param {string} message - The message to display in the modal.
- * @param {Function} successFunc - The function to call when the success action is triggered.
- * @param {Function} cancelFunc - The function to call when the cancel action is triggered.
- */
-function createMessageModal(message, successFunc, cancelFunc, closable) {
-  const wrap_div = document.getElementById("generic-message-modal-wrap");
-
-  wrap_div.innerHTML = `<generic-modal :message="message" :success-func="successFunc" :cancel-func="cancelFunc" :closable="closable"></generic-modal>`;
-
-  const app = createApp({
-    components: {
-      "generic-modal": GenericMessageModal,
-    },
-    data() {
-      return {
-        message: message,
-        successFunc: successFunc,
-        cancelFunc: cancelFunc,
-        closable: closable
-      };
-    },
-    mounted() {
-      setTimeout(() => {
-        $("#generic_modal_message").on("hidden.bs.modal", () => {
-          app.unmount();
-        });
-        $("#generic_modal_message").modal({
-          backdrop: "static",
-          keyboard: false,
-        });
-      }, 500);
-    },
-  });
-  app.mount(`#generic-message-modal-wrap`);
-}
 
 function showMessageModal(p_content_function, p_large) {
 
@@ -86,7 +50,7 @@ function showMessageModal(p_content_function, p_large) {
   if (!v_message_modal_animating) {
 		if (p_content_function!=null)
 			p_content_function();
-    $('#modal_message').modal();
+    Modal.getOrCreateInstance('#modal_message').show()
 	}
   else {
     v_message_modal_queued = true;
@@ -176,7 +140,7 @@ function showToast(type, message) {
   let title = titleMap[type] || titleMap['default']
   let scrollableClass = type === 'error' ? 'v-toast-scrollable' : ''
   let html_msg = `<div class="v-toast__body p-0" >
-                    <h3 class="font-weight-bold">${title}</h3>
+                    <h3 class="fw-bold">${title}</h3>
                     <p class="${scrollableClass}">${message}</p>
                   </div>`
   const $toast = useToast()
@@ -188,4 +152,4 @@ function showToast(type, message) {
   })
 }
 
-export { createMessageModal, showAlert, showConfirm, showToast};
+export { showAlert, showConfirm, showToast};

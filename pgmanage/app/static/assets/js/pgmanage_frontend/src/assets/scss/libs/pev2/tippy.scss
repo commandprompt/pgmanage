@@ -1,0 +1,112 @@
+.tippy-popper {
+  .text-muted {
+    color: inherit !important;
+  }
+}
+
+.tippy-box {
+  position: relative;
+  border-radius: $borderRadius;
+  padding: 0.5rem;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: normal;
+  outline: 0;
+  transition-property: transform, visibility;
+  box-shadow: 0 0.5rem 1rem rgba(0,  0,  0,  0.15);
+
+  @include themify() {
+    background-color: themed($tooltipBg) !important;
+    color: themed($color);
+  }
+
+  & > .tippy-content {
+    position: relative;
+    z-index: 1;
+    font-size: 0.75rem;
+
+    .table > :not(caption) > * > * {
+      @include themify() {
+        color: themed($color);
+      }
+    }
+  }
+
+  & > .tippy-arrow {
+    width: 8px;
+    height: 8px;
+
+    &:before {
+      content: "";
+      position: absolute;
+      border-color: transparent;
+      border-style: solid;
+    }
+  }
+
+  &[data-placement^=top] {
+    & > .tippy-arrow {
+      bottom: 0;
+
+      &:before {
+        bottom: -5px;
+        left: 0;
+        border-width: 8px 8px 0;
+        transform-origin: center top;
+
+        @include themify() {
+          border-top-color: themed($tooltipBg) !important;
+        }
+      }
+    }
+  }
+
+  &[data-placement^=bottom] {
+    & > .tippy-arrow {
+      top: 0;
+
+      &:before {
+        top: -5px;
+        left: 0;
+        border-width: 0 8px 8px;
+        transform-origin: center bottom;
+
+        @include themify() {
+          border-bottom-color: themed($tooltipBg) !important;
+        }
+      }
+    }
+  }
+
+  &[data-placement^=left] {
+    & > .tippy-arrow {
+      right: 0;
+
+      &:before {
+        border-width: 8px 0 8px 8px;
+        right: -5px;
+        transform-origin: center left;
+        
+        @include themify() {
+          border-left-color: themed($tooltipBg) !important;
+        }
+      }
+    }
+  }
+
+  &[data-placement^=right] {
+    & > .tippy-arrow {
+      left: 0;
+
+      &:before {
+        left: -5px;
+        border-width: 8px 8px 8px 0;
+        transform-origin: center right;
+
+        @include themify() {
+          border-right-color: themed($tooltipBg) !important;
+        }
+      }
+    }
+  }
+}

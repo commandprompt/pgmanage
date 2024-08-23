@@ -521,14 +521,26 @@ class MySQL:
             if p_table:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct t.table_schema as "schema_name",
+            select t.table_schema as "schema_name",
                    t.table_name as "table_name",
                    (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) as "index_name",
-                   case when t.non_unique = 1 then 'Non Unique' else 'Unique' end as "uniqueness"
+                   case when t.non_unique = 1 then 'Non Unique' else 'Unique' end as "uniqueness",
+                    JSON_ARRAYAGG(t.column_name) as columns,
+                    case 
+                        when tc.constraint_type = 'PRIMARY KEY' then TRUE 
+                        else FALSE 
+                    end as is_primary,
+                    t.index_type AS index_type
             from information_schema.statistics t
+            left join 
+                information_schema.table_constraints tc
+                ON t.table_schema = tc.table_schema 
+                AND t.table_name = tc.table_name 
+                AND t.index_name = tc.constraint_name
             where 1 = 1
             {0}
-            order by 1, 2, 3
+            GROUP BY t.table_schema, t.table_name, t.index_name, t.non_unique, tc.constraint_type, t.index_type
+            ORDER BY t.table_schema, t.table_name, t.index_name;
         '''.format(v_filter), True)
 
     def QueryTablesIndexesColumns(self, p_index, p_table=None, p_all_schemas=False, p_schema=None):

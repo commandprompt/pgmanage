@@ -13,12 +13,6 @@ import * as notificatonModule from "../../src/notification_control";
 import { maxFileSizeInKB, maxFileSizeInMB } from "../../src/constants";
 import { useTabsStore } from "../../src/stores/tabs";
 
-vi.mock("@/workspace.js", () => {
-  const renameTab = vi.fn();
-  const showMenuNewTabOuter = vi.fn();
-  return { renameTab, showMenuNewTabOuter };
-});
-
 describe("File Input Mixin", () => {
   let wrapper, tabsStore, snippetTab;
 

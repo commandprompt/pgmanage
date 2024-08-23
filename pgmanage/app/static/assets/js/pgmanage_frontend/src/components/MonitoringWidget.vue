@@ -5,11 +5,9 @@
         <button
           v-if="!isTestWidget"
           data-testid="widget-close-button"
-          class="close"
+          class="btn-close"
           @click="closeMonitoringWidget"
-        >
-          <span aria-hidden="true">&times;</span>
-        </button>
+        ></button>
 
         <Transition :duration="100">
           <div
@@ -30,12 +28,12 @@
         </Transition>
 
         <div v-if="!isTestWidget" class="form-inline mb-1">
-          <span data-testid="widget-title" class="mr-1">
+          <span data-testid="widget-title" class="me-1">
             {{ monitoringWidget.title }}
           </span>
           <button
             data-testid="widget-refresh-button"
-            class="btn btn-secondary btn-sm mr-1"
+            class="btn btn-secondary btn-sm me-1"
             title="Refresh"
             @click="refreshMonitoringWidget"
           >
@@ -45,7 +43,7 @@
           <button
             v-if="!isActive"
             data-testid="widget-play-button"
-            class="btn btn-secondary btn-sm my-2 mr-1"
+            class="btn btn-secondary btn-sm me-1"
             title="Play"
             @click="playMonitoringWidget"
           >
@@ -55,13 +53,13 @@
           <button
             v-else
             data-testid="widget-pause-button"
-            class="btn btn-secondary btn-sm my-2 mr-1"
+            class="btn btn-secondary btn-sm me-1"
             title="Pause"
             @click="pauseMonitoringWidget"
           >
             <i class="fas fa-pause-circle fa-light"></i>
           </button>
-          <div>
+          <div class="d-inline-flex align-items-center">
             <input
               data-testid="widget-interval-input"
               v-model.number="v$.widgetInterval.$model"
@@ -69,7 +67,7 @@
               :class="[
                 'form-control',
                 'form-control-sm',
-                'mr-2',
+                'me-2',
                 { 'is-invalid': v$.widgetInterval.$invalid },
               ]"
               style="width: 60px"
@@ -83,7 +81,7 @@
             </div>
           </div>
 
-          <span v-if="isGrid" class="ml-2"> {{ gridRows }} rows </span>
+          <span v-if="isGrid" class="ms-2"> {{ gridRows }} rows </span>
         </div>
         <template v-else>
           <h2 class="text-center pb-1">Monitoring test widget</h2>
@@ -107,30 +105,21 @@
       </div>
     </div>
   </div>
-  <CellDataModal
-    :cell-content="cellContent"
-    :show-modal="cellModalVisible"
-    @modal-hide="cellModalVisible = false"
-  />
 </template>
 
 <script>
 import axios from "axios";
-import CellDataModal from "./CellDataModal.vue";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
 import { showToast } from "../notification_control";
 import Chart from "chart.js/auto";
 import { useVuelidate } from "@vuelidate/core";
 import { minValue, required } from "@vuelidate/validators";
-import { settingsStore } from "../stores/stores_initializer";
+import { settingsStore, cellDataModalStore } from "../stores/stores_initializer";
 import { markRaw } from "vue";
 
 export default {
   name: "MonitoringWidget",
-  components: {
-    CellDataModal,
-  },
   setup() {
     return {
       v$: useVuelidate({ $lazy: true }),
@@ -161,8 +150,6 @@ export default {
       timeoutObject: null,
       widgetInterval: this.monitoringWidget.interval,
       widgetData: null,
-      cellContent: "",
-      cellModalVisible: false,
     };
   },
   computed: {
@@ -260,8 +247,7 @@ export default {
             label:
               '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
             action: (e, cell) => {
-              this.cellContent = cell.getValue();
-              this.cellModalVisible = true;
+              cellDataModalStore.showModal(cell.getValue())
             },
           },
         ];
@@ -269,6 +255,7 @@ export default {
         let tabulator = new Tabulator(this.$refs.gridContent, {
           data: data.data,
           height: "100%",
+          autoResize: false,
           layout: "fitDataStretch",
           selectableRows: true,
           clipboard: "copy",

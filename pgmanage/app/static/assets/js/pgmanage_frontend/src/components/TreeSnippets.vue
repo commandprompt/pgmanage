@@ -29,12 +29,11 @@
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import {
-  createMessageModal,
   showConfirm,
   showToast,
 } from "../notification_control";
 import { emitter } from "../emitter";
-import { tabsStore } from "../stores/stores_initializer";
+import { messageModalStore, tabsStore } from "../stores/stores_initializer";
 
 export default {
   name: "TreeSnippets",
@@ -144,6 +143,9 @@ export default {
     emitter.on(`refresh_snippet_tree`, (parent_id = null) => {
       this.refreshTreeRecursive(parent_id);
     });
+  },
+  unmounted() {
+    emitter.all.delete('refresh_snippet_tree');
   },
   methods: {
     doubleClickNode(node, e) {
@@ -268,7 +270,7 @@ export default {
       );
     },
     deleteNodeSnippet(node) {
-      createMessageModal(
+      messageModalStore.showModal(
         `Are you sure you want to delete this ${node.data.type}?`,
         () => {
           this.api
@@ -288,30 +290,23 @@ export default {
       );
     },
     startEditSnippetText(node) {
-      // Checking if there is a tab for this snippet.
-
-      let snippetPanel = tabsStore.tabs.find((tab) => tab.name === "Snippets");
-      let existing_tab = snippetPanel.metaData.secondaryTabs.find(
-        (snippet_tab) => {
-          return snippet_tab.metaData?.snippetObject?.id === node.data.id;
-        }
-      );
-
-      if (existing_tab) {
-        tabsStore.selectTab(existing_tab);
-      } else {
-        tabsStore.createSnippetTab(this.tabId, node.data)
-      }
-
       this.api
-        .post("/get_snippet_text/", {
-          snippet_id: node.data.id,
-        })
-        .then((resp) => {
-          emitter.emit(
-            `${snippetPanel.metaData.selectedTab.id}_copy_to_editor`,
-            resp.data.data
-          );
+      .post("/get_snippet_text/", {
+        snippet_id: node.data.id,
+      })
+      .then((resp) => {
+        // Checking if there is a tab for this snippet.
+        let snippetPanel = tabsStore.tabs.find((tab) => tab.name === "Snippets");
+        let existing_tab = snippetPanel.metaData.secondaryTabs.find(
+          (snippet_tab) => {
+            return snippet_tab.metaData?.snippetObject?.id === node.data.id;
+          }
+        );
+        if (existing_tab) {
+          tabsStore.selectTab(existing_tab);
+        } else {
+          tabsStore.createSnippetTab(this.tabId, {...node.data, text: resp.data.data})
+        }
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

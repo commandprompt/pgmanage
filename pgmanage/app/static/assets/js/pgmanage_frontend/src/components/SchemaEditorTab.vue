@@ -1,48 +1,105 @@
 <template>
   <div class="schema-editor-scrollable px-2 pt-3">
-    <div class="form-row">
-      <div class="form-group col-2">
-          <label class="font-weight-bold mb-2" for="tableNameInput">Table Name</label>
-          <input v-model.trim="localTable.tableName" class="form-control" id="tableNameInput" name="tableName" placeholder="table name..." />
+    <template v-if="mode === 'alter'"> <!-- ALTER SCHEMA -->
+      <div class="row">
+        <div class="form-group col-2">
+            <label class="fw-bold mb-2" :for="`${tabId}_tableNameInput`">Table Name</label>
+            <input v-model.trim="localTable.tableName" class="form-control" :id="`${tabId}_tableNameInput`" name="tableName" placeholder="table name..." />
+        </div>
+        <div class="form-group col d-flex align-items-end">
+          <button :disabled="!hasChanges || queryIsRunning" @click='applyChanges' type="button"
+            class="btn btn-success mt-4 ms-auto">
+            Apply Changes
+          </button>
+        </div>
       </div>
-
-      <div v-if="showSchema" class="form-group col-3">
-        <label class="font-weight-bold mb-2" for="selectSchema">Schema</label>
-        <select class="form-control text-truncate pr-4" id="selectSchema" v-model="localTable.schema">
-          <option v-for="(schema, index) in schemas" :value="schema" :key="index">
-            {{ schema }}
-          </option>
-        </select>
+      <ul class="nav nav-tabs mb-3" role="tablist">
+        <li ref="columnsTab" class="nav-item" role="presentation">
+          <button class="nav-item nav-link active" :id="`${tabId}-columns-tab`"
+            data-bs-toggle="tab" :data-bs-target="`#${tabId}-columns-tab-pane`"
+            type="button" role="tab"
+            aria-selected="true">
+            Columns
+          </button>
+        </li>
+        <li ref="indexesTab" class="nav-item" role="presentation">
+          <button class="nav-item nav-link" :id="`${tabId}-indexes-tab`"
+            data-bs-toggle="tab"
+            :data-bs-target="`#${tabId}-indexes-tab-pane`"
+            type="button" role="tab" aria-selected="false">
+            Indexes
+          </button>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" :id="`${tabId}-columns-tab-pane`" role="tabpanel">
+          <ColumnList
+            :initialColumns="initialTable.columns"
+            :dataTypes="dataTypes"
+            :commentable="commentable"
+            :mode="getMode"
+            :multiPKeys="multiPrimaryKeys"
+            @columns:changed="changeColumns" />
+        </div>
+        <div class="tab-pane fade" :id="`${tabId}-indexes-tab-pane`" role="tabpanel"  >
+          <IndexesList
+          :initialIndexes="initialIndexes"
+          :indexTypes="indexTypes"
+          :columns="columnNames"
+          :index-methods="indexMethods"
+          :disabled-features="disabledFeatures"
+          @indexes:changed="changeIndexes"
+          />
+        </div>
       </div>
-      <div class="form-group col d-flex align-items-end">
-        <button :disabled="!hasChanges || queryIsRunning" @click='applyChanges' type="button"
-          class="btn btn-success mt-4 ml-auto">
-          Apply Changes
-        </button>
-      </div>
-    </div>
+    </template>
 
-    <div class="form-row">
-      <div class="col">
-        <label class="font-weight-bold mb-2 mr-2">Columns</label>
+  <template v-if="mode !== 'alter'"> <!-- CREATE SCHEMA -->
 
-      <!-- TODO -->
-      <!-- <button @click='addColumn' class="btn btn-icon btn-icon-success" title="Add column">
-        <i class="fa-solid fa-circle-plus fa-xl"></i>
-      </button> -->
-      </div>
-    </div>
+    <div class="row">
+          <div class="form-group col-2">
+              <label class="fw-bold mb-2" :for="`${tabId}_tableNameInput`">Table Name</label>
+              <input v-model.trim="localTable.tableName" class="form-control" :id="`${tabId}_tableNameInput`" name="tableName" placeholder="table name..." />
+          </div>
 
-    <ColumnList
-      :initialColumns="localTable.columns"
-      :dataTypes="dataTypes"
-      :commentable="commentable"
-      :mode="getMode"
-      :multiPKeys="multiPrimaryKeys"
-      @columns:changed="changeColumns" />
+          <div v-if="showSchema" class="form-group col-3">
+            <label class="fw-bold mb-2" :for="`${tabId}_selectSchema`">Schema</label>
+            <select class="form-select text-truncate pe-4" :id="`${tabId}_selectSchema`" v-model="localTable.schema">
+              <option v-for="(schema, index) in schemas" :value="schema" :key="index">
+                {{ schema }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group col d-flex align-items-end">
+            <button :disabled="!hasChanges || queryIsRunning" @click='applyChanges' type="button"
+              class="btn btn-success mt-4 ms-auto">
+              Apply Changes
+            </button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label class="fw-bold mb-2 me-2">Columns</label>
+
+          <!-- TODO -->
+          <!-- <button @click='addColumn' class="btn btn-icon btn-icon-success" title="Add column">
+            <i class="fa-solid fa-circle-plus fa-xl"></i>
+          </button> -->
+          </div>
+        </div>
+
+        <ColumnList
+          :initialColumns="initialTable.columns"
+          :dataTypes="dataTypes"
+          :commentable="commentable"
+          :mode="getMode"
+          :multiPKeys="multiPrimaryKeys"
+          @columns:changed="changeColumns" />
+  </template>
 
     <div class="form-group mb-2">
-        <p class="font-weight-bold mb-2">Generated SQL</p>
+        <p class="fw-bold mb-2">Generated SQL</p>
         <div ref="editor" style="height: 30vh"></div>
     </div>
   </div>
@@ -59,7 +116,9 @@ import { createRequest } from '../long_polling'
 import { queryRequestCodes } from '../constants'
 import axios from 'axios'
 import { showToast } from '../notification_control'
-import { settingsStore } from '../stores/stores_initializer'
+import { settingsStore, tabsStore } from '../stores/stores_initializer'
+import IndexesList from './SchemaEditorIndexesList.vue'
+import isEqual from 'lodash/isEqual';
 
 
 function formatDefaultValue(defaultValue, dataType, table) {
@@ -95,7 +154,8 @@ export default {
     treeNode: Object,
   },
   components: {
-    ColumnList
+    ColumnList,
+    IndexesList
   },
   setup(props) {
     // FIXME: add column nam not-null validations
@@ -125,9 +185,12 @@ export default {
             editable: true
           }]
         },
+        localIndexes: [],
+        initialIndexes: [],
         generatedSQL: '',
         hasChanges: false,
-        queryIsRunning: false
+        queryIsRunning: false,
+        tabType: "Columns"
     };
   },
   mounted() {
@@ -138,7 +201,9 @@ export default {
     this.loadDialectData(this.dialect)
     this.setupEditor()
     if(this.$props.mode==='alter') {
-      this.loadTableDefinition()
+      this.loadTableDefinition().then(() => {
+        this.loadIndexes();
+      });
       // localTable for ALTER case is being set via watcher
     } else {
       this.initialTable.schema = this.$props.schema
@@ -186,32 +251,55 @@ export default {
         console.log(error)
       })
     },
-    loadTableDefinition() {
-        axios.post(this.dialectData.api_endpoints.table_definition_url, {
+    async loadTableDefinition() {
+      try {
+        const response = await axios.post(this.dialectData.api_endpoints.table_definition_url, {
           database_index: this.databaseIndex,
           tab_id: this.connId,
           table: this.localTable.tableName || this.table,
           schema: this.schema
         })
-        .then((response) => {
-          let coldefs = response.data.data.map((col) => {
+
+        let coldefs = response.data.data.map((col) => {
             return {
               dataType: col.data_type,
               name: col.name,
               defaultValue: col.default_value,
               nullable: col.nullable,
               isPK: col.is_primary,
-              comment: col.comment,
-              editable: this.editable
+              comment: col.comment ?? null,
+              editable: this.editable,
+              is_dirty: false,
+              deleted: false,
             }
           })
           this.initialTable.columns = coldefs
           this.initialTable.tableName = this.localTable.tableName || this.$props.table
           this.initialTable.schema = this.$props.schema
-        })
-        .catch((error) => {
-          console.log(error)
-        })
+          this.localTable = JSON.parse(JSON.stringify(this.initialTable));
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    loadIndexes() {
+      const indexesUrl = this.dialectData?.api_endpoints?.indexes_url ?? null;
+      if (!indexesUrl) return;
+
+      axios.post(indexesUrl, {
+        database_index: this.databaseIndex,
+        tab_id: this.connId,
+        schema: this.schema,
+        table: this.localTable.tableName || this.table
+      })
+      .then((resp) => {
+        this.initialIndexes = resp.data.map((index) => {
+          return {...index, is_dirty: false}
+        });
+        this.localIndexes = JSON.parse(JSON.stringify(this.initialIndexes));
+      })
+      .catch((error) => {
+        console.log(error)
+      })
     },
     setupEditor() {
       this.editor = ace.edit(this.$refs.editor);
@@ -228,14 +316,8 @@ export default {
         this.editor.setFontSize(state.fontSize);
       });
     },
-    generateSQL() {
-      //add knex error handing with notification to the user
-      let tabledef = this.localTable
-      let k = this.knex.schema.withSchema(tabledef.schema)
-
-      this.hasChanges = false
-      if(this.mode === 'alter') {
-        let changes = {
+    generateAlterSQL(knexInstance) {
+      let columnChanges = {
           'adds': [],
           'drops': [],
           'typeChanges': [],
@@ -244,24 +326,59 @@ export default {
           'renames': [],
           'comments': []
         }
+
+        let indexChanges = {
+          'adds': [],
+          'drops': [],
+          'typeChanges': [],
+          'renames': [],
+        }
+
         // TODO: add support for altering Primary Keys
         // TODO: add support for composite PKs
         let originalColumns = this.initialTable.columns
-        this.localTable.columns.forEach((column, idx) => {
-          if(column.deleted) changes.drops.push(originalColumns[idx].name)
-          if(column.new) changes.adds.push(column)
+        this.localTable.columns?.forEach((column, idx) => {
+          if(column.deleted) columnChanges.drops.push(originalColumns[idx].name)
+          if(column.new) columnChanges.adds.push(column)
           if(column.deleted || column.new) return //no need to do further steps for new or deleted cols
-          if(column.dataType !== originalColumns[idx].dataType) changes.typeChanges.push(column)
-          if(column.nullable !== originalColumns[idx].nullable) changes.nullableChanges.push(column)
-          if(column.defaultValue !== originalColumns[idx].defaultValue) changes.defaults.push(column)
-          if(column.name !== originalColumns[idx].name) changes.renames.push({'oldName': originalColumns[idx].name, 'newName': column.name})
-          if(column.comment !== originalColumns[idx].comment) changes.comments.push(column)
+
+
+          if (!isEqual(column, originalColumns[idx])) {
+            column.is_dirty = true;
+            originalColumns[idx].is_dirty = true;
+          } else {
+            column.is_dirty = false;
+            originalColumns[idx].is_dirty = false;
+          }
+  
+          if(column.dataType !== originalColumns[idx].dataType) columnChanges.typeChanges.push(column)
+          if(column.nullable !== originalColumns[idx].nullable) columnChanges.nullableChanges.push(column)
+          if(column.defaultValue !== originalColumns[idx].defaultValue) columnChanges.defaults.push(column)
+          if(column.name !== originalColumns[idx].name) columnChanges.renames.push({'oldName': originalColumns[idx].name, 'newName': column.name})
+          if(column.comment !== originalColumns[idx].comment) columnChanges.comments.push(column)
+        })
+
+
+        let originalIndexes = this.initialIndexes
+        this.localIndexes.forEach((index, idx) => {
+          if(index.deleted) indexChanges.drops.push(originalIndexes[idx].index_name)
+          if(index.new) indexChanges.adds.push(index)
+          if(index.deleted || index.new) return
+
+          if (!isEqual(index, originalIndexes[idx])) {
+            index.is_dirty = true;
+            originalIndexes[idx].is_dirty = true;
+          } else {
+            index.is_dirty = false;
+            originalIndexes[idx].is_dirty = false;
+          }
+          if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
         })
 
         // we use initial table name here since localTable.tableName may be changed
         // which results in broken SQL
-        let knexOperations = k.alterTable(this.initialTable.tableName, function(table) {
-          changes.adds.forEach((coldef) => {
+        let knexOperations = knexInstance.alterTable(this.initialTable.tableName, (table) => {
+          columnChanges.adds.forEach((coldef) => {
             // use Knex's magic to create a proper auto-incrementing column in database-agnostic way
             let col = coldef.dataType === 'autoincrement' ?
               table.increments(coldef.name) :
@@ -277,9 +394,9 @@ export default {
             if(coldef.comment) col.comment(coldef.comment)
           })
 
-          if(changes.drops.length) table.dropColumns(changes.drops)
+          if(columnChanges.drops.length) table.dropColumns(columnChanges.drops)
 
-          changes.typeChanges.forEach((coldef) => {
+          columnChanges.typeChanges.forEach((coldef) => {
             if (coldef.dataType === 'autoincrement') {
               table.increments(coldef.name).alter()
             } else {
@@ -289,7 +406,7 @@ export default {
             }
           })
 
-          changes.defaults.forEach(function (coldef) {
+          columnChanges.defaults.forEach(function (coldef) {
             if (!!coldef?.skipDefaults) return
             let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table)
             table.specificType(coldef.name, coldef.dataType).alter().defaultTo(formattedDefault).alter({ alterNullable: false, alterType: false })
@@ -300,7 +417,7 @@ export default {
             // }
           })
 
-          changes.nullableChanges.forEach((coldef) => {
+          columnChanges.nullableChanges.forEach((coldef) => {
             if (table.client.dialect === "mysql") {
               coldef.nullable ? table.setNullable(coldef) : table.dropNullable(coldef)
             } else {
@@ -309,21 +426,57 @@ export default {
           })
 
           // FIXME: commenting generates drop default - how to avoid this?
-          changes.comments.forEach((coldef) => {
-            //table.specificType(coldef.name, coldef.dataType).comment('test').alter({alterNullable : false, alterType: false})
-            // table.raw(`comment on column "${tabledef.schema}"."${table._tableName}"."${coldef.name}" is '${coldef.comment}'`)
+          // columnChanges.comments.forEach((coldef) => {
+          //   //table.specificType(coldef.name, coldef.dataType).comment('test').alter({alterNullable : false, alterType: false})
+          //   // table.raw(`comment on column "${tabledef.schema}"."${table._tableName}"."${coldef.name}" is '${coldef.comment}'`)
+          // })
+
+          columnChanges.renames.forEach((rename) => {
+            table.renameColumn(rename.oldName, rename.newName)
           })
 
-          changes.renames.forEach((rename) => {
-            table.renameColumn(rename.oldName, rename.newName)
+          indexChanges.adds.forEach((indexDef) => {
+            const strippedPredicate = indexDef.predicate.trimStart().replace(/^where/i, "");
+            if (indexDef.type === "unique") {
+              table.unique(indexDef.columns, {
+                indexName: indexDef.index_name,
+                useConstraint: false,
+                predicate: this.knex.where(this.knex.raw(strippedPredicate)),
+              })
+            } else {
+              table.index(indexDef.columns, indexDef.index_name, {
+                indexType: indexDef.type === 'non-unique' ? '' : indexDef.type,
+                storageEngineIndexType: indexDef.method,
+                predicate: this.knex.where(this.knex.raw(strippedPredicate)),
+              }
+            )
+            }
+          })
+
+          indexChanges.drops.forEach((indexName) => {
+            table.dropIndex(null, indexName)
+          })
+
+          // TODO: add renameIndex support on other database dialects
+          indexChanges.renames.forEach((rename) => {
+            table.renameIndex(rename.oldName, rename.newName)
           })
         })
         // handle table rename last
         if(this.initialTable.tableName !== this.localTable.tableName) {
           knexOperations.renameTable(this.initialTable.tableName, this.localTable.tableName)
         }
-        this.generatedSQL = knexOperations.toQuery()
 
+        return knexOperations.toQuery()
+    },
+    generateSQL() {
+      //add knex error handing with notification to the user
+      let tabledef = this.localTable
+      let k = this.knex.schema.withSchema(tabledef.schema)
+
+      this.hasChanges = false
+      if(this.mode === 'alter') {
+        this.generatedSQL = this.generateAlterSQL(k);
       } else {
         // mode==create
         this.generatedSQL = k.createTable(tabledef.tableName, function (table) {
@@ -355,14 +508,17 @@ export default {
     changeColumns(columns) {
       this.localTable.columns = [...columns]
     },
+    changeIndexes(indexes) {
+      this.localIndexes = [...indexes]
+    },
     applyChanges() {
       let message_data = {
 				sql_cmd : this.editor.getValue(), //use formatted SQL from the editor instead of single-line returned by generatedSQL
 				sql_save : false,
 				cmd_type: null,
-				v_db_index: this.databaseIndex,
-				v_conn_tab_id: this.connId,
-				v_tab_id: this.tabId,
+				db_index: this.databaseIndex,
+				conn_tab_id: this.connId,
+				tab_id: this.tabId,
 				tab_db_id: this.databaseIndex,
 				mode: 0,
 				all_data: false,
@@ -387,16 +543,18 @@ export default {
       createRequest(queryRequestCodes.Query, message_data, context)
     },
     handleResponse(response) {
-      if(response.v_error == true) {
-        showToast("error", response.v_data.message)
+      if(response.error == true) {
+        showToast("error", response.data.message)
       } else {
-        let msg = response.v_data.v_status === "CREATE TABLE" ? `Table "${this.localTable.tableName}" created` : `Table "${this.localTable.tableName}" updated`
+        let msg = response.data.status === "CREATE TABLE" ? `Table "${this.localTable.tableName}" created` : `Table "${this.localTable.tableName}" updated`
         showToast("success", msg)
 
         emitter.emit(`schemaChanged_${this.connId}`, { database_name: this.databaseName, schema_name: this.localTable.schema })
         // ALTER: load table changes into UI
         if(this.mode === 'alter') {
-          this.loadTableDefinition()
+          this.loadTableDefinition().then(() => {
+            this.loadIndexes();
+          });
         } else {
           // CREATE:reset the editor
           this.initialTable.schema = this.$props.schema
@@ -412,7 +570,7 @@ export default {
       let rawTypes = ['autoincrement']
         .concat(this.dialectData.dataTypes)
         .concat(this.customTypes)
-      return rawTypes.map((t, idx) => {return {id: idx, name: t}})
+      return rawTypes
     },
     showSchema() {
       return this.mode !== 'alter' && this.dialectData.hasSchema
@@ -429,6 +587,19 @@ export default {
     multiPrimaryKeys() {
       return !this.dialectData?.disabledFeatures?.multiPrimaryKeys
     },
+    indexMethods() {
+      return this.dialectData.indexMethods
+    },
+    columnNames() {
+      return this.localTable.columns?.map((col) => col.name);
+    },
+    indexTypes() {
+      let defaultTypes = ["non-unique", "unique"]
+      return this.dialectData?.indexTypes ? [...defaultTypes, ...this.dialectData.indexTypes] : defaultTypes
+    },
+    disabledFeatures() {
+      return this.dialectData?.disabledFeatures
+    }
   },
   watch: {
     generatedSQL() {
@@ -444,20 +615,25 @@ export default {
       ))
       this.editor.clearSelection();
     },
-    // watch initialTable for changes for cases when it is changed by requesting tabledef from the back-end
-    initialTable: {
-      handler(newVal, oldVal) {
-        this.localTable = JSON.parse(JSON.stringify(newVal))
-      },
-      deep: true
-    },
     // watch our local working copy for changes, generate new SQL when the change occcurs
     localTable: {
       handler(newVal, oldVal) {
         this.generateSQL()
       },
       deep: true
-    }
+    },
+    localIndexes: {
+      handler(newVal, oldVal) {
+        this.generateSQL()
+      },
+      deep: true
+    },
+    hasChanges() {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.connId);
+      if (tab) {
+        tab.metaData.hasUnsavedChanges = this.hasChanges;
+      }
+    },
   }
 };
 </script>

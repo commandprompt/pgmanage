@@ -661,7 +661,8 @@ export default {
     })
   },
   methods: {
-    refreshTree(node) {
+    refreshTree(node, force) {
+      if (!this.shouldUpdateNode(node, force)) return
       if (node.children.length == 0) this.insertSpinnerNode(node);
       if (node.data.type == "server") {
         this.getTreeDetailsOracle(node);
@@ -1103,7 +1104,7 @@ export default {
               icon: "fas node-all fa-thumbtack node-index",
               type: "index",
               contextMenu: "cm_index",
-              uniqueness: el.uniqueness,
+              unique: el.unique ? 'Unique' : "Non unique",
             });
           });
         })

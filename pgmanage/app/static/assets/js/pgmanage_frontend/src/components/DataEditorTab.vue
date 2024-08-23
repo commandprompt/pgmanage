@@ -1,19 +1,19 @@
 <template>
 <div class="data-editor p-2">
-  <div ref="topToolbar" class="form-row">
+  <div ref="topToolbar" class="row">
     <div class="form-group col-9">
       <form class="form" @submit.prevent>
-        <label class="mb-2" for="selectServer">
-          <span class="font-weight-bold">Filter</span> <span class='text-info'> select</span> * <span class='text-info'>from</span> {{this.schema ? `${this.schema}.${this.table}` : `${this.table}`}}
+        <label class="mb-2" :for="`${tabId}_queryFilter`">
+          <span class="fw-bold">Filter</span> <span class='text-info'> select</span> * <span class='text-info'>from</span> {{this.schema ? `${this.schema}.${this.table}` : `${this.table}`}}
         </label>
-        <input v-model.trim="queryFilter" class="form-control" name="filter"
+        <input :id="`${tabId}_queryFilter`" v-model.trim="queryFilter" class="form-control" name="filter"
            placeholder="extra filter criteria" />
       </form>
     </div>
     <div class="form-group col-2">
       <form class="form" @submit.prevent>
-        <label class="font-weight-bold mb-2" for="selectServer">Limit</label>
-        <select v-model="rowLimit" class="form-control">
+        <label class="fw-bold mb-2" :for="`${tabId}_rowLimit`">Limit</label>
+        <select :id="`${tabId}_rowLimit`" v-model="rowLimit" class="form-select">
             <option v-for="(option, index) in [10, 100, 1000]"
               :key=index
               :value="option">
@@ -22,8 +22,8 @@
         </select>
       </form>
     </div>
-    <div class="form-group col-1 d-flex align-items-end pl-0">
-      <button class="btn btn-primary mr-2" title="Load Data" @click="getTableData()">
+    <div class="form-group col-1 d-flex align-items-end ps-0">
+      <button class="btn btn-primary me-2" title="Load Data" @click="getTableData()">
         <i class="fa-solid fa-filter"></i>
       </button>
     </div>
@@ -33,8 +33,8 @@
   </div>
 
   <div ref="bottomToolbar" class="data-editor__footer d-flex align-items-center justify-content-end p-2">
-    <p class="text-info mr-2" v-if="!hasPK" ><i class="fa-solid fa-circle-info"></i> The table has no primary key, existing rows can not be updated</p>
-    <button type="submit" class="btn btn-success btn-sm mr-5" :disabled="!hasChanges"
+    <p class="text-info me-2" v-if="!hasPK" ><i class="fa-solid fa-circle-info"></i> The table has no primary key, existing rows can not be updated</p>
+    <button type="submit" class="btn btn-success btn-sm me-5" :disabled="!hasChanges"
       @click.prevent="applyChanges">
       {{this.applyBtnTitle()}}
     </button>
@@ -45,7 +45,8 @@
 <script>
 import axios from 'axios'
 import Knex from 'knex'
-import { isEqual, zipObject } from 'lodash';
+import isEqual from 'lodash/isEqual';
+import zipObject from 'lodash/zipObject';
 import { showToast } from "../notification_control";
 import { queryRequestCodes } from '../constants'
 import { createRequest } from '../long_polling'
@@ -109,6 +110,7 @@ export default {
     let table = new Tabulator(this.$refs.tabulator, {
       layout: 'fitDataStretch',
       data: [],
+      autoResize: false,
       columnDefaults: {
           headerHozAlign: "left",
           headerSort: false,
@@ -142,6 +144,9 @@ export default {
         })
       }
     })
+  },
+  unmounted() {
+    emitter.all.delete(`${this.tabId}_query_edit`);
   },
   updated() {
     if (tabsStore.selectedPrimaryTab?.metaData?.selectedTab?.id === this.tabId) {
@@ -213,8 +218,8 @@ export default {
             headerClick: this.addRow,
           }
           let columns = this.tableColumns.map((col, idx) => {
-            let prepend = col.is_primary ? '<i class="fas fa-key action-key text-secondary mr-1"></i>' : ''
-            let title = `${prepend}<span>${col.name}</span><div class='font-weight-light'>${col.data_type}</div>`
+            let prepend = col.is_primary ? '<i class="fas fa-key action-key text-secondary me-1"></i>' : ''
+            let title = `${prepend}<span>${col.name}</span><div class='fw-light'>${col.data_type}</div>`
 
             return {
               field: (idx + 1).toString(),
@@ -245,13 +250,13 @@ export default {
     },
     getTableData() {
       var message_data = {
-        v_table: this.table,
-        v_schema: this.schema,
-        v_db_index: this.databaseIndex,
-        v_filter : this.queryFilter,
-        v_count: this.rowLimit,
-        v_conn_tab_id: this.connId,
-        v_tab_id: this.tabId
+        table: this.table,
+        schema: this.schema,
+        db_index: this.databaseIndex,
+        query_filter : this.queryFilter,
+        count: this.rowLimit,
+        conn_tab_id: this.connId,
+        tab_id: this.tabId
       }
 
       var context = {
@@ -303,12 +308,12 @@ export default {
 
     },
     handleResponse(response) {
-      if(response.v_error == true) {
-        showToast("error", response.v_data)
+      if(response.error == true) {
+        showToast("error", response.data)
       } else {
         //store table data into original var, clone it to the working copy
         let pkIndex = this.tableColumns.findIndex((col) => col.is_primary) || 0
-        this.tableData = response.v_data.rows.map((row) => {
+        this.tableData = response.data.rows.map((row) => {
           let rowMeta = {
             is_dirty: false,
             is_new: false,
@@ -323,11 +328,13 @@ export default {
       }
     },
     handleSaveResponse(response) {
-      if(response.v_error == true) {
-        showToast("error", response.v_data)
+      if(response.error == true) {
+        showToast("error", response.data)
       } else {
         showToast("success", 'data updated')
-        this.getTableData()
+        setTimeout(() => {
+          this.getTableData()
+        }, 100);
       }
     },
     addRow() {
@@ -397,12 +404,12 @@ export default {
       let query = this.generateSQL()
 
       let message_data = {
-        v_sql_cmd : query,
-        v_sql_save : false,
-        v_db_index: this.databaseIndex,
-        v_conn_tab_id: this.connId,
-        v_tab_id: this.tabId,
-        v_tab_db_id: this.databaseIndex,
+        sql_cmd : query,
+        sql_save : false,
+        db_index: this.databaseIndex,
+        conn_tab_id: this.connId,
+        tab_id: this.tabId,
+        tab_db_id: this.databaseIndex,
       }
 
       let context = {
@@ -425,6 +432,12 @@ export default {
         this.tabulator.replaceData(this.tableDataLocal)
       },
       deep: true
+    },
+    hasChanges() {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.connId);
+      if (tab) {
+        tab.metaData.hasUnsavedChanges = this.hasChanges;
+      }
     },
   }
 };

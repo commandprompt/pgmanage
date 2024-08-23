@@ -3,18 +3,18 @@
     class="omnidb__tab-menu--container omnidb__tab-menu--container--primary omnidb__tab-menu--container--menu-shown"
   >
     <div
-      class="omnidb__tab-menu border-bottom omnidb__tab-menu--primary omnidb__theme-bg--menu-primary"
+      class="omnidb__tab-menu omnidb__tab-menu--primary omnidb__theme-bg--menu-primary"
     >
       <nav>
         <div class="nav nav-tabs">
           <a
             :id="tab.id"
-            data-toggle="tab"
             :class="[
               'omnidb__tab-menu__link',
               'nav-item',
               'nav-link',
               { disabled: tab.disabled, active: tab.id == selectedTab.id },
+              tabColorLabelClass(tab)
             ]"
             role="tab"
             aria-selected="false"
@@ -27,7 +27,7 @@
             @contextmenu="contextMenuHandler($event, tab)"
             v-for="tab in tabs"
           >
-            <span class="omnidb__tab-menu__link-content">
+            <span data-bs-toggle="tooltip" class="omnidb__tab-menu__link-content">
               <span
                 v-if="tab.icon"
                 class="omnidb__menu__btn omnidb__tab-menu__link-icon"
@@ -38,10 +38,10 @@
                 <span>{{ tab.name }}</span>
               </span>
             </span>
-
             <i
               v-if="tab.closable"
-              class="fas fa-times tab-icon omnidb__tab-menu__link-close"
+              class="fas tab-icon omnidb__tab-menu__link-close"
+              :class="tab.metaData.mode == 'outer_terminal' ? 'fa-ellipsis-vertical' : 'fa-times'"
               @click.stop.prevent="tab.closeFunction($event, tab)"
             ></i>
           </a>
@@ -65,7 +65,8 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import { tabsStore } from "../stores/stores_initializer";
+import { tabsStore, connectionsStore } from "../stores/stores_initializer";
+import { colorLabelMap } from "../constants";
 import WelcomeScreen from "./WelcomeScreen.vue";
 import SnippetPanel from "./SnippetPanel.vue";
 import TabsUtils from "../mixins/tabs_utils_mixin.js";
@@ -108,6 +109,12 @@ export default {
       };
       return componentsProps[tab.component];
     },
+    tabColorLabelClass(tab) {
+      let connection = connectionsStore.getConnection(tab.metaData?.selectedDatabaseIndex);
+      if(connection) {
+        return colorLabelMap[connection.color_label].class || ''
+      }
+    }
   },
 };
 </script>

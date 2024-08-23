@@ -11,6 +11,8 @@ $dropdownBoxShadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 $checkboxBoxShadow: 0 1px 1px rgba(24, 36, 51, 0.06);
 $activeBorder: 1px solid $primaryBlue;
 $scrollbarSize: 7px;
+$transition: all .3s ease-in-out;
+$fa-font-path: '@fortawesome/fontawesome-free/webfonts';
 
 //typography
 $fontFamily: 'Poppins', sans-serif;
@@ -50,6 +52,7 @@ $borderColorActiveDark: #314264;
 $disabledFontColorDark: #313C52;
 $accordionHeadingBgDark: rgba($primaryBlue, .15);
 $accordionHeadingActiveBgDark: rgba($primaryBlue, .2);
+$inputBgDark: #1A2234;
 $disabledInputBgDark: #404958;
 
 //accent colors
@@ -58,3 +61,12 @@ $dangerColor: #D72239;
 $successColor: #2FB344;
 $warningColor: #F76707;
 $infoColor: $primaryBlue;
+
+//label colors:
+$labelRed: #DC3545;
+$labelGreen: $successColor;
+$labelCyan: #00DBD3;
+$labelYellow: #FFC107;
+$labelPurple: #AE37FF;
+$labelPink: #D63384;
+$labelOrange: $warningColor;

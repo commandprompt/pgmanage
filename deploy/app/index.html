@@ -468,6 +468,8 @@
             }
         } else {
             currWinMode = 'normal';
+            win.width = 1024;
+            win.height = 768;
             dumpWindowState();
         }
 
@@ -622,7 +624,6 @@
     }
 
     setTimeout(function() {
-
       django = child_process.spawn(path.join(global.__dirname,'pgmanage-server/pgmanage-server'),['-A'],{detached: false});
 
       django.stderr.on('data', (data) => {
@@ -632,14 +633,16 @@
       django.stdout.on('data', (data) => {
         lines = data.toString().split('\n');
 
-        for (var i=0; i<lines.length-1; i++) {
-          if (lines[i].substring(0, 4)!='http') {
-            v_loading_data_content.innerHTML += lines[i] + '<br/>';
+        lines.forEach((line) => {
+          if(line == '')
+            return
+
+          if (line.substring(0, 4)!='http') {
+            v_loading_data_content.innerHTML += line + '<br/>';
             if (v_login_wrap_body) {
               v_login_wrap_body.scrollTo(0,99999);
             }
-          }
-          else {
+          } else {
             v_loading_data_content.innerHTML += 'Opening PGManage...<br/>';
             (function(value) { setTimeout( function() {
               v_loading_data_container.style.display = 'none';
@@ -649,10 +652,10 @@
               document.getElementById('bar_top').style.display = '';
               v_webview.style.display = '';
               v_webview.src = value;
-            },500);
-          })(lines[i]);
+            }, 500);
+          })(line);
           }
-        }
+        })
       });
 
     },100);

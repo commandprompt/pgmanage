@@ -1,11 +1,11 @@
-import { createMessageModal, showToast } from "./notification_control";
+import { showToast } from "./notification_control";
 import {
   allowedFileTypes,
   maxFileSizeInMB,
   maxFileSizeInKB,
   mimeTypeMap,
 } from "./constants";
-import { tabsStore } from "./stores/stores_initializer";
+import { messageModalStore, tabsStore } from "./stores/stores_initializer";
 
 function setupAceDragDrop(editor, isSnippetTab = false) {
   function handleFileDrop(e, file) {
@@ -85,7 +85,7 @@ function setupAceDragDrop(editor, isSnippetTab = false) {
 
     if (!!editor.getValue()) {
       e.preventDefault();
-      createMessageModal(
+      messageModalStore.showModal(
         "Are you sure you wish to discard the current changes?",
         () => {
           handleFileDrop(e, file);

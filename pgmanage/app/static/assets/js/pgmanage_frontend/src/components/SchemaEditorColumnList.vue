@@ -1,6 +1,6 @@
 <template>
   <div class="mb-2">
-    <div class="d-flex form-row font-weight-bold text-muted schema-editor__header">
+    <div class="d-flex row fw-bold text-muted schema-editor__header g-0">
       <div :class="commentable ? 'col-2' : 'col-3'">
         <p class="h6">Name</p>
       </div>
@@ -24,9 +24,11 @@
       </div>
     </div>
     <div v-for="(column, index) in columns" :key="column.index"
-        :class="['schema-editor__column d-flex form-row flex-nowrap form-group no-gutters',
+        :class="['schema-editor__column d-flex row flex-nowrap form-group g-0',
           { 'schema-editor__column-deleted': column.deleted },
-          { 'schema-editor__column-new': column.new }]">
+          { 'schema-editor__column-new': column.new },
+          { 'schema-editor__column-dirty': column.is_dirty }]"
+          >
           <div :class="commentable ? 'col-2' : 'col-3'">
               <input type="text" v-model="column.name" class="form-control mb-0" placeholder="column name..." />
           </div>
@@ -60,8 +62,8 @@
             :placeholder="this.mode == 'alter' ? '' : 'column comment...'" />
           </div>
 
-          <div :class="['col d-flex mr-2', this.movable(column) ? 'justify-content-between': 'justify-content-end']">
-            <button v-if="column.deleted && !column.new" @click='column.deleted = false' type="button"
+          <div :class="['col d-flex me-2', this.movable(column) ? 'justify-content-between': 'justify-content-end']">
+            <button v-if="column.deleted && !column.new || column.is_dirty" @click='revertColumn(index)' type="button"
               class="btn btn-icon btn-icon-success" title="Revert">
               <i class="fas fa-rotate-left"></i>
             </button>
@@ -76,14 +78,14 @@
               <i class="fas fa-circle-down"></i>
             </button>
 
-            <button v-if="!column.deleted" @click='removeColumn(index)' type="button"
+            <button v-if="!column.deleted && !column.is_dirty" @click='removeColumn(index)' type="button"
               class="btn btn-icon btn-icon-danger" title="Remove column">
               <i class="fas fa-circle-xmark"></i>
             </button>
           </div>
     </div>
-    <div class="d-flex row no-gutters font-weight-bold mt-2">
-      <button @click='addColumn' class="btn btn-outline-success ml-auto">
+    <div class="d-flex g-0 fw-bold mt-2">
+      <button @click='addColumn' class="btn btn-outline-success ms-auto">
         Add Column
       </button>
     </div>
@@ -92,7 +94,6 @@
 
 <script>
   import SearchableDropdown from "./SearchableDropdown.vue";
-  import _ from 'lodash';
 
   export default {
     name: 'SchemaEditorColumnList',
@@ -121,7 +122,8 @@
         return this.columns.filter(obj => obj.isPK === true).length
       },
       disabledPrimaryKey() {
-        return this.mode === "alter" && !this.multiPKeys && this.countOfPrimaryKeys == 1
+        // return this.mode === "alter" && !this.multiPKeys && this.countOfPrimaryKeys == 1
+        return this.mode === "alter" // TODO: add support for altering Primary Keys and then fix this
       }
     },
     methods: {
@@ -135,7 +137,8 @@
           isPK: false,
           comment:null,
           new: this.mode === 'alter',
-          editable: true
+          editable: true,
+          is_dirty: false
         }
         this.columns.push(defaultCol)
       },
@@ -166,6 +169,9 @@
         let col = this.columns.splice(index, 1)[0]
         this.columns.splice(index+1, 0, col)
       },
+      revertColumn(index) {
+        this.columns[index] = JSON.parse(JSON.stringify(this.initialColumns[index]));
+      }
     },
     watch: {
       initialColumns: {
@@ -189,9 +195,7 @@
             });
           }
 
-          if (!_.isEqual(newVal, this.initialColumns)) {
-            this.$emit("columns:changed", newVal);
-          }
+          this.$emit("columns:changed", newVal);
         },
         deep: true,
       },

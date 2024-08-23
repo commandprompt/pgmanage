@@ -1,4 +1,5 @@
 import { connectionsStore, tabsStore } from "../stores/stores_initializer";
+import { Tooltip } from "bootstrap";
 
 export default {
   methods: {
@@ -31,15 +32,17 @@ export default {
         }
         tab.tooltip = tooltipName;
         tab.name = databaseConnection.alias;
-
-        $(`#${tabId}`).tooltip("dispose");
-        $(`#${tabId}`).tooltip({
+        const tooltipEl = document.getElementById(`${tabId}`).querySelector("[data-bs-toggle='tooltip']")
+        Tooltip.getInstance(tooltipEl).dispose();
+        new Tooltip(tooltipEl, {
           placement: "right",
           boundary: "window",
           sanitize: false,
           title: tab.tooltip,
           html: true,
           delay: { show: 500, hide: 100 },
+          offset: [0, 10],
+          trigger: 'hover'
         });
       });
     },

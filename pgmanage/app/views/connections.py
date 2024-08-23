@@ -6,8 +6,8 @@ from app.models import Connection, Group, GroupConnection, Tab, Technology
 from app.utils.crypto import decrypt, encrypt
 from app.utils.decorators import session_required, user_authenticated
 from app.utils.key_manager import key_manager
-from django.db.models import Q
-from django.http import JsonResponse
+from django.db.models import Q, Prefetch
+from django.http import HttpResponse, JsonResponse
 from sshtunnel import SSHTunnelForwarder
 
 
@@ -21,20 +21,21 @@ def get_connections(request, session):
     tech_list = [tech.name for tech in Technology.objects.all()] #convert to values_list
 
     connection_list = []
-    connections = Connection.objects.filter(Q(user=request.user) | Q(public=True))
+    connections = Connection.objects.filter(
+        Q(user=request.user) | Q(public=True)
+    ).select_related('user', 'technology').prefetch_related(
+        Prefetch('groupconnection_set', queryset=GroupConnection.objects.select_related('group'))
+    )
 
     if connections and key_manager.get(request.user):
         for conn in connections:
-            # FIXME: refactor this into a proper join
-            gc = GroupConnection.objects.filter(connection=conn).select_related().first()
-
             conn_object = {
                 'id': conn.id,
                 'locked': conn.id in active_connection_ids,
                 'public': conn.public,
                 'is_mine': conn.user.id == request.user.id,
                 'technology': conn.technology.name,
-                'group': gc.group.id if gc else None,
+                'group': conn.groupconnection_set.first().group.id if conn.groupconnection_set.exists() else None,
                 'alias': conn.alias,
                 'conn_string': '',
                 'server': '',
@@ -43,6 +44,7 @@ def get_connections(request, session):
                 'user': '',
                 'password': '',
                 'password_set': False,
+                'color_label': conn.color_label,
                 'tunnel': {
                     'enabled': conn.use_tunnel,
                     'server': conn.ssh_server,
@@ -123,7 +125,7 @@ def delete_group(request):
     group_id = request.data['id']
 
     try:
-        group = Group.objects.get(id=group_id)
+        group = Group.objects.filter(id=group_id).select_related("user").first()
 
         if group.user.id != request.user.id:
             response_data['data'] = 'This group does not belong to you.'
@@ -161,7 +163,7 @@ def save_group(request):
             group.save()
         # update
         else:
-            group = Group.objects.get(id=group_id)
+            group = Group.objects.filter(id=group_id).select_related("user").first()
 
             if group.user.id != request.user.id:
                 response_data['data'] = 'This group does not belong to you.'
@@ -194,8 +196,6 @@ def save_group(request):
 @user_authenticated
 @session_required(include_session=False)
 def test_connection(request):
-    response_data = {'data': '', 'status': 'success'}
-
     conn_object = request.data
     conn_id = conn_object['id']
     conn_type = conn_object['technology']
@@ -228,20 +228,17 @@ def test_connection(request):
                 key = paramiko.RSAKey.from_private_key(io.StringIO(ssh_key), password=ssh_password)
                 client.connect(hostname=conn_object['tunnel']['server'], username=conn_object['tunnel']['user'],
                                pkey=key, passphrase=ssh_password,
-                               port=int(conn_object['tunnel']['port']))
+                               port=int(conn_object['tunnel']['port']), timeout=5)
             else:
                 client.connect(hostname=conn_object['tunnel']['server'], username=conn_object['tunnel']['user'],
-                               password=ssh_password, port=int(conn_object['tunnel']['port']))
+                               password=ssh_password, port=int(conn_object['tunnel']['port']), timeout=5)
 
             client.close()
-            response_data['data'] = 'Connection successful.'
         except Exception as exc:
             msg = str(exc)
             if "checkints" in msg:
                 msg = "Unable to decrypt SSH Key. Wrong passphrase?"
-            response_data['data'] = msg
-            response_data['status'] = 'failed'
-            return JsonResponse(response_data, status=400)
+            return JsonResponse({"data": msg}, status=400)
     else:
 
         database = OmniDatabase.Generic.InstantiateDatabase(
@@ -270,7 +267,8 @@ def test_connection(request):
                         ssh_private_key_password=ssh_password,
                         ssh_pkey=key,
                         remote_bind_address=(database.v_active_server, int(database.v_active_port)),
-                        logger=None
+                        logger=None,
+                        set_keepalive=120,
                     )
                 else:
                     server = SSHTunnelForwarder(
@@ -278,9 +276,9 @@ def test_connection(request):
                         ssh_username=conn_object['tunnel']['user'],
                         ssh_password=ssh_password,
                         remote_bind_address=(database.v_active_server, int(database.v_active_port)),
-                        logger=None
+                        logger=None,
+                        set_keepalive=120
                     )
-                server.set_keepalive = 120
                 server.start()
 
                 database.v_connection.v_host = '127.0.0.1'
@@ -288,25 +286,21 @@ def test_connection(request):
 
                 message = database.TestConnection()
                 server.close()
-                response_data['data'] = message
                 if message != 'Connection successful.':
-                    response_data['status'] = 'failed'
+                    return JsonResponse({"data": message}, status=400)
 
             except Exception as exc:
                 msg = str(exc)
                 if "checkints" in msg:
                     msg = "Unable to decrypt SSH Key. Wrong passphrase?"
-                response_data['data'] = msg
-                response_data['status'] = 'failed'
-                return JsonResponse(response_data, status=400)
+                return JsonResponse({"data": msg}, status=400)
 
         else:
             message = database.TestConnection()
-            response_data['data'] = message
             if message != 'Connection successful.':
-                response_data['status'] = 'failed'
+                return JsonResponse({"data": message}, status=400)
 
-    return JsonResponse(response_data)
+    return HttpResponse(status=200)
 
 
 @user_authenticated
@@ -347,12 +341,13 @@ def save_connection(request, session):
                 use_tunnel=conn_object['tunnel']['enabled'],
                 conn_string=conn_object['conn_string'],
                 public=False,
-                connection_params=conn_object['connection_params']
+                connection_params=conn_object['connection_params'],
+                color_label= conn_object['color_label']
             )
             conn.save()
         # update
         else:
-            conn = Connection.objects.get(id=conn_id)
+            conn = Connection.objects.filter(id=conn_id).select_related('user').first()
 
             if conn.user.id != request.user.id:
                 response_data['data'] = 'This connection does not belong to you.'
@@ -399,6 +394,7 @@ def save_connection(request, session):
             conn.use_tunnel = conn_object['tunnel']['enabled']
             conn.conn_string = conn_object['conn_string']
             conn.autocomplete = conn_object.get('autocomplete')
+            conn.color_label= conn_object['color_label']
             conn.save()
 
 

@@ -11,12 +11,12 @@
 </template>
 
 <script>
-import { Terminal } from "xterm";
-import { settingsStore } from "../stores/stores_initializer";
-import { FitAddon } from "xterm-addon-fit";
-import { createRequest } from "../long_polling";
+import { Terminal } from "@xterm/xterm";
+import { FitAddon } from "@xterm/addon-fit";
+import { CanvasAddon } from '@xterm/addon-canvas';
+import { settingsStore, tabsStore } from "../stores/stores_initializer";
+import { createRequest, createContext } from "../long_polling";
 import { queryRequestCodes, requestState } from "../constants";
-import { tabsStore } from "../stores/stores_initializer";
 import { emitter } from "../emitter";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 
@@ -34,6 +34,7 @@ export default {
       lastCommand: "",
       state: "",
       clearTerminal: true,
+      contextCode: undefined,
     };
   },
   mounted() {
@@ -55,12 +56,12 @@ export default {
     setupTerminal() {
       this.term = new Terminal({
         fontSize: settingsStore.fontSize,
-        fontFamily: "Monospace",
+        fontFamily: "'Ubuntu Mono', monospace",
         theme: settingsStore.terminalTheme,
-        rendererType: "dom", //FIXME: investigate in detail, for no use dom renderer because in nwjs we had some text rendering bugs on light theme
       });
 
       this.term.open(this.$refs.console);
+      this.term.loadAddon(new CanvasAddon());
       this.term.onData((data) => {
         this.terminalRun(false, data);
       });
@@ -71,6 +72,20 @@ export default {
 
       this.term.focus();
       this.term.write("Starting terminal...");
+
+      const tab = tabsStore.getPrimaryTabById(this.tabId);
+
+      let context = {
+        tab: tab,
+        callback: this.handleResponse.bind(this),
+      }
+
+      let ctx = {
+        context: context,
+      }
+      createContext(ctx);
+      this.contextCode = ctx.code;
+      tab.metaData.context = ctx;
 
       this.terminalRun(
         true,
@@ -99,18 +114,14 @@ export default {
     terminalRun(spawn = true, query = "\r") {
       this.lastCommand = query;
       let messageData = {
-        v_cmd: query,
-        v_tab_id: this.tabId,
-        v_db_index: null,
-        v_spawn: spawn,
-        v_ssh_id: this.databaseIndex,
+        cmd: query,
+        tab_id: this.tabId,
+        db_index: null,
+        spawn: spawn,
+        ssh_id: this.databaseIndex,
       };
 
-      let context = {
-        callback: this.handleResponse.bind(this),
-      };
-
-      createRequest(queryRequestCodes.Terminal, messageData, context);
+      createRequest(queryRequestCodes.Terminal, messageData, this.contextCode);
 
       this.state = requestState.Executing;
     },
@@ -122,7 +133,7 @@ export default {
 
       this.state = requestState.Idle;
 
-      this.term.write(data.v_data.v_data);
+      this.term.write(data.data.data);
     },
     resizeBrowserHandler() {
       if (this.tabId === tabsStore.selectedPrimaryTab.id) {

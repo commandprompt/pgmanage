@@ -6,7 +6,7 @@
 
 <script>
 import { emitter } from "../emitter";
-import { createRequest, removeContext, SetAcked } from "../long_polling";
+import { createRequest, removeContext } from "../long_polling";
 import { queryRequestCodes } from "../constants";
 import { tabsStore } from "../stores/stores_initializer";
 export default {
@@ -14,6 +14,7 @@ export default {
     tabId: String,
     connId: String,
   },
+  emits: ['cancelled'],
   methods: {
     cancelSQL() {
       let tab = tabsStore.getSelectedSecondaryTab(this.connId);
@@ -23,6 +24,7 @@ export default {
         database_index: this.databaseIndex,
         callback: this.cancelSQLReturn.bind(this),
       }
+      removeContext(tab.metaData.context.code);
       createRequest(queryRequestCodes.CancelThread, message_data, context);
     },
     cancelSQLReturn() {

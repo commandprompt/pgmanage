@@ -2,7 +2,7 @@
   <div class="dropdown dropdown-searchable" v-if="options">
 
     <!-- Dropdown Input -->
-    <input class="dropdown-searchable__input form-control pr-4"
+    <input class="dropdown-searchable__input form-control pe-4"
       :name="name"
       @focus="showOptions()"
       @blur="exit()"
@@ -17,11 +17,14 @@
     <div class="dropdown-searchable__content"
       v-show="optionsShown">
       <div
+        :data-testid="`dropdown-searchable-item-${index}`"
         class="dropdown-searchable__content_item"
-        @mousedown="selectOption(option)"
+        @mousedown="toggleOption(option)"
         v-for="(option, index) in filteredOptions"
-        :key="index">
-          {{ option.name || option.id || '-' }}
+        :key="index"
+        :class="{ 'selected': isSelected(option) }"
+        >
+            {{  option }}
       </div>
     </div>
   </div>
@@ -42,7 +45,7 @@
         type: Array,
         required: true,
         default: [],
-        note: 'Options of dropdown. An array of options with id and name',
+        note: 'Options of dropdown. An array of options',
       },
       placeholder: {
         type: String,
@@ -63,18 +66,20 @@
         note: 'Max items showing'
       },
       modelValue: {
-        default: ''
+        default: null
+      },
+      multiSelect: {
+        type: Boolean,
+        default: false
       }
     },
+    emits: ['update:modelValue'],
     data() {
       return {
-        selected: {},
+        selected: this.multiSelect ? [] : null,
         optionsShown: false,
         searchFilter: this.modelValue
       }
-    },
-    created() {
-      this.$emit('selected', this.selected);
     },
     computed: {
       filteredOptions() {
@@ -82,7 +87,7 @@
         // const regOption = new RegExp(this.searchFilter, 'ig');
         for (const option of this.options) {
           // if (this.searchFilter.length < 1 || option.name.match(regOption)){
-          if (this.searchFilter.length < 1 || option.name.includes(this.searchFilter)){
+          if (this.searchFilter?.length < 1 || option?.includes(this.searchFilter)){
             if (filtered.length < this.maxItem) filtered.push(option);
           }
         }
@@ -90,12 +95,29 @@
       }
     },
     methods: {
-      selectOption(option) {
-        this.selected = option;
-        this.optionsShown = false;
-        this.searchFilter = this.selected.name;
-        this.$emit('selected', this.selected);
-        this.$emit('update:modelValue', this.selected.name);
+      addOption(option) {
+        if (this.multiSelect) {
+          const index = this.selected.findIndex(selectedOption => selectedOption === option);
+          if (index === -1) {
+            this.selected.push(option);
+          }
+        }
+      },
+      toggleOption(option) {
+        if (this.multiSelect) {
+          const index = this.selected.findIndex(selectedOption => selectedOption === option);
+          if (index === -1) {
+            this.selected.push(option);
+          } else {
+            this.selected.splice(index, 1);
+          }
+          this.$emit('update:modelValue', this.selected);
+        } else {
+          this.selected = option;
+          this.$emit('update:modelValue', this.selected);
+          this.optionsShown = false;
+          this.searchFilter = this.selected;
+        }
       },
       showOptions(){
         if (!this.disabled) {
@@ -105,38 +127,53 @@
         }
       },
       exit() {
-        if (!this.selected.id && this.searchFilter.length > 0) {
-          // this.selected = {};
-          this.selected = { name: this.searchFilter }
-          // this.searchFilter = ''
+        if (!this.selected && this.searchFilter.length > 0) {
+          this.selected = this.searchFilter
         } else {
-          this.searchFilter = this.selected.name;
+          this.searchFilter = this.selected;
         }
-        this.$emit('selected', this.selected);
-        this.$emit('update:modelValue', this.selected.name);
+        this.$emit('update:modelValue', this.selected);
         this.optionsShown = false;
       },
       // Selecting when pressing Enter
       // FIXME: use hovered element instead of first one
       // TODO: add arrow navigation
       keyMonitor: function(event) {
-        if (event.key === "Enter" && this.filteredOptions[0])
-          this.selectOption(this.filteredOptions[0]);
-      }
+        if (event.key === "Enter" && this.filteredOptions[0]) {
+          this.toggleOption(this.filteredOptions[0]);
+        } else if (event.key === "Enter" && this.filteredOptions.length === 0 && this.multiSelect) {
+          let options = this.searchFilter.split(',');
+          options.forEach((option) => {
+            this.addOption(option.trim())
+          });
+          this.$emit('update:modelValue', this.selected);
+        }
+      },
+      isSelected(option) {
+        if (this.multiSelect) {
+          return this.selected.some(selectedOption => selectedOption === option);
+        } else {
+          return this.selected && this.selected === option;
+        }
+      },
     },
     watch: {
       searchFilter() {
-        if (this.filteredOptions.length === 0) {
-          this.selected = {};
-        } else {
-          this.selected = this.filteredOptions[0];
+        if (this.filteredOptions.length === 0 && !this.multiSelect) {
+          this.selected = null;
         }
-        this.$emit('filter', this.searchFilter);
       },
-      modelValue() {
-        console.log('changed', this.modelValue)
-        this.searchFilter = this.modelValue
-      }
+      modelValue: {
+        handler(newVal) {
+          if (this.multiSelect) {
+            this.selected = this.options.filter(option => newVal?.includes(option));
+          } else {
+            this.selected = this.options.find(option => option === newVal) || newVal;
+            this.searchFilter = this.selected;
+          }
+        },
+        immediate: true
+      },
     }
   };
 </script>

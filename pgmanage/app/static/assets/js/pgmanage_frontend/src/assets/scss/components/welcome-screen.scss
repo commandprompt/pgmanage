@@ -64,6 +64,8 @@
             &_title {
                 font-weight: 500;
                 white-space: nowrap;
+                width: fit-content;
+                position: relative;
             }
 
             &_logo {

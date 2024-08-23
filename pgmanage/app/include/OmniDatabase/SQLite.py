@@ -505,39 +505,89 @@ class SQLite:
         v_indexes_all = Spartacus.Database.DataTable()
 
         v_indexes_all.Columns = [
-            'index_name',
-            'table_name',
-            'uniqueness'
+            "index_name",
+            "table_name",
+            "unique",
+            "is_primary",
+            "columns",
+            "constraint",
         ]
 
         if p_table:
-            v_tables = self.v_connection.Query('''
+            v_tables = self.v_connection.Query(
+                """
                 select name
                 from sqlite_master
                 where type = 'table'
                   and name = '{0}'
-            '''.format(p_table), True)
+            """.format(
+                    p_table
+                ),
+                True,
+            )
         else:
-            v_tables = self.v_connection.Query('''
+            v_tables = self.v_connection.Query(
+                """
                 select name
                 from sqlite_master
                 where type = 'table'
-            ''', True)
+            """,
+                True,
+            )
 
         for v_table in v_tables.Rows:
-            v_indexes = self.v_connection.Query('''
+            v_indexes = self.v_connection.Query(
+                """
                 PRAGMA index_list('{0}')
-            '''.format(
-                v_table['name']
-            ), True)
+            """.format(
+                    v_table["name"]
+                ),
+                True,
+            )
 
             for v_index in v_indexes.Rows:
-                if v_index['origin'] == 'c':
-                    v_indexes_all.AddRow([
-                        v_index['name'],
-                        v_table['name'],
-                        'Unique' if v_index['unique'] == '1' else 'Non Unique'
-                    ])
+                if v_index["origin"] == "c":
+                    # Get columns associated with the index
+                    index_columns = self.v_connection.Query(
+                        """
+                        PRAGMA index_info('{0}')
+                    """.format(
+                            v_index["name"]
+                        ),
+                        True,
+                    )
+
+                    # Collect column names
+                    column_names = [col["name"] for col in index_columns.Rows]
+
+                    create_stmt = self.v_connection.Query(
+                        """
+                        SELECT sql
+                        FROM sqlite_master
+                        WHERE type = 'index'
+                        AND name = '{0}'
+                    """.format(
+                            v_index["name"]
+                        ),
+                        True,
+                    )
+
+                    constraint = None
+                    if create_stmt.Rows and "WHERE" in create_stmt.Rows[0]["sql"]:
+                        constraint = (
+                            create_stmt.Rows[0]["sql"].split("WHERE", 1)[1].strip()
+                        )
+
+                    v_indexes_all.AddRow(
+                        [
+                            v_index["name"],
+                            v_table["name"],
+                            v_index["unique"] == "1",
+                            v_index["origin"] == "pk",
+                            column_names,
+                            constraint,
+                        ]
+                    )
 
         return v_indexes_all
 
@@ -928,7 +978,7 @@ END
 
     def TemplateDropTrigger(self):
         return Template('DROP TRIGGER #trigger_name#')
-    
+
     def TemplateAlterTrigger(self):
         return Template(f"{self.TemplateDropTrigger().v_text};\n{self.TemplateCreateTrigger().v_text}")
 
@@ -1086,7 +1136,7 @@ END
     @lock_required
     def QueryTableDefinition(self, table=None):
         return self.v_connection.Query("PRAGMA table_info('{0}')".format(table), True)
-    
+
     @lock_required
     def GetViewDefinition(self, view):
         return self.v_connection.ExecuteScalar(f"SELECT sql from sqlite_master WHERE type = 'view' AND name = '{view}'")

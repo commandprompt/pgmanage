@@ -1,0 +1,110 @@
+//class veshat syuda: omnidb__tab-menu--container omnidb__tab-menu--container--secondar....color-label--green
+
+$colorLabels: (
+    'red': $labelRed,
+    'green': $labelGreen,
+    'cyan': $labelCyan,
+    'pink': $labelPink,
+    'purple': $labelPurple,
+    'yellow': $labelYellow,
+    'orange': $labelOrange,
+);
+
+.omnidb__tab-menu {
+    &--primary {
+        position: relative;
+        
+        .omnidb__tab-menu__link {
+            &::before {
+                content: '';
+                display: block;
+                background-color: transparent;
+                position: absolute;
+                top: 0;
+                width: 3px;
+                height: 100%;
+                left: 0;
+            }
+            
+            @each $colorName, $colorValue in $colorLabels {
+                &.color-label--#{$colorName}:before {
+                    background-color: $colorValue;
+                }
+            }
+        }
+    }
+    
+    &--container--secondary {
+        @each $colorName, $colorValue in $colorLabels {
+            &.color-label--#{$colorName} {
+                .omnidb__tab-menu__link {
+                    .icon-tab-title {
+                        color: $colorValue;
+                    }
+                    
+                    &.active {
+                        border-top-color: $colorValue;
+                    }
+                }
+            }
+        }
+    }
+}
+
+//Pick color dropdown menu
+.color-picker {
+    &__btn {
+        @each $colorName, $colorValue in $colorLabels {
+            &.color-label--#{$colorName} {
+                border-color: transparent !important;
+                background-color: $colorValue;
+            }
+        }
+    }
+    
+    &__dropdown {
+        .dropdown-item {
+            cursor: default;
+
+            span {     
+                border-radius: 50%; 
+                width: 1rem;
+                height: 1rem;
+                
+                @include themify() {
+                    border: 1px solid themed($colorPickerBtnBorder);
+                }
+            }
+            
+            @each $colorName, $colorValue in $colorLabels {
+                &.color-label--#{$colorName} {
+                    span {      
+                        background-color: $colorValue;
+                        border-color: transparent !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
+//'Recent connections' cards on the Welcome screen
+.recent-conections__item {
+    &_title:after {
+        position: absolute;
+        content: "";
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 50%;
+        right: 0;
+        transform: translateX(160%);
+    }
+
+    @each $colorName, $colorValue in $colorLabels {
+        &.color-label--#{$colorName} {    
+            .recent-conections__item_title:after {
+                background-color: $colorValue;
+            }   
+        }
+    }
+}

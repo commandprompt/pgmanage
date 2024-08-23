@@ -10,7 +10,7 @@
           title="Indent SQL"
           @click="indentSQL"
         >
-          <i class="fas fa-indent mr-2"></i>Indent
+          <i class="fas fa-indent me-2"></i>Indent
         </button>
         <button
           data-testid="snippet-tab-save-button"
@@ -18,7 +18,7 @@
           title="Save"
           @click="saveSnippetText"
         >
-          <i class="fas fa-save mr-2"></i>Save
+          <i class="fas fa-save me-2"></i>Save
         </button>
         <button
           data-testid="snippet-tab-open-file-button"
@@ -26,7 +26,7 @@
           title="Open file"
           @click="openFileManagerModal"
         >
-          <i class="fas fa-folder-open mr-2"></i>Open file
+          <i class="fas fa-folder-open me-2"></i>Open file
         </button>
 
         <button
@@ -36,11 +36,10 @@
           title="Save to File"
           @click="saveFile"
         >
-          <i class="fas fa-download mr-2"></i>Save to File
+          <i class="fas fa-download me-2"></i>Save to File
         </button>
       </div>
     </div>
-    <FileManager ref="fileManager" />
   </div>
 </template>
 
@@ -53,18 +52,16 @@ import {
   snippetsStore,
   settingsStore,
   tabsStore,
+  messageModalStore,
+  fileManagerStore
 } from "../stores/stores_initializer";
-import FileManager from "./FileManager.vue";
 import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_plugins";
 import FileInputChangeMixin from "../mixins/file_input_mixin";
 import { maxLinesForIndentSQL } from "../constants";
-import { createMessageModal, showToast } from "../notification_control";
+import { showToast } from "../notification_control";
 
 export default {
   name: "SnippetTab",
-  components: {
-    FileManager,
-  },
   mixins: [FileInputChangeMixin],
   props: {
     tabId: String,
@@ -73,6 +70,7 @@ export default {
       default: {
         id: null,
         name: null,
+        text: null,
         parent: null,
         type: "snippet",
       },
@@ -89,6 +87,7 @@ export default {
       },
       heightSubtract: 100 + settingsStore.fontSize,
       fileSaveDisabled: true,
+      editorValue: "",
     };
   },
   computed: {
@@ -96,9 +95,13 @@ export default {
       return `calc(100vh - ${this.heightSubtract}px)`;
     },
     snippetPanel() {
-      return tabsStore.tabs.find(
-          (tab) => tab.name === "Snippets"
-        );
+      return tabsStore.tabs.find((tab) => tab.name === "Snippets");
+    },
+    hasChanges() {
+      return (
+        (!!this.snippet?.id && this.snippet.text !== this.editorValue) ||
+        (this.snippet?.id === null && !!this.editorValue)
+      );
     },
   },
   beforeMount() {
@@ -126,6 +129,9 @@ export default {
 
       this.editor.setFontSize(settingsStore.fontSize);
       this.editor.setShowPrintMargin(false);
+      this.editor.setValue(this.snippet.text);
+      this.editorValue = this.snippet.text;
+      this.editor.clearSelection();
 
       this.editor.commands.bindKey("ctrl-space", null);
 
@@ -138,7 +144,9 @@ export default {
       this.editor.commands.bindKey("Ctrl-Down", null);
 
       this.editor.on("change", () => {
-        this.fileSaveDisabled = !this.editor.getValue();
+        const editorValue = this.editor.getValue();
+        this.fileSaveDisabled = !editorValue;
+        this.editorValue = editorValue;
       });
 
       this.editor.focus();
@@ -240,15 +248,15 @@ export default {
     openFileManagerModal() {
       const editorContent = this.editor.getValue();
       if (!!editorContent) {
-        createMessageModal(
+        messageModalStore.showModal(
           "Are you sure you wish to discard the current changes?",
           () => {
-            this.$refs.fileManager.show(true, this.handleFileInputChange);
+            fileManagerStore.showModal(true, this.handleFileInputChange);
           },
           null
         );
       } else {
-        this.$refs.fileManager.show(true, this.handleFileInputChange);
+        fileManagerStore.showModal(true, this.handleFileInputChange);
       }
     },
     async saveFile() {
@@ -296,6 +304,14 @@ export default {
       }
     },
   },
+  watch: {
+    hasChanges() {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.snippetPanel?.id);
+      if (tab) {
+        tab.metaData.hasUnsavedChanges = this.hasChanges;
+      }
+    },
+  }
 };
 </script>
 

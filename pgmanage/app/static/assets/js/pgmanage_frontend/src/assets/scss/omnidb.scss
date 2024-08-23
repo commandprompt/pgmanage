@@ -192,7 +192,7 @@ a:not([href]):not([tabindex]){
   &__utilities-menu {
     position: fixed;
     right: 0.5rem;
-    top: 0.15rem;
+    top: calc((var(--nav-bar-height) - 27px) / 2); //27px - round button height
     z-index: 1001;
 
     .omnidb__menu__btn.nav-link,
@@ -515,7 +515,7 @@ button.close {
 }
 
 .omnidb__workspace__connection-details {
-  padding: 0.5rem 10px calc(0.5rem - 5px);
+  padding: 0.2rem 10px;
 }
 
 /* Workspace Connection Info */
@@ -804,41 +804,6 @@ button.close {
   margin-left: 5px;
   vertical-align: middle;
 }
-
-/* FORMS */
-.omnidb__form-check .form-check-label {
-  cursor: pointer;
-  padding-left: 0.25rem;
-}
-.omnidb__form-check .form-check-label::before {
-  background-color: #FFF;
-  border: 1px solid #d2d2d2;
-  border-radius: 3px;
-  content: " ";
-  display: inline-block;
-  height: 16px;
-  left: 0px;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  z-index: 1;
-}
-.omnidb__form-check .form-check-label::after {
-  border-radius: 3px;
-  content: " ";
-  display: inline-block;
-  height: 10px;
-  left: 3px;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 10px;
-  z-index: 2;
-}
-.omnidb__form-check input:checked~.form-check-label::after {
-  background-color: #43afd2;
-}
 .omnidb__form-check .form-check-input {
   transform: translate(1px,1px);
 }
@@ -932,14 +897,13 @@ button.close {
   background-color: #0054A6;
 }
 .omnis__circle-waves span {
-  border-radius: 18px;
+  border-radius: 50%;
   display: inline-block;
   height: 100%;
-  left: 0px;
+  display: block;
   opacity: 0;
   pointer-events: none;
   position: absolute;
-  top: 0px;
   width: 100%;
 }
 .omnis__circle-waves span:nth-of-type(1) {
@@ -1233,11 +1197,6 @@ body {
 	}
 }
 
-/* AIMARA MENU */
-#ul_cm.aimara_menu {
-  box-shadow: 0px 1px 4px rgba(0,0,0,0.1);
-}
-
 /* OMNIS */
 .omnis {
   border-radius: 50%;
@@ -1337,22 +1296,26 @@ body {
 @keyframes waves {
   0% {
     transform: scale(1);
+    transform-origin: center center;
     opacity: 0.3;
   }
 
   100% {
     transform: scale(4);
+    transform-origin: center center;
     opacity: 0;
   }
 }
 @-webkit-keyframes waves {
   0% {
     transform: scale(1);
+    transform-origin: center center;
     opacity: 0.3;
   }
 
   100% {
     transform: scale(4);
+    transform-origin: center center;
     opacity: 0;
   }
 }

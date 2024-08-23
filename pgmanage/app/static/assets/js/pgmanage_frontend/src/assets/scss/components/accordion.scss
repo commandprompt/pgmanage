@@ -1,14 +1,12 @@
 .accordion {
     .card {
-        border-radius: 0;
-        border: 0;
         background-color: inherit;
 
         &-header {
             border-bottom: 0;
             padding: 16px 20px;
             cursor: pointer;
-            transition: all .3s ease-in-out;
+            transition: $transition;
             white-space: nowrap;
 
             @include themify() {
@@ -21,8 +19,8 @@
                 opacity: .5;
             }
 
-            &:not(.collapsed){
-                transition: all .3s ease-in-out;
+            &:has( + .collapse.show, + .collapsing) {
+                transition: $transition;
 
                 @include themify() {
                     background-color: themed($accordionHeadingActiveBg);

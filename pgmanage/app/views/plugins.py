@@ -1,25 +1,21 @@
-from django.http import HttpResponse
-from django.template import loader
-from django.http import JsonResponse
-from django.core import serializers
-from django.shortcuts import redirect
-from datetime import datetime
-from math import ceil
-from os import listdir, makedirs, remove
-from os.path import isfile, join, isdir
-from pgmanage import settings
+
 import importlib
+import os
+import shutil
+import time
 from configparser import ConfigParser
 from itertools import chain
-import time
-import shutil
-import os
+from os import listdir, makedirs, remove
+from os.path import isdir, isfile, join
 
-from django import forms
-
-from app.utils.decorators import user_authenticated, database_required, session_required, superuser_required
+from app.utils.decorators import (database_required, session_required,
+                                  superuser_required, user_authenticated)
 from app.views.monitoring_dashboard import builtin_monitoring_widgets
-from app.utils.response_helpers import create_response_template
+from django import forms
+from django.http import JsonResponse
+
+from pgmanage import settings
+
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
@@ -202,9 +198,9 @@ load_plugins()
 
 #loading javascript plugins
 @user_authenticated
-@session_required(use_old_error_format=True, include_session=False)
+@session_required(include_session=False)
 def list_plugins(request):
-    v_return = create_response_template()
+    v_return =  {"v_data": "", "v_error": False, "v_error_id": -1}
 
     plugin_list = []
     plugin_message_list = []
@@ -267,9 +263,9 @@ def list_plugins(request):
 
 #loading javascript plugins
 @user_authenticated
-@session_required(use_old_error_format=True, include_session=False)
+@session_required(include_session=False)
 def get_plugins(request):
-    v_return = create_response_template()
+    v_return =  {"v_data": "", "v_error": False, "v_error_id": -1}
 
     plugin_list = []
     for key, plugin in plugins.items():
@@ -282,7 +278,7 @@ def get_plugins(request):
 
 #upload plugin
 @user_authenticated
-@session_required(use_old_error_format=True)
+@session_required
 def upload_view(request, session):
     return_object = {
         'v_error': False
@@ -436,10 +432,9 @@ def handle_uploaded_file(f):
 
 #reloading plugins
 @user_authenticated
-@session_required(use_old_error_format=True, include_session=False)
+@session_required(include_session=False)
 def reload_plugins(request):
-    v_return = create_response_template()
-
+    v_return =  {"v_data": "", "v_error": False, "v_error_id": -1}
     load_plugins()
 
     v_return['v_data'] = True
@@ -448,9 +443,9 @@ def reload_plugins(request):
 
 @superuser_required
 @user_authenticated
-@session_required(use_old_error_format=True, include_session=False)
+@session_required(include_session=False)
 def delete_plugin(request):
-    v_return = create_response_template()
+    v_return =  {"v_data": "", "v_error": False, "v_error_id": -1}
 
     data = request.data
     p_plugin_name = data['p_plugin_name']

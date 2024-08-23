@@ -324,17 +324,21 @@ export default {
       }, 200)
     })
 
-    emitter.on(`schemaChanged_${this.id}`, () => {
+    emitter.on(`schemaChanged_${this.tabId}`, () => {
       const tree = this.$refs.tree;
       let tables_node = tree.getNextNode([0], (node) => {
         return node.data.type === "table_list";
       });
 
-      this.refreshTree(tables_node);
+      this.refreshTree(tables_node, true);
     });
   },
+  unmounted() {
+    emitter.all.delete(`schemaChanged_${this.tabId}`);
+  },
   methods: {
-    refreshTree(node) {
+    refreshTree(node, force) {
+      if (!this.shouldUpdateNode(node, force)) return
       if (node.children.length == 0) this.insertSpinnerNode(node);
       if (node.data.type == "server") {
         this.getTreeDetailsSqlite(node);
@@ -685,7 +689,7 @@ export default {
               icon: "fas node-all fa-thumbtack node-index",
               type: "index",
               contextMenu: "cm_index",
-              uniqueness: el.uniqueness,
+              unique: el.unique ? 'Unique' : "Non unique",
             });
           });
         })

@@ -18,7 +18,7 @@
     <button
       data-testid="tree-tabs-toggler"
       type="button"
-      class="btn btn-icon btn-icon-secondary omnidb__tree-tabs__toggler mr-2"
+      class="btn btn-icon btn-icon-secondary omnidb__tree-tabs__toggler me-2"
       @click="$emit('toggleTreeTabs')"
     >
       <i class="fas fa-arrows-alt-v"></i>
@@ -32,9 +32,10 @@
             <a
               :id="`${connId}_tree_properties_nav`"
               class="omnidb__tab-menu__link nav-item nav-link active"
-              data-toggle="tab"
+              data-bs-toggle="tab"
               role="tab"
               aria-selected="true"
+              ref="treePropertiesNav"
               :href="`#${connId}_tree_properties`"
               :aria-controls="`${connId}_tree_properties`"
               >Properties</a
@@ -42,7 +43,7 @@
             <a
               :id="`${connId}_tree_ddl_nav`"
               class="omnidb__tab-menu__link nav-item nav-link"
-              data-toggle="tab"
+              data-bs-toggle="tab"
               role="tab"
               aria-selected="false"
               :href="`#${connId}_tree_ddl`"
@@ -87,15 +88,15 @@ import { settingsStore } from "../stores/stores_initializer";
 export default {
   props: {
     connId: String,
+    databaseTechnology: String,
     ddlData: String,
     propertiesData: Array,
     showLoading: {
       type: Boolean,
       default: false,
     },
-    clearData: false,
   },
-  emits: ["toggleTreeTabs", "dataCleared"],
+  emits: ["toggleTreeTabs"],
   data() {
     return {
       table: null,
@@ -109,19 +110,7 @@ export default {
       this.editor.gotoLine(0, 0, true);
     },
     propertiesData(newValue, oldValue) {
-      this.table.setData(this.propertiesData);
-      this.table.redraw(true);
-    },
-    clearData(newValue, oldValue) {
-      if (newValue) {
-        this.table.clearData();
-
-        this.editor.setValue("");
-        this.editor.clearSelection();
-        this.editor.gotoLine(0, 0, true);
-
-        this.$emit("dataCleared");
-      }
+      this.table.setData(newValue);
     },
   },
   mounted() {
@@ -133,13 +122,14 @@ export default {
       this.editor.setFontSize(state.fontSize);
     });
 
-    $(`#${this.connId}_tree_properties_nav`).on("shown.bs.tab", () => {
+    this.$refs.treePropertiesNav.addEventListener("shown.bs.tab", () => {
       this.table.redraw(true);
     });
   },
   methods: {
     setupTable() {
       this.table = new Tabulator(this.$refs.tabulator, {
+        renderVertical: "basic",
         columnDefaults: {
           headerHozAlign: "left",
           headerSort: false,
@@ -163,10 +153,20 @@ export default {
       });
     },
     setupEditor() {
+      // TODO: DRY editor initialization. possibly move common setup stuff into a mixin
+      const EDITOR_MODEMAP = {
+        postgresql: "pgsql",
+        mysql: "mysql",
+        mariadb: "mysql",
+        oracle: "plsql",
+      };
+
+      let editor_mode = EDITOR_MODEMAP[this.databaseTechnology] || "sql";
+
       this.editor = ace.edit(this.$refs.editor);
       this.editor.$blockScrolling = Infinity;
       this.editor.setTheme("ace/theme/" + settingsStore.editorTheme);
-      this.editor.session.setMode("ace/mode/sql");
+      this.editor.session.setMode(`ace/mode/${editor_mode}`);
 
       this.editor.setFontSize(Number(settingsStore.fontSize));
 

@@ -11,6 +11,10 @@
         <i :class="['icon_tree', node.data.icon]"></i>
       </span>
       <span v-if="node.data.raw_html" v-html="node.title"> </span>
+      <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
+        ">
+        <b>{{ node.title }}</b>
+      </span>
       <span v-else>
         {{ formatTitle(node) }}
       </span>
@@ -27,7 +31,9 @@ import {
   TemplateUpdateMariadb,
 } from "../tree_context_functions/tree_mariadb";
 import { emitter } from "../emitter";
-import { tabsStore } from "../stores/stores_initializer";
+import { tabsStore, connectionsStore } from "../stores/stores_initializer";
+import { checkBeforeChangeDatabase } from "../workspace";
+import ContextMenu from "@imengyu/vue3-context-menu";
 
 export default {
   name: "TreeMariaDB",
@@ -621,28 +627,120 @@ export default {
     },
   },
   mounted() {
+    this.doubleClickNode(this.getRootNode())
     this.$nextTick(() => {
+      const processNode = (node) => {
+        if (node.data.type === "database_list") {
+          this.doubleClickNode(node);
+        } else if (
+          node.data.type === "database" &&
+          node.title === this.selectedDatabase
+        ) {
+          this.doubleClickNode(node);
+        } else if (node.data.type === "table_list") {
+          this.doubleClickNode(node);
+          return;
+        }
+
+        setTimeout(() => {
+          const nodeElement = this.$refs.tree.getNode(node.path);
+          nodeElement.children.forEach((childNode) => {
+            processNode(childNode);
+          });
+        }, 200);
+      };
       setTimeout(() => {
-        this.doubleClickNode(this.getRootNode())
-        const databasesNode = this.$refs.tree.getNode([0, 0])
-        if (databasesNode)
-          this.doubleClickNode(databasesNode)
-      }, 100)
-      setTimeout(() => {
-        const databasesNode = this.$refs.tree.getNode([0, 0])
-        databasesNode.children.forEach((childNode) => {
-          if (childNode.title === this.selectedDatabase) {
-            this.doubleClickNode(childNode)
-            this.$nextTick(() => {
-              this.doubleClickNode(this.$refs.tree.getNode([...childNode.path, 0]))
-            })
-          }
-        })
-      }, 200)
+        this.getRootNode().children.forEach((node) => {
+          processNode(node);
+        });
+      }, 200);
     })
+    emitter.on(`schemaChanged_${this.tabId}`, ({ schema_name, database_name }) => {
+      const tree = this.$refs.tree;
+      let db_node = tree.getNextNode([0], (node) => {
+        return (
+          node.data.type === "database" && node.data.database === database_name
+        );
+      });
+      let tables_node = tree.getNextNode(db_node.path, (node) => {
+        return node.data.type === "table_list";
+      });
+      this.refreshTree(tables_node, true);
+    });
+  },
+  unmounted() {
+    emitter.all.delete(`schemaChanged_${this.tabId}`);
   },
   methods: {
-    refreshTree(node) {
+    onContextMenu(node, e) {
+      this.$refs.tree.select(node.path);
+      e.preventDefault();
+      if (!!node.data.contextMenu) {
+        this.checkCurrentDatabase(node, true, () => {
+          ContextMenu.showContextMenu({
+            theme: "pgmanage",
+            x: e.x,
+            y: e.y,
+            zIndex: 1000,
+            minWidth: 230,
+            items: this.contextMenu[node.data.contextMenu],
+          });
+        });
+      }
+    },
+    checkCurrentDatabase(
+      node,
+      complete_check,
+      callback_continue,
+      callback_stop
+    ) {
+      if (
+        !!node.data.database &&
+        node.data.database !== this.selectedDatabase &&
+        (complete_check || (!complete_check && node.data.type !== "database"))
+      ) {
+        let isAllowed = checkBeforeChangeDatabase(callback_stop);
+        if (isAllowed) {
+          this.api
+            .post("/change_active_database/", {
+              database: node.data.database,
+            })
+            .then((resp) => {
+              connectionsStore.updateConnection(this.databaseIndex, {"last_used_database" : node.data.database})
+              const database_nodes = this.$refs.tree.getNode([0, 0]).children;
+
+              database_nodes.forEach((el) => {
+                if (node.data.database === el.title) {
+                  this.selectedDatabase = node.data.database;
+                  tabsStore.selectedPrimaryTab.metaData.selectedDatabase = node.data.database;
+                }
+              });
+              if (callback_continue) callback_continue();
+            })
+            .catch((error) => {
+              this.nodeOpenError(error, node);
+            });
+        }
+      } else {
+        if (callback_continue) callback_continue();
+      }
+    },
+    refreshTree(node, force) {
+      this.checkCurrentDatabase(
+        node,
+        true,
+        () => {
+          setTimeout(() => {
+            if (!this.shouldUpdateNode(node, force)) return
+            this.refreshTreeConfirm(node)
+          }, 100);
+        },
+        () => {
+          this.toggleNode(node);
+        }
+      );
+    },
+    refreshTreeConfirm(node) {
       if (node.children.length == 0) this.insertSpinnerNode(node);
       if (node.data.type == "server") {
         this.getTreeDetailsMariadb(node);
@@ -1105,7 +1203,7 @@ export default {
               icon: "fas node-all fa-thumbtack node-index",
               type: "index",
               contextMenu: "cm_index",
-              uniqueness: el.uniqueness,
+              unique: el.unique ? 'Unique' : "Non unique",
               database: node.data.database
             });
           });

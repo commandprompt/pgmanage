@@ -15,27 +15,17 @@ import "../../src/ace_themes/theme-omnidb.js";
 import { emitter } from "../../src/emitter.js";
 
 import { useSettingsStore } from "../../src/stores/settings.js";
+import { useMessageModalStore } from "../../src/stores/message_modal.js";
 import * as notificatonModule from "../../src/notification_control";
 import { maxFileSizeInKB, maxFileSizeInMB } from "../../src/constants.js";
 
-window.$ = vi.fn().mockImplementation(() => {
-  return {
-    on: vi.fn(),
-  };
-});
-
-vi.mock("@/workspace.js", () => {
-  const renameTab = vi.fn();
-  const showMenuNewTabOuter = vi.fn();
-  return { renameTab, showMenuNewTabOuter };
-});
-
 describe("SnippetTab", () => {
   let wrapper, fileMock, showToastSpy, eventMock;
-  let settingsStore;
+  let settingsStore, messageModalStore;
   const tabId = "uniqueTabID";
 
   beforeAll(() => {
+    messageModalStore = useMessageModalStore();
     settingsStore = useSettingsStore();
     settingsStore.setEditorTheme("omnidb");
   });
@@ -249,7 +239,7 @@ describe("SnippetTab", () => {
     test("handles drop event when ace editor is not empty", () => {
       wrapper.vm.editor.setValue("test data");
       const messageModalSpy = vi
-        .spyOn(notificatonModule, "createMessageModal")
+        .spyOn(messageModalStore, "showModal")
         .mockImplementation(() => null);
 
       const readerMock = { readAsText: vi.fn(), result: "fileContent" };

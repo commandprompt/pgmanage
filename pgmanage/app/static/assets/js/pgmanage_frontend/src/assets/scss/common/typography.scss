@@ -61,7 +61,7 @@ span.text-muted {
 //for multiline text
 .line-clamp-text {
     display: -webkit-box;
-    -webkit-line-clamp: 2; //number of visible rows 
+    -webkit-line-clamp: 2; //number of visible rows
     -webkit-box-orient: vertical;
     overflow: hidden;
     word-wrap: break-word;

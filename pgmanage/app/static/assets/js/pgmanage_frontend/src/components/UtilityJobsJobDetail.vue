@@ -1,34 +1,32 @@
 <template>
-  <div class="modal fade" id="jobDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal fade" id="jobDetailModal" ref="jobDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header align-items-center">
           <h3 class="modal-title">{{ selectedJob?.type_desc }}</h3>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <p class="mb">{{ selectedJob?.description }}</p>
-          <p class="font-weight-bold mb-2">Command:</p>
+          <p class="fw-bold mb-2">Command:</p>
           <p class="p-2 border border-radius text-break">
             {{ selectedJob?.details?.cmd }}
           </p>
           <div class="d-flex justify-content-between mt-3 mb-2">
             <span>
-              <span class="font-weight-bold">Start time:</span>
+              <span class="fw-bold">Start time:</span>
               {{ selectedJob?.start_time }}
             </span>
             <span>
-              <span class="font-weight-bold">Duration:</span>
+              <span class="fw-bold">Duration:</span>
               {{ selectedJob?.duration }}
             </span>
           </div>
           <div class="d-flex justify-content-between mt-3 mb-2">
-            <span class="font-weight-bold">Output:</span>
-            <div class="custom-control custom-switch">
-              <input class="custom-control-input" type="checkbox" id="jobDetailAutoscroll" v-model="autoScroll" />
-              <label class="custom-control-label" for="jobDetailAutoscroll">
+            <span class="fw-bold">Output:</span>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="jobDetailAutoscroll" v-model="autoScroll" />
+              <label class="form-check-label" for="jobDetailAutoscroll">
                 Autoscroll
               </label>
             </div>
@@ -45,6 +43,7 @@
 <script>
 import { utilityJobStore } from "../stores/stores_initializer";
 import axios from "axios";
+import { Modal } from "bootstrap";
 import $ from "jquery";
 
 export default {
@@ -59,21 +58,21 @@ export default {
     };
   },
   mounted() {
-    $("#jobDetailModal").on("hide.bs.modal", () => {
+    this.$refs.jobDetailModal.addEventListener("hide.bs.modal", () => {
       this.setDefault();
       utilityJobStore.clearSelected();
     });
-    $("#jobDetailModal").on("show.bs.modal", () => {
+    this.$refs.jobDetailModal.addEventListener("show.bs.modal", () => {
       this.getJobDetails(this.selectedJob.id, this.out, this.err);
     });
-    $("#jobDetailModal").on("shown.bs.modal", () => {
+    this.$refs.jobDetailModal.addEventListener("shown.bs.modal", () => {
       this.scrollToBottom();
     });
 
     utilityJobStore.$onAction((action) => {
       if (action.name === "setJob") {
         action.after(() => {
-          $("#jobDetailModal").modal("show");
+          Modal.getOrCreateInstance(this.$refs.jobDetailModal).show()
         });
       }
     });

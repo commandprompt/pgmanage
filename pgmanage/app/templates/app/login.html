@@ -5,7 +5,6 @@
 	{% vite_asset 'src/login.js' %}
 	<title>PgManage</title>
 	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<link rel="shortcut icon" type="image/x-icon" href="{{url_folder}}/static/assets/images/favicon.ico" />
 </head>
 <body class="omnidb--theme-light">
 
@@ -54,17 +53,15 @@
 	<div id="modal_message_dialog" class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">&times;</span>
-				</button>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div id="modal_message_content" class="modal-body" style='white-space: pre-line;'>
 			</div>
 			<div class="modal-footer">
-				<button id="modal_message_yes" type="button" class="btn btn-primary" data-dismiss="modal">Yes</button>
-				<button id="modal_message_ok" type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
-				<button id="modal_message_no" type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-				<button id="modal_message_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+				<button id="modal_message_yes" type="button" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+				<button id="modal_message_ok" type="button" class="btn btn-primary" data-bs-dismiss="modal">Ok</button>
+				<button id="modal_message_no" type="button" class="btn btn-danger" data-bs-dismiss="modal">No</button>
+				<button id="modal_message_cancel" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
 			</div>
 		</div>
 	</div>
@@ -84,7 +81,7 @@
 
 <!-- <div class="div_loading"><button id="bt_cancel_ajax" onclick="cancelAjax()">Cancel</button></div> -->
 <script type="text/javascript">
-	var v_url_folder = '{{ url_folder }}';
+	var app_base_path = '{{ base_path }}';
 	var v_csrf_cookie_name = '{{ csrf_cookie_name }}';
 </script>
 {% vite_asset 'src/login.js' %}

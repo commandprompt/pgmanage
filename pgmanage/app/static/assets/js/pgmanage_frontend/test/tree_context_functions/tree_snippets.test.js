@@ -11,12 +11,6 @@ import { useTabsStore } from "../../src/stores/tabs";
 
 vi.mock("axios");
 
-vi.mock("@/workspace.js", () => {
-  const renameTab = vi.fn();
-  const showMenuNewTabOuter = vi.fn();
-  return { renameTab, showMenuNewTabOuter };
-});
-
 describe("buildSnippetContextMenuObjects", () => {
   const snippetText = "Some snippet text";
   const callback = vi.fn();

@@ -1,24 +1,27 @@
 <template>
-  <div class="container-fluid position-relative">
-    <div class="row">
+  <div class="container-fluid position-relative g-0">
+    <div class="row g-0">
       <splitpanes class="default-theme">
-        <pane size="18">
+        <pane min-size="18" size="25">
           <div
             :id="`${connTabId}_div_left`"
             class="omnidb__workspace__div-left col"
           >
-            <div class="row">
-              <div class="omnidb__workspace__content-left border-right">
-                <div class="omnidb__workspace__connection-details">
-                  <i class="fas fa-server mr-1"></i>selected DB:
-                  <b>{{ databaseName }}</b>
+            <div class="row g-0">
+              <div class="omnidb__workspace__content-left border-end">
+                <div class="omnidb__workspace__connection-details d-flex align-items-center flex-wrap-wrap justify-content-between">
+                  <p class="d-flex align-items-center flex-nowrap mb-0">
+                    <span class="text-nowrap">Selected DB:&nbsp;</span>
+                    <span class="text-info">{{ databaseName }}</span>
+                  </p>
+
                   <div
-                    class="omnidb__switch omnidb__switch--sm float-right"
-                    data-toggle="tooltip"
-                    data-placement="bottom"
-                    data-html="true"
-                    title=""
-                    data-original-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>"
+                    :id="`${connTabId}_switch`"
+                    class="omnidb__switch omnidb__switch--sm"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-html="true"
+                    data-bs-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>"
                   >
                     <input
                       type="checkbox"
@@ -49,7 +52,7 @@
                         :tab-id="connTabId"
                         :database-index="databaseIndex"
                         @tree-tabs-update="getProperties"
-                        @clear-tabs="clearTreeTabsData = true"
+                        @clear-tabs="clearTreeTabsData"
                       ></component>
                     </div>
                   </pane>
@@ -61,12 +64,11 @@
                   >
                     <TreePropertiesDDL
                       :conn-id="connTabId"
+                      :database-technology="databaseTechnology"
                       :ddl-data="ddlData"
                       :properties-data="propertiesData"
                       :show-loading="showTreeTabsLoading"
-                      :clear-data="clearTreeTabsData"
                       @toggle-tree-tabs="toggleTreeTabPane"
-                      @data-cleared="clearTreeTabsData = false"
                     />
                   </pane>
                 </splitpanes>
@@ -74,7 +76,7 @@
             </div>
           </div>
         </pane>
-        <pane>
+        <pane min-size="2">
           <div
             :id="`${connTabId}_div_right`"
             class="omnidb__workspace__div-right col position-relative right-div-height"
@@ -84,6 +86,7 @@
                 :id="`${connTabId}`"
                 class="w-100"
                 :tab-id="connTabId"
+                :color-label-class='connectionTab.metaData?.colorLabelClass'
               />
             </div>
           </div>
@@ -104,6 +107,7 @@ import { Splitpanes, Pane } from "splitpanes";
 import TreePropertiesDDL from "./TreePropertiesDDL.vue";
 import { showToast } from "../notification_control";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
+import { Tooltip } from "bootstrap";
 
 export default {
   name: "ConnectionTab",
@@ -129,7 +133,8 @@ export default {
       treeTabsPaneSize: 2,
       lastTreeTabsPaneSize: null,
       showTreeTabsLoading: false,
-      clearTreeTabsData: false,
+      lastTreeTabsData: null,
+      lastTreeTabsView: null,
     };
   },
   computed: {
@@ -177,13 +182,17 @@ export default {
   mounted() {
     this.changeDatabase(this.connectionTab.metaData.selectedDatabaseIndex);
     this.subscribeToConnectionChanges(this.connTabId, this.databaseIndex);
-    $('[data-toggle="tooltip"]').tooltip({ animation: true }); // Loads or Updates all tooltips
     this.$nextTick(() => {
       if (this.connectionTab.metaData.createInitialTabs) {
         let name = tabsStore.selectedPrimaryTab.metaData.selectedDatabase.replace('\\', '/').split('/').pop()
         tabsStore.createConsoleTab();
         tabsStore.createQueryTab(name);
       }
+    });
+
+    new Tooltip(`#${this.connTabId}_switch`, {
+      boundary: "window",
+      trigger: 'hover'
     });
   },
   methods: {
@@ -250,7 +259,11 @@ export default {
       emitter.emit("connection-save", connection);
     },
     getProperties({ view, data }) {
-      if (!this.isTreeTabsVisible) return;
+      if (!this.isTreeTabsVisible) {
+        this.lastTreeTabsData = data;
+        this.lastTreeTabsView = view;
+        return;
+      }
       this.showTreeTabsLoading = true;
       axios
         .post(view, {
@@ -281,10 +294,19 @@ export default {
     toggleTreeTabPane() {
       if (this.treeTabsPaneSize === 2) {
         this.treeTabsPaneSize = this.lastTreeTabsPaneSize || 40;
+        if (!!this.lastTreeTabsData && !!this.lastTreeTabsView)
+          this.getProperties({
+            data: this.lastTreeTabsData,
+            view: this.lastTreeTabsView,
+          });
       } else {
         this.lastTreeTabsPaneSize = this.treeTabsPaneSize;
         this.treeTabsPaneSize = 2;
       }
+    },
+    clearTreeTabsData() {
+      this.ddlData='';
+      this.propertiesData=[];
     },
   },
 };

@@ -77,7 +77,7 @@ class PostgreSQL(TestCase):
         data = json.loads(response.content.decode())
         keys = list(data.keys())
         keys.sort()
-        keys_l = ['add_pubtable', 'alter_aggregate', 'alter_column', 'alter_database', 'alter_domain', 'alter_eventtrigger', 'alter_eventtriggerfunction', 'alter_extension', 'alter_fdw', 'alter_foreign_column', 'alter_foreign_server', 'alter_foreign_table', 'alter_function', 'alter_index', 'alter_mview', 'alter_procedure', 'alter_publication', 'alter_role', 'alter_rule', 'alter_schema', 'alter_sequence', 'alter_statistics', 'alter_subscription', 'alter_table', 'alter_tablespace', 'alter_trigger', 'alter_triggerfunction', 'alter_type', 'alter_user_mapping', 'alter_view', 'analyze', 'analyze_table', 'cluster_index', 'create_aggregate', 'create_check', 'create_column', 'create_database', 'create_domain', 'create_eventtrigger', 'create_eventtriggerfunction', 'create_exclude', 'create_extension', 'create_fdw', 'create_foreign_column', 'create_foreign_server', 'create_foreign_table', 'create_foreignkey', 'create_function', 'create_index', 'create_inherited', 'create_logicalreplicationslot', 'create_mview', 'create_partition', 'create_physicalreplicationslot', 'create_primarykey', 'create_procedure', 'create_publication', 'create_role', 'create_rule', 'create_schema', 'create_sequence', 'create_statistics', 'create_subscription', 'create_table', 'create_tablespace', 'create_trigger', 'create_triggerfunction', 'create_type', 'create_unique', 'create_user_mapping', 'create_view', 'create_view_trigger', 'database', 'delete', 'detach_partition', 'disable_eventtrigger', 'disable_trigger', 'drop_aggregate', 'drop_check', 'drop_column', 'drop_database', 'drop_domain', 'drop_eventtrigger', 'drop_eventtriggerfunction', 'drop_exclude', 'drop_extension', 'drop_fdw', 'drop_foreign_column', 'drop_foreign_server', 'drop_foreign_table', 'drop_foreignkey', 'drop_function', 'drop_index', 'drop_logicalreplicationslot', 'drop_mview', 'drop_partition', 'drop_physicalreplicationslot', 'drop_primarykey', 'drop_procedure', 'drop_publication', 'drop_pubtable', 'drop_role', 'drop_rule', 'drop_schema', 'drop_sequence', 'drop_statistics', 'drop_subscription', 'drop_table', 'drop_tablespace', 'drop_trigger', 'drop_triggerfunction', 'drop_type', 'drop_unique', 'drop_user_mapping', 'drop_view', 'enable_eventtrigger', 'enable_trigger', 'import_foreign_schema', 'noinherit_partition', 'refresh_mview', 'reindex', 'truncate', 'vacuum', 'vacuum_table', 'version']
+        keys_l = ['add_pubtable', 'alter_aggregate', 'alter_column', 'alter_database', 'alter_domain', 'alter_eventtrigger', 'alter_eventtriggerfunction', 'alter_fdw', 'alter_foreign_column', 'alter_foreign_server', 'alter_foreign_table', 'alter_function', 'alter_index', 'alter_mview', 'alter_procedure', 'alter_publication', 'alter_role', 'alter_rule', 'alter_schema', 'alter_sequence', 'alter_statistics', 'alter_subscription', 'alter_tablespace', 'alter_trigger', 'alter_triggerfunction', 'alter_type', 'alter_user_mapping', 'alter_view', 'analyze', 'analyze_table', 'cluster_index', 'create_aggregate', 'create_check', 'create_column', 'create_database', 'create_domain', 'create_eventtrigger', 'create_eventtriggerfunction', 'create_exclude', 'create_fdw', 'create_foreign_column', 'create_foreign_server', 'create_foreign_table', 'create_foreignkey', 'create_function', 'create_index', 'create_inherited', 'create_logicalreplicationslot', 'create_mview', 'create_partition', 'create_physicalreplicationslot', 'create_primarykey', 'create_procedure', 'create_publication', 'create_role', 'create_rule', 'create_schema', 'create_sequence', 'create_statistics', 'create_subscription', 'create_tablespace', 'create_trigger', 'create_triggerfunction', 'create_type', 'create_unique', 'create_user_mapping', 'create_view', 'create_view_trigger', 'database', 'delete', 'detach_partition', 'disable_eventtrigger', 'disable_trigger', 'drop_aggregate', 'drop_check', 'drop_column', 'drop_database', 'drop_domain', 'drop_eventtrigger', 'drop_eventtriggerfunction', 'drop_exclude', 'drop_fdw', 'drop_foreign_column', 'drop_foreign_server', 'drop_foreign_table', 'drop_foreignkey', 'drop_function', 'drop_index', 'drop_logicalreplicationslot', 'drop_mview', 'drop_partition', 'drop_physicalreplicationslot', 'drop_primarykey', 'drop_procedure', 'drop_publication', 'drop_pubtable', 'drop_role', 'drop_rule', 'drop_schema', 'drop_sequence', 'drop_statistics', 'drop_subscription', 'drop_table', 'drop_tablespace', 'drop_trigger', 'drop_triggerfunction', 'drop_type', 'drop_unique', 'drop_user_mapping', 'drop_view', 'enable_eventtrigger', 'enable_trigger', 'import_foreign_schema', 'noinherit_partition', 'refresh_mview', 'reindex', 'truncate', 'vacuum', 'vacuum_table', 'version']
         assert keys == keys_l
 
     def test_template_create_tablespace(self):
@@ -170,13 +170,18 @@ LOCATION 'directory'
 --OWNER user_name
 --TEMPLATE template
 --ENCODING encoding
+--STRATEGY strategy
 --LOCALE locale
 --LC_COLLATE lc_collate
 --LC_CTYPE lc_ctype
+--ICU_LOCALE icu_locale
+--LOCALE_PROVIDER locale_provider
+--COLLATION_VERSION collation_version
 --TABLESPACE tablespace
 --ALLOW_CONNECTIONS allowconn
 --CONNECTION LIMIT connlimit
 --IS_TEMPLATE istemplate
+--OID oid
 ''' == data['create_database']
 
     def test_template_alter_database(self):
@@ -203,34 +208,6 @@ LOCATION 'directory'
         assert '''DROP DATABASE #database_name#
 --WITH ( FORCE )
 ''' == data['drop_database']
-
-    def test_template_create_extension(self):
-        response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert '''CREATE EXTENSION name
---SCHEMA schema_name
---VERSION VERSION
-''' == data['create_extension']
-
-    def test_template_alter_extension(self):
-        response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert '''ALTER EXTENSION #extension_name#
---UPDATE [ TO new_version ]
---SET SCHEMA new_schema
---ADD member_object
---DROP member_object
-''' == data['alter_extension']
-
-    def test_template_drop_extension(self):
-        response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert '''DROP EXTENSION #extension_name#
---CASCADE
-''' == data['drop_extension']
 
     def test_template_create_schema(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "tab_id": 0}'})

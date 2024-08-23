@@ -4,14 +4,16 @@
 echo "REPO=$REPO"
 echo "BRANCH=$BRANCH"
 echo "VERSION=$VERSION"
+echo "DEBUG=$DEBUG"
 
 # Cloning repo
 git clone $REPO --depth 1 -b $BRANCH pgmanage
 
 # Installing dependencies
 cd pgmanage/
-pip3 install -r requirements.txt
-pip3 install pyinstaller==5.13.0
+mkdir -p /deploy/pip-cache
+pip3 install -r requirements.txt --cache-dir /deploy/pip-cache
+pip3 install pyinstaller==5.13.0  --cache-dir /deploy/pip-cache
 
 # if version is not provided, we use last tag from repository
 if [ -z "$VERSION" ]
@@ -21,6 +23,21 @@ then
 
     # Getting last tag version
     export VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+fi
+
+# if change nwjs and build options for debug
+if [ "$DEBUG" == false ]
+then
+    NWJS_URL='https://dl.nwjs.io/v0.69.1/nwjs-v0.69.1-linux-x64.tar.gz'
+    NWJS_ARCHIVE='nwjs-v0.69.1-linux-x64.tar.gz'
+    NWJS_DIR='nwjs-v0.69.1-linux-x64'
+else
+    NWJS_URL='https://dl.nwjs.io/v0.69.1/nwjs-sdk-v0.69.1-linux-x64.tar.gz'
+    NWJS_ARCHIVE='nwjs-sdk-v0.69.1-linux-x64.tar.gz'
+    NWJS_DIR='nwjs-sdk-v0.69.1-linux-x64'
+    echo "*****************************************************"
+    echo "*********** BUILDING DEBUG CONFIGURATION ************"
+    echo "*****************************************************"
 fi
 
 # Building server
@@ -67,12 +84,12 @@ staticx -l /lib/x86_64-linux-gnu/libcrypt.so.1  ./pgmanage-server ./pgmanage-ser
 
 # Building app
 cd /deploy
-curl -C - -LO https://dl.nwjs.io/v0.69.1/nwjs-v0.69.1-linux-x64.tar.gz
+curl -C - -LO $NWJS_URL
 # get appimagetool v13
 curl -C - -LO https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage && chmod +x /deploy/appimagetool-x86_64.AppImage
 cd -
-tar -xzvf /deploy/nwjs-v0.69.1-linux-x64.tar.gz
-mv nwjs-v0.69.1-linux-x64 pgmanage-app_$VERSION
+tar -xzvf /deploy/$NWJS_ARCHIVE
+mv $NWJS_DIR pgmanage-app_$VERSION
 cd pgmanage-app_$VERSION
 mkdir pgmanage-server
 cp $HOME/pgmanage-server-static ./pgmanage-server/pgmanage-server

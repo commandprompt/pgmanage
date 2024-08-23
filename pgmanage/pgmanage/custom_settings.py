@@ -1,5 +1,4 @@
-import os
-
+from pathlib import Path
 
 # PgManage settings
 PGMANAGE_VERSION = 'Dev'
@@ -8,8 +7,8 @@ DEV_MODE = True
 DESKTOP_MODE = False
 APP_TOKEN = None
 PATH = ''
-HOME_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+HOME_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Django settings
 SESSION_COOKIE_SECURE = False

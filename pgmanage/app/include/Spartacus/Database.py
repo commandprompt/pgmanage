@@ -28,6 +28,7 @@ import datetime
 import decimal
 import json
 import math
+import re
 
 import app.include.Spartacus as Spartacus
 import app.include.Spartacus.prettytable as prettytable
@@ -54,7 +55,7 @@ except ImportError:
     pass
 try:
     import pymysql
-    from pymysql.constants import CLIENT
+    from pymysql.constants import CLIENT, ER
     v_supported_rdbms.append('MySQL')
     v_supported_rdbms.append('MariaDB')
 except ImportError:
@@ -85,15 +86,21 @@ except ImportError:
 class Exception(Exception):
     pass
 
+class InvalidPasswordException(Exception):
+    pass
+
 class DataTable(object):
     def __init__(self, p_name=None, p_alltypesstr=False, p_simple=False):
         self.Name = p_name
         self.Columns = []
+        self.ColumnTypeCodes = []
         self.Rows = []
         self.AllTypesStr = p_alltypesstr
         self.Simple = p_simple
     def AddColumn(self, p_columnname):
         self.Columns.append(p_columnname)
+    def AddColumnTypeCode(self, typecode):
+        self.ColumnTypeCodes.append(typecode)
     def AddRow(self, p_row):
         if len(self.Columns) > 0 and len(p_row) > 0:
             if len(self.Columns) == len(p_row):
@@ -871,7 +878,18 @@ class SQLite(Generic):
                 v_keep = False
             else:
                 v_keep = True
-            self.v_cur.execute(p_sql)
+
+            if len(p_sql.split(";\n")) >= 2:
+                try:
+                    self.v_cur.execute("BEGIN")
+                    for sql in p_sql.split(";\n"):
+                        self.v_cur.execute(sql)
+                    self.v_con.commit()
+                except sqlite3.Error as exc:
+                    self.v_con.rollback()
+                    raise Spartacus.Database.Exception(str(exc))
+            else:
+                self.v_cur.execute(p_sql)
         except Spartacus.Database.Exception as exc:
             raise exc
         except sqlite3.Error as exc:
@@ -1414,7 +1432,10 @@ class PostgreSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except psycopg2.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            msg = str(exc)
+            if 'FATAL:  password authentication failed for user' in msg:
+                raise InvalidPasswordException(msg) from exc
+            raise Spartacus.Database.Exception(msg)
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
     def Query(self, p_sql, p_alltypesstr=False, p_simple=False):
@@ -1721,6 +1742,13 @@ class PostgreSQL(Generic):
         except Exception as exc:
             self.v_cursor = None
             return p_sql
+    def ResolveType(self, type_code):
+        try:
+            res = self.Query('select format_type({0}, NULL)'.format(type_code))
+            return res.Rows[0][0]
+        except:
+            return '???'
+
     def QueryBlock(self, p_sql, p_blocksize, p_alltypesstr=False, p_simple=False):
         try:
             if self.v_con is None:
@@ -1745,6 +1773,7 @@ class PostgreSQL(Generic):
                 if self.v_cur.description:
                     for c in self.v_cur.description:
                         v_table.AddColumn(c[0])
+                        v_table.AddColumnTypeCode(c.type_code)
                     if p_blocksize > 0:
                         v_table.Rows = self.v_cur.fetchmany(p_blocksize)
                     else:
@@ -1754,8 +1783,7 @@ class PostgreSQL(Generic):
                             for j in range(0, len(v_table.Columns)):
                                 if v_table.Rows[i][j] != None:
                                     v_table.Rows[i][j] = self.String(v_table.Rows[i][j])
-                                else:
-                                    v_table.Rows[i][j] = ''
+
                 if self.v_start:
                     self.v_start = False
                 if len(v_table.Rows) < p_blocksize:
@@ -1884,6 +1912,11 @@ class MySQL(Generic):
     def __init__(self, p_host, p_port, p_service, p_user, p_password, p_conn_string='', p_encoding=None, connection_params=None):
         if 'MySQL' in v_supported_rdbms:
             self.v_host = p_host
+            if re.match(r'^\/$|(^(?=\/))(\/(?=[^/\0])[^/\0]+)*\/?$', p_host):
+                self.server_params = {'unix_socket': p_host}
+            else:
+                self.server_params = {'host': p_host}
+
             if p_port is None or p_port == '':
                 self.v_port = 3306
             else:
@@ -1943,7 +1976,6 @@ class MySQL(Generic):
     def Open(self, p_autocommit=True):
         try:
             self.v_con = pymysql.connect(
-                host=self.v_host,
                 port=int(self.v_port),
                 db=self.v_service,
                 user=self.v_user,
@@ -1951,13 +1983,17 @@ class MySQL(Generic):
                 autocommit=p_autocommit,
                 read_default_file='~/.my.cnf',
                 client_flag=CLIENT.MULTI_STATEMENTS,
-                **self.connection_params
+                **self.connection_params,
+                **self.server_params
                 )
             self.v_cur = self.v_con.cursor()
             self.v_start = True
             self.v_status = 0
             self.v_con_id = self.ExecuteScalar('select connection_id()')
         except pymysql.Error as exc:
+            code, msg = exc.args
+            if code == ER.ACCESS_DENIED_ERROR:
+                raise InvalidPasswordException(msg) from exc
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
@@ -2139,6 +2175,10 @@ class MySQL(Generic):
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
+
+    def ResolveType(self, type_code):
+        return self.v_types.get(type_code, '???').lower()
+
     def QueryBlock(self, p_sql, p_blocksize, p_alltypesstr=False, p_simple=False):
         try:
             if self.v_con is None:
@@ -2150,6 +2190,7 @@ class MySQL(Generic):
                 if self.v_cur.description:
                     for c in self.v_cur.description:
                         v_table.AddColumn(c[0])
+                        v_table.AddColumnTypeCode(c[1])
                     v_row = self.v_cur.fetchone()
                     if p_blocksize > 0:
                         k = 0
@@ -2272,6 +2313,11 @@ class MariaDB(Generic):
     def __init__(self, p_host, p_port, p_service, p_user, p_password, p_conn_string='', p_encoding=None, connection_params=None):
         if 'MariaDB' in v_supported_rdbms:
             self.v_host = p_host
+            if re.match(r'^\/$|(^(?=\/))(\/(?=[^/\0])[^/\0]+)*\/?$', p_host):
+                self.server_params = {'unix_socket': p_host}
+            else:
+                self.server_params = {'host': p_host}
+
             if p_port is None or p_port == '':
                 self.v_port = 3306
             else:
@@ -2331,7 +2377,6 @@ class MariaDB(Generic):
     def Open(self, p_autocommit=True):
         try:
             self.v_con = pymysql.connect(
-                host=self.v_host,
                 port=int(self.v_port),
                 db=self.v_service,
                 user=self.v_user,
@@ -2340,12 +2385,16 @@ class MariaDB(Generic):
                 read_default_file='~/.my.cnf',
                 client_flag=CLIENT.MULTI_STATEMENTS,
                 **self.connection_params,
+                **self.server_params
                 )
             self.v_cur = self.v_con.cursor()
             self.v_start = True
             self.v_status = 0
             self.v_con_id = self.ExecuteScalar('select connection_id()')
         except pymysql.Error as exc:
+            code, msg = exc.args
+            if code == ER.ACCESS_DENIED_ERROR:
+                raise InvalidPasswordException(msg) from exc
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
@@ -2527,6 +2576,10 @@ class MariaDB(Generic):
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
+
+    def ResolveType(self, type_code):
+        return self.v_types.get(type_code, '???').lower()
+
     def QueryBlock(self, p_sql, p_blocksize, p_alltypesstr=False, p_simple=False):
         try:
             if self.v_con is None:
@@ -2538,6 +2591,7 @@ class MariaDB(Generic):
                 if self.v_cur.description:
                     for c in self.v_cur.description:
                         v_table.AddColumn(c[0])
+                        v_table.AddColumnTypeCode(c[1])
                     v_row = self.v_cur.fetchone()
                     if p_blocksize > 0:
                         k = 0
@@ -2974,6 +3028,9 @@ class Oracle(Generic):
             self.v_cur = self.v_con.cursor()
             self.v_start = True
         except oracledb.Error as exc:
+            error_obj, = exc.args
+            if error_obj.code == 1017: # ORA-01017 invalid credential or not authorized; logon denied:
+                raise InvalidPasswordException(str(exc)) from exc
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
@@ -3150,6 +3207,42 @@ class Oracle(Generic):
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
+
+    def ResolveType(self, type_code):
+        TYPEMAP = {
+            2020: 'BFILE',
+            2008: 'DOUBLE',
+            2007: 'FLOAT',
+            2009: 'INTEGER',
+            2019: 'BLOB',
+            2022: 'BOOLEAN',
+            2003: 'CHAR',
+            2017: 'CLOB',
+            2021: 'CURSOR',
+            2011: 'DATE',
+            2015: 'INTERVALDS',
+            2016: 'INTERVALYM',
+            2027: 'LONG NVARCHAR',
+            2025: 'LONG RAW',
+            2024: 'LONG VARCHAR',
+            2004: 'NCHAR',
+            2018: 'NCLOB',
+            2010: 'NUMBER',
+            2002: 'NVARCHAR',
+            2023: 'OBJECT',
+            2006: 'RAW',
+            2005: 'ROWID',
+            2012: 'TIMESTAMP',
+            2014: 'TIMESTAMP LTZ',
+            2013: 'TIMESTAMP TZ',
+            0:    'UNKNOWN',
+            2030: 'UROWID',
+            2001: 'VARCHAR',
+            2033: 'VECTOR',
+            2032: 'XMLTYPE'
+        }
+        return TYPEMAP.get(type_code, 'UNKNOWN').lower()
+
     def QueryBlock(self, p_sql, p_blocksize, p_alltypesstr=False, p_simple=False):
         try:
             if self.v_con is None:
@@ -3161,6 +3254,7 @@ class Oracle(Generic):
                 if self.v_cur.description:
                     for c in self.v_cur.description:
                         v_table.AddColumn(c[0])
+                        v_table.AddColumnTypeCode(c[1].num)
                     v_row = self.v_cur.fetchone()
                     if p_blocksize > 0:
                         k = 0

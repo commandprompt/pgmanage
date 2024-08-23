@@ -2,33 +2,33 @@
   <div>
   <splitpanes class="default-theme console-body" horizontal @resized="onResize">
     <pane size="80">
-      <div ref="console" :id="`txt_console_${tabId}`" class="omnidb__txt-console mr-2 h-100"></div>
+      <div ref="console" :id="`txt_console_${tabId}`" class="omnidb__txt-console me-2 h-100"></div>
     </pane>
 
-    <pane size="20" class="pl-2 border-top">
+    <pane size="20" class="ps-2 border-top">
       <div class="tab-actions py-2 d-flex align-items-center">
-        <button class="btn btn-sm btn-primary" title="Run" @click="consoleSQL(false)" :disabled="executingState">
+        <button class="btn btn-square btn-primary" title="Run" @click="consoleSQL(false)" :disabled="executingState">
           <i class="fas fa-play fa-light"></i>
         </button>
 
-        <button class="btn btn-sm btn-secondary" title="Open File" @click="openFileManagerModal">
+        <button class="btn btn-square btn-secondary" title="Open File" @click="openFileManagerModal">
             <i class="fas fa-folder-open fa-light"></i>
         </button>
 
-        <button class="btn btn-sm btn-secondary" title="Indent SQL" @click="indentSQL()">
+        <button class="btn btn-square btn-secondary" title="Indent SQL" @click="indentSQL()">
           <i class="fas fa-indent fa-ligth"></i>
         </button>
 
-        <button class="btn btn-sm btn-secondary" title="Clear Console" @click="clearConsole()">
+        <button class="btn btn-square btn-secondary" title="Clear Console" @click="clearConsole()">
           <i class="fas fa-broom fa-ligth"></i>
         </button>
 
-        <button class="btn btn-sm btn-secondary" title="Command History" @click="showCommandsHistory()">
+        <button class="btn btn-square btn-secondary me-2" title="Command History" @click="showCommandsHistory()">
           <i class="fas fa-clock-rotate-left fa-light"></i>
         </button>
 
         <template v-if="postgresqlDialect">
-          <div class="omnidb__form-check form-check form-check-inline">
+          <div class="form-check form-check-inline mb-0">
             <input :id="`check_autocommit_${tabId}`" class="form-check-input" type="checkbox" v-model="autocommit" />
             <label class="form-check-label" :for="`check_autocommit_${tabId}`">Autocommit</label>
           </div>
@@ -36,18 +36,21 @@
           <TabStatusIndicator :tab-status="tabStatus" />
         </template>
 
-        <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Fetch More"
-          @click="consoleSQL(false, 1)">
-          Fetch more
-        </button>
+        <template v-if="fetchMoreData && idleState">
+          <button class="btn btn-sm btn-secondary" title="Fetch More"
+            @click="consoleSQL(false, consoleModes.FETCH_MORE)">
+            Fetch more
+          </button>
+          <BlockSizeSelector v-model="blockSize"/>
+        </template>
 
         <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Fetch All"
-          @click="consoleSQL(false, 2)">
+          @click="consoleSQL(false, consoleModes.FETCH_ALL)">
           Fetch all
         </button>
 
         <button v-if="fetchMoreData && idleState" class="btn btn-sm btn-secondary" title="Skip Fetch"
-          @click="consoleSQL(false, 3)">
+          @click="consoleSQL(false, consoleModes.SKIP_FETCH)">
           Skip Fetch
         </button>
 
@@ -62,57 +65,51 @@
         <CancelButton v-if="executingState && longQuery" :tab-id="tabId" :conn-id="connId"
           @cancelled="cancelConsoleTab()" />
 
-        <div :id="`div_query_info_${tabId}`">
-          <p class="m-0 h6" v-if="cancelled">
-            <b>Cancelled</b>
-          </p>
-          <p v-else-if="queryStartTime && queryDuration" class="m-0 h6 mr-2">
-            <b>Start time:</b> {{ queryStartTime.format() }}<br/>
-            <b>Duration:</b> {{ queryDuration }}
-          </p>
-          <p v-else-if="queryStartTime" class="m-0 h6 mr-2">
-            <b>Start time:</b> {{ queryStartTime.format() }}
-          </p>
-        </div>
+        <p class="m-0 h6" v-if="cancelled">
+          <b>Cancelled</b>
+        </p>
+        <p v-else-if="queryStartTime && queryDuration" class="m-0 h6 me-2">
+          <b>Start time:</b> {{ queryStartTime.format() }}<br/>
+          <b>Duration:</b> {{ queryDuration }}
+        </p>
+        <p v-else-if="queryStartTime" class="m-0 h6 me-2">
+          <b>Start time:</b> {{ queryStartTime.format() }}
+        </p>
       </div>
       <!--FIXME: add proper editor height recalculation-->
-        <QueryEditor ref="editor" class="custom-editor mr-2" :read-only="readOnlyEditor" :tab-id="tabId" tab-mode="console"
+        <QueryEditor ref="editor" class="custom-editor me-2" :read-only="readOnlyEditor" :tab-id="tabId" tab-mode="console"
           :dialect="dialect" @editor-change="updateEditorContent" :autocomplete="autocomplete"/>
     </pane>
   </splitpanes>
-
-  <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Console" :commands-modal-visible="commandsModalVisible" @modal-hide="commandsModalVisible=false"/>
-  <FileManager ref="fileManager"/>
 </div>
 </template>
 
 <script>
-import { Terminal } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
+import { Terminal } from "@xterm/xterm";
+import { FitAddon } from "@xterm/addon-fit";
+import { CanvasAddon } from '@xterm/addon-canvas';
 import { Splitpanes, Pane } from "splitpanes";
 import { emitter } from "../emitter";
-import { showToast, createMessageModal } from "../notification_control";
-import CommandsHistoryModal from "./CommandsHistoryModal.vue";
+import { showToast } from "../notification_control";
 import moment from "moment";
 import { createRequest } from "../long_polling";
-import { settingsStore, tabsStore, connectionsStore } from "../stores/stores_initializer";
+import { settingsStore, tabsStore, connectionsStore, messageModalStore, fileManagerStore, commandsHistoryStore } from "../stores/stores_initializer";
 import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryEditor from "./QueryEditor.vue";
 import CancelButton from "./CancelSQLButton.vue";
-import { tabStatusMap, requestState, queryRequestCodes } from "../constants";
-import FileManager from "./FileManager.vue";
+import { tabStatusMap, requestState, queryRequestCodes, consoleModes } from "../constants";
 import FileInputChangeMixin from '../mixins/file_input_mixin'
+import BlockSizeSelector from "./BlockSizeSelector.vue";
 
 export default {
   name: "ConsoleTab",
   components: {
     Splitpanes,
     Pane,
-    CommandsHistoryModal,
     TabStatusIndicator,
     QueryEditor,
     CancelButton,
-    FileManager
+    BlockSizeSelector
   },
   mixins: [FileInputChangeMixin],
   props: {
@@ -131,6 +128,7 @@ export default {
       openedTransaction: false, //TODO: implement commit/rollback functionality
       data: "",
       context: "",
+      tempData: [],
       tabStatus: tabStatusMap.NOT_CONNECTED,
       queryDuration: "",
       queryStartTime: "",
@@ -138,9 +136,9 @@ export default {
       readOnlyEditor: false,
       editorContent: "",
       longQuery: false,
-      commandsModalVisible: false,
       terminal: null,
       fitAddon: null,
+      blockSize: 50,
     };
   },
   computed: {
@@ -155,6 +153,18 @@ export default {
     },
     autocomplete() {
       return connectionsStore.getConnection(this.databaseIndex).autocomplete
+    },
+    consoleModes() {
+      return consoleModes;
+    },
+    activeTransaction() {
+      return [
+        tabStatusMap.IDLE_IN_TRANSACTION,
+        tabStatusMap.IDLE_IN_TRANSACTION_ABORTED,
+      ].includes(this.tabStatus);
+    },
+    hasChanges() {
+      return this.activeTransaction || this.executingState || !!this.editorContent
     }
   },
   updated() { 
@@ -190,10 +200,10 @@ export default {
         fontSize: settingsStore.fontSize,
         theme: settingsStore.terminalTheme,
         fontFamily: "'Ubuntu Mono', monospace",
-        rendererType: "dom", //FIXME: investigate in detail, for no use dom renderer because in nwjs we had some text rendering bugs on light theme
       });
 
       this.terminal.open(this.$refs.console);
+      this.terminal.loadAddon(new CanvasAddon());
       this.terminal.write(this.consoleHelp);
 
       this.fitAddon = new FitAddon();
@@ -207,7 +217,10 @@ export default {
 
       emitter.on(`${this.tabId}_check_console_status`, () => {
         if (this.consoleState === requestState.Ready) {
-          this.consoleReturnRender(this.data, this.context);
+          this.context.tab.metaData.isReady = false;
+          this.context.tab.metaData.isLoading = false;
+          this.consoleState = requestState.Idle;
+          this.consoleReturnRender(this.data);
         }
       });
 
@@ -224,30 +237,32 @@ export default {
       if (this.fitAddon)
         this.fitAddon.fit();
     },
-    consoleSQL(check_command = true, mode = 0) {
+    consoleSQL(check_command = true, mode = consoleModes.DATA_OPERATION) {
       const command = this.editorContent.trim();
       if (!check_command || command[0] === "\\") {
         if (!this.idleState) {
           showToast("info", "Tab with activity in progres.");
         } else {
-          // FIXME: add enum to mode values
-          if (command === "" && mode === 0) {
+          if (command === "" && mode === consoleModes.DATA_OPERATION) {
             showToast("info", "Please provide a string.");
           } else {
             let tab = tabsStore.getSelectedSecondaryTab(this.connId)
             this.queryDuration = "";
             this.cancelled = false;
+            this.fetchMoreData = false;
             this.longQuery = false;
+            this.tempData = [];
             emitter.emit(`${this.tabId}_copy_to_editor`, "");
             this.lastCommand = command;
 
             let message_data = {
-              v_sql_cmd: command,
-              v_mode: mode,
-              v_db_index: this.databaseIndex,
-              v_conn_tab_id: this.connId,
-              v_tab_id: this.tabId,
-              v_autocommit: this.autocommit,
+              sql_cmd: command,
+              mode: mode,
+              db_index: this.databaseIndex,
+              conn_tab_id: this.connId,
+              tab_id: this.tabId,
+              autocommit: this.autocommit,
+              block_size: this.blockSize
             };
 
             this.readOnlyEditor = true;
@@ -261,7 +276,6 @@ export default {
               last_command: this.lastCommand,
               check_command: check_command,
               mode: mode,
-              new: true,
               callback: this.consoleReturn.bind(this),
               passwordSuccessCallback: this.passwordSuccessCallback.bind(this),
               passwordFailCalback: () => {
@@ -293,12 +307,25 @@ export default {
       }
     },
     consoleReturn(data, context) {
-      if (!this.idleState) {
+      this.tempData.push(data.data.data)
+      
+      if (!this.idleState && (data.data.last_block || data.error)) {
+        clearInterval(this.queryInterval);
+        this.queryInterval = null;
+        data.data.data = this.tempData;
+        this.tempData = []
+        this.readOnlyEditor = false;
+        this.tabStatus = data.data.con_status;
         if (
           this.connId === tabsStore.selectedPrimaryTab.id &&
           this.tabId === tabsStore.selectedPrimaryTab.metaData.selectedTab.id
         ) {
-          this.consoleReturnRender(data, context);
+          this.context = "";
+          this.data = "";
+          this.consoleState = requestState.Idle;
+          context.tab.metaData.isLoading = false;
+          context.tab.metaData.isReady = false;
+          this.consoleReturnRender(data);
         } else {
           this.consoleState = requestState.Ready;
           this.data = data;
@@ -309,25 +336,16 @@ export default {
         }
       }
     },
-    consoleReturnRender(data, context) {
-      clearInterval(this.queryInterval)
-      this.queryInterval = null;
+    consoleReturnRender(data) {
+      data.data.data.forEach((chunk) => {
+        this.terminal.writeln(chunk);
+      })
+      this.fetchMoreData = data.data.show_fetch_button;
+      this.queryDuration = data.data.duration;
 
-      this.consoleState = requestState.Idle;
-      this.tabStatus = data.v_data.v_con_status;
-      this.readOnlyEditor = false;
-
-      this.terminal.write(data.v_data.v_data);
-
-      context.tab.metaData.isLoading = false
-      context.tab.metaData.isReady = false
-
-      this.fetchMoreData = data.v_data.v_show_fetch_button;
-      this.queryDuration = data.v_data.v_duration;
-
-      if (!data.v_error) {
+      if (!data.error && !!data?.data?.status && isNaN(data.data.status)) {
         let mode = ["CREATE", "DROP", "ALTER"];
-        let status = data.v_data.v_status.split(" ");
+        let status = data.data.status.split(" ");
 
         if (mode.includes(status[0])) {
           let node_type = status[1] ? `${status[1].toLowerCase()}_list` : null;
@@ -338,13 +356,16 @@ export default {
       }
     },
     clearConsole() {
-      this.terminal.write("\x1b[H\x1b[2J");
+      this.terminal.clear();
       this.terminal.write(this.consoleHelp);
     },
     indentSQL() {
       emitter.emit(`${this.tabId}_indent_sql`);
     },
     cancelConsoleTab() {
+      clearInterval(this.queryInterval);
+      this.queryInterval = null;
+
       this.readOnlyEditor = false;
 
       this.consoleState = requestState.Idle;
@@ -363,22 +384,30 @@ export default {
       this.editorContent = newContent;
     },
     showCommandsHistory() {
-      this.commandsModalVisible = true
+      commandsHistoryStore.showModal(this.tabId, this.databaseIndex, "Console");
     },
     openFileManagerModal() {
       if (!!this.editorContent) {
-        createMessageModal(
+        messageModalStore.showModal(
           "Are you sure you wish to discard the current changes?",
           () => {
-            this.$refs.fileManager.show(true, this.handleFileInputChange);
+            fileManagerStore.showModal(true, this.handleFileInputChange);
           },
           null
         );
       } else {
-        this.$refs.fileManager.show(true, this.handleFileInputChange);
+        fileManagerStore.showModal(true, this.handleFileInputChange);
       }
     },
   },
+  watch: {
+    hasChanges() {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.connId);
+      if (tab) {
+        tab.metaData.hasUnsavedChanges = this.hasChanges;
+      }
+    },
+  }
 };
 </script>
 

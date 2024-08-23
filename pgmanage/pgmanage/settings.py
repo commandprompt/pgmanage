@@ -1,17 +1,16 @@
 import os
-import sys
-import shutil
 import random
 import string
-import getpass
+from pathlib import Path
 from . import custom_settings
 
-
+ENTERPRISE_EDITION = False
 # Development Mode
 DEBUG = custom_settings.DEV_MODE
 DESKTOP_MODE = custom_settings.DESKTOP_MODE
 BASE_DIR = custom_settings.BASE_DIR
 HOME_DIR = custom_settings.HOME_DIR
+
 TEMP_DIR = os.path.join(BASE_DIR,'app','static','temp')
 PLUGINS_DIR = os.path.join(BASE_DIR,'app','plugins')
 PLUGINS_STATIC_DIR = os.path.join(BASE_DIR,'app','static','plugins')
@@ -117,13 +116,13 @@ elif PATH != '':
         PATH = PATH[:-1]
 
 
-LOGIN_URL = PATH + '/pgmanage_login'
+LOGIN_URL = PATH + '/pgmanage_login/'
 LOGIN_REDIRECT_URL = PATH + '/'
 
 STATIC_URL = PATH + '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "app/static")
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer' #TODO: remove PickleSerializer and fix upcomming errors
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -143,6 +142,11 @@ LOGGING = {
             'style': '{',
         },
     },
+    'filters': {
+        'masked_data_filter': {
+            '()': 'pgmanage.logging_filter.MaskedDataFilter',
+        },
+    },
     'handlers': {
         "logfile_frontend": {
             'class':'logging.handlers.RotatingFileHandler',
@@ -150,6 +154,7 @@ LOGGING = {
             'maxBytes': 1024*1024*5, # 5 MB
             'backupCount': 5,
             'formatter': 'frontend_error',
+            'filters': ['masked_data_filter'],
         },
         'logfile_pgmanage': {
             'class':'logging.handlers.RotatingFileHandler',
@@ -199,12 +204,12 @@ LOGGING = {
 }
 
 #PgManage PARAMETERS
-PGMANAGE_VERSION                 = custom_settings.PGMANAGE_VERSION
-PGMANAGE_SHORT_VERSION           = custom_settings.PGMANAGE_SHORT_VERSION
-CH_CMDS_PER_PAGE               = 20
-PWD_TIMEOUT_TOTAL              = 1800
-PWD_TIMEOUT_REFRESH            = 300
-THREAD_POOL_MAX_WORKERS        = 2
+PGMANAGE_VERSION = custom_settings.PGMANAGE_VERSION
+PGMANAGE_SHORT_VERSION = custom_settings.PGMANAGE_SHORT_VERSION
+CH_CMDS_PER_PAGE = 20
+PWD_TIMEOUT_TOTAL = 1800
+PWD_TIMEOUT_REFRESH = 300
+THREAD_POOL_MAX_WORKERS = 2
 
 DJANGO_VITE_DEV_MODE = DEBUG
 
@@ -218,3 +223,7 @@ else:
 STATICFILES_DIRS = [
     DJANGO_VITE_ASSETS_PATH,
 ]
+
+if ENTERPRISE_EDITION:
+    from enterprise.settings_enterprise import update_settings
+    update_settings()

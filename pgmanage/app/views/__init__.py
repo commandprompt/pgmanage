@@ -17,7 +17,6 @@ from . import (
     tree_postgresql,
     tree_snippets,
     tree_sqlite,
-    users,
     workspace,
     logging,
 )

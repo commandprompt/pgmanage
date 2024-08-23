@@ -41,6 +41,8 @@ $schemaEditorColumnBg: 'schemaEditorColumnBg';
 $primaryBlueWhiteSwitching: 'primaryBlueWhiteSwitching';
 $erdCardWrapBg: 'erdCardWrapBg';
 $popupBg: 'popupBg';
+$colorPickerBtnBorder: 'colorPickerBtnBorder';
+$cardListGroupItem: 'cardListGroupItem';
 
 $themes: (
     light: (
@@ -83,6 +85,8 @@ $themes: (
         primaryBlueWhiteSwitching: $primaryBlue,
         erdCardWrapBg: $bgLightSecondary,
         popupBg: $bgSurfaceLight,
+        colorPickerBtnBorder: $borderColorLight,
+        cardListGroupItem: $bgLightTertiary,
     ),
     dark: (
         borderColor: $borderColorDark,
@@ -92,7 +96,7 @@ $themes: (
         surfaceBg: $bgSurfaceDark,
         surfaceBgSecondary: $bgSurfaceSecondaryDark,
         surfaceBgTertiary: $bgSurfaceTertiaryDark,
-        inputBg: $bgDark,
+        inputBg: $inputBgDark,
         customFileInputBg: rgba($secondaryGrey, .5),
         customFileInputBorder: rgba($secondaryGrey, .5),
         customFileButtonBg: $secondaryGrey,
@@ -124,6 +128,8 @@ $themes: (
         primaryBlueWhiteSwitching: $white,
         erdCardWrapBg: $bgDarkSecondary,
         popupBg: $bgDark,
+        colorPickerBtnBorder: $secondaryGrey,
+        cardListGroupItem: transparent,
     ),
 );
 
@@ -141,6 +147,6 @@ $themes: (
     }
   }
 
-  @function themed($key) {
+@function themed($key) {
     @return map-get($theme-map, $key);
-  }
+}

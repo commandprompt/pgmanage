@@ -45,9 +45,8 @@ $dropdownMinWidth: 11rem;
     &-searchable {
         //custom dropdown
         position: relative;
-       
+
         &__input {
-            cursor: pointer;
             border-radius: $borderRadius;
             color: #333;
             display: block;
@@ -59,6 +58,10 @@ $dropdownMinWidth: 11rem;
             background-size: 15px 15px;
         }
 
+        &:not(:disabled) {
+            cursor: pointer;
+        }
+
         &__content {
             position: absolute;
             width: 100%;
@@ -67,9 +70,10 @@ $dropdownMinWidth: 11rem;
             box-shadow: $dropdownBoxShadow;
             overflow: auto;
             z-index: 200;
+            border-radius: 0 0 $borderRadius $borderRadius;
 
             @include themify() {
-                background-color: themed($surfaceBg);
+                background-color: themed($popupBg);
                 border: themed($border);
             }
 
@@ -84,6 +88,10 @@ $dropdownMinWidth: 11rem;
 
                 &:hover {
                     background-color: rgba($primaryMutedColor, 0.15);
+                }
+
+                &.selected {
+                    background-color: rgba($primaryBlue, 0.15);
                 }
             }
         }

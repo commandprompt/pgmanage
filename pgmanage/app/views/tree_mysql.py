@@ -1,3 +1,5 @@
+import ast
+
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
 
@@ -237,9 +239,19 @@ def get_indexes(request, database):
     try:
         indexes = database.QueryTablesIndexes(table, False, schema)
         for index in indexes.Rows:
+            if index["index_type"] and index["index_type"].lower() in [
+                "fulltext",
+                "spatial",
+            ]:
+                index_type = index["index_type"].lower()
+            else:
+                index_type = "unique" if index["uniqueness"] == "Unique" else "non-unique"
             index_data = {
                 "index_name": index["index_name"],
-                "uniqueness": index["uniqueness"],
+                "unique": index["uniqueness"] == "Unique",
+                "is_primary": index["is_primary"] == "True",
+                "columns": ast.literal_eval(index["columns"]),
+                "type": index_type,
             }
             list_indexes.append(index_data)
     except Exception as exc:

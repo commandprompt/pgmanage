@@ -2,7 +2,7 @@ import moment from "moment";
 import { showAlert } from "../notification_control";
 import axios from "axios";
 
-class requestHistoryQueue {
+export class requestHistoryQueue {
   constructor(size) {
     if (typeof size !== "number" || size <= 0) {
       throw new Error("Size must be a positive number");
@@ -24,7 +24,7 @@ class requestHistoryQueue {
   }
 
   isEmpty() {
-    return this.length === 0;
+    return this.queue.length === 0;
   }
 
   getLength() {
@@ -36,7 +36,7 @@ class requestHistoryQueue {
   }
 }
 
-const requestHistory = new requestHistoryQueue(2);
+export const requestHistory = new requestHistoryQueue(2);
 
 export function vueHooks(logger, Vue, stores) {
   if (!logger)
@@ -65,7 +65,7 @@ export function vueHooks(logger, Vue, stores) {
   }
 }
 
-function saveRequestLog(response) {
+export function saveRequestLog(response) {
   let timestamp = moment().format("M/DD/YYYY H:m:s");
   let requestUrl = JSON.stringify(
     `${response.config.method.toUpperCase()} ${response?.config?.url || ""}`

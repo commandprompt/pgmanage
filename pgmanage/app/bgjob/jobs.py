@@ -14,7 +14,7 @@ from subprocess import Popen
 
 import psutil
 from app.models.main import Connection, Job
-from app.views.polling import GetDuration
+from app.views.polling import get_duration
 from django.utils.timezone import make_aware
 
 PROCESS_NOT_STARTED = 0
@@ -56,7 +56,7 @@ class BatchJob:
             self._create_job(kwargs["description"], kwargs["cmd"], kwargs["args"])
 
     def _retrieve_job(self, job_id):
-        job = Job.objects.filter(id=job_id).first()
+        job = Job.objects.filter(id=job_id).select_related("user").first()
 
         if job is None:
             raise LookupError(PROCESS_NOT_FOUND)
@@ -281,7 +281,7 @@ class BatchJob:
                 stime = self.start_time
                 etime = self.end_time or make_aware(datetime.now())
 
-                duration = GetDuration(stime, etime)
+                duration = get_duration(stime, etime)
 
             if process_output:
                 out, out_completed = self.read_log(
@@ -371,6 +371,14 @@ class BatchJob:
             args_reader = csv.reader(args_csv, delimiter=str(","))
             for arg in args_reader:
                 args = args + arg
+
+            # Determine if the description is an old version
+            if not hasattr(description, '_connection_name'):
+                # Manually set the necessary attributes for old versions
+                description._connection_name = description.get_connection_name()
+                job.description = dumps(description).hex()
+                job.save()
+
             details = description.details(job.command)
             type_desc = description.type_desc
             description = description.message
@@ -379,7 +387,7 @@ class BatchJob:
 
     @staticmethod
     def list(user):
-        jobs = Job.objects.filter(user=user)
+        jobs = Job.objects.filter(user=user).select_related("connection")
         changed = False
 
         res = []
@@ -392,7 +400,7 @@ class BatchJob:
 
             start_time = job.start_time
             end_time = job.end_time or make_aware(datetime.now())
-            duration = GetDuration(start_time, end_time)
+            duration = get_duration(start_time, end_time)
 
             (
                 description,

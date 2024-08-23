@@ -2,7 +2,7 @@
   <div>
   <splitpanes class="default-theme query-body" horizontal @resized="handleResize">
     <pane size="30">
-      <QueryEditor ref="editor" class="h-100 mr-2"
+      <QueryEditor ref="editor" class="h-100 me-2"
         :read-only="readOnlyEditor"
         :tab-id="tabId"
         :database-index="databaseIndex"
@@ -11,57 +11,57 @@
         :dialect="dialect" @editor-change="updateEditorContent" @run-selection="queryRunOrExplain(false)" :autocomplete="autocomplete"/>
     </pane>
 
-    <pane size="70" class="px-2 border-top">
+    <pane size="70" class="border-top">
       <!-- ACTION BUTTONS-->
-      <div class="py-2 pr-1 d-flex align-items-center">
-        <div class="tab-actions d-flex w-100">
-          <button :id="`bt_start_${tabId}`" class="btn btn-sm btn-primary btn-run" title="Run" @click="queryRunOrExplain()" :disabled="executingState">
+      <div class="py-2 pe-1 d-flex align-items-center">
+        <div class="tab-actions d-flex w-100 px-2">
+          <button class="btn btn-square btn-primary btn-run" title="Run" @click="queryRunOrExplain()" :disabled="executingState">
             <i class="fas fa-play fa-light"></i>
           </button>
 
-          <button :id="`bt_start_${tabId}`" class="btn btn-sm btn-primary btn-run" title="Run Selection" @click="queryRunOrExplain(false)" :disabled="executingState">
+          <button class="btn btn-square btn-primary btn-run" title="Run Selection" @click="queryRunOrExplain(false)" :disabled="executingState">
             [
             <i class="fas fa-play fa-light"></i>
             ]
           </button>
 
-          <button :id="`bt_indent_${tabId}`" class="btn btn-sm btn-secondary" title="Indent SQL" @click="indentSQL()">
+          <button class="btn btn-square btn-secondary" title="Indent SQL" @click="indentSQL()">
             <i class="fas fa-indent fa-light"></i>
           </button>
 
-          <button :id="`bt_indent_${tabId}`" class="btn btn-sm btn-secondary" title="Find/Replace" @click="showFindReplace()">
+          <button class="btn btn-square btn-secondary" title="Find/Replace" @click="showFindReplace()">
             <i class="fas fa-magnifying-glass fa-light"></i>
           </button>
 
-          <button :class="`bt_history_${tabId}`" class="btn btn-sm btn-secondary" title="Command History"
+          <button class="btn btn-square btn-secondary me-2" title="Command History"
             @click="showCommandsHistory()">
             <i class="fas fa-clock-rotate-left fa-light"></i>
           </button>
 
-          <button :id="`bt_open_file_${tabId}`" class="btn btn-sm btn-secondary ml-2" title="Load from File" @click="openFileManagerModal">
+          <button class="btn btn-square btn-secondary ms-2" title="Load from File" @click="openFileManagerModal">
             <i class="fas fa-folder-open fa-light"></i>
           </button>
 
-          <button :disabled="fileSaveDisabled" :id="`bt_save_file_${tabId}`" class="btn btn-sm btn-secondary mr-2 " title="Save to File" @click="saveFile">
+          <button :disabled="fileSaveDisabled" class="btn btn-square btn-secondary me-2 " title="Save to File" @click="saveFile">
             <i class="fas fa-download fa-light"></i>
           </button>
 
           <template v-if="postgresqlDialect">
             <!-- EXPLAIN ANALYZE BUTTONS-->
-            <div class="btn-group ml-2 mr-2">
-              <button :id="`bt_explain_${tabId}`" class="btn btn-sm btn-secondary" title="Explain" @click="runExplain(0)"
+            <div class="btn-group ms-2 me-2">
+              <button class="btn btn-square btn-secondary" title="Explain" @click="runExplain(0)"
                 :disabled="!enableExplainButtons">
                 <i class="fas fa-chart-simple fa-light"></i>
               </button>
 
-              <button :id="`bt_analyze_${tabId}`" class="btn btn-sm btn-secondary" title="Explain Analyze"
+              <button class="btn btn-square btn-secondary" title="Explain Analyze"
                 @click="runExplain(1)" :disabled="!enableExplainButtons">
                 <i class="fas fa-magnifying-glass-chart fa-light"></i>
               </button>
             </div>
 
-            <!-- AUTOCOMMIt-->
-            <div class="omnidb__form-check form-check form-check-inline">
+            <!-- AUTOCOMMIT-->
+            <div class="form-check form-check-inline mb-0">
               <input :id="`check_autocommit_${tabId}`" class="form-check-input" type="checkbox" v-model="autocommit" />
               <label class="form-check-label custom-checkbox query_info"
                 :for="`check_autocommit_${tabId}`">Autocommit</label>
@@ -71,52 +71,49 @@
           </template>
 
           <!-- Query ACTIONS BUTTONS-->
-          <button :id="`bt_fetch_more_${tabId}`" class="btn btn-sm btn-secondary" title="Run" v-if="showFetchButtons"
+          <button v-show="showFetchButtons" class="btn btn-sm btn-secondary" title="Fetch More"
             @click="querySQL(queryModes.FETCH_MORE)">
             Fetch More
           </button>
+          <BlockSizeSelector v-show="showFetchButtons" v-model="blockSize"/>
 
-          <button :id="`bt_fetch_all_${tabId}`" class="btn btn-sm btn-secondary" title="Run" v-if="showFetchButtons"
+          <button class="btn btn-sm btn-secondary" title="Fetch All" v-show="showFetchButtons"
             @click="querySQL(queryModes.FETCH_ALL)">
             Fetch all
           </button>
 
-          <template v-if="activeTransaction">
-            <button :id="`bt_commit_${tabId}`" class="btn btn-sm btn-primary" title="Run"
-              @click="querySQL(queryModes.COMMIT)">
-              Commit
-            </button>
+          <button v-show="activeTransaction" class="btn btn-sm btn-primary" title="Commit"
+            @click="querySQL(queryModes.COMMIT)">
+            Commit
+          </button>
 
-            <button :id="`bt_rollback_${tabId}`" class="btn btn-sm btn-secondary" title="Run"
-              @click="querySQL(queryModes.ROLLBACK)">
-              Rollback
-            </button>
-          </template>
+          <button v-show="activeTransaction" class="btn btn-sm btn-secondary" title="Rollback"
+            @click="querySQL(queryModes.ROLLBACK)">
+            Rollback
+          </button>
 
-          <CancelButton v-if="executingState && longQuery" :tab-id="tabId" :conn-id="connId"
+          <CancelButton v-show="executingState && longQuery" :tab-id="tabId" :conn-id="connId"
             @cancelled="cancelSQLTab()" />
 
-          <!-- QUERY INFO DIV-->
-          <div :id="`div_query_info_${tabId}`" class="">
-            <p class="m-0 h6" v-if="cancelled">
-              <b>Cancelled</b>
-            </p>
-            <p v-else-if="queryStartTime && queryDuration" class="h6 m-0  mr-2">
-              <b>Start time:</b> {{ queryStartTime.format() }}<br/>
-              <b>Duration:</b> {{ queryDuration }}
-            </p>
-            <p v-else-if="queryStartTime" class=" m-0 h6">
-              <b>Start time:</b> {{ queryStartTime.format() }}
-            </p>
-          </div>
+          <!-- QUERY INFO-->
+          <p class="m-0 h6" v-show="cancelled">
+            <b>Cancelled</b>
+          </p>
+          <p v-show="showStartTimeAndDuration" class="h6 m-0  me-2">
+            <b>Start time:</b> {{ formattedStartTime }}<br/>
+            <b>Duration:</b> {{ queryDuration }}
+          </p>
+          <p v-show="showStartTime" class=" m-0 h6">
+            <b>Start time:</b> {{ formattedStartTime }}
+          </p>
 
           <!-- EXPORT BUTTON with SELECT OPTIONS -->
-          <button class="btn btn-sm btn-primary ml-auto" title="Export Data" @click="exportData()">
+          <button class="btn btn-square btn-primary ms-auto" title="Export Data" @click="exportData()">
             <i class="fas fa-download fa-light"></i>
           </button>
 
           <div class="form-group mb-0">
-            <select v-model="exportType" :id="`sel_export_type${tabId}`" class="form-control" style="width: 80px;">
+            <select v-model="exportType" class="form-select" style="width: 80px;">
               <option v-for="(name, value) in exportTypes" :value="value">
                 {{ name }}
               </option>
@@ -124,32 +121,28 @@
           </div>
         </div>
       </div>
-      <QueryResultTabs ref="queryResults" :conn-id="connId" :tab-id="tabId" :editor-content="editorContent"
+      <QueryResultTabs ref="queryResults" :block-size="blockSize" :conn-id="connId" :tab-id="tabId" :editor-content="editorContent"
         :dialect="dialect" :tab-status="tabStatus" :resize-div="resizeResultDiv" @enable-explain-buttons="toggleExplainButtons"
         @run-explain="runExplain(0)" @show-fetch-buttons="toggleFetchButtons" @resized="resizeResultDiv = false"/>
     </pane>
   </splitpanes>
-
-  <CommandsHistoryModal ref="commandsHistory" :tab-id="tabId" :database-index="databaseIndex" tab-type="Query" :commands-modal-visible="commandsModalVisible" @modal-hide="commandsModalVisible=false"/>
-  <FileManager ref="fileManager"/>
 </div>
 </template>
 
 <script>
 import { Splitpanes, Pane } from "splitpanes";
-import { createMessageModal, showToast } from "../notification_control";
+import { showToast } from "../notification_control";
 import moment from "moment";
 import { createRequest } from "../long_polling";
 import { queryModes, requestState, tabStatusMap, queryRequestCodes } from "../constants";
 import CancelButton from "./CancelSQLButton.vue";
 import QueryEditor from "./QueryEditor.vue";
 import { emitter } from "../emitter";
-import CommandsHistoryModal from "./CommandsHistoryModal.vue";
 import TabStatusIndicator from "./TabStatusIndicator.vue";
 import QueryResultTabs from "./QueryResultTabs.vue";
-import FileManager from "./FileManager.vue";
 import FileInputChangeMixin from '../mixins/file_input_mixin'
-import { tabsStore, connectionsStore } from "../stores/stores_initializer";
+import { tabsStore, connectionsStore, messageModalStore, fileManagerStore, commandsHistoryStore } from "../stores/stores_initializer";
+import BlockSizeSelector from './BlockSizeSelector.vue';
 
 export default {
   name: "QueryTab",
@@ -158,10 +151,9 @@ export default {
     Pane,
     CancelButton,
     QueryEditor,
-    CommandsHistoryModal,
     TabStatusIndicator,
     QueryResultTabs,
-    FileManager
+    BlockSizeSelector
   },
   mixins: [FileInputChangeMixin],
   props: {
@@ -197,10 +189,10 @@ export default {
       readOnlyEditor: false,
       editorContent: "",
       longQuery: false,
-      commandsModalVisible: false,
       lastQuery: null,
       queryInterval: null,
       resizeResultDiv: false,
+      blockSize: 50,
     };
   },
   computed: {
@@ -227,6 +219,18 @@ export default {
     },
     fileSaveDisabled() {
       return !this.editorContent;
+    },
+    hasChanges() {
+      return this.activeTransaction || this.executingState || (!!this.lastQuery && this.lastQuery !== this.editorContent);
+    },
+    showStartTimeAndDuration() {
+      return !this.cancelled && this.queryStartTime && this.queryDuration;
+    },
+    showStartTime() {
+      return !this.cancelled && this.queryStartTime && !this.queryDuration;
+    },
+    formattedStartTime() {
+      return this.queryStartTime ? this.queryStartTime.format() : '';
     }
   },
   mounted() {
@@ -275,9 +279,9 @@ export default {
             sql_cmd: query,
             mode: mode,
             autocommit: this.autocommit,
-            v_db_index: this.databaseIndex,
-            v_conn_tab_id: this.connId,
-            v_tab_id: this.tabId,
+            db_index: this.databaseIndex,
+            conn_tab_id: this.connId,
+            tab_id: this.tabId,
             tab_db_id: this.tabDatabaseId,
             sql_save: save_query,
             database_name: this.databaseName,
@@ -285,6 +289,7 @@ export default {
             all_data: all_data,
             log_query: log_query,
             tab_title: tab.name,
+            block_size: this.blockSize
           };
 
           this.readOnlyEditor = true;
@@ -327,24 +332,24 @@ export default {
       }
     },
     querySQLReturn(data, context) {
-      clearInterval(this.queryInterval)
-      this.queryInterval = null;
-      if (!data.v_error) {
-        this.tempData = this.tempData.concat(data.v_data.data)
+      if (!data.error) {
+        Array.prototype.push.apply(this.tempData, data.data.data)
       }
 
       //Update tab_db_id if not null in response
-      if (data.v_data.inserted_id) {
-        this.tabDatabaseId = data.v_data.inserted_id;
+      if (data.data.inserted_id) {
+        this.tabDatabaseId = data.data.inserted_id;
       }
 
       //If query wasn't canceled already
 
-      if (!this.idleState && (data.v_data.last_block || data.v_data.file_name || data.v_error )) {
-        data.v_data.data = this.tempData;
+      if (!this.idleState && (data.data.last_block || data.data.file_name || data.error )) {
+        data.data.data = this.tempData;
+        this.tempData = [];
         this.readOnlyEditor = false;
-        this.tabStatus = data.v_data.con_status;
-
+        this.tabStatus = data.data.con_status;
+        clearInterval(this.queryInterval)
+        this.queryInterval = null;
         if (
           this.connId === tabsStore.selectedPrimaryTab.id &&
           this.tabId === tabsStore.selectedPrimaryTab.metaData.selectedTab.id
@@ -355,7 +360,7 @@ export default {
           this.queryState = requestState.Idle;
           this.$refs.queryResults.renderResult(data, context);
 
-          this.queryDuration = data.v_data.duration;
+          this.queryDuration = data.data.duration;
 
           context.tab.metaData.isReady = false;
           context.tab.metaData.isLoading = false;
@@ -417,18 +422,27 @@ export default {
     },
     exportData() {
       let cmd_type = `export_${this.exportType}`;
-      let query = this.lastQuery || this.getQueryEditorValue(true)
+      let command = this.lastQuery || this.getQueryEditorValue(true);
+      let explainRegex =
+          /^(EXPLAIN ANALYZE|EXPLAIN)\s*(\([^\)\(]+\))?\s+(.+)/is;
+      let queryMatch = command.match(explainRegex);
+      if (queryMatch) {
+        command = queryMatch[3] ?? command;
+      }
       this.querySQL(
         this.queryModes.DATA_OPERATION,
         cmd_type,
         true,
-        query,
+        command,
         true,
-        query,
+        command,
         true
       );
     },
     cancelSQLTab() {
+      clearInterval(this.queryInterval);
+      this.queryInterval = null;
+
       this.readOnlyEditor = false;
 
       this.queryState = requestState.Idle;
@@ -500,21 +514,22 @@ export default {
       emitter.all.delete(`${this.tabId}_run_explain`);
       emitter.all.delete(`${this.tabId}_run_explain_analyze`);
       emitter.all.delete(`${this.tabId}_run_query`);
+      emitter.all.delete(`${this.tabId}_run_selection`);
     },
     showCommandsHistory() {
-      this.commandsModalVisible = true
+      commandsHistoryStore.showModal(this.tabId, this.databaseIndex, "Query");
     },
     openFileManagerModal() {
       if (!!this.editorContent) {
-        createMessageModal(
+        messageModalStore.showModal(
           "Are you sure you wish to discard the current changes?",
           () => {
-            this.$refs.fileManager.show(true, this.handleFileInputChange);
+            fileManagerStore.showModal(true, this.handleFileInputChange);
           },
           null
         );
       } else {
-        this.$refs.fileManager.show(true, this.handleFileInputChange);
+        fileManagerStore.showModal(true, this.handleFileInputChange);
       }
     },
     async saveFile() {
@@ -559,6 +574,14 @@ export default {
       this.resizeResultDiv = true
     }
   },
+  watch: {
+    hasChanges() {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.connId);
+      if (tab) {
+        tab.metaData.hasUnsavedChanges = this.hasChanges;
+      }
+    },
+  }
 };
 </script>
 
@@ -586,7 +609,6 @@ export default {
 .btn-run {
   padding-left: 2px;
   padding-right: 2px;
-  min-width: 2rem;
 }
 
 .btn-run i {

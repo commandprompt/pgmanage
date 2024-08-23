@@ -16,13 +16,15 @@
               <div class="recent-conections">
                 <h2 class="mb-3">Recent Connections</h2>
                 <div class="recent-conections__list d-flex flex-column">
-                  <div v-for="(connection, idx) in recentConnections" :key="idx" @click="selectConnection(connection)" class="recent-conections__item">
+                  <div v-for="(connection, idx) in recentConnections" :key="idx" @click="selectConnection(connection)"
+                    :class="colorLabelMap[connection.color_label].class || ''"
+                    class="recent-conections__item">
                     <div class="recent-conections__item_wrap d-flex align-items-center m-0">
-                        <div class="recent-conections__item_logo mr-3">
+                        <div class="recent-conections__item_logo me-3">
                             <div :class="['icon', 'icon-' + connection.technology]"></div>
                         </div>
                         <div class="recent-conections__item_text d-flex flex-column">
-                            <p class="recent-conections__item_title">{{ connection.alias }}</p>
+                            <p class="recent-conections__item_title d-flex align-items-center">{{ connection.alias }}</p>
                             <span class="recent-conections__item_subtitle muted-text clipped-text">{{connectionSubtitle(connection)}}</span>
                             <span class="muted-text">{{ ago(connection.last_access_date) }}</span>
                         </div>
@@ -38,7 +40,7 @@
             <div class='col-4 welcome__col'>
               <div class="hotkeys">
                 <div class="mb-3">
-                  <h2 class='d-inline-block mr-2 mb-0'>Hotkeys</h2>
+                  <h2 class='d-inline-block me-2 mb-0'>Hotkeys</h2>
                   <a @click="showSettings" href="#" class="links__item">
                       <i class="fas fa-tools" title="Customize"></i>
                   </a>
@@ -46,7 +48,7 @@
                 <div class='hotkeys__list'>
                   <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="mb-1 hotkeys__list_item hotkey">
                       <p class='hotkey__label'>{{shortcutLabel(shortcut)}}</p>
-                      <span v-for="(button, idx) in shortcutKeyNames(shortcut)" :key="idx" class='hotkey__button mr-2'>
+                      <span v-for="(button, idx) in shortcutKeyNames(shortcut)" :key="idx" class='hotkey__button me-2'>
                         {{button}}
                       </span>
                   </div>
@@ -59,11 +61,11 @@
                 <div class="links__group links__explore d-flex flex-column">
                   <h2 class="mb-3">Explore</h2>
                   <a href='#' @click="showTutorial" class='links__item' title="Get Started">
-                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    <i class="fa-solid fa-circle-info me-1"></i>
                     Get Started
                   </a>
                   <a href='https://pgmanage.readthedocs.io' target='_blank' class='links__item' title="Handbook">
-                    <i class="fa-solid fa-book-bookmark mr-1"></i>
+                    <i class="fa-solid fa-book-bookmark me-1"></i>
                     PgManage Handbook
                   </a>
                 </div>
@@ -71,11 +73,11 @@
                 <div class="links__group links__involved d-flex flex-column">
                   <h2 class="mb-3">Get Involved</h2>
                   <a href='https://github.com/commandprompt/pgmanage/discussions/' target='_blank' class='links__item' title="Discuss">
-                    <i class="fa-solid fa-comments mr-1"></i>
+                    <i class="fa-solid fa-comments me-1"></i>
                     Discuss
                   </a>
                   <a href='https://github.com/commandprompt/pgmanage/issues' target='_blank' class='links__item' title="Report a Bug">
-                    <i class="fa-solid fa-bug mr-1"></i>
+                    <i class="fa-solid fa-bug me-1"></i>
                     Report a Bug
                   </a>
                 </div>
@@ -90,7 +92,7 @@
 <script>
 import moment from 'moment'
 import { connectionsStore, settingsStore } from '../stores/stores_initializer'
-import { showConfigUser } from '../header_actions'
+import { colorLabelMap } from "../constants";
 import { startTutorial } from '../tutorial'
 import { endLoading } from "../ajax_control";
 import { default_shortcuts } from '../shortcuts'
@@ -127,6 +129,9 @@ export default {
         gearsUrl: gearsUrl,
         logoUrl: logoUrl
     };
+  },
+  created() {
+    this.colorLabelMap = colorLabelMap;
   },
   mounted() {
     this.loadShortcuts()
@@ -189,7 +194,7 @@ export default {
       return LABEL_MAP[shortcut.shortcut_code] || 'unknown'
     },
     showSettings() {
-      showConfigUser()
+      settingsStore.showModal()
     },
     showTutorial() {
       startTutorial('getting_started')

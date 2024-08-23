@@ -1,9 +1,6 @@
 import { tabsStore } from "../stores/stores_initializer.js";
-import { createRequest } from "../long_polling.js";
-import { queryRequestCodes } from "../constants.js";
-import { showConfirm } from "../notification_control.js";
-import ContextMenu from "@imengyu/vue3-context-menu";
 import { emitter } from "../emitter.js";
+import { Tooltip } from "bootstrap";
 
 export default {
   mounted() {
@@ -12,14 +9,19 @@ export default {
         action.after((result) => {
           if (!result.tooltip) return;
           this.$nextTick(() => {
-            $(`#${result.id}`).tooltip({
-              placement: "right",
-              boundary: "window",
-              sanitize: false,
-              title: result.tooltip,
-              html: true,
-              delay: { show: 500, hide: 100 },
-            });
+            const tooltipEl = document.getElementById(`${result.id}`)?.querySelector("[data-bs-toggle='tooltip']")
+            if (tooltipEl) {
+              new Tooltip(tooltipEl, {
+                placement: "right",
+                boundary: "window",
+                sanitize: false,
+                title: result.tooltip,
+                html: true,
+                delay: { show: 500, hide: 100 },
+                offset: [0, 10],
+                trigger: 'hover'
+              });
+            }
           });
         });
       }
@@ -39,18 +41,12 @@ export default {
         tab.clickFunction(event);
       }
 
-      if (tab.tooltip) {
-        $('[data-toggle="tab"]').tooltip("hide");
-      }
     },
     contextMenuHandler(event, tab) {
       if (tab.rightClickFunction) {
         event.stopPropagation();
         event.preventDefault();
         tab.rightClickFunction(event, tab);
-      }
-      if (tab.tooltip) {
-        $('[data-toggle="tab"]').tooltip("hide");
       }
     },
   },

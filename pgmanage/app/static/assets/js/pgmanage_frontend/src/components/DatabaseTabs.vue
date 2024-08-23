@@ -1,6 +1,7 @@
 <template>
   <div
     class="omnidb__tab-menu--container omnidb__tab-menu--container--secondary omnidb__tab-menu--container--menu-shown"
+    :class='tabColorLabelClass'
   >
     <div
       class="omnidb__tab-menu border-bottom omnidb__tab-menu--secondary omnidb__theme-bg--menu-secondary"
@@ -15,7 +16,7 @@
           >
             <a
               :id="tab.id"
-              data-toggle="tab"
+              data-bs-toggle="tab"
               :class="[
                 'omnidb__tab-menu__link',
                 'nav-item',
@@ -79,14 +80,14 @@
 
         <div class="navigation-actions d-flex flex-nowrap">
           <button
-            class="btn btn-icon btn-icon-secondary mr-3"
+            class="btn btn-icon btn-icon-secondary me-3"
             :disabled="!canScrollLeft"
             @click="handleLeftScrollClick"
           >
             <i class="fas fa-lg fa-chevron-left"></i>
           </button>
           <button
-            class="btn btn-icon btn-icon-secondary mr-2"
+            class="btn btn-icon btn-icon-secondary me-2"
             :disabled="!canScrollRight"
             @click="handleRightScrollClick"
           >
@@ -114,7 +115,8 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import { tabsStore } from "../stores/stores_initializer";
+import { tabsStore, connectionsStore } from "../stores/stores_initializer";
+import { colorLabelMap } from "../constants";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import SnippetTab from "./SnippetTab.vue";
 import TabsUtils from "../mixins/tabs_utils_mixin";
@@ -162,6 +164,13 @@ export default {
       let primaryTab = tabsStore.getPrimaryTabById(this.tabId);
       return primaryTab?.name === "Snippets";
     },
+    tabColorLabelClass() {
+      let primaryTab = tabsStore.getPrimaryTabById(this.tabId);
+      let connection = connectionsStore.getConnection(primaryTab.metaData?.selectedDatabaseIndex);
+      if(connection) {
+        return colorLabelMap[connection.color_label].class || ''
+      }
+    }
   },
   updated() {
     this.$nextTick(() => {
@@ -276,6 +285,7 @@ export default {
         ConfigTab: {
           databaseIndex: tab?.metaData?.databaseIndex,
           connId: tab.parentId,
+          tabId: tab.id,
         },
       };
       return componentsProps[tab.component];
