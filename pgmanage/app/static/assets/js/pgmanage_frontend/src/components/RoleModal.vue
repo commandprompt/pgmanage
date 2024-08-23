@@ -208,8 +208,14 @@
           </div>
 
           <div class="modal-footer mt-auto justify-content-between">
-            <button type="button" class="btn btn-primary m-0 ms-auto"
+            <button class="btn btn-outline-secondary"
+              v-if="mode == 'Edit'"
               :disabled="v$.$invalid"
+              @click="revertChanges">
+              Revert changes
+            </button>
+            <button type="button" class="btn btn-primary m-0 ms-auto"
+              :disabled="v$.$invalid || !hasChanges"
               @click="saveRole">
               Save
             </button>
@@ -263,6 +269,7 @@
         existingRoles: [],
         generatedSQL: null,
         modalInstance: null,
+        hasChanges: false
       }
     },
 
@@ -375,7 +382,6 @@
             console.log(error)
         })
       },
-
       getExistingRoles() {
         axios.post('/get_roles_postgresql/', {
           database_index: this.databaseIndex,
@@ -399,6 +405,9 @@
         } else {
           collection.splice(index, 1)
         }
+      },
+      revertChanges() {
+        this.localRole = {...this.initialRole}
       },
       generateSQL() {
         let ret = ''
@@ -450,8 +459,10 @@
           })
 
           ret = `${roleParts.join('\n')};\n${membershipParts.join('\n')}`
+          this.hasChanges = true
         } else if (this.mode === 'Edit') {
-          ret = '-- No changes --'
+          const stub = '-- No changes --'
+          ret = stub
           let roleParts = []
           let permissions = Object.keys(permVals)
             .filter(key => this.initialRole[key] != this.localRole[key])
@@ -538,6 +549,8 @@
 
           if(membershipParts)
             ret = `${ret}\n${membershipParts.join('\n')}`
+
+          this.hasChanges = !ret.startsWith(stub)
         }
         this.generatedSQL = ret
       },
