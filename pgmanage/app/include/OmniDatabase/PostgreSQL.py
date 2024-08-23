@@ -839,7 +839,7 @@ class PostgreSQL:
             rolconnlimit, rolpassword, rolvaliduntil,
             ARRAY(
                 SELECT
-                    array[rm.rolname, CASE WHEN pgam.admin_option THEN 'true' ELSE 'false' END]
+                    array[rm.rolname, pgam.admin_option::text]
                 FROM
                     (SELECT * FROM pg_catalog.pg_auth_members WHERE member = pgr.oid) pgam
                     LEFT JOIN pg_catalog.pg_roles rm ON (rm.oid = pgam.roleid)
@@ -847,7 +847,7 @@ class PostgreSQL:
             ) AS member_of,
             ARRAY(
                 SELECT
-                    array[pgrm.name, CASE WHEN pgrm.admin_option THEN 'true' ELSE 'false' END]
+                    array[pgrm.name, pgrm.admin_option::text]
                 FROM
                     (SELECT pg_roles.rolname AS name, pg_auth_members.admin_option AS admin_option FROM pg_roles
                     JOIN pg_auth_members ON pg_roles.oid=pg_auth_members.member AND pg_auth_members.roleid={0}) pgrm
