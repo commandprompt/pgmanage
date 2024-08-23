@@ -1,6 +1,6 @@
 import "vite/modulepreload-polyfill";
 import "bootstrap/scss/bootstrap.scss";
-import "./assets/scss/omnidb.scss";
+import "./assets/css/font-poppins.css";
 import "./assets/scss/login.scss";
 import { showAlert } from "./notification_control";
 import { getCookie } from "./ajax_control";
@@ -23,9 +23,14 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 });
 
+window.addEventListener("load", function () {
+  document.querySelector("body").classList.add("loaded");
+});
+
 function signIn() {
   let username = document.getElementById("txt_user");
   let password = document.getElementById("txt_pwd");
+  let alertBox = document.getElementById("alert_box");
 
   axios
     .post(
@@ -37,11 +42,11 @@ function signIn() {
       if (resp.data.data >= 0) {
         window.open(app_base_path + "/workspace/", "_self");
       } else if (resp.data.data == -2) {
-        showAlert(
-          "Invalid authentication token, use pgmanage-server to support multiple users."
-        );
+        alertBox.innerText = "Invalid authentication token, use pgmanage-server to support multiple users.";
+        alertBox.classList.remove("d-none");
       } else {
-        showAlert("Invalid username or password.");
+        alertBox.innerText = "Invalid username or password.";
+        alertBox.classList.remove("d-none");
       }
     });
 }
