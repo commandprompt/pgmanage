@@ -14,6 +14,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
 from RestrictedPython import compile_restricted, safe_builtins
 from RestrictedPython.Eval import default_guarded_getitem
+from RestrictedPython.Guards import safer_getattr
 
 builtin_monitoring_widgets = {}
 
@@ -40,8 +41,8 @@ get_widgets_data()
 
 
 def _hook_import(name, *args, **kwargs):
-    if name == "os":
-        raise RuntimeError("You cannot import os module in this sandbox.")
+    if name not in ["datetime", "random", "decimal", "time"]:
+        raise ImportError(f"You cannot import {name} module in this sandbox.")
     return __import__(name, *args, **kwargs)
 
 
@@ -337,7 +338,7 @@ def refresh_monitoring_widget(request, database, widget_saved_id):
 
         restricted_globals = dict(__builtins__=safe_builtins)
         restricted_globals["_getiter_"] = iter
-        restricted_globals["_getattr_"] = getattr
+        restricted_globals["_getattr_"] = safer_getattr
         restricted_globals["_getitem_"] = default_guarded_getitem
         restricted_globals["__builtins__"]["__import__"] = _hook_import
 
@@ -407,7 +408,7 @@ def test_monitoring_widget(request, database):
 
         restricted_globals = dict(__builtins__=safe_builtins)
         restricted_globals["_getiter_"] = iter
-        restricted_globals["_getattr_"] = getattr
+        restricted_globals["_getattr_"] = safer_getattr
         restricted_globals["_getitem_"] = default_guarded_getitem
         restricted_globals["__builtins__"]["__import__"] = _hook_import
 
