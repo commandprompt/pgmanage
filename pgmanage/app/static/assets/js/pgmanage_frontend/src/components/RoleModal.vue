@@ -215,7 +215,7 @@
           <div class="modal-footer mt-auto justify-content-between">
             <button class="btn btn-outline-secondary"
               v-if="mode == 'Edit'"
-              :disabled="!hasChanges"
+              :disabled="!(v$.$invalid || hasChanges)"
               @click="revertChanges">
               Revert changes
             </button>
