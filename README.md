@@ -66,7 +66,7 @@ python3.9 -mvenv .env
 
 # PgManage 1.1.1 Release
 
-## Release Date: Aug 22 2024
+## Release Date: Aug 28 2024
 
 ## Release Notes
 
@@ -79,6 +79,7 @@ python3.9 -mvenv .env
     - console history buffer is now cleared from memory when "clear console" button is clicked
 
   - Bugs fixed:
+    - fixed unrestricted code execution vulnerability in monitoring widget back-end. The issue was reported by Andrew Effenhauser, Ayman Hammad and Daniel Crowley of X-Force Red
     - fixed Entity Relationship not rendering diagram for some database layouts
     - fixes issue when expanded DB object tree node was not always scrolled to the top of viewport
     - fixed missing GRANT statements when roles is displayed in DDL tab
