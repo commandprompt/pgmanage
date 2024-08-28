@@ -215,7 +215,7 @@
           <div class="modal-footer mt-auto justify-content-between">
             <button class="btn btn-outline-secondary"
               v-if="mode == 'Edit'"
-              :disabled="v$.$invalid"
+              :disabled="!hasChanges"
               @click="revertChanges">
               Revert changes
             </button>
@@ -348,7 +348,7 @@
       if (this.mode === 'Edit') {
         this.getRoleDetails()
       } else {
-        this.localRole = {...this.initialRole}
+        this.localRole = JSON.parse(JSON.stringify(this.initialRole));
       }
       this.getExistingRoles()
       this.setupEditor()
@@ -412,7 +412,7 @@
         }
       },
       revertChanges() {
-        this.localRole = {...this.initialRole}
+        this.localRole = JSON.parse(JSON.stringify(this.initialRole));
       },
       generateSQL() {
         let ret = ''
@@ -466,8 +466,6 @@
           ret = `${roleParts.join('\n')};\n${membershipParts.join('\n')}`
           this.hasChanges = true
         } else if (this.mode === 'Edit') {
-          const stub = '-- No changes --'
-          ret = stub
           let roleParts = []
           let permissions = Object.keys(permVals)
             .filter(key => this.initialRole[key] != this.localRole[key])
@@ -547,15 +545,17 @@
             }
           })
 
-          if(roleParts.length > 0){
+          if(roleParts.length > 0) {
             ret = `${roleParts.join('\n')}`
-            ret += ret.endsWith(";") ? "" : ";"
+            ret += ret.endsWith(";") ? "\n" : ";\n"
           }
 
-          if(membershipParts)
-            ret = `${ret}\n${membershipParts.join('\n')}`
+          if(membershipParts.length > 0)
+            ret = `${ret}${membershipParts.join('\n')}`
 
-          this.hasChanges = !ret.startsWith(stub)
+          this.hasChanges = roleParts.length > 0 || membershipParts.length > 0
+          if(!this.hasChanges)
+            ret = '-- No changes --'
         }
         this.generatedSQL = ret
       },
