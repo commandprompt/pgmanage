@@ -340,14 +340,15 @@ def get_database_meta(request, database):
 
     try:
         if database.v_has_schema:
-            schemas = database.QuerySchemas().Rows
+            schemas = database.QuerySchemas().Rows if hasattr(database, 'QuerySchemas') else [{"schema_name": database.v_schema}]
         else:
             schemas = [{'schema_name': '-noschema-'}]
 
         for schema in schemas:
             schema_data = {
                 "name": schema["schema_name"],
-                "tables": []
+                "tables": [],
+                "views": [],
             }
 
             tables = database.QueryTables(False, schema["schema_name"])
@@ -382,7 +383,7 @@ def get_database_meta(request, database):
                     view_columns = database.QueryViewFields(p_table=view_name)
 
                 view_data['columns'] = list((c['column_name'] for c in view_columns.Rows))
-                schema_data['tables'].append(view_data)
+                schema_data['views'].append(view_data)
 
             schema_list.append(schema_data)
 

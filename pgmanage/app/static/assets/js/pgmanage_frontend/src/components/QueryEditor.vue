@@ -174,13 +174,18 @@ export default {
 
       let tableNames = []
       let columnNames = []
+      let viewNames = []
       dbMeta.forEach((schema) => {
         if(['information_schema', 'pg_catalog'].includes(schema.name))
           return
 
+        viewNames = viewNames.concat(schema.views.map((t) => t.name))
         tableNames = tableNames.concat(schema.tables.map((t) => t.name))
         schema.tables.forEach((t) => {
           columnNames = columnNames.concat(t.columns)
+        })
+        schema.views.forEach((v) => {
+          columnNames = columnNames.concat(v.columns)
         })
       })
 
@@ -189,11 +194,11 @@ export default {
         'postgresql': SQLDialect.PLpgSQL,
         'mysql': SQLDialect.MYSQL,
         'mariadb': SQLDialect.MYSQL,
-        'oracle': SQLDialect.PLpgSQL,
+        'oracle': SQLDialect.PLSQL,
         'sqlite': SQLDialect.SQLITE,
       }
 
-      this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, tableNames, columnNames);
+      this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, tableNames, columnNames, viewNames);
     },
     getQueryEditorValue(raw_query) {
       if (raw_query) return this.editor.getValue().trim();
