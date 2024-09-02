@@ -129,7 +129,7 @@
                         <input type="file" @change="setPostgresqlPath" nwdirectory hidden>
                       </label>
                     </div>
-                    <a class="btn btn-outline-primary ms-2" @click="validateBinaryPath(binaryPath, ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])" title="Validate">
+                    <a data-testid="validate-binary-path-button" class="btn btn-outline-primary ms-2" @click="validateBinaryPath(binaryPath, ['pg_dump', 'pg_dumpall', 'pg_restore', 'psql'])" title="Validate">
                       Validate
                     </a>
                   </div>

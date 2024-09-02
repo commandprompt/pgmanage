@@ -63,7 +63,7 @@ export default {
   mounted() {
     this.setupEditor();
     this.setupEvents();
-    this.editor.on("change", () => {
+    this.editor.on("change", (obj, editor) => {
       this.$emit("editorChange", this.editor.getValue().trim());
     });
 
@@ -126,6 +126,13 @@ export default {
       this.editor.commands.bindKey("Ctrl-F", null);
       this.editor.commands.bindKey("Ctrl-,", null);
 
+      const scoreMap = {
+        COLUMN: 5000,
+        TABLE: 4000,
+        VIEW: 3000,
+        KEYWORD: 1000,
+      };
+
       this.editor.setOptions({
         enableBasicAutocompletion: [
           {
@@ -136,14 +143,13 @@ export default {
                 editor.getValue(),
                 editor.session.doc.positionToIndex(editor.selection.getCursor())
               );
-
               let ret = [];
               options.forEach(function(opt) {
                 ret.push({
                     caption: opt.value,
                     value: opt.value,
                     meta: opt.optionType.toLowerCase(),
-                    score: 100
+                    score: scoreMap[opt.optionType]
                 });
               })
               callback(null, ret)
@@ -174,13 +180,18 @@ export default {
 
       let tableNames = []
       let columnNames = []
+      let viewNames = []
       dbMeta.forEach((schema) => {
         if(['information_schema', 'pg_catalog'].includes(schema.name))
           return
 
+        viewNames = viewNames.concat(schema.views.map((t) => t.name))
         tableNames = tableNames.concat(schema.tables.map((t) => t.name))
         schema.tables.forEach((t) => {
           columnNames = columnNames.concat(t.columns)
+        })
+        schema.views.forEach((v) => {
+          columnNames = columnNames.concat(v.columns)
         })
       })
 
@@ -189,11 +200,11 @@ export default {
         'postgresql': SQLDialect.PLpgSQL,
         'mysql': SQLDialect.MYSQL,
         'mariadb': SQLDialect.MYSQL,
-        'oracle': SQLDialect.PLpgSQL,
+        'oracle': SQLDialect.PLSQL,
         'sqlite': SQLDialect.SQLITE,
       }
 
-      this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, tableNames, columnNames);
+      this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, tableNames, columnNames, viewNames);
     },
     getQueryEditorValue(raw_query) {
       if (raw_query) return this.editor.getValue().trim();

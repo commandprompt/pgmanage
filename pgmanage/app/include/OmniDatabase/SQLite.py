@@ -668,7 +668,7 @@ class SQLite:
         else:
             v_tables = self.QueryTables()
         for v_table in v_tables.Rows:
-            v_table_columns_tmp = self.v_connection.Query("pragma table_info('{0}')".format(v_table['table_name']), True)
+            v_table_columns_tmp = self.v_connection.Query("pragma table_info({0})".format(v_table['table_name']), True)
             v_table_columns = Spartacus.Database.DataTable()
             v_table_columns.Columns = [
                 'column_name',
