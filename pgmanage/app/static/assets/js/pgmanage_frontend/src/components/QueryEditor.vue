@@ -64,21 +64,7 @@ export default {
     this.setupEditor();
     this.setupEvents();
     this.editor.on("change", (obj, editor) => {
-      let include_chars = /[a-z.]/i;
-      switch (obj.action) {
-        case 'insert':
-          let lines = obj.lines
-          let char = lines[0]
-          if ((lines.length === 1) && (char.length === 1) && include_chars.test(char)) {
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                this.editor.execCommand('startAutocomplete');
-              })
-            })
-          }
-          break;
-      }
-      
+      this.$emit("editorChange", this.editor.getValue().trim());
     });
 
     settingsStore.$subscribe((mutation, state) => {
@@ -140,6 +126,13 @@ export default {
       this.editor.commands.bindKey("Ctrl-F", null);
       this.editor.commands.bindKey("Ctrl-,", null);
 
+      const scoreMap = {
+        COLUMN: 5000,
+        TABLE: 4000,
+        VIEW: 3000,
+        KEYWORD: 1000,
+      };
+
       this.editor.setOptions({
         enableBasicAutocompletion: [
           {
@@ -150,14 +143,13 @@ export default {
                 editor.getValue(),
                 editor.session.doc.positionToIndex(editor.selection.getCursor())
               );
-
               let ret = [];
-              options.forEach(function(opt, index) {
+              options.forEach(function(opt) {
                 ret.push({
                     caption: opt.value,
                     value: opt.value,
                     meta: opt.optionType.toLowerCase(),
-                    score: index
+                    score: scoreMap[opt.optionType]
                 });
               })
               callback(null, ret)
