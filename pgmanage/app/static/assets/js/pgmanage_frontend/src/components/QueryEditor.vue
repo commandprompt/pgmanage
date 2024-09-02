@@ -63,8 +63,22 @@ export default {
   mounted() {
     this.setupEditor();
     this.setupEvents();
-    this.editor.on("change", () => {
-      this.$emit("editorChange", this.editor.getValue().trim());
+    this.editor.on("change", (obj, editor) => {
+      let include_chars = /[a-z.]/i;
+      switch (obj.action) {
+        case 'insert':
+          let lines = obj.lines
+          let char = lines[0]
+          if ((lines.length === 1) && (char.length === 1) && include_chars.test(char)) {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                this.editor.execCommand('startAutocomplete');
+              })
+            })
+          }
+          break;
+      }
+      
     });
 
     settingsStore.$subscribe((mutation, state) => {
@@ -138,12 +152,12 @@ export default {
               );
 
               let ret = [];
-              options.forEach(function(opt) {
+              options.forEach(function(opt, index) {
                 ret.push({
                     caption: opt.value,
                     value: opt.value,
                     meta: opt.optionType.toLowerCase(),
-                    score: 100
+                    score: index
                 });
               })
               callback(null, ret)
