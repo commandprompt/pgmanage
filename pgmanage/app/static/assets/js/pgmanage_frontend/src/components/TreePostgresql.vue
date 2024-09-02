@@ -2750,17 +2750,10 @@ export default {
         cm_roles: [
           this.cmRefreshObject,
           {
-            label: "Create Role UI",
-            icon: "fas cm-all fa-edit",
+            label: "Create Role",
+            icon: "fas cm-all fa-plus",
             onClick: () => {
               createRoleModal(this.selectedNode, "Create");
-            },
-          },
-          {
-            label: "Create Role",
-            icon: "fas cm-all fa-edit",
-            onClick: () => {
-              tabSQLTemplate("Create Role", this.templates.create_role);
             },
           },
           {
@@ -2780,7 +2773,7 @@ export default {
             label: "Change Password",
             icon: "fas cm-all fa-key",
             onClick: () => {
-              //FIXME: rewrite this properly
+              //TODO: remove the change password modal since its functionality is now handled by role editor
               let html_text = `<div class="row">
                             <div class="col-md-12 mb-3">
                                 <label for="change_pwd_role">Password</label>
@@ -2824,16 +2817,10 @@ export default {
             },
           },
           {
-            label: "Alter Role",
+            label: "Edit Role",
             icon: "fas cm-all fa-edit",
             onClick: () => {
-              tabSQLTemplate(
-                "Alter Role",
-                this.templates.alter_role.replace(
-                  "#role_name#",
-                  this.selectedNode.data.raw_value
-                )
-              );
+              createRoleModal(this.selectedNode, "Edit");
             },
           },
           {
@@ -2841,13 +2828,6 @@ export default {
             icon: "fas cm-all fa-edit",
             onClick: () => {
               this.getObjectDescriptionPostgresql(this.selectedNode);
-            },
-          },//
-          {
-            label: "Edit Role",
-            icon: "fas cm-all fa-edit",
-            onClick: () => {
-              createRoleModal(this.selectedNode, "Edit");
             },
           },
           {

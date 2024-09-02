@@ -258,6 +258,7 @@
         localRole: {},
         initialRole: {
           name: 'NewRole',
+          // TODO: reimplement scram-sha-256 password string generation in JS, see pg_scram_sha256 for reference
           password: '',
           validUntil: null,
           connectionLimit: -1,
@@ -372,7 +373,6 @@
           this.initialRole.name = resp.data.name
           this.initialRole.connectionLimit = resp.data.rolconnlimit
           this.initialRole.validUntil = resp.data.rolvaliduntil ? moment(resp.data.rolvaliduntil).format('YYYY-MM-DD HH:mm:ssZ') : null
-
           this.initialRole.canLogin = resp.data.rolcanlogin
           this.initialRole.canCreateDatabases = resp.data.rolcreatedb
           this.initialRole.canCreateUsers = resp.data.rolcreaterole
