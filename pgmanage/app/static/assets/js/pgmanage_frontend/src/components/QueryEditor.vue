@@ -128,8 +128,9 @@ export default {
 
       const scoreMap = {
         COLUMN: 5000,
-        TABLE: 4000,
-        VIEW: 3000,
+        SCHEMA: 4000,
+        TABLE: 3000,
+        VIEW: 2000,
         KEYWORD: 1000,
       };
 
@@ -137,12 +138,14 @@ export default {
         enableBasicAutocompletion: [
           {
             getCompletions: (function (editor, session, pos, prefix, callback) {
+              
               if(!this.completer)
                 return
               const options = this.completer.autocomplete(
                 editor.getValue(),
                 editor.session.doc.positionToIndex(editor.selection.getCursor())
               );
+              console.log('trigger', options)
               let ret = [];
               options.forEach(function(opt) {
                 ret.push({
@@ -153,7 +156,8 @@ export default {
                 });
               })
               callback(null, ret)
-            }).bind(this)
+            }).bind(this),
+            triggerCharacters: [".",],
           }
         ],
       });
@@ -181,6 +185,7 @@ export default {
       let tableNames = []
       let columnNames = []
       let viewNames = []
+      let schemaNames = []
       dbMeta.forEach((schema) => {
         if(['information_schema', 'pg_catalog'].includes(schema.name))
           return
@@ -193,6 +198,10 @@ export default {
         schema.views.forEach((v) => {
           columnNames = columnNames.concat(v.columns)
         })
+
+        if (schema.name !== '-noschema-') {
+          schemaNames = schemaNames.concat(schema.name)
+        }
       })
 
       columnNames = [...new Set(columnNames)]
@@ -204,7 +213,7 @@ export default {
         'sqlite': SQLDialect.SQLITE,
       }
 
-      this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, tableNames, columnNames, viewNames);
+      this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, tableNames, columnNames, viewNames, schemaNames);
     },
     getQueryEditorValue(raw_query) {
       if (raw_query) return this.editor.getValue().trim();
