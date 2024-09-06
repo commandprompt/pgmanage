@@ -182,29 +182,8 @@ export default {
       if(!dbMeta)
         return
 
-      let tableNames = []
-      let columnNames = []
-      let viewNames = []
-      let schemaNames = []
-      dbMeta.forEach((schema) => {
-        if(['information_schema', 'pg_catalog'].includes(schema.name))
-          return
-
-        viewNames = viewNames.concat(schema.views.map((t) => t.name))
-        tableNames = tableNames.concat(schema.tables.map((t) => t.name))
-        schema.tables.forEach((t) => {
-          columnNames = columnNames.concat(t.columns)
-        })
-        schema.views.forEach((v) => {
-          columnNames = columnNames.concat(v.columns)
-        })
-
-        if (schema.name !== '-noschema-') {
-          schemaNames = schemaNames.concat(schema.name)
-        }
-      })
-
-      columnNames = [...new Set(columnNames)]
+      const filteredMeta = dbMeta.filter((schema) => !["information_schema", "pg_catalog"].includes(schema.name));
+      
       const DIALECT_MAP = {
         'postgresql': SQLDialect.PLpgSQL,
         'mysql': SQLDialect.MYSQL,
@@ -213,7 +192,7 @@ export default {
         'sqlite': SQLDialect.SQLITE,
       }
 
-      this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, tableNames, columnNames, viewNames, schemaNames);
+      this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, filteredMeta);
     },
     getQueryEditorValue(raw_query) {
       if (raw_query) return this.editor.getValue().trim();
