@@ -345,8 +345,8 @@ const useTabsStore = defineStore("tabs", {
               this.beforeCloseTab(e, () => {
                 let tabsToRemove = [];
 
-                let tabs_id = this.getSecondaryTabs(primaryTab.id).map(tab => tab.id);
-                tabs_id.forEach((tab_id) => {
+                let tab_ids = this.getSecondaryTabs(primaryTab.id).map(tab => tab.id);
+                tab_ids.forEach((tab_id) => {
                   let tab = this.getSecondaryTabById(tab_id, primaryTab.id);
                   if (
                     tab.metaData.mode == "query" ||
@@ -362,8 +362,6 @@ const useTabsStore = defineStore("tabs", {
                       tab_db_id: null,
                       conn_tab_id: primaryTab.id,
                     };
-                    console.log(tab)
-                    console.log(tab.metaData.initTabDatabaseId, 'tab_db_id')
                     if (tab.metaData.mode == "query")
                       messageData.tab_db_id = tab.metaData.initTabDatabaseId;
                     tabsToRemove.push(messageData);
