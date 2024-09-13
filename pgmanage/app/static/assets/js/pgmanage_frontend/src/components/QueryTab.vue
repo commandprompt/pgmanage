@@ -348,7 +348,9 @@ export default {
       }
       //Update tab_db_id if not null in response
       if (data.data.inserted_id) {
+        let tab = tabsStore.getSecondaryTabById(this.tabId, this.connId);
         this.tabDatabaseId = data.data.inserted_id;
+        tab.metaData.initTabDatabaseId = data.data.inserted_id;
       }
 
       //If query wasn't canceled already
