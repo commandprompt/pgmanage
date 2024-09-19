@@ -225,7 +225,7 @@ def test_connection(request):
         try:
             # ssh key provided
             if ssh_key.strip() != '':
-                key = paramiko.RSAKey.from_private_key(io.StringIO(ssh_key), password=ssh_password)
+                key = paramiko.RSAKey.from_private_key(io.StringIO(ssh_key), password=ssh_password or None)
                 client.connect(hostname=conn_object['tunnel']['server'], username=conn_object['tunnel']['user'],
                                pkey=key, passphrase=ssh_password,
                                port=int(conn_object['tunnel']['port']), timeout=5)
@@ -260,7 +260,7 @@ def test_connection(request):
 
             try:
                 if ssh_key.strip() != '':
-                    key = paramiko.RSAKey.from_private_key(io.StringIO(ssh_key), password=ssh_password)
+                    key = paramiko.RSAKey.from_private_key(io.StringIO(ssh_key), password=ssh_password or None)
                     server = SSHTunnelForwarder(
                         (conn_object['tunnel']['server'], int(conn_object['tunnel']['port'])),
                         ssh_username=conn_object['tunnel']['user'],

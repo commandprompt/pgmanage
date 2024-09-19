@@ -255,7 +255,7 @@ def create_request(request, session):
 
                     #ssh key provided
                     if v_conn_object['tunnel']['key'].strip() != '':
-                        key = paramiko.RSAKey.from_private_key(io.StringIO(v_conn_object['tunnel']['key']), password=v_conn_object['tunnel']['password'])
+                        key = paramiko.RSAKey.from_private_key(io.StringIO(v_conn_object['tunnel']['key']), password=v_conn_object['tunnel']['password'] or None)
                         client.connect(hostname=v_conn_object['tunnel']['server'],username=v_conn_object['tunnel']['user'],pkey=key,passphrase=v_conn_object['tunnel']['password'],port=int(v_conn_object['tunnel']['port']))
                     else:
                         client.connect(hostname=v_conn_object['tunnel']['server'],username=v_conn_object['tunnel']['user'],password=v_conn_object['tunnel']['password'],port=int(v_conn_object['tunnel']['port']))
