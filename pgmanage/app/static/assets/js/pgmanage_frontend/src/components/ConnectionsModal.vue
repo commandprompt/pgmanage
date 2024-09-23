@@ -99,6 +99,7 @@ import { emitter } from '../emitter'
 import { messageModalStore, tabsStore, settingsStore, connectionsStore } from '../stores/stores_initializer';
 import { useVuelidate } from '@vuelidate/core'
 import { Modal, Collapse } from 'bootstrap'
+import { showToast } from '../notification_control';
 
 export default {
   name: 'ConnectionsModal',
@@ -240,7 +241,7 @@ export default {
         this.loadData()
       })
       .catch((error) => {
-        console.log(error)
+        showToast("error", error.response.data.data);
       })
     },
     deleteGroup(group) {

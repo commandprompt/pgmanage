@@ -144,21 +144,20 @@ def delete_group(request):
 
 @user_authenticated
 def save_group(request):
-    response_data = {'data': '', 'status': 'success'}
-
     group_object = request.data
     group_id = group_object.get('id', None)
     group_name = group_object['name']
 
     if not group_name.strip():
-        response_data['data'] = "Group name can not be empty."
-        response_data['status'] = 'failed'
-
-        return JsonResponse(response_data, status=400)
+        return JsonResponse(data={"data": "Group name can not be empty."}, status=400)
 
     try:
         # New group
         if group_id is None:
+            db_group = Group.objects.filter(user=request.user, name=group_name)
+            if db_group:
+                return JsonResponse(data={"data": "Group with this name already exists."}, status=400)
+
             group = Group(user=request.user, name=group_name)
             group.save()
         # update
@@ -166,10 +165,7 @@ def save_group(request):
             group = Group.objects.filter(id=group_id).select_related("user").first()
 
             if group.user.id != request.user.id:
-                response_data['data'] = 'This group does not belong to you.'
-                response_data['status'] = 'failed'
-
-                return JsonResponse(response_data, status=403)
+                return JsonResponse(data={"data": "This group does not belong to you."}, status=403)
 
             group.name = group_name
             group.save()
@@ -185,12 +181,10 @@ def save_group(request):
         # create new group relations with group.id
 
     except Exception as exc:
-        response_data['data'] = str(exc)
-        response_data['status'] = 'failed'
-        return JsonResponse(response_data, status=400)
+        return JsonResponse(data={"data": str(exc)}, status=400)
 
 
-    return JsonResponse(response_data)
+    return HttpResponse(status=200)
 
 
 @user_authenticated

@@ -125,6 +125,11 @@ class Group(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     name = models.CharField(max_length=50, blank=False, default = '')
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "name"], name="unique_user_group_name")
+        ]
+
 class GroupConnection(models.Model):
     group = models.ForeignKey(Group,on_delete=models.CASCADE)
     connection = models.ForeignKey(Connection,on_delete=models.CASCADE)
