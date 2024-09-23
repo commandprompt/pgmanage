@@ -203,9 +203,9 @@ def test_connection(request):
 
     if conn_id:
         conn = Connection.objects.get(id=conn_id)
-        if conn_object.get('password','').strip() == '' and conn_type != 'terminal':
+        if password == '' and conn_type != 'terminal' and conn_object.get("password_set") is True:
             password = decrypt(conn.password, key) if conn.password else ''
-        if conn_object['tunnel']['password'].strip() == '':
+        if ssh_password == '' and conn_object['tunnel']['password_set'] is True:
             ssh_password = decrypt(conn.ssh_password, key) if conn.ssh_password else ''
         if conn_object['tunnel']['key'].strip() == '':
             ssh_key = decrypt(conn.ssh_key, key) if conn.ssh_key else ''
