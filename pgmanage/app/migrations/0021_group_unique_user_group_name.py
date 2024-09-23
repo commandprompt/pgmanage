@@ -7,8 +7,16 @@ from django.db import migrations, models
 
 def update_group_names(apps, schema_editor):
     Group = apps.get_model("app", "Group")
+    duplicate_group_names = (
+        Group.objects.values("name")
+        .annotate(models.Count("id"))
+        .filter(id__count__gt=1)
+    )
+    duplicate_groups = Group.objects.filter(
+        name__in=[item["name"] for item in duplicate_group_names]
+    )
 
-    for group in Group.objects.all():
+    for group in duplicate_groups:
         unique_group_name = f"{group.name}-{uuid.uuid4()}"
         group.name = unique_group_name
         group.save()
