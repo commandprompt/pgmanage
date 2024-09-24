@@ -14,12 +14,12 @@ transparent as possible, whether it's:
 ## PgManage Database Support
 
 Currently PgManage supports `PostgreSQL`, `Oracle`, `MySQL`,`SQLite` and `MariaDB`. 
-Suggestions and even pull requests for other databases are welcome.
+Suggestions and pull requests for other databases are welcome.
 
 
 ## PgManage Operating System Support
 
-We currently build PgManage for Debian/Ubuntu, Windows and OSX.
+We currently build PgManage for Linux, Windows and OSX.
 
 
 ## PgManage Repositories
@@ -51,10 +51,10 @@ under the same [MIT License](http://choosealicense.com/licenses/mit/) that
 covers the project. Feel free to contact the maintainers if that's a concern.
 
 
-## Report bugs using Github's [issues](https://github.com/commandprompt/pgmanage)
+## Report bugs using Github's [issues](https://github.com/commandprompt/pgmanage/issues)
 
 We use GitHub issues to track public bugs. Report a bug by
-[opening a new issue](https://github.com/commandprompt/pgmanage); it's that
+[opening a new issue](https://github.com/commandprompt/pgmanage/issues/new); it's that
 easy!
 
 
