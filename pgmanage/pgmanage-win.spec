@@ -6,6 +6,9 @@ import os
 
 exclude_patterns = [
   os.path.join('js', 'pgmanage_frontend'),
+  '.dist-info',
+  'django\\contrib\\gis',
+  'django\\contrib\\humanize'
 ]
 
 block_cipher = None
