@@ -9,8 +9,12 @@ import os
 exclude_patterns = [
   os.path.join('js', 'pgmanage_frontend'),
   '.dist-info',
+  'django/contrib/humanize',
   'django/contrib/gis',
-  'django/contrib/admin'
+  'django/contrib/flatpages',
+  'django/contrib/sitemaps',
+  'django/contrib/syndication',
+  'django/contrib/admindocs',
 ]
 
 block_cipher = None
@@ -31,7 +35,7 @@ a = Analysis(['pgmanage-server.py'],
              hiddenimports=['cheroot.ssl','cheroot.ssl.builtin','psycopg2','paramiko', 'pkg_resources.extern', 'cryptography.hazmat.primitives.kdf.pbkdf2'],
              hookspath=[],
              runtime_hooks=[],
-             excludes=[],
+             excludes=['django.contrib.gis', 'django.contrib.sitemaps', 'django.contrib.flatpages', 'django.contrib.syndication', 'django.contrib.admindocs', 'django.contrib.humanize'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher)
