@@ -30,6 +30,9 @@ from pgmanage import settings
 def index(request):
     user_details, _ = UserDetails.objects.get_or_create(user=request.user)
 
+    if not settings.MASTER_PASSWORD_REQUIRED and not key_manager.get(request.user):
+        return redirect(settings.LOGIN_URL)
+
     # Invalid session
     if not request.session.get("pgmanage_session"):
         return redirect(settings.LOGIN_REDIRECT_URL)
