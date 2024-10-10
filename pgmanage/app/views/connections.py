@@ -1,4 +1,5 @@
 import io
+from typing import Optional
 
 import paramiko
 from app.include import OmniDatabase
@@ -16,8 +17,6 @@ from sshtunnel import SSHTunnelForwarder
 def get_connections(request, session):
     response_data = {'data': [], 'status': 'success'}
 
-    active_connection_ids = request.data.get('active_connection_ids',[])
-
     tech_list = [tech.name for tech in Technology.objects.all()] #convert to values_list
 
     connection_list = []
@@ -31,7 +30,7 @@ def get_connections(request, session):
         for conn in connections:
             conn_object = {
                 'id': conn.id,
-                'locked': conn.id in active_connection_ids,
+                'locked': False,
                 'public': conn.public,
                 'is_mine': conn.user.id == request.user.id,
                 'technology': conn.technology.name,
@@ -121,35 +120,26 @@ def get_groups(request):
 
 @user_authenticated
 def delete_group(request):
-    response_data = {'data': '', 'status': 'success'}
+    group_id: Optional[int] = request.data.get('id')
 
-    group_id = request.data['id']
-
-    try:
-        group = Group.objects.filter(id=group_id).select_related("user").first()
-
+    group = Group.objects.filter(id=group_id).select_related("user").first()
+        
+    if group:
         if group.user.id != request.user.id:
-            response_data['data'] = 'This group does not belong to you.'
-            response_data['status'] = 'failed'
-            return JsonResponse(response_data, status=403)
+            return JsonResponse(data={"data": 'This group does not belong to you.'}, status=403)
 
         group.delete()
 
-    except Exception as exc:
-        response_data['data'] = str(exc)
-        response_data['status'] = 'failed'
-        return JsonResponse(response_data, status=400)
-
-    return JsonResponse(response_data)
+    return HttpResponse(status=204)
 
 
 @user_authenticated
 def save_group(request):
     group_object = request.data
     group_id = group_object.get('id', None)
-    group_name = group_object['name']
+    group_name = group_object.get('name')
 
-    if not group_name.strip():
+    if not group_name or not group_name.strip():
         return JsonResponse(data={"data": "Group name can not be empty."}, status=400)
 
     try:
@@ -164,6 +154,8 @@ def save_group(request):
         # update
         else:
             group = Group.objects.filter(id=group_id).select_related("user").first()
+            if not group:
+                return JsonResponse(data={"data": "Group not found."}, status=404)
 
             if group.user.id != request.user.id:
                 return JsonResponse(data={"data": "This group does not belong to you."}, status=403)
@@ -203,7 +195,12 @@ def test_connection(request):
     key = key_manager.get(request.user)
 
     if conn_id:
-        conn = Connection.objects.get(id=conn_id)
+        conn = Connection.objects.filter(id=conn_id).first()
+        if not conn:
+                return JsonResponse(data={"data": "Connection not found."}, status=404)
+
+        if conn.user.id != request.user.id:
+                return JsonResponse(data={"data": 'This connection does not belong to you.'}, status=403)
         try:
             if password == '' and conn_type != 'terminal' and conn_object.get("password_set") is True:
                 password = decrypt(conn.password, key) if conn.password else ''
@@ -446,28 +443,18 @@ def save_connection(request, session):
 @user_authenticated
 @session_required
 def delete_connection(request, session):
-    response_data = {'data': '', 'status': 'success'}
+    conn_id: Optional[int] = request.data.get('id')
 
-    conn_id = request.data['id']
-
-    try:
-        conn = Connection.objects.get(id=conn_id)
-
+    conn = Connection.objects.filter(id=conn_id).first()
+    if conn:
         if conn.user.id != request.user.id:
-            response_data['data'] = 'This connection does not belong to you.'
-            response_data['status'] = 'failed'
-            return JsonResponse(response_data, status=403)
+            return JsonResponse(data={"data": "This connection does not belong to you."}, status=403)
 
         conn.delete()
         session.RemoveDatabase(conn_id)
-    except Exception as exc:
-        response_data['data'] = str(exc)
-        response_data['status'] = 'failed'
-        return JsonResponse(response_data, status=400)
+        request.session['pgmanage_session'] = session
 
-    request.session['pgmanage_session'] = session
-
-    return JsonResponse(response_data)
+    return HttpResponse(status=204)
 
 
 @user_authenticated

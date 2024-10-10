@@ -80,7 +80,7 @@ class Session(object):
 
     def RemoveDatabase(self,
                        p_conn_id = None):
-       del self.v_databases[p_conn_id]
+       self.v_databases.pop(p_conn_id, None)
 
     def DatabaseReachPasswordTimeout(self,p_database_index):
         v_return = { 'timeout': False, 'message': '', 'kind': 'database'}
