@@ -394,9 +394,15 @@ export default {
           }
         } else if (this.monitoringWidget.type === "timeseries") {
 
-          // TODO: add data shift if dataset length > 1000
+          // maximum time span to fit on timeseries graph
+          const timespanSeconds = 3600;
+          // number of datapoints to keep in each dataset
+          // must be > timespan / 5 ( 5 is minimum possible widget refresh interval)
+          const maxDatapoints = 1000;
           this.visualizationObject.data.datasets.forEach((ds, idx) => {
-            this.visualizationObject.data.datasets[idx].data.push(chartData.datasets[idx].data[0])
+            ds.data.push(chartData.datasets[idx].data[0])
+            // remove datapoints which are potentially outside of timespan
+            ds.data.splice(0, ds.data.length - maxDatapoints)
           })
 
           // dynamically readjust min and max values of the time axis
@@ -404,11 +410,10 @@ export default {
           // the grah is being compressed initially, then starts to scroll if occupies
           // full timespan
           if (this.visualizationObject.options.scales.x) {
-            const timespan = 30;
             // timestamp of the very first datapoint
             let min = this.visualizationObject.data.datasets[0].data[0].x
-            if(moment().diff(moment(min),'seconds') > timespan) {
-              this.visualizationObject.options.scales.x.min = moment().subtract(timespan, 'seconds').toISOString();  
+            if(moment().diff(moment(min),'seconds') > timespanSeconds) {
+              this.visualizationObject.options.scales.x.min = moment().subtract(timespanSeconds, 'seconds').toISOString();  
             } else {
               this.visualizationObject.options.scales.x.min = min
             }
