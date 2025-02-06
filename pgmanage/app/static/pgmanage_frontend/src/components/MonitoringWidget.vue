@@ -112,6 +112,8 @@ import axios from "axios";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
 import Chart from "chart.js/auto";
+import "chartjs-adapter-moment";
+import moment from "moment";
 import { useVuelidate } from "@vuelidate/core";
 import { minValue, required } from "@vuelidate/validators";
 import { settingsStore, cellDataModalStore } from "../stores/stores_initializer";
@@ -305,7 +307,6 @@ export default {
         }
 
         const chartObj = new Chart(ctx, chartData);
-
         this.visualizationObject = markRaw(chartObj);
         this.changeChartTheme();
       } else {
@@ -392,71 +393,39 @@ export default {
             console.log(err);
           }
         } else if (this.monitoringWidget.type === "timeseries") {
-          // timeseries
-          // adding new label in X axis
-          this.visualizationObject.data.labels.push(chartData.labels[0]);
 
-          let shift = false;
-          if (chartData.labels.length > 100) {
-            chartData.labels.shift();
-            shift = true;
-          }
+          // TODO: add data shift if dataset length > 1000
+          this.visualizationObject.data.datasets.forEach((ds, idx) => {
+            this.visualizationObject.data.datasets[idx].data.push(chartData.datasets[idx].data[0])
+          })
 
-          //foreach dataset in existing chart, find corresponding dataset in returning data
-          this.visualizationObject.data.datasets.forEach((dataset) => {
-            dataset.data.push(null);
-            if (shift) {
-              dataset.data.shift();
+          // dynamically readjust min and max values of the time axis
+          // to draw only datpoints fitting into timespan beteen now and now - timespan
+          // the grah is being compressed initially, then starts to scroll if occupies
+          // full timespan
+          if (this.visualizationObject.options.scales.x) {
+            const timespan = 30;
+            // timestamp of the very first datapoint
+            let min = this.visualizationObject.data.datasets[0].data[0].x
+            if(moment().diff(moment(min),'seconds') > timespan) {
+              this.visualizationObject.options.scales.x.min = moment().subtract(timespan, 'seconds').toISOString();  
+            } else {
+              this.visualizationObject.options.scales.x.min = min
             }
-          });
-
-          //foreach dataset in returning data, find corresponding dataset in existing chart
-          for (let i = 0; i < chartData.datasets.length; i++) {
-            let return_dataset = chartData.datasets[i];
-
-            let found = false;
-            for (
-              let j = 0;
-              j < this.visualizationObject.data.datasets.length;
-              j++
-            ) {
-              let dataset = this.visualizationObject.data.datasets[j];
-              //Dataset exists, update data
-              if (return_dataset.label == dataset.label) {
-                let new_dataset = dataset;
-                new_dataset.data[new_dataset.data.length - 1] =
-                  return_dataset.data[0];
-                dataset = new_dataset;
-
-                found = true;
-                break;
-              }
-            }
-
-            //dataset doesn't exist, create it
-            if (!found) {
-              // populate dataset with empty data prior to newest value
-              for (
-                let k = 0;
-                k < this.visualizationObject.data.labels.length - 1;
-                k++
-              ) {
-                return_dataset.data.unshift(null);
-              }
-              this.visualizationObject.data.datasets.push(return_dataset);
-            }
+            this.visualizationObject.options.scales.x.max = moment().toISOString();
           }
-
-          //update title
-          if (
-            chartData.title &&
-            chartData.options &&
-            chartData.options?.plugins?.title
-          ) {
-            this.visualizationObject.options.plugins.title.text =
-              chartData.title;
-          }
-
+          
+          // FIXME: do we really need this? chartjs titles are disabled in widgets...
+          // update title
+          // if (
+          //   chartData.title &&
+          //   chartData.options &&
+          //   chartData.options?.plugins?.title
+          // ) {
+          //   this.visualizationObject.options.plugins.title.text =
+          //     chartData.title;
+          // }
+          
           try {
             this.visualizationObject.update();
           } catch (err) {
