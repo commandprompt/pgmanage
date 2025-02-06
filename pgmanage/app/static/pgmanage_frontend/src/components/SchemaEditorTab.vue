@@ -513,33 +513,18 @@ export default {
     applyChanges() {
       let message_data = {
 				sql_cmd : this.generatedSQL,
-				sql_save : false,
-				cmd_type: null,
 				db_index: this.databaseIndex,
 				workspace_id: this.workspaceId,
 				tab_id: this.tabId,
-				tab_db_id: this.databaseIndex,
-				mode: 0,
-				all_data: false,
-				log_query: false,
-				tab_title: 'schema editor',
 				autocommit: true,
-				database_name: this.databaseName
+				database_name: this.databaseName,
 			}
 
       let context = {
-				cmd_type: null,
-				database_index: this.databaseIndex,
-				mode: 0,
 				callback: this.handleResponse.bind(this),
-				acked: false,
-				query: this.generatedSQL,
-				log_query: false,
-				save_query: null,
-        simple: true //a hacky way to prevent long polling handler from running legacy rentering routines
 			}
-      this.queryIsRunning = true
-      createRequest(queryRequestCodes.Query, message_data, context)
+      this.queryIsRunning = true;
+      createRequest(queryRequestCodes.SchemaEditData, message_data, context)
     },
     handleResponse(response) {
       if(response.error == true) {

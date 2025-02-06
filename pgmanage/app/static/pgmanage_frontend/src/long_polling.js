@@ -163,6 +163,12 @@ function polling_response(message) {
       }
       break;
     }
+    case parseInt(queryResponseCodes.SchemaEditResult): {
+      if (context) {
+        context.callback(message);
+        removeContext(context_code);
+      }
+    }
     default: {
       break;
     }

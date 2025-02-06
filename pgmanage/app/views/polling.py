@@ -19,6 +19,7 @@ from app.include.Spartacus import Utils
 from app.models.main import Connection, ConsoleHistory, QueryHistory, Tab
 from app.utils.decorators import session_required, user_authenticated
 from django.contrib.auth.models import User
+from django.db import DatabaseError
 from django.http import HttpRequest, JsonResponse
 
 from pgmanage import settings
@@ -56,6 +57,7 @@ class RequestType(IntEnum):
     CONSOLE = 10
     TERMINAL = 11
     PING = 12
+    SCHEMA_EDIT_DATA = 13
 
 
 class ResponseType(IntEnum):
@@ -74,6 +76,7 @@ class ResponseType(IntEnum):
     TERMINAL_RESULT = 12
     PONG = 13
     OPERATION_CANCELLED = 14
+    SCHEMA_EDIT_RESULT = 15
 
 
 class DebugState(IntEnum):
@@ -433,6 +436,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
             RequestType.SAVE_EDIT_DATA,
             RequestType.ADVANCED_OBJECT_SEARCH,
             RequestType.CONSOLE,
+            RequestType.SCHEMA_EDIT_DATA
         ]:
             # create tab object if it doesn't exist
             workspace_context: Optional[dict[str, Any]] = client_object.get_tab(
@@ -504,6 +508,12 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                 workspace_context["thread"] = t
                 workspace_context["type"] = "edit"
                 # t.setDaemon(True)
+                t.start()
+            
+            # Schema edit data
+            elif request_type == RequestType.SCHEMA_EDIT_DATA:
+                t = StoppableThread(thread_schema_edit_data, request_data)
+                workspace_context["thread"] = t
                 t.start()
 
         # Debugger
@@ -1514,4 +1524,57 @@ def thread_save_edit_data(self, args) -> None:
         response_data["error"] = True
         response_data["data"] = str(exc)
         if not self.cancel:
+            queue_response(client_object, response_data)
+
+
+def thread_schema_edit_data(self, args) -> None:
+    response_data = {
+        "response_type": ResponseType.SCHEMA_EDIT_RESULT,
+        "context_code": args["context_code"],
+        "error": False,
+        "data": 1,
+    }
+
+    try:
+        client_object: Client = args.get("client_object")
+        sql_cmd: str = args.get("sql_cmd")
+        autocommit: bool = args.get("autocommit")
+        database = args.get("database")
+
+        database.v_connection.v_autocommit = autocommit
+
+        if not database.v_connection.v_con or database.v_connection.GetConStatus() == 0:
+            database.v_connection.Open()
+        else:
+            database.v_connection.v_start = True
+
+        if database.v_db_type == "sqlite" and len(sql_cmd.split(";\n")) >= 2:
+            try:
+                database.v_connection.Execute("BEGIN")
+                for sql in sql_cmd.split(";\n"):
+                    database.v_connection.Execute(sql)
+                database.v_connection.Commit()
+            except Exception as exc:
+                database.v_connection.v_con.rollback()
+                raise DatabaseError(str(exc))
+        else:
+            database.v_connection.QueryBlock(sql_cmd, 50, True, True)
+
+        database.v_connection.ClearNotices()
+
+        response_data["data"] = {
+            "status": database.v_connection.GetStatus(),
+        }
+
+        if not self.cancel:
+            queue_response(client_object, response_data)
+
+    except Exception as exc:
+        if not self.cancel:
+            response_data["data"] = {
+                "message": str(exc),
+            }
+
+            response_data["error"] = True
+
             queue_response(client_object, response_data)

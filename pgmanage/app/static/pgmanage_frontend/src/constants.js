@@ -50,6 +50,7 @@ const queryRequestCodes = {
   Console: 10,
   Terminal: 11,
   Ping: 12,
+  SchemaEditData: 13,
 };
 
 /// <summary>
@@ -71,6 +72,7 @@ const queryResponseCodes = {
   TerminalResult: 12,
   Pong: 13,
   OperationCancelled: 14,
+  SchemaEditResult: 15,
 };
 
 const allowedFileTypes = ["application/sql", "text/csv", "text/plain", "Text"];
