@@ -393,7 +393,6 @@ export default {
             console.log(err);
           }
         } else if (this.monitoringWidget.type === "timeseries") {
-
           // maximum time span to fit on timeseries graph
           const timespanSeconds = 3600;
           // number of datapoints to keep in each dataset
@@ -407,17 +406,20 @@ export default {
 
           // dynamically readjust min and max values of the time axis
           // to draw only datpoints fitting into timespan beteen now and now - timespan
-          // the grah is being compressed initially, then starts to scroll if occupies
-          // full timespan
+          // where now is the last datapoint timestamp
+          // the graph is being compressed initially, then starts to
+          // scroll if dataset occupies full timespan
           if (this.visualizationObject.options.scales.x) {
+            let ds = this.visualizationObject.data.datasets[0].data
             // timestamp of the very first datapoint
-            let min = this.visualizationObject.data.datasets[0].data[0].x
-            if(moment().diff(moment(min),'seconds') > timespanSeconds) {
-              this.visualizationObject.options.scales.x.min = moment().subtract(timespanSeconds, 'seconds').toISOString();  
+            let firstTS = ds[0].x
+            let lastTS = ds[ds.length - 1].x
+            if(moment(lastTS).diff(moment(firstTS),'seconds') > timespanSeconds) {
+              this.visualizationObject.options.scales.x.min = moment(lastTS).subtract(timespanSeconds, 'seconds').toISOString();
             } else {
-              this.visualizationObject.options.scales.x.min = min
+              this.visualizationObject.options.scales.x.min = moment(firstTS).toISOString();
             }
-            this.visualizationObject.options.scales.x.max = moment().toISOString();
+            this.visualizationObject.options.scales.x.max = moment(lastTS).toISOString();
           }
           
           // FIXME: do we really need this? chartjs titles are disabled in widgets...
