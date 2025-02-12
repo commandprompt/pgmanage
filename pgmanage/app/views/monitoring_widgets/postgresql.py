@@ -136,6 +136,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -153,7 +164,6 @@ result = {
 """,
 'script_data': """
 from datetime import datetime
-from random import randint
 
 backends = connection.Query('''
 SELECT count(*) as count
@@ -165,14 +175,18 @@ datasets.append({
         "label": 'Backends',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [backends.Rows[0]["count"]]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y":backends.Rows[0]['count']
+        }]
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
