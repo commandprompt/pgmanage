@@ -228,6 +228,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -245,7 +256,6 @@ result = {
 """,
 'script_data': """
 from datetime import datetime
-from random import randint
 
 query_data = connection.Query('''
 SELECT current_setting('autovacuum_max_workers')::bigint - (SELECT count(*) FROM pg_stat_activity WHERE query LIKE 'autovacuum: %') free,
@@ -260,14 +270,18 @@ datasets.append({
         "label": 'Workers busy (%)',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [perc]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y":perc
+        }]
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -308,7 +322,18 @@ result = {
                 "display": True,
                 "title": {
                     "display": False,
-                    "text": "Time"
+                    "text": "Time",
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -381,14 +406,18 @@ datasets.append({
         "label": 'Rate (MB/s)',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [r.Rows[0]['rate']]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y":r.Rows[0]['rate']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_lsn": r.Rows[0]['current_lsn'],
     'current_time': r.Rows[0]['current_time']
@@ -432,6 +461,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -473,11 +513,13 @@ datasets.append({
         "tension": 0,
         "pointRadius": 0,
         "borderWidth": 1,
-        "data": [r.Rows[0]['rate']]
+        "data": [{
+            "x": datetime.now(),
+            "y":r.Rows[0]['rate']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_temp_bytes": r.Rows[0]['current_temp_bytes'],
     'current_time': r.Rows[0]['current_time']
@@ -522,8 +564,19 @@ result = {
             "x": {
                 "display": True,
                 "title": {
-                    "display": True,
+                    "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -558,14 +611,18 @@ datasets.append({
         "label": 'Freeze (%)',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [r.Rows[0]['perc']]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y":r.Rows[0]['perc']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -608,6 +665,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -636,14 +704,18 @@ datasets.append({
         "label": 'Locks Blocked',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]["count"]]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y":query_data.Rows[0]['count']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -686,6 +758,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -715,14 +798,18 @@ datasets.append({
         "label": 'Database Size',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [round(query_data.Rows[0]["sum"] / Decimal(1048576.0),1)]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y": round(query_data.Rows[0]["sum"] / Decimal(1048576.0),1)
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -764,6 +851,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -809,14 +907,18 @@ datasets.append({
         "label": 'Rate',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['database_growth']]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['database_growth']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_sum": query_data.Rows[0]['current_sum'],
     'current_time': query_data.Rows[0]['current_time']
@@ -863,6 +965,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -911,14 +1024,18 @@ datasets.append({
         "label": 'Miss Ratio',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]["miss_ratio"]]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['miss_ratio']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_reads": query_data.Rows[0]['current_reads'],
     "current_hits": query_data.Rows[0]['current_hits'],
@@ -966,6 +1083,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1014,14 +1142,18 @@ datasets.append({
         "label": 'Miss Ratio',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]["miss_ratio"]]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['miss_ratio']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_reads": query_data.Rows[0]['current_reads'],
     "current_hits": query_data.Rows[0]['current_hits'],
@@ -1069,6 +1201,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1117,14 +1260,18 @@ datasets.append({
         "label": 'Seq Scan Ratio',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]["ratio"]]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['ratio']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_seq": query_data.Rows[0]['current_seq'],
     "current_idx": query_data.Rows[0]['current_idx'],
@@ -1169,6 +1316,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1221,14 +1379,18 @@ datasets.append({
         "label": 'Seconds',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['seconds']]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['seconds']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -1270,6 +1432,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1328,14 +1501,18 @@ datasets.append({
         "label": 'Seconds',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['seconds']]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['seconds']
+        }]
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -1377,6 +1554,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1435,14 +1623,18 @@ datasets.append({
         "label": 'Seconds',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['seconds']]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['seconds']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -1484,6 +1676,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1521,14 +1724,18 @@ datasets.append({
         "label": 'Checkpoints',
         "backgroundColor": 'rgba(129,223,129,0.4)',
         "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['checkpoints_diff']]
+        "borderWidth": 2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['checkpoints_diff']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_checkpoints": query_data.Rows[0]['current_checkpoints']
 }
