@@ -190,7 +190,7 @@ export default {
 
     if (this.isChart) {
       settingsStore.$onAction((action) => {
-        if (action.name === "setTheme") {
+        if (action.name === "setTheme" || action.name === 'setFontSize') {
           action.after(() => {
             this.changeChartTheme();
           });
@@ -503,7 +503,11 @@ export default {
     },
     changeChartTheme() {
       let chartFontColor, chartGridColor, chartLineBorderColor, chartLineBackgroundColor;
-
+      let chartFont = {
+        size: Math.round(settingsStore.fontSize * 0.8),
+        family: "'Poppins', sans-serif"
+      };
+      // TODO: add chart tooltip font and color changing
       if (settingsStore.theme == "light") {
         chartFontColor = "#666666";
         chartGridColor = "rgba(0, 0, 0, 0.1)";
@@ -536,6 +540,11 @@ export default {
           // axis title
           this.visualizationObject.options.scales.x.title.color = chartFontColor;
           this.visualizationObject.options.scales.y.title.color = chartFontColor;
+          // chart font sizes
+          this.visualizationObject.scales.x.options.ticks.font = chartFont;
+          this.visualizationObject.scales.y.options.ticks.font = chartFont;
+          this.visualizationObject.scales.x.options.title.font = chartFont;
+          this.visualizationObject.scales.y.options.title.font = chartFont;
         }
       } catch (err) {
       }
