@@ -305,6 +305,7 @@ export default {
         if (chartData?.options?.maintainAspectRatio) {
           chartData.options.maintainAspectRatio = false;
         }
+        chartData.options.plugins['colors'] = { 'enabled': false}
 
         const chartObj = new Chart(ctx, chartData);
         this.visualizationObject = markRaw(chartObj);
@@ -508,7 +509,7 @@ export default {
         chartGridColor = "rgba(0, 0, 0, 0.1)";
       } else {
         chartFontColor = "#DCDDDE";
-        chartGridColor = "rgba(100, 100, 100, 0.3)";
+        chartGridColor = "#314264";
       }
 
       try {
@@ -517,18 +518,18 @@ export default {
             chartFontColor;
           this.visualizationObject.options.plugins.title.color = chartFontColor;
         } else {
-          this.visualizationObject.scales.y.options.grid.border.color =
-            chartGridColor;
-          this.visualizationObject.scales.x.options.grid.border.color =
-            chartGridColor;
-          this.visualizationObject.scales.x.options.ticks.minor.fontColor =
-            chartFontColor;
-          this.visualizationObject.scales.y.options.ticks.minor.fontColor =
-            chartFontColor;
-          this.visualizationObject.scales.x.options.title.color =
-            chartFontColor;
-          this.visualizationObject.scales.y.options.title.color =
-            chartFontColor;
+          // axis x and y borders
+          this.visualizationObject.scales.x.options.border.color = chartGridColor;
+          this.visualizationObject.scales.y.options.border.color = chartGridColor;
+          // grid lines
+          this.visualizationObject.options.scales.x.grid.color = chartGridColor;
+          this.visualizationObject.options.scales.y.grid.color = chartGridColor;
+          // axis tick labels
+          this.visualizationObject.options.scales.x.ticks.color = chartFontColor;
+          this.visualizationObject.options.scales.y.ticks.color = chartFontColor;
+          // axis title
+          this.visualizationObject.options.scales.x.title.color = chartFontColor;
+          this.visualizationObject.options.scales.y.title.color = chartFontColor;
         }
       } catch (err) {
       }
