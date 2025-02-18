@@ -502,14 +502,18 @@ export default {
         });
     },
     changeChartTheme() {
-      let chartFontColor, chartGridColor;
+      let chartFontColor, chartGridColor, chartLineBorderColor, chartLineBackgroundColor;
 
       if (settingsStore.theme == "light") {
         chartFontColor = "#666666";
         chartGridColor = "rgba(0, 0, 0, 0.1)";
+        chartLineBorderColor = "#1560AD";
+        chartLineBackgroundColor = "#1560AD20";
       } else {
         chartFontColor = "#DCDDDE";
         chartGridColor = "#314264";
+        chartLineBorderColor = "#1560AD";
+        chartLineBackgroundColor = "#1560AD60";
       }
 
       try {
@@ -519,6 +523,8 @@ export default {
           this.visualizationObject.options.plugins.title.color = chartFontColor;
         } else {
           // axis x and y borders
+          this.visualizationObject.options.elements.line.backgroundColor = chartLineBackgroundColor;
+          this.visualizationObject.options.elements.line.borderColor = chartLineBorderColor;
           this.visualizationObject.scales.x.options.border.color = chartGridColor;
           this.visualizationObject.scales.y.options.border.color = chartGridColor;
           // grid lines

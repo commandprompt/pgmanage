@@ -75,8 +75,6 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Xact/sec',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -173,8 +171,6 @@ FROM pg_stat_activity
 datasets = []
 datasets.append({
         "label": 'Backends',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -268,8 +264,6 @@ perc = round((float(query_data.Rows[0]['used']))/(float(query_data.Rows[0]['tota
 datasets = []
 datasets.append({
         "label": 'Workers busy (%)',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -404,8 +398,6 @@ else:
 datasets = []
 datasets.append({
         "label": 'Rate (MB/s)',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -508,8 +500,6 @@ else:
 datasets = []
 datasets.append({
         "label": 'Rate (MB/s)',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "tension": 0,
         "pointRadius": 0,
         "borderWidth": 1,
@@ -609,8 +599,6 @@ r = connection.Query('''
 datasets = []
 datasets.append({
         "label": 'Freeze (%)',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -702,8 +690,6 @@ query_data = connection.Query('''
 datasets = []
 datasets.append({
         "label": 'Locks Blocked',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -796,8 +782,6 @@ query_data = connection.Query('''
 datasets = []
 datasets.append({
         "label": 'Database Size',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -905,8 +889,6 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Rate',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -1022,8 +1004,6 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Miss Ratio',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -1140,8 +1120,6 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Miss Ratio',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -1258,8 +1236,6 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Seq Scan Ratio',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -1377,8 +1353,6 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Seconds',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -1499,8 +1473,6 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Seconds',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -1621,8 +1593,6 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Seconds',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
@@ -1722,8 +1692,6 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Checkpoints',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
         "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
