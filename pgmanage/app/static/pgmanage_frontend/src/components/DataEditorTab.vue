@@ -49,7 +49,7 @@ import forIn from 'lodash/forIn';
 import isArray from 'lodash/isArray'
 import escape from 'lodash/escape';
 import { showToast } from "../notification_control";
-import { queryRequestCodes } from '../constants'
+import { queryRequestCodes, requestState } from '../constants'
 import { createRequest } from '../long_polling'
 import { TabulatorFull as Tabulator} from 'tabulator-tables'
 import { emitter } from '../emitter';
@@ -89,6 +89,7 @@ export default {
       heightSubtract: 200, //default safe value, recalculated in handleResize
       tabulator: null,
       maxInitialWidth: 200,
+      queryState: requestState.Idle,
     };
   },
   computed: {
@@ -146,6 +147,15 @@ export default {
       this.confirmGetTableData();
     })
 
+    emitter.on(`${this.tabId}_check_query_edit_status`, () => {
+        if (this.queryState === requestState.Ready) {
+          const tab = tabsStore.getSecondaryTabById(this.tabId, this.workspaceId);
+          tab.metaData.isReady = false;
+          tab.metaData.isLoading = false;
+          this.queryState = requestState.Idle;
+        }
+      });
+
     settingsStore.$onAction((action) => {
       if(action.name === "setFontSize") {
         action.after(() => {
@@ -161,6 +171,7 @@ export default {
   },
   unmounted() {
     emitter.all.delete(`${this.tabId}_query_edit`);
+    emitter.all.delete(`${this.tabId}_check_query_edit_status`);
   },
   updated() {
     if (tabsStore.selectedPrimaryTab?.metaData?.selectedTab?.id === this.tabId) {
@@ -339,6 +350,11 @@ export default {
       };
 
       createRequest(queryRequestCodes.QueryEditData, message_data, context);
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.workspaceId);
+
+      this.queryState = requestState.Executing;
+      tab.metaData.isLoading = true;
+      tab.metaData.isReady = false;
 
       // we need to return promise for tabulator ajaxRequestFunc to work
       return new Promise((resolve, reject) => {
@@ -392,6 +408,21 @@ export default {
 
     },
     handleResponse(response) {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.workspaceId);
+      tab.metaData.isLoading = false;
+      if (
+          this.workspaceId === tabsStore.selectedPrimaryTab.id &&
+          this.tabId === tabsStore.selectedPrimaryTab.metaData.selectedTab.id
+        ) {
+          this.queryState = requestState.Idle;
+
+          tab.metaData.isReady = false;
+        } else {
+          this.queryState = requestState.Ready;
+
+          tab.metaData.isReady = true;
+        }
+
       if(response.error == true) {
         showToast("error", response.data)
       } else {
@@ -411,6 +442,10 @@ export default {
       }
     },
     handleSaveResponse(response) {
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.workspaceId);
+      tab.metaData.isReady = false;
+      tab.metaData.isLoading = false;
+      this.queryState = requestState.Idle;
       if(response.error == true) {
         showToast("error", response.data)
       } else {
@@ -517,6 +552,12 @@ export default {
       }
 
       createRequest(queryRequestCodes.SaveEditData, message_data, context)
+
+      const tab = tabsStore.getSecondaryTabById(this.tabId, this.workspaceId);
+  
+      this.queryState = requestState.Executing;
+      tab.metaData.isLoading = true;
+      tab.metaData.isReady = false;
     },
     applyBtnTitle() {
       let count = this.pendingChanges.length
