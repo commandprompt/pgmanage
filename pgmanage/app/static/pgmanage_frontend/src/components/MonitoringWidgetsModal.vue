@@ -18,12 +18,73 @@
           >
           </button>
         </div>
-        <div class="modal-body">
-          <div
-            ref="tabulator"
-            class="tabulator-custom"
-            style="width: 100%; height: 300px; overflow: hidden"
-          ></div>
+        <div class="modal-body px-3">
+          <div class="px-2" style="width: 100%; height: 400px; overflow: scroll">
+            <div class="d-flex row fw-bold text-muted schema-editor__header g-0">
+              <div class="col-1">
+                <p class="h6">Show</p>
+              </div>
+              <div class="col-5">
+                <p class="h6">Title</p>
+              </div>
+              <div class="col-2">
+                <p class="h6">Type</p>
+              </div>
+              <div class="col-2">
+                <p class="h6">Refresh Interval</p>
+              </div>
+              <div class="col d-flex justify-content-end pe-2">
+                <p class="h6">Actions</p>
+              </div>
+            </div>
+
+            <div
+              v-for="(widget, index) in availableWidgets" :key=index
+              class="schema-editor__column d-flex row flex-nowrap form-group g-0 flex-shrink-0"
+              >
+              <div class="col-1 d-flex align-items-center">
+                <div class="cell">
+                  <div class="form-switch m-0">
+                    <input
+                      :checked="widgetEnabled(widget.id)"
+                      @click="this.$emit('toggleWidget', widget)"
+                      type="checkbox"
+                      class="form-check-input"
+                      >
+                    </div>
+                </div>
+              </div>
+
+              <div class="col-5 d-flex align-items-center">
+                <div class="cell">{{ widget.title }}</div>
+              </div>
+
+              <div class="col-2 d-flex align-items-center">
+                <div class="cell">{{ widget.type }}</div>
+              </div>
+
+              <div class="col-2 d-flex align-items-center">
+                <!-- TODO: show interval in humanized form -->
+                <div class="cell">{{ widget.interval }}</div>
+              </div>
+
+              <div class="col d-flex me-2 justify-content-end">
+                <button
+                  v-if="widget.editable"
+                  @click="this.editMonitoringWidget(widget.id)"
+                  class="btn btn-icon btn-icon-secondary" title="Edit" type="button">
+                  <i class="fas fa-edit"></i>
+                </button>
+
+                <button type="button"
+                  v-if="widget.editable"
+                  @click="this.deleteMonitorWidget(widget.id)"
+                  class="btn btn-icon btn-icon-danger ms-2" title="Remove">
+                  <i class="fas fa-circle-xmark"></i>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button
@@ -48,7 +109,6 @@
 
 <script>
 import axios from "axios";
-import { TabulatorFull as Tabulator } from "tabulator-tables";
 import MonitoringWidgetEditModal from "./MonitoringWidgetEditModal.vue";
 import { messageModalStore } from "../stores/stores_initializer";
 import { Modal } from "bootstrap";
@@ -73,6 +133,7 @@ export default {
       editModalVisible: false,
       editWidgetId: null,
       modalInstance: null,
+      availableWidgets: []
     };
   },
   mounted() {
@@ -92,6 +153,11 @@ export default {
     },
   },
   methods: {
+    widgetEnabled(id) {
+      return this.widgets.some(
+        (widget) => widget.id === id
+      )
+    },
     getMonitoringWidgetList() {
       axios
         .post("/monitoring-widgets/list", {
@@ -99,73 +165,11 @@ export default {
           workspace_id: this.workspaceId,
         })
         .then((resp) => {
-          this.table = new Tabulator(this.$refs.tabulator, {
-            layout: "fitDataStretch",
-            data: resp.data.data,
-            columnDefaults: {
-              headerHozAlign: "center",
-              headerSort: false,
-            },
-            columns: [
-              {
-                title: "Show",
-                field: "editable",
-                hozAlign: "center",
-                formatter: this.actionsFormatter,
-              },
-              { title: "Title", field: "title" },
-              { title: "Type", field: "type" },
-              { title: "Refr.(s)", field: "interval", hozAlign: "center" },
-            ],
-          });
+          this.availableWidgets = resp.data.data
         })
         .catch((error) => {
           handleError(error);
         });
-    },
-    actionsFormatter(cell, formatterParams, onRendered) {
-      let sourceDataRow = cell.getRow().getData();
-      let checked = this.widgets.some(
-        (widget) => widget.id === sourceDataRow.id
-      )
-        ? "checked"
-        : "";
-
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.checked = checked;
-      input.onclick = () => {
-        this.$emit("toggleWidget", sourceDataRow);
-      };
-
-      if (!!cell.getValue()) {
-        const cellWrapper = document.createElement("div");
-        cellWrapper.className =
-          "d-flex justify-content-between align-items-center";
-
-        cellWrapper.appendChild(input);
-
-        const editIcon = document.createElement("i");
-        editIcon.title = "Edit";
-        editIcon.className = "fas fa-edit action-grid action-edit-monitor";
-        editIcon.onclick = () => {
-          this.editMonitoringWidget(sourceDataRow.id);
-        };
-
-        const deleteIcon = document.createElement("i");
-        deleteIcon.title = "Delete";
-        deleteIcon.className =
-          "fas fa-times action-grid action-close text-danger";
-        deleteIcon.onclick = () => {
-          this.deleteMonitorWidget(sourceDataRow.id);
-        };
-
-        cellWrapper.appendChild(editIcon);
-        cellWrapper.appendChild(deleteIcon);
-
-        return cellWrapper;
-      }
-      return input;
     },
     deleteMonitorWidget(widgetId) {
       messageModalStore.showModal(

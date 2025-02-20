@@ -11,7 +11,7 @@
         margin-right: 0 !important;
 
         &:not(:last-of-type){
-            margin-bottom: 0.25rem;
+            margin-bottom: 4px;
         }
 
         @include themify() {
@@ -53,6 +53,11 @@
 
         .custom-checkbox {
            margin-left: 0.75rem;
+        }
+        
+        .cell {
+            padding: 0.375rem 0.75rem;
+            cursor: default;
         }
     }
 }
