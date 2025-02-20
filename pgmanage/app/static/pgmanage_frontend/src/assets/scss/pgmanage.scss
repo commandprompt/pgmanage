@@ -49,3 +49,18 @@ body {
 .xterm-screen {
     padding: 0.5rem 1rem;
 }
+
+.refresh-menu {
+    &__link {
+        color: $primaryMutedColor;
+        text-decoration: none;
+        transition: all .15s ease-in-out;
+
+        &:hover, &:active {
+            color: $primaryBlue;
+            i {
+                color: $primaryBlue;
+            }
+        }
+    }
+}

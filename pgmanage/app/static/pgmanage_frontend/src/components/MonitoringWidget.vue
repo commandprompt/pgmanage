@@ -1,14 +1,66 @@
 <template>
   <div class="col-md-6 my-2">
     <div class="card">
-      <div class="card-body">
-        <button
-          v-if="!isTestWidget"
-          data-testid="widget-close-button"
-          class="btn-close"
-          @click="closeMonitoringWidget"
-        ></button>
+      <div class="d-flex justify-content-between p-3 pb-0">
+        <h3 data-testid="widget-title" class="me-1" v-if="!isTestWidget">
+          {{ monitoringWidget.title }}
+        </h3>
+        <template v-else>
+          <h3 class="text-center pb-1">Monitoring test widget</h3>
+        </template>
 
+        <div v-if="!isTestWidget" class="">
+          <div
+            class="d-inline-flex align-items-center refresh-menu ms-1"
+            data-bs-toggle="dropdown">
+            <a class="refresh-menu__link" href="">{{ monitoringWidget.interval }} sec.</a>
+            <div class="dropdown-menu dropdown-menu-width-auto">
+              <a class="dropdown-item">15 sec</a>
+              <a class="dropdown-item">15 sec</a>
+              <a class="dropdown-item">15 sec</a>
+            </div>
+          </div>
+          <!-- <span v-if="isGrid" class="ms-2"> {{ gridRows }} rows </span>  -->
+          <button
+            data-testid="widget-refresh-button"
+            class="btn btn-icon btn-icon-secondary ms-2"
+            title="Refresh"
+            @click="refreshMonitoringWidget"
+          >
+            <i class="fas fa-sync-alt fa-light"></i>
+          </button>
+
+          <button
+            v-if="!isActive"
+            data-testid="widget-play-button"
+            class="btn btn-icon btn-icon-secondary ms-2"
+            title="Play"
+            @click="playMonitoringWidget"
+          >
+            <i class="fas fa-play-circle fa-light"></i>
+          </button>
+
+          <button
+            v-else
+            data-testid="widget-pause-button"
+            class="btn btn-icon btn-icon-secondary ms-2"
+            title="Pause"
+            @click="pauseMonitoringWidget"
+          >
+            <i class="fas fa-pause-circle fa-light"></i>
+          </button>
+
+          <button
+            data-testid="widget-close-button"
+            class="btn btn-icon btn-icon-secondary ms-4"
+            @click="closeMonitoringWidget"
+            >
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body p-3">
         <Transition :duration="100">
           <div
             v-if="showLoading"
@@ -26,66 +78,6 @@
             </div>
           </div>
         </Transition>
-
-        <div v-if="!isTestWidget" class="form-inline mb-1">
-          <span data-testid="widget-title" class="me-1">
-            {{ monitoringWidget.title }}
-          </span>
-          <button
-            data-testid="widget-refresh-button"
-            class="btn btn-secondary btn-sm me-1"
-            title="Refresh"
-            @click="refreshMonitoringWidget"
-          >
-            <i class="fas fa-sync-alt fa-light"></i>
-          </button>
-
-          <button
-            v-if="!isActive"
-            data-testid="widget-play-button"
-            class="btn btn-secondary btn-sm me-1"
-            title="Play"
-            @click="playMonitoringWidget"
-          >
-            <i class="fas fa-play-circle fa-light"></i>
-          </button>
-
-          <button
-            v-else
-            data-testid="widget-pause-button"
-            class="btn btn-secondary btn-sm me-1"
-            title="Pause"
-            @click="pauseMonitoringWidget"
-          >
-            <i class="fas fa-pause-circle fa-light"></i>
-          </button>
-          <div class="d-inline-flex align-items-center">
-            <input
-              data-testid="widget-interval-input"
-              v-model.number="v$.widgetInterval.$model"
-              @change="updateInterval"
-              :class="[
-                'form-control',
-                'form-control-sm',
-                'me-2',
-                { 'is-invalid': v$.widgetInterval.$invalid },
-              ]"
-              style="width: 60px"
-            />
-            <span>seconds</span>
-            <div class="invalid-feedback">
-              <a v-for="error of v$.widgetInterval.$errors" :key="error.$uid">
-                {{ error.$message }}
-                <br />
-              </a>
-            </div>
-          </div>
-
-          <span v-if="isGrid" class="ms-2"> {{ gridRows }} rows </span>
-        </div>
-        <template v-else>
-          <h2 class="text-center pb-1">Monitoring test widget</h2>
-        </template>
 
         <div class="widget-content">
           <div v-if="errorText" class="error_text">
@@ -152,6 +144,7 @@ export default {
       timeoutObject: null,
       widgetInterval: this.monitoringWidget.interval,
       widgetData: null,
+      refreshIntervalOptions: [5, 10, 30, 60, 120, 300]
     };
   },
   computed: {
@@ -468,7 +461,8 @@ export default {
       this.isActive = true;
       this.refreshMonitoringWidget();
     },
-    updateInterval() {
+    updateInterval(value) {
+      this.widgetInterval = value
       this.v$.$validate();
       if (this.v$.$invalid) return;
       axios
