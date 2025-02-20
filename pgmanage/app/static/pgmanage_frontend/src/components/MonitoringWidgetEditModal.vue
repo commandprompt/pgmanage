@@ -77,27 +77,20 @@
                 <label for="refreshInterval" class="fw-bold mb-2"
                   >Refresh Interval</label
                 >
-                <input
-                  type="text"
-                  :class="[
-                    'form-control',
-                    { 'is-invalid': v$.widgetInterval.$invalid },
-                  ]"
-                  id="refreshInterval"
-                  data-testid="widget-edit-refresh-interval"
-                  placeholder="Widget Interval"
-                  v-model.number="v$.widgetInterval.$model"
+                <select
+                  id="widgetInterval"
+                  class="form-select"
+                  v-model="widgetInterval"
                   :disabled="showTestWidget"
-                />
-                <div class="invalid-feedback">
-                  <a
-                    v-for="error of v$.widgetInterval.$errors"
-                    :key="error.$uid"
+                >
+                  <option
+                    v-for="(option, index) in refreshIntervalOptions"
+                    :key="index"
+                    :value="option"
                   >
-                    {{ error.$message }}
-                    <br />
-                  </a>
-                </div>
+                    {{ humanizeDuration(option) }}
+                  </option>
+                </select>
               </div>
 
               <div class="form-group col-3">
@@ -192,6 +185,7 @@ import { useVuelidate } from "@vuelidate/core";
 import { required, minValue, minLength } from "@vuelidate/validators";
 import { Modal } from "bootstrap";
 import { handleError } from "../logging/utils";
+import HumanizeDurationMixin from '../mixins/humanize_duration_mixin';
 
 export default {
   name: "MonitoringWidgetEditModal",
@@ -203,6 +197,7 @@ export default {
       v$: useVuelidate({ $lazy: true }),
     };
   },
+  mixins: [HumanizeDurationMixin],
   props: {
     workspaceId: String,
     databaseIndex: Number,
@@ -226,6 +221,7 @@ export default {
       testWidgetData: {},
       heightSubtract: 150,
       modalInstance: null,
+      refreshIntervalOptions: [5, 10, 30, 60, 120, 300]
     };
   },
   computed: {

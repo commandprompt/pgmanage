@@ -64,8 +64,7 @@
               </div>
 
               <div class="col-2 d-flex align-items-center">
-                <!-- TODO: show interval in humanized form -->
-                <div class="cell">{{ widget.interval }}</div>
+                <div class="cell">{{ humanizeDuration(widget.interval) }}</div>
               </div>
 
               <div class="col d-flex me-2 justify-content-end">
@@ -113,6 +112,7 @@ import MonitoringWidgetEditModal from "./MonitoringWidgetEditModal.vue";
 import { messageModalStore } from "../stores/stores_initializer";
 import { Modal } from "bootstrap";
 import { handleError } from "../logging/utils";
+import HumanizeDurationMixin from '../mixins/humanize_duration_mixin';
 
 export default {
   name: "MonitoringWidgetsModal",
@@ -126,6 +126,7 @@ export default {
     databaseIndex: Number,
     widgets: Array,
   },
+  mixins: [HumanizeDurationMixin],
   emits: ["modalHide", "toggleWidget"],
   data() {
     return {
