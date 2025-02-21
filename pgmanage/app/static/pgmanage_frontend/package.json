@@ -44,6 +44,7 @@
     "chartjs-adapter-moment": "^1.0.1",
     "cytoscape": "^3.30.2",
     "cytoscape-node-html-label": "^1.2.2",
+    "d3-scale-chromatic": "^3.1.0",
     "daterangepicker": "^3.1.0",
     "events": "^3.3.0",
     "jaro-winkler": "^0.2.8",

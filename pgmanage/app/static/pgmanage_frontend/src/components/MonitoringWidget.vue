@@ -117,6 +117,9 @@ import { settingsStore, cellDataModalStore } from "../stores/stores_initializer"
 import { markRaw } from "vue";
 import { handleError } from "../logging/utils";
 import HumanizeDurationMixin from '../mixins/humanize_duration_mixin'
+import { interpolateRainbow } from  "d3-scale-chromatic";
+
+const colorScale = interpolateRainbow;
 
 export default {
   name: "MonitoringWidget",
@@ -159,7 +162,7 @@ export default {
       return this.monitoringWidget.type === "grid";
     },
     isChart() {
-      return ["timeseries", "chart", "chart_append"].includes(
+      return ["timeseries", "chart"].includes(
         this.monitoringWidget.type
       );
     },
@@ -293,6 +296,19 @@ export default {
         this.visualizationObject.replaceData(data.data);
       }
     },
+    generatePalette(colorsNum) {
+      // generate palette with colorsNum from d3 color scale
+      const colorStart = 0, colorEnd = 1;
+      const intervalSize = (colorEnd - colorStart) / colorsNum;
+      let i, colorPoint;
+      let colorArray = [];
+
+      for (i = 0; i < colorsNum; i++) {
+        colorPoint = colorStart + (i * intervalSize);
+        colorArray.push(colorScale(colorPoint));
+      }
+      return colorArray;
+    },
     buildChart(data) {
       let chartData = { ...data.object };
       this.widgetData = JSON.parse(
@@ -307,6 +323,11 @@ export default {
         }
         chartData.options.plugins['colors'] = { 'enabled': false}
 
+        if(['doughnut', 'pie'].includes(chartData?.type)) {
+          // generate palette if dataset does not define it
+          if(!chartData?.data?.datasets[0].backgroundColor?.length)
+            chartData.data.datasets[0].backgroundColor = this.generatePalette(chartData.data.labels.length)
+        }
         const chartObj = new Chart(ctx, chartData);
         this.visualizationObject = markRaw(chartObj);
         this.changeChartTheme();
@@ -317,56 +338,22 @@ export default {
           for (let i = 0; i < chartData.datasets.length; i++) {
             let return_dataset = chartData.datasets[i];
 
+            if(['doughnut', 'pie'].includes(chartData.type)) {
+              // generate palette if dataset does not define it
+              if(!return_dataset.backgroundColor?.length)
+                return_dataset.backgroundColor = this.generatePalette(chartData.data.labels.length)
+            }
+
             // checking datasets
-
             let found = false;
-
-            for (
-              let j = 0;
-              j < this.visualizationObject.data.datasets.length;
-              j++
-            ) {
-              let dataset = this.visualizationObject.data.datasets[j];
+            let chart_datasets = this.visualizationObject.data.datasets
+            for (let j = 0; j < chart_datasets.length; j++) {
+              let dataset = chart_datasets[j];
+              dataset.backgroundColor = this.generatePalette(dataset.data.length)
               // Dataset exists, update data and adjust colors
               if (return_dataset.label == dataset.label) {
-                let new_dataset = dataset;
-
-                // rebuild color list if it exists
-
-                if (
-                  return_dataset.backgroundColor &&
-                  return_dataset.backgroundColor.length
-                ) {
-                  let color_list = [];
-                  for (let k = 0; k < chartData.labels.length; k++) {
-                    let found_label = false;
-                    for (
-                      let m = 0;
-                      m < this.visualizationObject.data.labels.length;
-                      m++
-                    ) {
-                      if (
-                        JSON.stringify(chartData.labels[k]) ==
-                        JSON.stringify(this.visualizationObject.data.labels[m])
-                      ) {
-                        color_list.push(dataset.backgroundColor[m]);
-                        found_label = true;
-                        break;
-                      }
-                    }
-
-                    if (!found_label) {
-                      color_list.push(return_dataset.backgroundColor[k]);
-                    }
-                  }
-                  new_dataset.backgroundColor = color_list;
-                }
-                new_dataset.data = return_dataset.data;
-
-                dataset = new_dataset;
-
                 found = true;
-                break;
+                dataset.data = return_dataset.data;
               }
             }
             //dataset doesn't exist, create it
@@ -374,11 +361,9 @@ export default {
               this.visualizationObject.data.datasets.push(return_dataset);
             }
           }
-
           this.visualizationObject.data.labels = chartData.labels;
 
           // update title
-
           if (
             chartData.title &&
             chartData.options &&
@@ -423,16 +408,15 @@ export default {
             this.visualizationObject.options.scales.x.max = moment(lastTS).toISOString();
           }
           
-          // FIXME: do we really need this? chartjs titles are disabled in widgets...
           // update title
-          // if (
-          //   chartData.title &&
-          //   chartData.options &&
-          //   chartData.options?.plugins?.title
-          // ) {
-          //   this.visualizationObject.options.plugins.title.text =
-          //     chartData.title;
-          // }
+          if (
+            chartData.title &&
+            chartData.options &&
+            chartData.options?.plugins?.title
+          ) {
+            this.visualizationObject.options.plugins.title.text =
+              chartData.title;
+          }
           
           try {
             this.visualizationObject.update();
@@ -449,7 +433,6 @@ export default {
           break;
         case "chart":
         case "timeseries":
-        case "chart_append":
           this.buildChart(data);
           break;
         default:
@@ -517,7 +500,7 @@ export default {
       } else {
         chartFontColor = "#DCDDDE";
         chartGridColor = "#314264";
-        chartLineBorderColor = "#1560AD";
+        chartLineBorderColor = "#2190ff";
         chartLineBackgroundColor = "#1560AD60";
       }
 

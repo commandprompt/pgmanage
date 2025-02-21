@@ -1872,12 +1872,15 @@ total_size = connection.ExecuteScalar('''
 ''')
 
 result = {
-    "type": "pie",
+    "type": "doughnut",
     "data": None,
     "options": {
         "plugins": {
             "legend": {
                 "position": "bottom",
+                "labels": {
+                    "usePointStyle": True,
+                }
             },
             "title":{
                 "display":True,
@@ -1886,6 +1889,7 @@ result = {
         },
         "maintainAspectRatio": False,
         "responsive": True,
+        "cutout": 50
     }
 }
 """,
@@ -1898,15 +1902,14 @@ databases = connection.Query('''
            round(pg_catalog.pg_database_size(d.datname)/1048576.0,2) AS size
     FROM pg_catalog.pg_database d
     WHERE d.datname not in ('template0','template1')
+    ORDER BY size DESC
 ''')
 
 data = []
-color = []
 label = []
 
 for db in databases.Rows:
     data.append(db["size"])
-    color.append("rgb(" + str(randint(125, 225)) + "," + str(randint(125, 225)) + "," + str(randint(125, 225)) + ")")
     label.append(db["datname"])
 
 total_size = connection.ExecuteScalar('''
@@ -1920,8 +1923,10 @@ result = {
     "datasets": [
         {
             "data": data,
-            "backgroundColor": color,
-            "label": "Dataset 1"
+            "label": "DB Sizes",
+            "cutout": "60%",
+            "borderWidth": 1,
+            "borderColor": "#00000020"
         }
     ],
     "title": "Database Size (Total: " + str(total_size) + " MB)"
@@ -1946,6 +1951,9 @@ result = {
         "plugins": {
             "legend": {
                 "position": "bottom",
+                "labels": {
+                    "usePointStyle": True,
+                }
             },
             "title":{
                 "display":True,
@@ -1971,12 +1979,10 @@ databases = connection.Query('''
 ''')
 
 data = []
-color = []
 label = []
 
 for db in databases.Rows:
     data.append(db["numbackends"])
-    color.append("rgb(" + str(randint(125, 225)) + "," + str(randint(125, 225)) + "," + str(randint(125, 225)) + ")")
     label.append(db["datname"])
 
 result = {
@@ -1984,8 +1990,10 @@ result = {
     "datasets": [
         {
             "data": data,
-            "backgroundColor": color,
-            "label": "Dataset 1"
+            "label": "Backends",
+            "cutout": "60%",
+            "borderWidth": 1,
+            "borderColor": "#00000020"
         }
     ]
 }
