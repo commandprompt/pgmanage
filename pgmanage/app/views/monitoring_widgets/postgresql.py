@@ -79,7 +79,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now().isoformat(),
             "y":query_data.Rows[0]['tps']
@@ -175,7 +175,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y":backends.Rows[0]['count']
@@ -268,7 +268,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y":perc
@@ -402,7 +402,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y":r.Rows[0]['rate']
@@ -603,7 +603,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y":r.Rows[0]['perc']
@@ -694,7 +694,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y":query_data.Rows[0]['count']
@@ -786,7 +786,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y": round(query_data.Rows[0]["sum"] / Decimal(1048576.0),1)
@@ -893,7 +893,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y": query_data.Rows[0]['database_growth']
@@ -1008,7 +1008,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y": query_data.Rows[0]['miss_ratio']
@@ -1124,7 +1124,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y": query_data.Rows[0]['miss_ratio']
@@ -1240,7 +1240,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y": query_data.Rows[0]['ratio']
@@ -1357,7 +1357,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y": query_data.Rows[0]['seconds']
@@ -1477,7 +1477,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y": query_data.Rows[0]['seconds']
@@ -1597,7 +1597,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y": query_data.Rows[0]['seconds']
@@ -1696,7 +1696,7 @@ datasets.append({
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 2,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y": query_data.Rows[0]['checkpoints_diff']
