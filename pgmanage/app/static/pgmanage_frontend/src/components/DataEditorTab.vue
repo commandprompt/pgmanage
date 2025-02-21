@@ -353,7 +353,10 @@ export default {
       const tab = tabsStore.getSecondaryTabById(this.tabId, this.workspaceId);
 
       this.queryState = requestState.Executing;
-      tab.metaData.isLoading = true;
+      setTimeout(() => {
+        if (this.queryState === requestState.Executing) 
+          tab.metaData.isLoading = true;
+      }, 1000);
       tab.metaData.isReady = false;
 
       // we need to return promise for tabulator ajaxRequestFunc to work
@@ -556,7 +559,11 @@ export default {
       const tab = tabsStore.getSecondaryTabById(this.tabId, this.workspaceId);
   
       this.queryState = requestState.Executing;
-      tab.metaData.isLoading = true;
+      setTimeout(() => {
+        if (this.queryState === requestState.Executing) 
+          tab.metaData.isLoading = true;
+      }, 1000);
+
       tab.metaData.isReady = false;
     },
     applyBtnTitle() {
