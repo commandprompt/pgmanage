@@ -179,9 +179,11 @@
       },
     },
     watch: {
-      searchFilter() {
+      searchFilter(newVal) {
         if (this.filteredOptions.length === 0 && !this.multiSelect) {
           this.selected = null;
+        } else if (this.selected !== newVal) {
+          this.optionsShown = true;
         }
       },
       modelValue: {
