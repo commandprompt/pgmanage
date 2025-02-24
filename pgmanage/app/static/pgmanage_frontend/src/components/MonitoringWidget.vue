@@ -232,7 +232,7 @@ export default {
           this.showLoading = false;
         })
         .catch((error) => {
-          this.errorText = error?.response?.data?.data ?? error;
+          this.errorText = error.response?.data.data;
           this.showLoading = false;
         });
       
@@ -315,7 +315,7 @@ export default {
         JSON.stringify(chartData?.data ?? chartData)
       );
 
-      if (!this.visualizationObject) {
+      if (!this.visualizationObject && this.$refs.canvas) {
         let ctx = this.$refs.canvas.getContext("2d");
 
         if (chartData?.options?.maintainAspectRatio) {
@@ -332,10 +332,13 @@ export default {
         this.visualizationObject = markRaw(chartObj);
         this.changeChartTheme();
       } else {
+        // yes, this is actually possible when widget is quickly toggled on/off
+        if (!this.visualizationObject)
+          return;
         //TODO this part of code still needs refactoring
         if (this.monitoringWidget.type === "chart") {
           //foreach dataset in returning data, find corresponding dataset in existing chart
-          for (let i = 0; i < chartData.datasets.length; i++) {
+          for (let i = 0; i < chartData?.datasets?.length; i++) {
             let return_dataset = chartData.datasets[i];
 
             if(['doughnut', 'pie'].includes(chartData.type)) {
@@ -481,7 +484,11 @@ export default {
           this.showLoading = false;
         })
         .catch((error) => {
+<<<<<<< HEAD
           this.errorText = error?.response?.data?.data ?? error;
+=======
+          this.errorText = error.response?.data.data;
+>>>>>>> 17622ff0 (fix widget crash when quickly toggled on/off)
           this.showLoading = false;
         });
     },
