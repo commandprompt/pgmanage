@@ -176,15 +176,7 @@ export default {
         initialTable: {
           tableName: 'new_table',
           schema: '',
-          columns: [{
-            dataType: 'autoincrement',
-            name: 'id',
-            defaultValue: 0,
-            nullable: false,
-            isPK: true,
-            comment: null,
-            editable: true
-          }]
+          columns: []
         },
         localIndexes: [],
         initialIndexes: [],
@@ -605,6 +597,22 @@ export default {
         tab.metaData.hasUnsavedChanges = this.hasChanges;
       }
     },
+    mode: {
+      handler(newValue) {
+        if (newValue === operationModes.CREATE) {
+          this.initialTable.columns = [{
+            dataType: 'autoincrement',
+            name: 'id',
+            defaultValue: 0,
+            nullable: false,
+            isPK: true,
+            comment: null,
+            editable: true
+          }]
+        }
+      },
+      immediate: true,
+    }
   }
 };
 </script>

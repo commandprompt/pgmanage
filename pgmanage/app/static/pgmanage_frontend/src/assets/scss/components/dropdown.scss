@@ -86,12 +86,12 @@ $dropdownMinWidth: 11rem;
                 display: block;
                 cursor: pointer;
 
-                &:hover {
-                    background-color: rgba($primaryMutedColor, 0.15);
-                }
-
                 &.selected {
                     background-color: rgba($primaryBlue, 0.15);
+                }
+
+                &.highlighted {
+                    background-color: rgba($primaryMutedColor, 0.15);
                 }
             }
         }
