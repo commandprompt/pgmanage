@@ -6,7 +6,7 @@
     </pane>
 
     <pane size="20" class="ps-2 border-top">
-      <div class="tab-actions py-2 d-flex align-items-center">
+      <div ref="tabActions" class="tab-actions py-2 d-flex align-items-center">
         <button class="btn btn-square btn-primary" title="Run" @click="consoleSQL(false)" :disabled="executingState">
           <i class="fas fa-play fa-light"></i>
         </button>
@@ -76,8 +76,7 @@
           <b>Start time:</b> {{ queryStartTime.format() }}
         </p>
       </div>
-      <!--FIXME: add proper editor height recalculation-->
-        <QueryEditor ref="editor" class="custom-editor me-2" :read-only="readOnlyEditor" :tab-id="tabId" :workspace-id="workspaceId" tab-mode="console"
+        <QueryEditor ref="editor" class="editor-height me-2" :read-only="readOnlyEditor" :tab-id="tabId" :workspace-id="workspaceId" tab-mode="console"
           :dialect="dialect" @editor-change="updateEditorContent" :autocomplete="autocomplete"/>
     </pane>
   </splitpanes>
@@ -139,6 +138,8 @@ export default {
       terminal: null,
       fitAddon: null,
       blockSize: 50,
+      editorHeightSubtract: 50, //default safe value, recalculated in handleResize,
+      consoleHeightSubtract: 50
     };
   },
   computed: {
@@ -165,6 +166,12 @@ export default {
     },
     hasChanges() {
       return this.activeTransaction || this.executingState || !!this.editorContent
+    },
+    editorHeight() {
+      return `calc(100% - ${this.editorHeightSubtract}px)`;
+    },
+    consoleHeight() {
+      return `calc(100vh - ${this.consoleHeightSubtract}px)`
     }
   },
   updated() { 
@@ -236,6 +243,11 @@ export default {
     onResize() {
       if (this.fitAddon)
         this.fitAddon.fit();
+      
+      this.editorHeightSubtract =
+        this.$refs.tabActions.getBoundingClientRect().height;
+      this.consoleHeightSubtract =
+        this.$refs.console.getBoundingClientRect().top;
     },
     consoleSQL(check_command = true, mode = consoleModes.DATA_OPERATION) {
       const command = this.editorContent.trim();
@@ -414,11 +426,12 @@ export default {
 </script>
 
 <style scoped>
-.custom-editor {
-  height: calc(100% - 50px);
+.editor-height {
+  height: v-bind(editorHeight);
 }
+
 .console-body {
-  height: calc(100vh - 60px);
+  height: v-bind(consoleHeight);
 }
 
 .tab-actions {
