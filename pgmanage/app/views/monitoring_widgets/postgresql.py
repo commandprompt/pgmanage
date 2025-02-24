@@ -633,7 +633,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text":"Locks Blocked"
             },
             "tooltip": {
@@ -724,7 +724,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display":False,
                 "text":"Database Size"
             },
             "tooltip": {
@@ -815,7 +815,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display":False,
                 "text": "Database Growth Rate"
             },
             "tooltip": {
@@ -1272,7 +1272,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text": "Long Transaction"
             },
             "tooltip": {
@@ -1386,7 +1386,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text": "Long Query"
             },
             "tooltip": {
@@ -1506,7 +1506,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text": "Long Autovacuum"
             },
             "tooltip": {
@@ -1626,7 +1626,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text": "Checkpoints"
             },
             "tooltip": {
