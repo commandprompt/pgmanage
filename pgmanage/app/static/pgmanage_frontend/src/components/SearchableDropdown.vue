@@ -19,6 +19,7 @@
     <div class="dropdown-searchable__content"
       v-show="optionsShown">
       <div
+        ref="dropdownItems"
         :data-testid="`dropdown-searchable-item-${index}`"
         class="dropdown-searchable__content_item"
         @mousedown="toggleOption(option)"
@@ -169,6 +170,15 @@
             this.highlightedIndex = this.filteredOptions.length - 1;
           }
         }
+        this.scrollToHighlighted();
+      },
+      scrollToHighlighted() {
+        this.$nextTick(() => {
+          const highlightedEl = this.$refs.dropdownItems?.[this.highlightedIndex];
+          if (highlightedEl) {
+            highlightedEl.scrollIntoView({ block: "nearest", behavior: "instant" });
+          }
+        });
       },
       isSelected(option) {
         if (this.multiSelect) {
