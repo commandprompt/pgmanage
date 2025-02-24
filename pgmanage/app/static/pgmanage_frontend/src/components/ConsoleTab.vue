@@ -290,7 +290,10 @@ export default {
             this.consoleState = requestState.Executing;
 
             setTimeout(() => {
-              this.longQuery = true;
+              if (this.consoleState === requestState.Executing) {
+                tab.metaData.isLoading = true;
+                this.longQuery = true;
+              }
             }, 1000);
 
             this.queryInterval = setInterval((function(){
@@ -298,7 +301,6 @@ export default {
               this.queryDuration = moment.utc(diff).format('HH:mm:ss')
             }).bind(this), 1000)
 
-            tab.metaData.isLoading = true
             tab.metaData.isReady = false
 
             this.tabStatus = tabStatusMap.RUNNING;

@@ -618,6 +618,9 @@ const useTabsStore = defineStore("tabs", {
         name: tabName,
         component: "DataEditorTab",
         mode: "edit",
+        selectFunction: function () {
+          emitter.emit(`${this.id}_check_query_edit_status`);
+        },
         closeFunction: (e, tab) => {
           this.closeTabWithConfirmation(
             tab,
@@ -718,7 +721,7 @@ const useTabsStore = defineStore("tabs", {
           emitter.emit(`${tab.id}_check_console_status`);
           break;
         case "edit":
-          console.log("Not implemented"); // TODO: implement check tab status functionality for edit tab
+          emitter.emit(`${tab.id}_check_query_edit_status`);
           break;
         default:
           break;
