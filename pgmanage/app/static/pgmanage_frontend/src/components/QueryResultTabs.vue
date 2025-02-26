@@ -41,11 +41,6 @@
             <template v-else-if="errorMessage" class="error_text" style="white-space: pre">
               {{ errorMessage }}
             </template>
-            <!-- <template v-else-if="queryInfoText">
-              <div class="query_info">
-                {{ queryInfoText }}
-              </div>
-            </template> -->
             <div v-show="showTable" ref="tabulator" class="tabulator-custom"></div>
           </div>
         </div>
