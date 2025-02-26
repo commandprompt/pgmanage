@@ -90,6 +90,7 @@ export default {
       tabulator: null,
       maxInitialWidth: 200,
       queryState: requestState.Idle,
+      rawQuery: "",
     };
   },
   computed: {

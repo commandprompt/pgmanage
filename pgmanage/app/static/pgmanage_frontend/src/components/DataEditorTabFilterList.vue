@@ -152,7 +152,7 @@ export default {
         this.rawQuery = this.convertFiltersToManual(this.localFilters);
       }
       this.mode = this.modes.MANUAL;
-      this.$emit("update", { mode: this.mode });
+      this.$emit("update", { mode: this.mode, rawQuery: this.rawQuery });
     },
     switchToBuilder() {
       this.mode = this.modes.BUILDER;
