@@ -657,8 +657,8 @@ SOFTWARE.
     color: #fff !important;
     background: #1E90FF !important;
   }
-  input[type="text"],
-  input[type="password"],
+  input[type="text"]:not([disabled]),
+  input[type="password"]:not([disabled]),
   textarea  {
     background-color: #1A2234 !important;
     border-color: #243049 !important;
