@@ -347,6 +347,17 @@ export default {
         this.restoreOptions.pigz = false
       }
     },
+    // --create and --single-transaction are mutually exclusive
+    'restoreOptions.single_transaction'(newValue){
+      if (newValue === true) {
+        this.restoreOptions.include_create_database = false
+      }
+    },
+    'restoreOptions.include_create_database'(newValue){
+      if (newValue === true) {
+        this.restoreOptions.single_transaction = false
+      }
+    },
     restoreOptions: {
       handler() {
         this.restoreLocked = false;
