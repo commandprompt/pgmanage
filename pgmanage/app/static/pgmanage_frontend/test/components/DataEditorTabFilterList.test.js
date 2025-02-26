@@ -77,6 +77,7 @@ describe("DataEditorFilter.vue", () => {
     expect(wrapper.vm.mode).toBe(dataEditorFilterModes.MANUAL);
     expect(wrapper.emitted("update")[0][0]).toEqual({
       mode: dataEditorFilterModes.MANUAL,
+      rawQuery: " id = '123'",
     });
 
     const manualInput = wrapper.find("input[type='text']");
