@@ -311,7 +311,7 @@ export default {
       }
 
       if (this.mode === dataEditorFilterModes.MANUAL) {
-        queryFilter = "WHERE " + this.rawQuery.trim();
+        queryFilter = !!this.rawQuery.trim().length ? `WHERE  ${this.rawQuery.trim()}` : '';
       } else {
         const filters = preprocessFilters(this.queryFilters);
         if (filters?.length > 0) {
