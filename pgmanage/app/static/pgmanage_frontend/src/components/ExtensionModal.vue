@@ -44,9 +44,6 @@
           </div>
 
           <div class="form-group mb-2">
-            <p class="fw-bold mb-1">Preview</p>
-            <div id="generated_sql_div" style="height: 10vh">
-            </div>
             <PreviewBox :editor-text="generatedSQL" style="height: 10vh" />
           </div>
         </div>
