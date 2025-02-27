@@ -5,10 +5,15 @@ import { Modal } from "bootstrap";
 import axios from "axios";
 import { vi, describe, it, expect, afterEach, beforeEach } from "vitest";
 import { operationModes } from "@/constants";
-import { showToast } from "@/notification_control";
+import { handleError } from "@/logging/utils";
 
-vi.mock("@/notification_control", () => ({
-  showToast: vi.fn(),
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
+vi.mock("@/logging/utils", () => ({
+  handleError: vi.fn(),
 }));
 
 vi.mock("bootstrap", () => ({
@@ -123,10 +128,11 @@ describe("ExtensionModal.vue", () => {
   });
 
   it("handles API error in getSchemas and getAvailableExtensions", async () => {
-    vi.restoreAllMocks();
-    axios.post.mockRejectedValue({
+    const errorResponse = {
       response: { data: { data: "Response error" } },
-    });
+    };
+    vi.restoreAllMocks();
+    axios.post.mockRejectedValue(errorResponse);
     const wrapper = mountComponent();
     await flushPromises();
 
@@ -139,7 +145,7 @@ describe("ExtensionModal.vue", () => {
       expect.any(Object)
     );
 
-    expect(showToast).toHaveBeenCalledWith("error", "Response error");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("displays generated SQL in PreviewBox", async () => {

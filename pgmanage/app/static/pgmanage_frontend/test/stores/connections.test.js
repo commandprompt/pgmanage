@@ -5,6 +5,11 @@ import { useConnectionsStore } from "@/stores/connections";
 import { tabsStore } from "@/stores/stores_initializer";
 import { flushPromises } from "@vue/test-utils";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 vi.mock("@/stores/stores_initializer", () => {
   const tabsStore = vi.fn();
   return {

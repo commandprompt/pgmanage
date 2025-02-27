@@ -4,6 +4,11 @@ import { useSettingsStore } from "../../src/stores/settings";
 import { vi, describe, beforeEach, afterEach, it, expect } from "vitest";
 import axios from "axios";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 vi.mock("@/notification_control", () => {
   const showAlert = vi.fn();
   return {

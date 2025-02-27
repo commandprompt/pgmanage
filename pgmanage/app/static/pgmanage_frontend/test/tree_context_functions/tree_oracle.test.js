@@ -5,15 +5,20 @@ import {
   TemplateUpdateOracle,
 } from "@/tree_context_functions/tree_oracle";
 import axios from "axios";
-import { showToast } from "@/notification_control";
 import { emitter } from "@/emitter";
 import { tabsStore } from "@/stores/stores_initializer";
 import { flushPromises } from "@vue/test-utils";
 import { tabSQLTemplate } from "@/tree_context_functions/tree_postgresql";
+import { handleError } from "@/logging/utils";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
 
 vi.mock("axios");
-vi.mock("@/notification_control", () => ({
-  showToast: vi.fn(),
+vi.mock("@/logging/utils", () => ({
+  handleError: vi.fn(),
 }));
 vi.mock("@/emitter", () => ({
   emitter: {
@@ -86,7 +91,7 @@ describe("Template Functions", () => {
       TemplateSelectOracle(schema, table);
       await flushPromises();
 
-      expect(showToast).toHaveBeenCalledWith("error", "Error message");
+      expect(handleError).toHaveBeenCalledWith(errorResponse);
     });
   });
 
@@ -125,7 +130,7 @@ describe("Template Functions", () => {
 
       await flushPromises();
 
-      expect(showToast).toHaveBeenCalledWith("error", "Error message");
+      expect(handleError).toHaveBeenCalledWith(errorResponse);
     });
   });
 
@@ -163,7 +168,7 @@ describe("Template Functions", () => {
 
       await flushPromises();
 
-      expect(showToast).toHaveBeenCalledWith("error", "Error message");
+      expect(handleError).toHaveBeenCalledWith(errorResponse);
     });
   });
 });

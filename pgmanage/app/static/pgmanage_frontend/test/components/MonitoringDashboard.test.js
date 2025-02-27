@@ -5,6 +5,11 @@ import MonitoringWidget from "../../src/components/MonitoringWidget.vue";
 
 import axios from "axios";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 vi.mock("axios");
 
 vi.mock("tabulator-tables", () => {
