@@ -1,8 +1,8 @@
 import { tabSQLTemplate } from "./tree_postgresql";
-import { showToast } from "../notification_control";
 import { emitter } from "../emitter";
 import { tabsStore } from "../stores/stores_initializer";
 import axios from "axios";
+import { handleError } from "../logging/utils";
 
 function TemplateSelectOracle(schema, table) {
   axios
@@ -25,7 +25,7 @@ function TemplateSelectOracle(schema, table) {
       }, 200);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 
@@ -42,7 +42,7 @@ function TemplateInsertOracle(schema, table) {
       tabSQLTemplate(`Insert ${schema}.${table}`, resp.data.template);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 
@@ -59,7 +59,7 @@ function TemplateUpdateOracle(schema, table) {
       tabSQLTemplate(`Update ${schema}.${table}`, resp.data.template);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 

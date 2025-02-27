@@ -48,8 +48,8 @@
 <script>
 import axios from "axios";
 import MonitoringWidget from "./MonitoringWidget.vue";
-import { showToast } from "../notification_control";
 import MonitoringWidgetsModal from "./MonitoringWidgetsModal.vue";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "MonitoringDashboard",
@@ -84,7 +84,7 @@ export default {
           this.widgets = resp.data.widgets;
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     refreshWidgets() {
@@ -107,7 +107,7 @@ export default {
           this.widgets.splice(widgetIdx, 1);
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     updateWidgetInterval({ saved_id, interval }) {
@@ -149,7 +149,7 @@ export default {
           this.widgets.unshift(newWidget);
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
   },

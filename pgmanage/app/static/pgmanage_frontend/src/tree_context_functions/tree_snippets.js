@@ -2,6 +2,7 @@ import axios from "axios";
 import { showConfirm, showToast } from "../notification_control";
 import { emitter } from "../emitter";
 import { tabsStore } from "../stores/stores_initializer";
+import { handleError } from "../logging/utils";
 
 function executeSnippet(id) {
   axios
@@ -15,7 +16,7 @@ function executeSnippet(id) {
       );
     })
     .catch((error) => {
-      showToast("error", error.response?.data?.data ?? error);
+      handleError(error);
     });
 }
 

@@ -141,12 +141,12 @@ import moment from "moment";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
 import ConfirmableButton from "./ConfirmableButton.vue";
-import { showToast } from "../notification_control";
 import {
   cellDataModalStore,
   commandsHistoryStore,
 } from "../stores/stores_initializer.js";
 import { Modal } from "bootstrap";
+import { handleError } from "../logging/utils.js";
 
 export default {
   name: "CommandsHistoryModal",
@@ -413,7 +413,7 @@ export default {
           this.table.redraw();
         })
         .catch((error) => {
-          showToast("error", error.response.data.data);
+          handleError(error);
         });
     },
     clearCommandsHistory() {
@@ -430,7 +430,7 @@ export default {
           this.getCommandsHistory(true);
         })
         .catch((error) => {
-          showToast("error", error.response.data.data);
+          handleError(error);
         });
     },
     getNextPage() {

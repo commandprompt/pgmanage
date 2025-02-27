@@ -202,6 +202,7 @@ import { useVuelidate } from '@vuelidate/core'
 import { required, maxLength } from '@vuelidate/validators'
 import { Modal } from 'bootstrap'
 import PasswordMeter from 'vue-simple-password-meter';
+import { handleError } from '@/logging/utils';
 
 const light_terminal_theme = {
       background: '#FFFFFF',
@@ -703,7 +704,7 @@ export default {
             showToast("success", "Password saved.");
           })
           .catch((error) => {
-              showToast("error", error.response.data.data)
+            handleError(error);
             })
       }
     },
@@ -773,7 +774,7 @@ export default {
           showAlert(binary_paths)
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     setPostgresqlPath(e) {

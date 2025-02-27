@@ -63,11 +63,11 @@
 <script>
 import { emitter } from '../emitter'
 import axios from 'axios'
-import { showToast } from '../notification_control'
 import { messageModalStore } from '../stores/stores_initializer';
 import { operationModes } from '../constants';
 import { Modal } from 'bootstrap';
 import PreviewBox from './PreviewBox.vue';
+import { handleError } from '../logging/utils';
 
 export default {
   name: 'ExtensionModal',
@@ -167,7 +167,7 @@ export default {
           this.availableExtensions.push(...resp.data.available_extensions)
         })
         .catch((error) => {
-          console.log(error)
+          handleError(error);
         })
     },
     getSchemas() {
@@ -179,7 +179,7 @@ export default {
           this.schemaList = resp.data
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     saveExtension() {
@@ -193,7 +193,7 @@ export default {
           this.modalInstance.hide()
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     getExtensionDetails() {
@@ -209,7 +209,7 @@ export default {
           this.selectedVersion = resp.data.version
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     dropExtension() {
@@ -225,7 +225,7 @@ export default {
           emitter.emit(`refreshTreeRecursive_${this.workspaceId}`, "extension_list");
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     }
 

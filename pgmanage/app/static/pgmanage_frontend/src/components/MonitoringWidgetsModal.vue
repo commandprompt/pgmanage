@@ -49,10 +49,10 @@
 <script>
 import axios from "axios";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-import { showToast } from "../notification_control";
 import MonitoringWidgetEditModal from "./MonitoringWidgetEditModal.vue";
 import { messageModalStore } from "../stores/stores_initializer";
 import { Modal } from "bootstrap";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "MonitoringWidgetsModal",
@@ -120,7 +120,7 @@ export default {
           });
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
         });
     },
     actionsFormatter(cell, formatterParams, onRendered) {
@@ -181,7 +181,7 @@ export default {
               this.getMonitoringWidgetList();
             })
             .catch((error) => {
-              showToast("error", error);
+              handleError(error);
             });
         }
       );

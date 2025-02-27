@@ -294,6 +294,7 @@ import axios from "axios";
 import { showToast } from "../notification_control";
 import { fileManagerStore, settingsStore } from "../stores/stores_initializer";
 import { Modal } from "bootstrap";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "FileManager",
@@ -388,7 +389,7 @@ export default {
           }
         })
         .catch((error) => {
-          showToast("error", error.response.data.data);
+          handleError(error);
         });
     },
     openActionsModal(action) {
@@ -440,7 +441,7 @@ export default {
           window.URL.revokeObjectURL(url);
         })
         .catch((error) => {
-          showToast("error", error.response.data.data);
+          handleError(error);
         });
     },
     async onUploadProgress(event) {
@@ -489,10 +490,7 @@ export default {
         if (axios.isCancel(error)) {
           showToast("info", `Upload of file "${file.name}"" was cancelled.`);
         } else {
-          showToast(
-            "error",
-            error.response?.data?.data || "File upload failed."
-          );
+          handleError(error);
         }
       }
     },

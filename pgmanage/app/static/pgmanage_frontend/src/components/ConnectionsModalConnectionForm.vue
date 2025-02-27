@@ -272,6 +272,7 @@ import isEqual from 'lodash/isEqual';
 import isEmpty from 'lodash/isEmpty';
 import { showToast } from '../notification_control';
 import { Modal } from 'bootstrap';
+import { handleError } from '../logging/utils';
 
   export default {
     name: 'ConnectionsModalConnectionForm',
@@ -580,7 +581,7 @@ import { Modal } from 'bootstrap';
           })
           .catch((error) => {
             this.testIsRunning = false;
-            showToast("error", error.response.data.data);
+            handleError(error);
           })
         }
       },

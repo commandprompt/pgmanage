@@ -313,9 +313,10 @@
 <script>
 import UtilityJobs from "./UtilityJobs.vue";
 import axios from 'axios'
-import { showAlert, showToast } from "../notification_control";
+import { showAlert } from "../notification_control";
 import { fileManagerStore, tabsStore, settingsStore } from "../stores/stores_initializer";
 import { truncateText } from "../utils";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "BackupTab",
@@ -507,7 +508,7 @@ export default {
           resp.data.data.forEach(element => this.roleNames.push(element.name))
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     saveBackup() {
@@ -523,7 +524,7 @@ export default {
           this.lastJobId = resp.data.job_id;
         })
         .catch((error) => {
-          showToast("error", error.response.data.data);
+          handleError(error);
           this.backupLocked = false;
         })
     },
@@ -564,7 +565,7 @@ export default {
           showAlert(resp.data.command.cmd)
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     handleJobExit(jobId) {

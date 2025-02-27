@@ -45,6 +45,7 @@ import { utilityJobStore } from "../stores/stores_initializer";
 import axios from "axios";
 import { Modal } from "bootstrap";
 import $ from "jquery";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "JobDetail",
@@ -116,7 +117,7 @@ export default {
           }
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
         });
     },
     setDefault() {

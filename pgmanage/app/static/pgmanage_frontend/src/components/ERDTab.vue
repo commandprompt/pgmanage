@@ -8,6 +8,7 @@ import ShortUniqueId from 'short-unique-id'
 import cytoscape from 'cytoscape';
 import nodeHtmlLabel from 'cytoscape-node-html-label'
 import { tabsStore } from '../stores/stores_initializer';
+import { handleError } from '../logging/utils';
 
 
 export default {
@@ -85,7 +86,7 @@ export default {
       })
       .then(() => { this.initGraph() })
       .catch((error) => {
-        console.log(error?.response?.data?.data)
+        handleError(error);
       })
     },
     shortDataType(typename) {

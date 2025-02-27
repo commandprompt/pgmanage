@@ -111,12 +111,12 @@
 import axios from "axios";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
-import { showToast } from "../notification_control";
 import Chart from "chart.js/auto";
 import { useVuelidate } from "@vuelidate/core";
 import { minValue, required } from "@vuelidate/validators";
 import { settingsStore, cellDataModalStore } from "../stores/stores_initializer";
 import { markRaw } from "vue";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "MonitoringWidget",
@@ -227,7 +227,7 @@ export default {
           this.showLoading = false;
         })
         .catch((error) => {
-          this.errorText = error.response.data.data;
+          this.errorText = error?.response?.data?.data ?? error;
           this.showLoading = false;
         });
       
@@ -505,7 +505,7 @@ export default {
           });
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     testMonitoringWidget() {
@@ -520,7 +520,7 @@ export default {
           this.showLoading = false;
         })
         .catch((error) => {
-          this.errorText = error.response.data.data;
+          this.errorText = error?.response?.data?.data ?? error;
           this.showLoading = false;
         });
     },

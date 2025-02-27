@@ -55,6 +55,7 @@ import TreeSnippets from "./TreeSnippets.vue";
 import axios from "axios";
 import { snippetsStore } from "../stores/stores_initializer";
 import { showToast } from "../notification_control";
+import { handleError } from "../logging/utils";
 
 export default {
   components: {
@@ -98,7 +99,7 @@ export default {
           });
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     setupEvents() {
@@ -146,7 +147,7 @@ export default {
           this.getAllSnippets();
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
   },

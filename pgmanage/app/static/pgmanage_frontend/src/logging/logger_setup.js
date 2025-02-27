@@ -56,10 +56,8 @@ remote.apply(logger, {
   format: customJSON,
 });
 
-const stores = [settingsStore, tabsStore, connectionsStore, snippetsStore];
-
 export function setupLogger(app) {
-  vueHooks(logger, app, stores);
+  vueHooks(logger, app, [settingsStore, tabsStore, connectionsStore, snippetsStore]);
   axiosHooks(logger, axios);
 }
 
