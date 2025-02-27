@@ -14,7 +14,6 @@
             :aria-controls="`nav_data_${tabId}`" aria-selected="true">
             <span class="omnidb__tab-menu__link-name">Data</span>
           </a>
-          <template v-if="postgresqlDialect">
             <a ref="messagesTab" class="omnidb__tab-menu__link nav-item nav-link" :id="`nav_messages_tab_${tabId}`"
             data-bs-toggle="tab" :data-bs-target="`#nav_messages_${tabId}`" type="button" role="tab"
               :aria-controls="`nav_messages_${tabId}`" aria-selected="true">
@@ -23,12 +22,11 @@
                 <span v-if="noticesCount" class="badge badge-pill badge-primary">{{ noticesCount }}</span>
               </span>
             </a>
-            <a ref="explainTab" class="nav-item nav-link omnidb__tab-menu__link" :id="`nav_explain_tab_${tabId}`"
+            <a v-if="postgresqlDialect" ref="explainTab" class="nav-item nav-link omnidb__tab-menu__link" :id="`nav_explain_tab_${tabId}`"
             data-bs-toggle="tab" :data-bs-target="`#nav_explain_${tabId}`" type="button" role="tab"
               :aria-controls="`nav_explain_${tabId}`" aria-selected="false">
               <span class="omnidb__tab-menu__link-name"> Explain </span>
             </a>
-          </template>
         </div>
       </div>
 
@@ -43,25 +41,21 @@
             <template v-else-if="errorMessage" class="error_text" style="white-space: pre">
               {{ errorMessage }}
             </template>
-            <template v-else-if="queryInfoText">
-              <div class="query_info">
-                {{ queryInfoText }}
-              </div>
-            </template>
             <div v-show="showTable" ref="tabulator" class="tabulator-custom"></div>
           </div>
         </div>
-        <template v-if="postgresqlDialect">
           <div class="tab-pane" :id="`nav_messages_${tabId}`" role="tabpanel"
             :aria-labelledby="`nav_messages_tab_${tabId}`">
             <div class="messages__wrap p-2">
               <div class="result-div">
+                <div class="query_info">
+                {{ queryInfoText }}
+              </div>
                 <p v-for="notice in notices">{{ notice }}</p>
               </div>
             </div>
           </div>
-          <ExplainTabContent :tab-id="tabId" :query="query" :plan="plan" />
-        </template>
+          <ExplainTabContent v-if="postgresqlDialect" :tab-id="tabId" :query="query" :plan="plan" />
       </div>
     </div>
   </div>
@@ -407,7 +401,8 @@ export default {
     showDataOperationResult(data) {
       if (data.data.length === 0) {
         if (data.col_names.length === 0) {
-          this.queryInfoText = data.status ? data.status : "Done";
+          Tab.getOrCreateInstance(this.$refs.messagesTab).show()
+          return this.queryInfoText = data.status ? data.status : "Done";
         }
       }
       this.updateTableData(data);
