@@ -21,7 +21,7 @@
         <div class="modal-body">
           <div class="mb-3">
             <div class="row">
-              <div class="form-group col-lg-3 col-xl-2 col-sm-4">
+              <div class="form-group col-6 col-lg-3">
                 <p class="fw-bold mb-2">Select a daterange:</p>
                 <input
                   v-model="startedFrom"
@@ -38,15 +38,15 @@
                 <button
                   ref="timeRange"
                   type="button"
-                  class="btn btn-outline-primary"
+                  class="btn btn-outline-primary mw-100 d-flex align-items-center"
                 >
                   <i class="far fa-calendar-alt"></i>
-                  <span class="mx-1">{{ timeRangeLabel }}</span
+                  <span class="mx-1 clipped-text">{{ timeRangeLabel }}</span
                   ><i class="fa fa-caret-down"></i>
                 </button>
               </div>
 
-              <div class="form-group col-lg-3 col-xl-2 col-sm-4">
+              <div class="form-group col-6 col-lg-2">
                 <label class="fw-bold mb-2">Filter by database:</label>
                 <select
                   v-model="databaseFilter"
@@ -66,9 +66,9 @@
               </div>
 
               <div
-                class="form-group col-lg-6 col-md-12 col-xl-8 d-flex justify-content-end align-items-end"
+                class="form-group col-12 col-lg-7 d-flex justify-content-lg-end align-items-end"
               >
-                <div>
+                <div class="flex-grow-1">
                   <label class="fw-bold mb-2">Command contains:</label>
                   <input
                     v-model="commandContains"
@@ -346,8 +346,8 @@ export default {
           // Update Button Labels
           if (label === "Custom Range") {
             this.timeRangeLabel = `${start.format(
-              "MMMM D, YYYY hh:mm A"
-            )}-${end.format("MMMM D, YYYY hh:mm A")}`;
+              "MM/DD/YY hh:mm A"
+            )}-${end.format("MM/DD/YY hh:mm A")}`;
           } else {
             this.timeRangeLabel = label;
           }
