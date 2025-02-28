@@ -9,8 +9,7 @@
               <div class="form-group mb-1">
                 <label :for="`${restoreTabId}_restoreFileName`" class="fw-bold mb-1">File name</label>
                 <div class="input-group">
-                    <div class="input-group-text btn btn-secondary" @click="openFileManagerModal">Select
-                    </div>
+                    <div class="btn btn-secondary" @click="openFileManagerModal">Select</div>
                   <input :id="`${restoreTabId}_restoreFileName`" type="text" class="form-control" :value="truncateText(restoreOptions.fileName, 20)"
                     placeholder="backup file" disabled>
                 </div>
