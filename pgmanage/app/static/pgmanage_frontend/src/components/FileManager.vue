@@ -25,18 +25,21 @@
             >
               <div class="btn-group">
                 <a
+                  data-testid="add-file-button"
                   class="btn btn-outline-secondary btn-sm"
                   title="Add File"
                   @click="openActionsModal('addFile')"
                   ><i class="fas fa-file-circle-plus fa-xl"></i
                 ></a>
                 <a
+                  data-testid="add-folder-button"
                   class="btn btn-outline-secondary btn-sm"
                   title="Add Folder"
                   @click="openActionsModal('addFolder')"
                   ><i class="fas fa-folder-plus fa-xl"></i
                 ></a>
                 <a
+                  data-testid="rename-button"
                   :class="[
                     'btn',
                     'btn-outline-secondary',
@@ -51,6 +54,7 @@
               <div>
                 <div class="btn-group me-2">
                   <a
+                    data-testid="download-button"
                     class="btn btn-outline-secondary btn-sm"
                     :class="{
                       disabled:
@@ -63,6 +67,7 @@
                     <i class="fas fa-download"></i
                   ></a>
                   <a
+                    data-testid="upload-button"
                     class="btn btn-outline-secondary btn-sm"
                     :class="{ disabled: !!uploadingFile }"
                     title="Upload"
@@ -73,6 +78,7 @@
                 </div>
                 <div class="btn-group">
                   <a
+                    data-testid="delete-file-button"
                     :class="[
                       'btn',
                       'btn-outline-secondary',
@@ -92,6 +98,7 @@
             >
               <div class="btn-group">
                 <a
+                  data-testid="step-back-dir-button"
                   :class="[
                     'btn',
                     'btn-outline-secondary',
@@ -103,12 +110,14 @@
                   ><i class="fas fa-left-long fa-xl"></i
                 ></a>
                 <a
+                  data-testid="refresh-manager-button"
                   class="btn btn-outline-secondary btn-sm"
                   title="Refresh"
                   @click="refreshManager"
                   ><i class="fas fa-refresh fa-xl"></i
                 ></a>
                 <a
+                  data-testid="step-home-dir-button"
                   :class="[
                     'btn',
                     'btn-outline-secondary',
@@ -440,6 +449,7 @@ export default {
           window.URL.revokeObjectURL(url);
         })
         .catch((error) => {
+          console.log(error)
           showToast("error", error.response.data.data);
         });
     },
