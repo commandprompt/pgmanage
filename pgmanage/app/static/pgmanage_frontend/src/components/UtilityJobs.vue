@@ -52,6 +52,7 @@
 import { utilityJobStore } from "../stores/stores_initializer";
 import axios from "axios";
 import moment from "moment";
+import { handleError } from "../logging/utils";
 
 const JobState = {
   PROCESS_NOT_STARTED: 0,
@@ -99,7 +100,7 @@ export default {
           this.checkPending();
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
         });
     },
     startWorker() {
@@ -126,7 +127,7 @@ export default {
             JobState.PROCESS_TERMINATED;
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
         });
     },
     deleteJob(job_id) {
@@ -138,7 +139,7 @@ export default {
           this.getJobList();
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
         });
     },
     jobStatus(process_state) {

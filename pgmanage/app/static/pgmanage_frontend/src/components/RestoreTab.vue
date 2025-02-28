@@ -260,9 +260,10 @@
 <script>
 import UtilityJobs from './UtilityJobs.vue';
 import axios from 'axios'
-import { showAlert, showToast } from '../notification_control';
+import { showAlert } from '../notification_control';
 import { settingsStore, fileManagerStore, tabsStore } from '../stores/stores_initializer';
 import { truncateText } from "../utils";
+import { handleError } from '../logging/utils';
 
 export default {
   name: "RestoreTab",
@@ -398,7 +399,7 @@ export default {
           resp.data.data.forEach(element => this.roleNames.push(element.name))
         })
         .catch((error) => {
-          showToast("error", error.response?.data?.data)
+          handleError(error);
         })
     },
     createRestore() {
@@ -413,7 +414,7 @@ export default {
           this.lastJobId = resp.data.job_id;
         })
         .catch((error) => {
-          showToast("error", error.response.data.data);
+          handleError(error);
           this.restoreLocked = false;
         })
     },
@@ -440,7 +441,7 @@ export default {
           showAlert(resp.data.command.cmd)
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     handleJobExit(jobId) {

@@ -119,6 +119,7 @@ import { tabsStore } from '../stores/stores_initializer'
 import IndexesList from './SchemaEditorIndexesList.vue'
 import isEqual from 'lodash/isEqual';
 import PreviewBox from './PreviewBox.vue'
+import { handleError } from '../logging/utils';
 
 
 function formatDefaultValue(defaultValue, dataType, table) {
@@ -228,7 +229,7 @@ export default {
         this.schemas = response.data.map((schema) => {return schema.name})
       })
       .catch((error) => {
-        console.log(error)
+        handleError(error);
       })
     },
     loadTypes() {
@@ -244,7 +245,7 @@ export default {
         this.customTypes = response.data.map((type) => {return type.type_name})
       })
       .catch((error) => {
-        console.log(error)
+        handleError(error);
       })
     },
     async loadTableDefinition() {
@@ -274,7 +275,7 @@ export default {
           this.initialTable.schema = this.$props.schema
           this.localTable = JSON.parse(JSON.stringify(this.initialTable));
       } catch (error) {
-        console.log(error)
+        handleError(error)
       }
     },
     loadIndexes() {
@@ -294,7 +295,7 @@ export default {
         this.localIndexes = JSON.parse(JSON.stringify(this.initialIndexes));
       })
       .catch((error) => {
-        console.log(error)
+        handleError(error);
       })
     },
     generateAlterSQL(knexInstance) {

@@ -1,7 +1,7 @@
-import { showToast } from "../notification_control";
 import { emitter } from "../emitter";
 import { tabsStore } from "../stores/stores_initializer";
 import axios from "axios";
+import { handleError } from "../logging/utils";
 
 function tabSQLTemplate(tab_name, template, showTip = true) {
   tabsStore.createQueryTab(tab_name, null, null, template);
@@ -27,7 +27,7 @@ function TemplateSelectPostgresql(schema, table, kind) {
       }, 200);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 
@@ -44,7 +44,7 @@ function TemplateInsertPostgresql(schema, table) {
       tabSQLTemplate(`Insert ${schema}.${table}`, resp.data.template);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 
@@ -61,7 +61,7 @@ function TemplateUpdatePostgresql(schema, table) {
       tabSQLTemplate(`Update ${schema}.${table}`, resp.data.template);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 
@@ -79,7 +79,7 @@ function TemplateSelectFunctionPostgresql(schema, func, functionid) {
       tabSQLTemplate(`Select ${schema}.${func}`, resp.data.template);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 

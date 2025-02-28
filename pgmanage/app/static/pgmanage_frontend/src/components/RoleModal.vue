@@ -236,11 +236,11 @@
   import { isEmpty, capitalize } from 'lodash';
   import { emitter } from '../emitter'
   import axios from 'axios'
-  import { showToast } from '../notification_control'
   import moment from 'moment'
   import { operationModes } from '../constants';
   import { Modal } from 'bootstrap'
   import PreviewBox from './PreviewBox.vue';
+  import { handleError } from '../logging/utils';
 
   export default {
     name: 'RoleModal',
@@ -380,7 +380,7 @@
           this.initialRole.memberOf = resp.data.member_of.map((m) => { return {name: m[0], withAdmin: m[1] == 'true'}})
         })
         .catch((error) => {
-            console.log(error)
+          handleError(error);
         })
       },
       getExistingRoles() {
@@ -393,7 +393,7 @@
           this.existingRoles = resp.data.data
         })
         .catch((error) => {
-            console.log(error)
+          handleError(error);
         })
       },
       addMember(collection) {
@@ -585,7 +585,7 @@
             this.modalInstance.hide()
           })
           .catch((error) => {
-            showToast("error", error.response.data.data)
+            handleError(error);
           })
         }
       },

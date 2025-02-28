@@ -3,6 +3,11 @@ import ConfigTabGroup from "@/components/ConfigTabGroup.vue";
 import ConfigTabGroupItemInput from "@/components/ConfigTabGroupItemInput.vue";
 import { vi, describe, it, beforeEach, expect } from "vitest";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 describe("ConfigTabGroup.vue", () => {
   let wrapper;
 

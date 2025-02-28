@@ -69,7 +69,6 @@
 <script>
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import axios from "axios";
-import { showToast } from "../notification_control";
 import { emitter } from "../emitter";
 import {
   messageModalStore,
@@ -78,6 +77,7 @@ import {
 } from "../stores/stores_initializer";
 import { useVuelidate } from "@vuelidate/core";
 import { minValue, required } from "@vuelidate/validators";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "MonitoringTab",
@@ -272,7 +272,7 @@ export default {
               message: error.response.data.data,
             });
           } else {
-            showToast("error", error.response.data.data);
+            handleError(error);
           }
           this.showLoading = false;
         });
@@ -324,7 +324,7 @@ export default {
               message: error.response.data.data,
             });
           } else {
-            showToast("error", error.response.data.data);
+            handleError(error);
           }
         });
     },

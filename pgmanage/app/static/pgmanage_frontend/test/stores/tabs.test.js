@@ -4,6 +4,11 @@ import { useTabsStore } from "@/stores/tabs";
 import { emitter } from "../../src/emitter";
 import * as worspaceModule from "@/workspace";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 vi.mock("@/workspace");
 
 vi.mock("@/stores/stores_initializer", () => {

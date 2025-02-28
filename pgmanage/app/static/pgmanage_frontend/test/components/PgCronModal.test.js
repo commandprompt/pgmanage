@@ -6,9 +6,18 @@ import { vi, describe, it, expect, beforeAll, afterEach } from "vitest";
 import { useSettingsStore } from "@/stores/settings.js";
 import "@/ace_extras/themes/theme-omnidb.js";
 import "ace-builds/src-noconflict/mode-sql";
-import { showToast } from "@/notification_control";
 import { emitter } from "@/emitter";
 import { operationModes } from "@/constants";
+import { handleError } from "@/logging/utils";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
+vi.mock("@/logging/utils", () => ({
+  handleError: vi.fn(),
+}));
 
 vi.mock("@/notification_control", () => ({
   showToast: vi.fn(),
@@ -166,16 +175,17 @@ describe("PgCronModal.vue", () => {
   });
 
   it("handles API error in setupJobStatisticsTab", async () => {
-    const wrapper = mountComponent();
-    axios.post.mockRejectedValue({
+    const errorResponse = {
       response: { data: { data: "Error fetching logs" } },
-    });
+    };
+    const wrapper = mountComponent();
+    axios.post.mockRejectedValue(errorResponse);
 
     await wrapper.vm.setupJobStatisticsTab();
     await flushPromises();
 
     expect(axios.post).toHaveBeenCalled();
-    expect(showToast).toHaveBeenCalledWith("error", "Error fetching logs");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("calls axios and refreshes job statistics when clearJobStats is called", async () => {
@@ -219,17 +229,18 @@ describe("PgCronModal.vue", () => {
   });
 
   it("handles API error in clearJobStats", async () => {
-    const wrapper = mountComponent();
-    axios.post.mockRejectedValue({
+    const errorResponse = {
       response: { data: { data: "Error clearing logs" } },
-    });
+    };
+    const wrapper = mountComponent();
+    axios.post.mockRejectedValue(errorResponse);
 
     await wrapper.vm.clearJobStats();
 
     await flushPromises();
 
     expect(axios.post).toHaveBeenCalled();
-    expect(showToast).toHaveBeenCalledWith("error", "Error clearing logs");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("calls API, emits event, and hides modal when deleteJob is successful", async () => {
@@ -256,15 +267,16 @@ describe("PgCronModal.vue", () => {
   });
 
   it("handles API error and calls showToast when deleteJob fails", async () => {
+    const errorResponse = {
+      response: { data: { data: "Error deleting job" } },
+    };
     const wrapper = mountComponent();
 
-    axios.post.mockRejectedValue({
-      response: { data: { data: "Error deleting job" } },
-    });
+    axios.post.mockRejectedValue(errorResponse);
 
     await wrapper.vm.deleteJob();
     await flushPromises();
 
-    expect(showToast).toHaveBeenCalledWith("error", "Error deleting job");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 });

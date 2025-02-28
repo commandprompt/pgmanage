@@ -1,4 +1,3 @@
-import { showToast } from "@/notification_control";
 import { emitter } from "@/emitter";
 import { tabsStore } from "@/stores/stores_initializer";
 import axios from "axios";
@@ -10,10 +9,16 @@ import {
 } from "@/tree_context_functions/tree_postgresql";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { flushPromises } from "@vue/test-utils";
+import { handleError } from "@/logging/utils";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
 
 vi.mock("axios");
-vi.mock("@/notification_control", () => ({
-  showToast: vi.fn(),
+vi.mock("@/logging/utils", () => ({
+  handleError: vi.fn(),
 }));
 vi.mock("@/emitter", () => ({
   emitter: {
@@ -87,7 +92,7 @@ describe("TemplatePostgresql Functions", () => {
 
       await flushPromises();
 
-      expect(showToast).toHaveBeenCalledWith("error", "Error message");
+      expect(handleError).toHaveBeenCalledWith(errorResponse);
     });
   });
 
@@ -122,7 +127,7 @@ describe("TemplatePostgresql Functions", () => {
       TemplateInsertPostgresql("schema", "table");
       await flushPromises();
 
-      expect(showToast).toHaveBeenCalledWith("error", "Error message");
+      expect(handleError).toHaveBeenCalledWith(errorResponse);
     });
   });
 
@@ -158,7 +163,7 @@ describe("TemplatePostgresql Functions", () => {
       TemplateUpdatePostgresql("schema", "table");
       await flushPromises();
 
-      expect(showToast).toHaveBeenCalledWith("error", "Error message");
+      expect(handleError).toHaveBeenCalledWith(errorResponse);
     });
   });
 
@@ -198,7 +203,7 @@ describe("TemplatePostgresql Functions", () => {
       TemplateSelectFunctionPostgresql("schema", "func", "functionid");
       await flushPromises();
 
-      expect(showToast).toHaveBeenCalledWith("error", "Error message");
+      expect(handleError).toHaveBeenCalledWith(errorResponse);
     });
   });
 });

@@ -1,10 +1,10 @@
 import { emitter } from "../emitter";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import axios from "axios";
-import { showToast } from "../notification_control";
 import { tabsStore, settingsStore, connectionsStore } from "../stores/stores_initializer";
 import { logger } from "../logging/logger_setup";
 import { axiosHooks } from "../logging/service";
+import { handleError } from "../logging/utils";
 
 export default {
   emits: ["treeTabsUpdate", "clearTabs"],
@@ -174,8 +174,8 @@ export default {
     removeNode(node) {
       this.$refs.tree.remove([node.path]);
     },
-    nodeOpenError(error_response, node) {
-      if (error_response.response.data?.password_timeout) {
+    nodeOpenError(error, node) {
+      if (error?.response?.data?.password_timeout) {
         emitter.emit('show_password_prompt', {
           databaseIndex: this.databaseIndex,
           successCallback: () => {
@@ -187,11 +187,11 @@ export default {
 
             this.refreshNode()
           },
-          message: error_response.response.data.data,
-          kind: error_response.response.data.kind})
+          message: error.response.data.data,
+          kind: error.response.data.kind})
       } else {
         this.removeChildNodes(node);
-        showToast("error", error_response.response.data.data);
+        handleError(error);
       }
     },
     getRootNode() {

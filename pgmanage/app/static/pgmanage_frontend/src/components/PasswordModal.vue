@@ -139,7 +139,7 @@ export default {
           if (this.successCallback) this.successCallback();
         })
         .catch((error) => {
-          this.message = error?.response?.data?.data;
+          this.message = error?.response?.data?.data ?? error;
         });
     },
     resetData() {

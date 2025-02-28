@@ -4,6 +4,11 @@ import axios from "axios";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import moment from "moment";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 vi.mock("axios");
 
 describe("UtilityJobs.vue", () => {

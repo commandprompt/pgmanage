@@ -44,7 +44,7 @@
 
 <script>
 import axios from 'axios'
-import { showToast } from '../notification_control'
+import { handleError } from '../logging/utils';
 
 export default {
   name: 'ActionsModal',
@@ -110,7 +110,7 @@ export default {
           this.$emit('actionDone', event, this.name)
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     create(event, type) {
@@ -123,7 +123,7 @@ export default {
           this.$emit('actionDone', event, this.name)
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     deleteFile() {
@@ -134,7 +134,7 @@ export default {
           this.$emit('actionDone')
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
 

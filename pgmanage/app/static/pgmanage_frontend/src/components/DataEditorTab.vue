@@ -56,6 +56,7 @@ import { emitter } from '../emitter';
 import { settingsStore, tabsStore, messageModalStore } from '../stores/stores_initializer';
 import DataEditorTabFilterList from './DataEditorTabFilterList.vue'
 import { dataEditorFilterModes } from '../constants';
+import { handleError } from '../logging/utils';
 
 // TODO: run query in transaction
 
@@ -271,7 +272,7 @@ export default {
           this.dataLoaded = true
         })
         .catch((error) => {
-          showToast("error", error.response.data)
+          handleError(error);
         });
     },
     getTableData(_url, _config, params) {

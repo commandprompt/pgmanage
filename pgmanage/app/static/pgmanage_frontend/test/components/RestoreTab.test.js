@@ -1,13 +1,22 @@
 import RestoreTab from "@/components/RestoreTab.vue";
 import UtilityJobs from "@/components/UtilityJobs.vue";
-import { showAlert, showToast } from "@/notification_control";
+import { showAlert } from "@/notification_control";
 import { fileManagerStore } from "@/stores/stores_initializer";
 import { flushPromises, mount } from "@vue/test-utils";
 import axios from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { handleError } from "@/logging/utils";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
+vi.mock("@/logging/utils", () => ({
+  handleError: vi.fn(),
+}));
 
 vi.mock("@/notification_control", () => ({
-  showToast: vi.fn(),
   showAlert: vi.fn(),
 }));
 
@@ -182,14 +191,15 @@ describe("RestoreTab.vue", () => {
   });
 
   it("calls getRoleNames and shows an error toast on failure", async () => {
-    axios.post.mockRejectedValueOnce({
+    const errorResponse = {
       response: { data: { data: "Error fetching roles" } },
-    });
+    };
+    axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.getRoleNames();
     await flushPromises();
 
-    expect(showToast).toHaveBeenCalledWith("error", "Error fetching roles");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("calls createRestore and starts a job on success", async () => {
@@ -209,14 +219,15 @@ describe("RestoreTab.vue", () => {
   });
 
   it("calls createRestore and shows an error toast on failure", async () => {
-    axios.post.mockRejectedValueOnce({
+    const errorResponse = {
       response: { data: { data: "Error restoring backup" } },
-    });
+    };
+    axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.createRestore();
     await flushPromises();
 
-    expect(showToast).toHaveBeenCalledWith("error", "Error restoring backup");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("updates fileName in changeFilePath", () => {
@@ -260,14 +271,15 @@ describe("RestoreTab.vue", () => {
   });
 
   it("calls previewCommand and shows an error toast on failure", async () => {
-    axios.post.mockRejectedValueOnce({
+    const errorResponse = {
       response: { data: { data: "Error previewing command" } },
-    });
+    };
+    axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.previewCommand();
     await flushPromises();
 
-    expect(showToast).toHaveBeenCalledWith("error", "Error previewing command");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("changes restoreOptions.fileName on FileManager store 'changeFile' action", async () => {

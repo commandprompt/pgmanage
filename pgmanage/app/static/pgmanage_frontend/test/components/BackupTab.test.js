@@ -1,13 +1,22 @@
 import BackupTab from "@/components/BackupTab.vue";
 import UtilityJobs from "@/components/UtilityJobs.vue";
-import { showAlert, showToast } from "@/notification_control";
+import { showAlert } from "@/notification_control";
 import { fileManagerStore } from "@/stores/stores_initializer";
 import { flushPromises, mount } from "@vue/test-utils";
 import axios from "axios";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { handleError } from "@/logging/utils";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
+vi.mock("@/logging/utils", () => ({
+  handleError: vi.fn(),
+}));
 
 vi.mock("@/notification_control", () => ({
-  showToast: vi.fn(),
   showAlert: vi.fn(),
 }));
 
@@ -260,14 +269,15 @@ describe("BackupTab Component", () => {
   });
 
   it("calls getRoleNames and shows an error toast on failure", async () => {
-    axios.post.mockRejectedValueOnce({
+    const errorResponse = {
       response: { data: { data: "Error fetching roles" } },
-    });
+    };
+    axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.getRoleNames();
     await flushPromises();
 
-    expect(showToast).toHaveBeenCalledWith("error", "Error fetching roles");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("updates fileName and format correctly in onFile", () => {
@@ -321,14 +331,15 @@ describe("BackupTab Component", () => {
   });
 
   it("calls saveBackup and shows an error toast on failure", async () => {
-    axios.post.mockRejectedValueOnce({
+    const errorResponse = {
       response: { data: { data: "Error saving backup" } },
-    });
+    };
+    axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.saveBackup();
     await flushPromises();
 
-    expect(showToast).toHaveBeenCalledWith("error", "Error saving backup");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("updates fileName in changeFilePath", () => {
@@ -373,13 +384,14 @@ describe("BackupTab Component", () => {
   });
 
   it("calls previewCommand and shows an error toast on failure", async () => {
-    axios.post.mockRejectedValueOnce({
+    const errorResponse = {
       response: { data: { data: "Error previewing command" } },
-    });
+    };
+    axios.post.mockRejectedValueOnce(errorResponse);
 
     await wrapper.vm.previewCommand();
     await flushPromises();
 
-    expect(showToast).toHaveBeenCalledWith("error", "Error previewing command");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 });

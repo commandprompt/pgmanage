@@ -1,8 +1,8 @@
 import { tabSQLTemplate } from "./tree_postgresql";
-import { showToast } from "../notification_control";
 import { emitter } from "../emitter";
 import { tabsStore } from "../stores/stores_initializer";
 import axios from "axios";
+import { handleError } from "../logging/utils";
 
 function TemplateSelectSqlite(table, kind) {
   axios
@@ -23,7 +23,7 @@ function TemplateSelectSqlite(table, kind) {
       }, 200);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 
@@ -39,7 +39,7 @@ function TemplateInsertSqlite(table) {
       tabSQLTemplate(`Insert ${table}`, resp.data.template);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 
@@ -55,7 +55,7 @@ function TemplateUpdateSqlite(table) {
       tabSQLTemplate(`Update ${table}`, resp.data.template);
     })
     .catch((error) => {
-      showToast("error", error.response.data.data);
+      handleError(error);
     });
 }
 

@@ -191,6 +191,7 @@ import MonitoringWidget from "./MonitoringWidget.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { required, minValue, minLength } from "@vuelidate/validators";
 import { Modal } from "bootstrap";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "MonitoringWidgetEditModal",
@@ -276,7 +277,7 @@ export default {
           this.widgets = resp.data.data;
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     getMonitoringWidgetDetails() {
@@ -290,7 +291,7 @@ export default {
           this.setScriptEditorValue(resp.data.script_chart);
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     setupEditor(editorDiv) {
@@ -331,7 +332,7 @@ export default {
           this.setScriptEditorValue(resp.data.script_chart);
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     resetToDefault() {
@@ -373,7 +374,7 @@ export default {
           showToast("success", "Monitoring widget created.");
         })
         .catch((error) => {
-          showToast("error", error.response?.data?.data);
+          handleError(error);
         });
     },
     updateMonitoringWidget() {
@@ -392,7 +393,7 @@ export default {
           showToast("success", "Monitoring widget updated.");
         })
         .catch((error) => {
-          showToast("error", error.response?.data?.data);
+          handleError(error);
         });
     },
     closeModal() {

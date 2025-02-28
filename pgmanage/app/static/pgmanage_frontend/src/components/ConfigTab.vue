@@ -164,12 +164,12 @@
 import ConfigTabGroup from "./ConfigTabGroup.vue";
 import { useVuelidate } from '@vuelidate/core'
 import axios from 'axios'
-import { showToast } from "../notification_control";
 import distance from 'jaro-winkler'
 import moment from 'moment'
 import { Modal } from "bootstrap";
 import { tabsStore } from "../stores/stores_initializer";
 import ConfirmableButton from "./ConfirmableButton.vue";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "Config",
@@ -274,7 +274,7 @@ export default {
         })
         .catch((error) => {
           this.data = "";
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     getCategories() {
@@ -288,7 +288,7 @@ export default {
           this.selected = this.categories[0];
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     changeData(e) {
@@ -318,7 +318,7 @@ export default {
           this.getConfigStatus();
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     getConfigHistory() {
@@ -336,7 +336,7 @@ export default {
           });
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     confirmConfig(event, revert = false) {
@@ -380,10 +380,10 @@ export default {
           }
         })
         .catch((error) => {
-          if (error.response.data.data.includes("SSL connection has been closed unexpectedly"))
+          if (error?.response?.data?.data.includes("SSL connection has been closed unexpectedly"))
             this.getConfigStatus()
           else
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     deleteOldConfig(config_id) {
@@ -394,7 +394,7 @@ export default {
           this.getConfigHistory();
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     getConfigurationDiffs() {
@@ -416,7 +416,7 @@ export default {
           this.configDiffData = diff
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     }
   },

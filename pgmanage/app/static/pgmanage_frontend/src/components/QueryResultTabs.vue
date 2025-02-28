@@ -67,13 +67,13 @@ import { queryModes, tabStatusMap } from "../constants";
 import { emitter } from "../emitter";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { settingsStore, tabsStore, cellDataModalStore } from "../stores/stores_initializer";
-import { showToast } from "../notification_control";
 import escape from 'lodash/escape';
 import isNil from 'lodash/isNil';
 import isEmpty from 'lodash/isEmpty';
 import mean from 'lodash/mean';
 import last from 'lodash/last';
 import { Tab } from "bootstrap";
+import { handleError } from "../logging/utils";
 
 export default {
   components: {
@@ -237,7 +237,7 @@ export default {
         .then(() => {
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     generateJson(data, headers, headerIndexMap) {

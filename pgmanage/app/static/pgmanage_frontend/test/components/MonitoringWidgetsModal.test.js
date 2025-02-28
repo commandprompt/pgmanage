@@ -3,6 +3,11 @@ import { beforeEach, describe, test, vi, expect, beforeAll } from "vitest";
 import MonitoringWidgetsModal from "../../src/components/MonitoringWidgetsModal.vue";
 import axios from "axios";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 vi.mock("axios");
 
 vi.mock("tabulator-tables", () => {

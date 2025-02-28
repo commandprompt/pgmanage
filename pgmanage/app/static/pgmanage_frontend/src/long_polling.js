@@ -6,6 +6,7 @@ import { debugResponse } from "./debug";
 import { getCookie } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
 import { emitter } from './emitter';
+import { handleError } from './logging/utils';
 
 const uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4})
 
@@ -48,7 +49,7 @@ function call_polling(startup) {
     })
     .catch((error) => {
       polling_busy = false
-      console.log(error?.response?.data?.data)
+      handleError(error);
     })
 }
 

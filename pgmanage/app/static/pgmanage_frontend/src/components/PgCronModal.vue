@@ -143,13 +143,13 @@ import { required, maxLength } from '@vuelidate/validators'
 import { useVuelidate } from '@vuelidate/core'
 import { emitter } from '../emitter'
 import axios from 'axios'
-import { showToast } from '../notification_control'
 import moment from 'moment'
 import { settingsStore } from '../stores/stores_initializer'
 import { TabulatorFull as Tabulator } from 'tabulator-tables'
 import { operationModes } from '../constants'
 import { Modal } from 'bootstrap'
 import { CronLight } from '@vue-js-cron/light'
+import { handleError } from '../logging/utils';
 
 export default {
   name: 'PgCronModal',
@@ -271,7 +271,7 @@ export default {
           this.databases = resp.data.map((x) => x.name)
         })
         .catch((error) => {
-            console.log(error)
+          handleError(error);
         })
     },
 
@@ -289,7 +289,7 @@ export default {
           this.inDatabase = resp.data.database
         })
         .catch((error) => {
-            console.log(error)
+          handleError(error);
         })
     },
 
@@ -340,7 +340,7 @@ export default {
           })
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
 
@@ -354,7 +354,7 @@ export default {
           this.setupJobStatisticsTab()
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
 
@@ -375,7 +375,7 @@ export default {
               Modal.getOrCreateInstance('#pgCronModal').hide()
             })
             .catch((error) => {
-              showToast("error", error.response.data.data)
+              handleError(error);
             })
         }
     },
@@ -405,7 +405,7 @@ export default {
           Modal.getOrCreateInstance('#pgCronModal').hide()
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     }
   },
