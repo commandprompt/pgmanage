@@ -55,7 +55,7 @@ const useSettingsStore = defineStore("settings", {
 
         return response.data;
       } catch (error) {
-        showToast("error", error.response.data.data);
+        handleError(error);
         return error;
       }
     },

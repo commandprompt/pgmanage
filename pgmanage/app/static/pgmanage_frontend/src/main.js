@@ -36,7 +36,20 @@ import App from './App.vue'
 import { createApp } from 'vue';
 import ToastPlugin from 'vue-toast-notification';
 import { setupLogger } from './logging/logger_setup.js';
-import { settingsStore, pinia } from './stores/stores_initializer.js';
+import {
+  settingsStore,
+  pinia,
+  tabsStore,
+  connectionsStore,
+  snippetsStore,
+  utilityJobStore,
+  dbMetadataStore,
+  messageModalStore,
+  cellDataModalStore,
+  fileManagerStore,
+  utilitiesMenuStore,
+  commandsHistoryStore,
+} from "./stores/stores_initializer.js";
 
 window.jQuery = window.$ = $;
 ace.config.setModuleUrl('ace/theme/omnidb', omniURL)
@@ -47,6 +60,20 @@ ace.config.set("loadWorkerFromBlob", false)
 
 axios.defaults.headers.common['X-CSRFToken'] = getCookie(v_csrf_cookie_name);
 axios.defaults.baseURL = app_base_path;
+
+const stores = [
+  settingsStore,
+  tabsStore,
+  connectionsStore,
+  snippetsStore,
+  utilityJobStore,
+  dbMetadataStore,
+  messageModalStore,
+  cellDataModalStore,
+  fileManagerStore,
+  utilitiesMenuStore,
+  commandsHistoryStore,
+];
 
 document.addEventListener('auxclick', function(event) {
   if (event.button === 1) {
@@ -59,7 +86,7 @@ document.addEventListener('auxclick', function(event) {
 
 settingsStore.getSettings().then(() => {
   const app = createApp(App);
-  setupLogger(app);
+  setupLogger(app, stores);
   if (__VITE_ENTERPRISE__) {
     import("@enterprise/index").then(({ default: enterprisePlugin }) => {
       app.use(enterprisePlugin);
