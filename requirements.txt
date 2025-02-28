@@ -1,15 +1,15 @@
 cryptography==41.0.7
-Django==4.2.17
+Django==4.2.19
 CherryPy==18.1.1
-sqlparse==0.5.1
+sqlparse==0.5.3
 psycopg2==2.9.10
-openpyxl==3.0.10
-RestrictedPython==6.0
-oracledb==2.2.1
+openpyxl==3.1.3
+RestrictedPython==7.4
+oracledb==2.5.1
 pymysql==1.1.1
 pgspecial==1.13.0
 sshtunnel==0.4.0
-psutil==5.9.8
+psutil==6.1.1
 django-vite==3.0.4
 # portend and tempora are indirect dependencies of cherrypy
 # pinned because newer versions caused pyinstaller issues with dateutil
