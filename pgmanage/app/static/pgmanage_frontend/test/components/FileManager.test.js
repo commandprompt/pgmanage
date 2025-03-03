@@ -4,6 +4,10 @@ import FileManager from "@/components/FileManager.vue";
 import axios from "axios";
 
 vi.mock("axios");
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
 
 const mockFiles = [
   {
@@ -35,13 +39,6 @@ describe("FileManager.vue", () => {
     });
   });
   it("renders correctly", async () => {
-    // const wrapper = mount(FileManager, {
-    //   global: {
-    //     stubs: {
-    //       teleport: true,
-    //     },
-    //   },
-    // });
     expect(wrapper.find(".modal-title").text()).toBe("File manager");
   });
 
@@ -49,18 +46,12 @@ describe("FileManager.vue", () => {
     axios.post.mockResolvedValue({
       data: { files: mockFiles, current_path: "/home/user", parent: false },
     });
-    // const wrapper = mount(FileManager);
 
     await wrapper.vm.getDirContent();
     expect(wrapper.vm.files).toEqual(mockFiles);
   });
 
   it("selects a file on click", async () => {
-    // const wrapper = mount(FileManager, {
-    //   data() {
-    //     return { files: mockFiles };
-    //   },
-    // });
     await wrapper.setData({ files: mockFiles });
     await wrapper.vm.selectFileOrDir("test_file.txt");
     expect(wrapper.vm.selectedFile.file_name).toBe("test_file.txt");
@@ -79,19 +70,6 @@ describe("FileManager.vue", () => {
     global.URL.createObjectURL = vi.fn();
     document.body.appendChild = vi.fn();
 
-    // const wrapper = mount(FileManager, {
-    //   data() {
-    //     return { selectedFile: { path: "/home/user/test_file.txt" } };
-    //   },
-    //   global: {
-    //     stubs: {
-    //       teleport: true,
-    //     },
-    //   },
-    // });
-    // await wrapper.setData({
-    //   selectedFile: { path: "/home/user/test_file.txt" },
-    // });
     axios.post.mockResolvedValue({ data: new Blob(["test"]) });
 
     await wrapper.vm.onDownload();
@@ -142,9 +120,6 @@ describe("FileManager.vue", () => {
   });
 
   it("calls onDownload when the download button is clicked", async () => {
-    // await wrapper.setData({
-    //   selectedFile: { path: "/home/user/test_file.txt" },
-    // });
     axios.post.mockResolvedValue({});
     const onDownloadSpy = vi.spyOn(wrapper.vm, "onDownload");
 

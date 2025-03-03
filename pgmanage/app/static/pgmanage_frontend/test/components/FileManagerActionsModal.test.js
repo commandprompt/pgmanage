@@ -3,8 +3,11 @@ import FileManagerActionsModal from "@/components/FileManagerActionsModal.vue";
 import axios from "axios";
 import { vi, describe, beforeEach, it, expect } from "vitest";
 
-// Mock Axios
 vi.mock("axios");
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
 
 describe("FileManagerActionsModal.vue", () => {
   let wrapper;
