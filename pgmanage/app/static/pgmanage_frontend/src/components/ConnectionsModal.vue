@@ -4,7 +4,7 @@
       <div class="modal-content modal-connections__content h-100">
         <div class="modal-header align-items-center">
           <h2 class="modal-title fw-bold">Manage connections</h2>
-          <button type="btn" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body modal-connections__body p-0">
           <div class="row g-0 h-100">

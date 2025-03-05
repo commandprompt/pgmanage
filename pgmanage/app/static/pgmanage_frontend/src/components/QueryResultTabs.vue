@@ -36,7 +36,7 @@
           <div class="result-div">
             <template v-if="exportFileName && exportDownloadName">
               The file is ready.
-              <a class="link_text" :href="exportFileName" :download="exportDownloadName">Save</a>
+              <a class="text-info" :href="exportFileName" :download="exportDownloadName">Save</a>
             </template>
             <template v-else-if="errorMessage" class="error_text" style="white-space: pre">
               {{ errorMessage }}

@@ -33,10 +33,6 @@ SOFTWARE.
     background-color: #101D2E;
   }
 
-  iframe {
-    border-color: #383b42;
-  }
-
   .omnidb__theme-bg--menu-primary {
     background-color: #162d4e;
 
@@ -313,15 +309,6 @@ SOFTWARE.
     color: #636A71;
   }
 
-  .omnidb__form-check .form-check-label::before {
-    background-color: #2F3136 !important;
-    border: 1px solid #4C5365 !important;
-  }
-
-  .omnidb__form-check input:checked~.form-check-label::after {
-    background-color: #2FB344;
-  }
-
   .required > label::after {
     color: #D72239;
   }
@@ -346,31 +333,6 @@ SOFTWARE.
     }
   }
 
-  /* Input-group */
-  span.input-group-text {
-    border-color: #484a55;
-  }
-
-  /* Switch */
-  label.omnidb__switch--label,
-  label.omnidb__switch--explain--label {
-    background-color: #3D424E;
-  }
-  label.omnidb__switch--label span,
-  label.omnidb__switch--explain--label span {
-    color: #fff;
-    background-color: #2f3136;
-  }
-  .omnidb__switch--input:checked~.omnidb__switch--label {
-    background-color: #0054A6;
-  }
-  .secondq__omnidb--input:checked ~ .omnidb__switch--label {
-    background-color: #809dde;
-  }
-  .omnidb__main:not(.omnidb__explain--default) label.omnidb__switch--explain--label {
-      background-color: #394e83;
-  }
-
   /* EXPLAIN */
   .omnidb__query-result-tabs__content  {
     .table thead th,
@@ -383,60 +345,14 @@ SOFTWARE.
     }
   }
 
-  /* MODAL */
-  .modal-header {
-    border-color: #484a55;
-  }
-  .modal-content {
-    background-color: #2F3136;
-    box-shadow: 0 0 200px rgba(0, 0, 0, 0.5);
-  }
-  .modal-footer {
-    border-top-color: #484a55;
-  }
-
   /* SCROLLBAR FIREFOX (new versions) */
   * {
     scrollbar-color: #47505D transparent;
   }
 
-  /* TOAST */
-  .toast {
-    background-color: #2f3136;
-    border-color: #1d1f21;
-   }
-  .toast-header {
-    background-color: #1d1f21;
-  }
-
-  /* JSON BUILDER */
-  .jsonBuilder--template-2 .jsonBuilder__label {
-    background-color: #1D1F21;
-  }
-
-  /* PAGINATION */
-  .page-link {
-    color: #7CBAFB;
-    background-color: #1d1f21;
-    border: 1px solid #484a55;
-  }
-  .page-item.active .page-link {
-    color: #FFF;
-    background-color: #394E83;
-    border-color: #394E83;
-  }
-  .page-item.disabled .page-link {
-    color: #6c757d;
-    background-color: #222529;
-    border-color: #474954;
-  }
-
   /* Workspace Connection Info */
   .omnidb__workspace__connection-details b {
     color: #206BC4;
-  }
-  .omnidb__ht__first-col-actions td:first-child {
-    color: #1CF58A;
   }
 
   /* Aimara Tree */
@@ -445,27 +361,12 @@ SOFTWARE.
   }
 
   /* Tree Component */
-  .div_left ul.tree {
-    background-color: #373b41 !important;
-  }
-  .div_left ul.tree li.last {
-    background-color: #373b41 !important;
-  }
-  .div_right ul.tree {
-    background-color: #373b41 !important;
-    font-weight: bold;
-  }
-  .div_right ul.tree li.last {
-    background-color: #373b41 !important;
-  }
+  
   .node:hover a {
     color: white !important;
   }
   .node a {
     color: #ffffff !important;
-  }
-  span.node_selected span {
-    color: inherit;
   }
 
   body {
@@ -484,317 +385,12 @@ SOFTWARE.
     background: #1E90FF !important;
   }
 
-  .div_right div > div.tab {
-    background-color: #525252 !important;
-  }
-  /* --------------------
-  			Conn Tabs
-  ---------------------*/
-  .conn_tabs div > div.tab, .white_box div > div.tab, .config_box div > div.tab {
-    background-color: #373b41 !important;
-  }
-  .white_box .div_tabs {
-    border: 1px solid #484a55 !important;
-  }
-  .conn_tabs .tabs, .white_box .tabs, .config_box .tabs {
-    background: #25282c !important;
-  }
-  .conn_tabs .tabs > li, .white_box .tabs > li, .config_box .tabs > li {
-    background-color: #373b41 !important;
-    color: #ffffff !important;
-  }
-
-  .config_box {
-    color: #ffffff !important;
-  }
-
-  .link_text {
-    color: #ffc67a !important;
-  }
-  /* --------------------
-  			Right Div
-  ---------------------*/
-  .div_right div > div.tab {
-    background-color: #373b41 !important;
-  }
-
-  .div_right .tabs {
-    background: #25282c !important;
-  }
-  .div_right .tabs > li {
-    background-color: #373b41 !important;
-    color: #ffffff !important;
-  }
-
-  .handsontable .wtBorder.corner {
-    border: 2px solid #5292f7 !important;
-  }
-  .handsontable td.area {
-    background: #2e3136 !important;
-  }
-  .handsontable.listbox .ht_master table {
-      color: #d7d7d7 !important;
-      border: 1px solid #2F3136 !important;
-      border-collapse: separate;
-      background: red;
-  }
-  .handsontable.listbox tr td.current, .handsontable.listbox tr:hover td {
-  	background-color: #1E90FF !important;
-  	color: #fff !important;
-  }
-  .ace_rightAlignedText {
-  	color: #d7d7d7 !important;
-  }
-  /* --------------------
-  			White Box
-  ---------------------*/
-  /* Handsontables */
-
-  /* --------------------
-  			Left Div
-  ---------------------*/
-  /* Connection Selector */
-  .dd {
-    border: none;
-    border-top: 1px solid #484a55 !important;
-    border-left: 1px solid #484a55 !important;
-    border-right: 1px solid #484a55 !important;
-  }
-  .div_left .ddTitle {
-    color: #ffffff !important;
-    background: #373b41 !important;
-  }
-  .div_left .dd .divider {
-    border-left: 1px solid #484a55 !important;
-    border-right: 0px solid #484a55 !important;
-  }
-  .div_left .dd .ddChild li.selected {
-    background-color: #25282c !important;
-  }
-  .div_left .dd .ddChild li {
-    background-color: #25282c !important;
-    color: #d7d7d7 !important;
-  }
-  .div_left .dd .ddChild li .ddlabel {
-    color: #d7d7d7 !important;
-  }
-  .div_left .dd .ddChild li {
-      border-bottom: 1px solid #484a55 !important;
-  }
-  .div_left .dd .ddChild {
-      border: none;
-      border-top: 1px solid #484a55 !important;
-      border-left: 1px solid #484a55 !important;
-      border-right: 1px solid #484a55 !important;
-  }
-
-  .div_left h2 {
-  	color: #d7d7d7 !important;
-  }
-  
-  /* -----------------------
-  				Handsontables Menu
-  ------------------------*/
-  .htContextMenu .wtSpreader table.htCore {
-    border-color: #6d6d6d !important;
-  }
-  .htContextMenu .wtSpreader table.htCore div {
-    color: #d7d7d7 !important;
-  }
-  .htContextMenu .wtSpreader table.htCore td {
-    background-color: #191919 !important;
-  }
-  .htContextMenu .wtSpreader table.htCore td:hover {
-    background-color: #1E90FF !important;
-  }
-
-  /* -------------------------
-  				Modal
-  --------------------------*/
-  .white_box, .config_box, .plugin_box, .users_box, .connection_list, .dashboard_unit_list, .dashboard_unit, .dashboard_unit_test {
-    border: 1px solid #16375F !important;
-    background-color: #25282c !important;
-    box-shadow: none !important;
-    color: #ffffff;
-  }
-  .modal_background_dark {
-    color: #d7d7d7 !important;
-    background: rgba(0, 0, 0, 0.6) !important;
-  }
-  .table-resultset, .explain-plan-toolbar, .dashboard_unit {
-    color: #d7d7d7 !important;
-  }
-  .box_color {
-    border: 1px solid #484a55 !important;
-    background-color: #25282c !important;
-    box-shadow: none !important;
-  }
-
-  .box_color2 {
-    border: 1px solid #484a55 !important;
-    background-color: #373b41 !important;
-    box-shadow: none !important;
-    color: #ffffff;
-  }
-
-  a.modal-closer {
-      color: #ffffff !important;
-      border: 1px solid #1E90FF !important;
-      background-color: #1E90FF !important;
-  }
-  a.modal-closer:hover {
-      background-color: #303030 !important;
-      color: #ffffff !important;
-      border: 1px solid #6d6d6d !important;
-  }
-
-  #plugin_file_label {
-    background: #25282c;
-    border: solid #484a55 1px;
-    color: #ffffff;
-  }
-  #plugin_file_label:hover {
-    color: #fff !important;
-    background: #1E90FF !important;
-  }
-  input[type="text"]:not([disabled]),
-  input[type="password"]:not([disabled]),
-  textarea  {
-    background-color: #1A2234 !important;
-    border-color: #243049 !important;
-  	color: #F8FAFC !important;
-    &:-webkit-autofill,
-    &:-webkit-autofill:hover,
-    &:-webkit-autofill:focus,
-    &:-webkit-autofill:active {
-      -webkit-box-shadow: 0 0 0px 1000px #1A2234 inset;
-      -webkit-text-fill-color: #F8FAFC !important;
-      -moz-box-shadow: 0 0 0px 1000px #1A2234 inset !important;
-      -moz-text-fill-color: #F8FAFC !important;
-      background-color: #1A2234!important;
-      border-color: #243049 !important;
-    	color: #F8FAFC !important;
-    }
-  }
-
-  table {
-    color: #F8FAFC;
-  }
-
-  .cellNew {
-  	background-color: rgb(125, 187, 109) !important;
-  	color: #000 !important;
-  }
-
-  .cellEdit {
-  	background-color: rgb(255, 238, 154) !important;
-  	color: #000 !important;
-  }
-
-  .cellRemove {
-  	background-color: rgb(255, 144, 144) !important;
-  	color: #000 !important;
-  }
-  .conversion_table {
-  	color: #d7d7d7;
-  }
-  .even_tr {
-  	background-color: #484a55;
-  }
-
-  .div_chat_header_default {
-  	background-color: #1D1F21 !important;
-  }
-
-  .div_chat_header_blink {
-  	background-color: rgb(255, 147, 15) !important;
-  }
-
-  .query_result {
-    color: #d7d7d7;
-  }
-
-  #popup_chat {
-      color: white;
-  }
-
-  .popup-header {
-      background: #25282c !important;
-      border-bottom: 2px solid #6d6d6d !important;
-  }
-
-  #div_chat_left {
-      background-color: rgb(72, 74, 85) !important;
-  }
-
-  #div_chat_right_left {
-      background-color: #1D1F21 !important;
-  }
-
-  #div_chat_right_right {
-      background-color: #1D1F21 !important;
-  }
-
-  .modal_content {
-      background-color: rgb(72, 74, 85) !important;
-      color: white !important;
-  }
-
-  .context_menu {
-      background-color: #191919 !important;
-      background-color: rgb(72, 74, 85) !important;
-  }
-
-  .context_menu_item:hover {
-      background-color: #1E90FF !important;
-  }
-
-  .div_chat_right_left_footer_left_options {
-      border: 1px solid rgba(0, 0, 0, 0.1) !important;
-      background-color: rgb(72, 74, 85) !important;
-      color: black !important;
-  }
-
-  #div_chat_right_left_pre_header {
-      background-color: rgb(72, 74, 85) !important;
-  }
-
-  .div_chat_message_attachment_container {
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      background-color: rgb(72, 74, 85) !important;
-  }
-
-  #horizontal-resize-line {
-    border-left-color: white;
-  }
-
-  #vertical-resize-line {
-    border-top-color: white;
-  }
-
   .fa-light {
     color: #ffffff !important;
   }
 
   .icon-tab-title {
     color: #ffffff;
-  }
-
-  .icon-group {
-    color: #50a8ff !important;
-  }
-
-  .icon-conn-string {
-    color: #50a8ff !important;
-  }
-
-  .shortcut_block_title {
-      border-bottom: 1px dashed #484a55 !important;
-  }
-
-  .checkmark {
-      background-color: #25282c !important;
-      border: 1px solid #585858 !important;
   }
 
   .error_text {
@@ -807,22 +403,5 @@ SOFTWARE.
 
   i.action-test {
       color: #a2b1bf !important;
-  }
-
-  div.welcome_release_content h2 {
-    background-color: #1E90FF !important;
-  }
-  ul.welcome_release_list {
-      border-left: 1px solid #1E90FF !important;
-  }
-  li.welcome_release_item::before {
-      background-color: #1E90FF !important;
-  }
-  li.welcome_release_item span::before {
-      background-color: #1E90FF !important;
-  }
-  li.welcome_release_item span {
-    background: #25282c !important;
-    color: #f6f6f6 !important;
   }
 }
