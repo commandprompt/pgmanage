@@ -484,11 +484,7 @@ export default {
           this.showLoading = false;
         })
         .catch((error) => {
-<<<<<<< HEAD
-          this.errorText = error?.response?.data?.data ?? error;
-=======
           this.errorText = error.response?.data.data;
->>>>>>> 17622ff0 (fix widget crash when quickly toggled on/off)
           this.showLoading = false;
         });
     },
@@ -512,11 +508,12 @@ export default {
       }
 
       try {
-        if (this.monitoringWidget.type === "chart") {
-          this.visualizationObject.options.plugins.legend.labels.color =
-            chartFontColor;
-          this.visualizationObject.options.plugins.title.color = chartFontColor;
-        } else {
+        this.visualizationObject.options.plugins.title.color = chartFontColor;
+        this.visualizationObject.options.plugins.title.font = chartFont;
+        this.visualizationObject.options.plugins.legend.labels.color = chartFontColor;
+        this.visualizationObject.options.plugins.legend.labels.font = chartFont;
+
+        if (this.monitoringWidget.type === "timeseries") {
           // axis x and y borders
           this.visualizationObject.options.elements.line.backgroundColor = chartLineBackgroundColor;
           this.visualizationObject.options.elements.line.borderColor = chartLineBorderColor;
