@@ -50,9 +50,10 @@ def _hook_import(name, *args, **kwargs):
 @database_required(check_timeout=False, open_connection=False)
 def monitoring_widgets_list(request, database):
     widget_list = []
+    db_type = 'mysql' if database.v_db_type == 'mariadb' else database.v_db_type
     try:
         for _, mon_widget in builtin_monitoring_widgets.items():
-            if mon_widget.get("dbms") == database.v_db_type:
+            if mon_widget.get("dbms") == db_type:
                 widget_list.append(
                     {
                         "id": mon_widget.get("id"),
