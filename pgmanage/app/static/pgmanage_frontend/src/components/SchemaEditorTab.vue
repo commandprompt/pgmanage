@@ -99,7 +99,7 @@
   </template>
 
     <div class="form-group mb-2">
-        <PreviewBox :editor-text="generatedSQL" label="Generated SQL" style="height: 30vh"/>
+        <PreviewBox :editor-text="generatedSQL" label="Generated SQL" :database-technology="dialect" style="height: 30vh"/>
     </div>
   </div>
 </template>
