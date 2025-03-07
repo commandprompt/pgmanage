@@ -129,12 +129,15 @@
                   ><i class="fas fa-house fa-xl"></i
                 ></a>
               </div>
-              <input
-                class="w-75 form-control"
+              <div class="form-group w-75 mb-0">
+                <input
+                class="form-control"
                 type="text"
                 :value="currentPath"
                 disabled
               />
+              </div>
+
               <a
                 v-if="currentView === 'table'"
                 class="btn btn-outline-secondary btn-sm"
