@@ -5059,11 +5059,11 @@ SELECT ...
 ALTER VIEW #view_name#
 --ALTER COLUMN column_name SET DEFAULT expression
 --ALTER COLUMN column_name DROP DEFAULT
---OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
+--OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
 --RENAME TO new_name
 --SET SCHEMA new_schema
 --SET ( check_option = value )
---SET ( security_barrier = { true | false } )
+--SET ( security_barrier = {{ true | false }} )
 --RESET ( check_option )
 --RESET ( security_barrier )
 
