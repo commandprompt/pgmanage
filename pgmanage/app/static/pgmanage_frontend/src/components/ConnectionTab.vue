@@ -107,6 +107,7 @@ import { Splitpanes, Pane } from "splitpanes";
 import TreePropertiesDDL from "./TreePropertiesDDL.vue";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import { Tooltip } from "bootstrap";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "ConnectionTab",
