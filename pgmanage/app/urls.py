@@ -289,7 +289,7 @@ base_urlpatterns = [
     path('template_update_sqlite/', views.tree_sqlite.template_update, name='template_update'),
     path('get_table_definition_sqlite/', views.tree_sqlite.get_table_definition, name="get_table_definition_sqlite"),
 
-    #MONITORING SYSTEM
+    # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
     path("monitoring-widgets/list", views.monitoring_dashboard.monitoring_widgets_list, name="monitoring-widgets-list"),
     path("monitoring-widgets/test", views.monitoring_dashboard.test_monitoring_widget, name="test-monitoring-widget"),
@@ -299,7 +299,8 @@ base_urlpatterns = [
     path("monitoring-widgets/<int:widget_saved_id>/refresh", views.monitoring_dashboard.refresh_monitoring_widget, name="refresh-monitoring-widget"),
     path("monitoring-widgets/user-created", views.monitoring_dashboard.create_widget, name="create-custom-widget"),
     path("monitoring-widgets/user-created/<int:widget_id>", views.monitoring_dashboard.user_created_widget_detail, name="widget-detail"),
-
+    path("monitoring-widgets/<int:widget_saved_id>/toggle", views.monitoring_dashboard.toggle_monitoring_widget, name="toggle-monitoring-widget"),
+    
     # Configuration
     path('configuration/<int:config_id>/', views.configuration.delete_config, name="delete_configuration"),
     path('configuration/', views.configuration.get_configuration, name='get_configuration'),

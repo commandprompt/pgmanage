@@ -213,6 +213,8 @@ class MonWidgetsConnections(models.Model):
     connection = models.ForeignKey(Connection, on_delete=models.CASCADE)
     interval = models.IntegerField(default=60)
     plugin_name = models.TextField(default="")
+    position = models.IntegerField(default=0)
+    visible = models.BooleanField(default=True)
 
 
 class ConfigHistory(models.Model):
