@@ -18,7 +18,7 @@
 
       <div class="monitoring-widgets row">
         <MonitoringWidget
-          v-for="widget in widgets"
+          v-for="widget in visibleSortedWidgets"
           :key="widget.saved_id"
           :monitoring-widget="widget"
           :workspace-id="workspaceId"
@@ -98,17 +98,7 @@ export default {
       }
     },
     closeWidget(widgetSavedId) {
-      let widgetIdx = this.widgets.findIndex(
-        (widget) => widget.saved_id === widgetSavedId
-      );
-      axios
-        .delete(`/monitoring-widgets/${widgetSavedId}`)
-        .then(() => {
-          this.widgets.splice(widgetIdx, 1);
-        })
-        .catch((error) => {
-          handleError(error);
-        });
+      this.toggleWidget()
     },
     updateWidgetInterval({ saved_id, interval }) {
       let widget = this.widgets.find((widget) => widget.saved_id === saved_id);
@@ -117,42 +107,58 @@ export default {
     showMonitoringWidgetsList() {
       this.monitoringModalVisible = true;
     },
-    toggleWidget(widgetData) {
+    toggleWidget(widgetSavedId, visible = false) {
+      debugger
       let widgetIdx = this.widgets.findIndex(
-        (widget) => widget.id === widgetData.id
+        (widget) => widget.saved_id === widgetSavedId
       );
 
-      if (widgetIdx === -1) {
-        let newWidget = {
-          id: widgetData.id,
-          title: widgetData.title,
-          interval: widgetData.interval,
-          plugin_name: widgetData.plugin_name ?? "",
-          type: widgetData.type,
-        };
-        this.saveWidgetToDatabaseAndShow(newWidget);
-      } else {
-        let widget = this.widgets[widgetIdx];
-        this.closeWidget(widget.saved_id);
-      }
-    },
-    saveWidgetToDatabaseAndShow(newWidget) {
       axios
-        .post("/monitoring-widgets/create", {
-          workspace_id: this.workspaceId,
-          database_index: this.databaseIndex,
-          widget_data: newWidget,
+        .post(`/monitoring-widgets/${widgetSavedId}/toggle`, {
+          visible: false
         })
-        .then((resp) => {
-          newWidget.saved_id = resp.data.user_widget.id;
-
-          this.widgets.unshift(newWidget);
+        .then(() => {
+          this.widgets[widgetIdx].visible = visible;
         })
         .catch((error) => {
           handleError(error);
         });
+      // if (widgetIdx === -1) {
+      //   let newWidget = {
+      //     id: widgetData.id,
+      //     title: widgetData.title,
+      //     interval: widgetData.interval,
+      //     plugin_name: widgetData.plugin_name ?? "",
+      //     type: widgetData.type,
+      //   };
+      //   this.saveWidgetToDatabaseAndShow(newWidget);
+      // } else {
+      //   let widget = this.widgets[widgetIdx];
+      //   this.closeWidget(widget.saved_id);
+      // }
     },
+    // saveWidgetToDatabaseAndShow(newWidget) {
+    //   axios
+    //     .post("/monitoring-widgets/create", {
+    //       workspace_id: this.workspaceId,
+    //       database_index: this.databaseIndex,
+    //       widget_data: newWidget,
+    //     })
+    //     .then((resp) => {
+    //       newWidget.saved_id = resp.data.user_widget.id;
+
+    //       this.widgets.unshift(newWidget);
+    //     })
+    //     .catch((error) => {
+    //       handleError(error);
+    //     });
+    // },
   },
+  computed: {
+    visibleSortedWidgets() {
+      return this.widgets.filter(widget => widget.visible).sort((a, b) => (a.position > b.position) ? 1 : -1)
+    }
+  }
 };
 </script>
 

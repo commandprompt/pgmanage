@@ -24,6 +24,9 @@
               <div class="col-1">
                 <p class="h6">Show</p>
               </div>
+              <div class="col d-flex justify-content-end pe-2">
+                <p class="h6">Move</p>
+              </div>
               <div class="col-5">
                 <p class="h6">Title</p>
               </div>
@@ -39,14 +42,14 @@
             </div>
 
             <div
-              v-for="(widget, index) in availableWidgets" :key=index
+              v-for="(widget, index) in widgets" :key=index
               class="schema-editor__column d-flex row flex-nowrap form-group g-0 flex-shrink-0"
               >
               <div class="col-1 d-flex align-items-center">
                 <div class="cell">
                   <div class="form-switch m-0">
                     <input
-                      :checked="widgetEnabled(widget.id)"
+                      :checked="widget.visible"
                       @click="this.$emit('toggleWidget', widget)"
                       type="checkbox"
                       class="form-check-input"
@@ -55,6 +58,20 @@
                 </div>
               </div>
 
+              <div class="col d-flex me-2 justify-content-end">
+                <button
+                  @click='moveWidgetUp(index)'
+                  class="btn btn-icon btn-icon-secondary" title="Move widget up" type="button">
+                  <i class="fas fa-circle-up"></i>
+                </button>
+
+                <button
+                  @click='moveWidgetDown(index)'
+                  class="btn btn-icon btn-icon-secondary ms-2" title="Move widget down" type="button">
+                  <i class="fas fa-circle-down"></i>
+                </button>
+              </div>
+              
               <div class="col-5 d-flex align-items-center">
                 <div class="cell">{{ widget.title }}</div>
               </div>
@@ -66,6 +83,7 @@
               <div class="col-2 d-flex align-items-center">
                 <div class="cell">{{ humanizeDuration(widget.interval) }}</div>
               </div>
+
 
               <div class="col d-flex me-2 justify-content-end">
                 <button
@@ -160,18 +178,45 @@ export default {
       )
     },
     getMonitoringWidgetList() {
-      axios
-        .post("/monitoring-widgets/list", {
-          database_index: this.databaseIndex,
-          workspace_id: this.workspaceId,
-        })
-        .then((resp) => {
-          this.availableWidgets = resp.data.data
-        })
-        .catch((error) => {
-          handleError(error);
-        });
+      // axios
+      //   .post("/monitoring-widgets", {
+      //     workspace_id: this.workspaceId,
+      //     database_index: this.databaseIndex,
+      //   })
+      //   .then((resp) => {
+      //     this.availableWidgets = resp.data.widgets;
+      //   })
+      //   .catch((error) => {
+      //     handleError(error);
+      //   });
+      // // axios
+      //   .post("/monitoring-widgets/list", {
+      //     database_index: this.databaseIndex,
+      //     workspace_id: this.workspaceId,
+      //   })
+      //   .then((resp) => {
+      //     this.availableWidgets = resp.data.data
+      //   })
+      //   .catch((error) => {
+      //     handleError(error);
+      //   });
     },
+    moveWidgetUp(index) {
+      // prevent moving newly added column above existing ones in "alter" mode
+      if(index == 0) return;
+      let widgetAbove = this.widgets[index-1]
+      let widget = this.widgets.splice(index, 1)[0]
+      this.widgets.splice(index-1, 0, col)
+    },
+    moveWidgetDown(index) {
+      if(index == this.widgets.length-1) return;
+      let w = this.widgets.splice(index, 1)[0]
+      this.widget.splice(index+1, 0, w)
+    },
+    revertColumn(index) {
+      this.columns[index] = JSON.parse(JSON.stringify(this.initialColumns[index]));
+    },
+    
     deleteMonitorWidget(widgetId) {
       messageModalStore.showModal(
         "Are you sure you want to delete this monitor widget?",
