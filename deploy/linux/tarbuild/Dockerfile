@@ -32,6 +32,8 @@ RUN wget https://www.python.org/ftp/python/$PYVER/Python-$PYVER.tgz && \
 RUN rm Python-$PYVER.tgz
 RUN rm -r Python-$PYVER/
 
+RUN strip --strip-unneeded /usr/local/lib/libpython3.9.so.1.0
+
 RUN apt-get update && apt-get install -y build-essential nodejs
 
 RUN python3 -m pip install --upgrade pip setuptools
