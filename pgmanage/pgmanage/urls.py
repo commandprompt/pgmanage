@@ -24,4 +24,4 @@ urlpatterns = [
 
 if ENTERPRISE_EDITION:
     from enterprise.urls_enterprise import urlpatterns as enterprise_urls
-    urlpatterns += enterprise_urls
+    urlpatterns = enterprise_urls + urlpatterns

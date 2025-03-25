@@ -88,7 +88,7 @@ settingsStore.getSettings().then(() => {
   const app = createApp(App);
   setupLogger(app, stores);
   if (__VITE_ENTERPRISE__) {
-    import("@enterprise/index").then(({ default: enterprisePlugin }) => {
+    import("@conditional/index").then(({ default: enterprisePlugin }) => {
       app.use(enterprisePlugin);
       app.use(ToastPlugin, {
         duration: 0,

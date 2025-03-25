@@ -202,7 +202,7 @@ import { useVuelidate } from '@vuelidate/core'
 import { required, maxLength } from '@vuelidate/validators'
 import { Modal } from 'bootstrap'
 import PasswordMeter from 'vue-simple-password-meter';
-import { handleError } from '@/logging/utils';
+import { handleError } from '@src/logging/utils';
 
 const light_terminal_theme = {
       background: '#FFFFFF',

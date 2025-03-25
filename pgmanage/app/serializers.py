@@ -14,6 +14,7 @@ safe_modules = [
     "app.include.OmniDatabase.SQLite",
     "app.include.Spartacus.Database",
     "app.include.Session",
+    "enterprise.include.OmniDatabase.PostgreSQL",
     "pgspecial.dbcommands",
     "pgspecial.iocommands",
     "pgspecial.main",
