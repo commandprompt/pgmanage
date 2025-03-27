@@ -1390,26 +1390,33 @@ class PostgreSQL:
 
     @lock_required
     def QueryTablesPrimaryKeys(self, p_table=None, p_all_schemas=False, p_schema=None):
+        if  self.version_num < 90500:
+            table_schema_column = "quote_ident(n.nspname)"
+            join_namespace = "INNER JOIN pg_namespace n ON t.relnamespace = n.oid"
+        else:  # PostgreSQL ≥ 9.5
+            table_schema_column = "quote_ident(t.relnamespace::regnamespace::text)"
+            join_namespace = ""
+
         v_filter = ''
         if not p_all_schemas:
             if p_table and p_schema:
-                v_filter = "AND quote_ident(t.relnamespace::regnamespace::text) = '{0}' AND quote_ident(t.relname) = '{1}' ".format(p_schema, p_table)
+                v_filter = f"AND {table_schema_column} = '{p_schema}' AND quote_ident(t.relname) = '{p_table}' "
             elif p_table:
-                v_filter = "AND quote_ident(t.relnamespace::regnamespace::text) = '{0}' AND quote_ident(t.relname) = '{1}' ".format(self.v_schema, p_table)
+                v_filter = f"AND {table_schema_column} = '{self.v_schema}' AND quote_ident(t.relname) = '{p_table}' "
             elif p_schema:
-                v_filter = "AND quote_ident(t.relnamespace::regnamespace::text) = '{0}' ".format(p_schema)
+                v_filter = f"AND {p_schema} = '{table_schema_column}' "
             else:
-                v_filter = "AND quote_ident(t.relnamespace::regnamespace::text) = '{0}' ".format(self.v_schema)
+                v_filter = f"AND {table_schema_column} = '{self.v_schema}' "
         else:
             if p_table:
-                v_filter = "AND quote_ident(t.relnamespace::regnamespace::text) NOT IN ('information_schema','pg_catalog') AND quote_ident(t.relname) = {0}".format(p_table)
+                v_filter = f"AND {table_schema_column} NOT IN ('information_schema','pg_catalog') AND quote_ident(t.relname) = {p_table}"
             else:
-                v_filter = "AND quote_ident(t.relnamespace::regnamespace::text) NOT IN ('information_schema','pg_catalog') "
-        return self.v_connection.Query('''
+                v_filter = f"AND {table_schema_column} NOT IN ('information_schema','pg_catalog') "
+        return self.v_connection.Query(f'''
             SELECT quote_ident(c.conname) AS name_raw,
                    c.conname AS constraint_name,
                    quote_ident(t.relname) AS table_name,
-                   quote_ident(t.relnamespace::regnamespace::text) AS table_schema,
+                   {table_schema_column} AS table_schema,
                    c.oid
             FROM (
                 SELECT oid,
@@ -1420,11 +1427,12 @@ class PostgreSQL:
             ) c
             INNER JOIN pg_class t
                     ON c.conrelid = t.oid
+            {join_namespace}
             WHERE 1 = 1
-              {0}
+              {v_filter}
             ORDER BY quote_ident(c.conname),
-                     quote_ident(t.relnamespace::regnamespace::text)
-        '''.format(v_filter), True)
+                      {table_schema_column}
+        ''', True)
 
     @lock_required
     def QueryTablesPrimaryKeysColumns(self, p_pkey, p_table=None, p_all_schemas=False, p_schema=None):
@@ -6239,13 +6247,15 @@ ALTER STATISTICS #statistics_name#
     
     @lock_required
     def GetPropertiesDatabase(self, p_object):
-        return self.v_connection.Query('''
+        datcollate = 'd.datcollate as "LC_COLLATE",' if self.version_num >= 80400 else ""
+        datctype = 'd.datctype as "LC_CTYPE",' if self.version_num >= 80400 else ""
+        return self.v_connection.Query(f'''
             select d.datname as "Database",
                    r.rolname as "Owner",
                    pg_size_pretty(pg_database_size(d.oid)) as "Size",
                    pg_encoding_to_char(d.encoding) as "Encoding",
-                   d.datcollate as "LC_COLLATE",
-                   d.datctype as "LC_CTYPE",
+                   {datcollate}
+                   {datctype}
                    d.datistemplate as "Is Template",
                    d.datallowconn as "Allows Connections",
                    d.datconnlimit as "Connection Limit",
@@ -6256,8 +6266,8 @@ ALTER STATISTICS #statistics_name#
             on r.oid = d.datdba
             inner join pg_tablespace t
             on t.oid = d.dattablespace
-            where quote_ident(d.datname) = '{0}'
-        '''.format(p_object))
+            where quote_ident(d.datname) = '{p_object}'
+        ''')
     
     @lock_required
     def GetPropertiesExtension(self, p_object):
@@ -7702,13 +7712,15 @@ ALTER STATISTICS #statistics_name#
     
     @lock_required
     def GetDDLDatabase(self, p_object):
-        return self.v_connection.ExecuteScalar('''
-            WITH comments AS (
-                SELECT shobj_description(oid, 'pg_database') AS comment
-                FROM pg_database
-                WHERE quote_ident(datname) = '{0}'
-            )
-            select format(E'CREATE DATABASE %s\nOWNER %s\nENCODING %s\nLC_COLLATE ''%s''\nLC_CTYPE ''%s''\nTABLESPACE %s\nALLOW_CONNECTIONS %s\nCONNECTION LIMIT %s\nIS_TEMPLATE %s;%s',
+        datcollate = 'datcollate,' if self.version_num >= 80400 else ""
+        datctype = 'datctype,' if self.version_num >= 80400 else ""
+        # Check if PostgreSQL supports FORMAT (introduced in 9.1)
+        supports_format = self.version_num >= 90100
+
+        if supports_format:
+            base_query = """
+                     format(
+                            E'CREATE DATABASE %s\nOWNER %s\nENCODING %s\nLC_COLLATE ''%s''\nLC_CTYPE ''%s''\nTABLESPACE %s\nALLOW_CONNECTIONS %s\nCONNECTION LIMIT %s\nIS_TEMPLATE %s;%s',
                             quote_ident(d.datname),
                             quote_ident(r.rolname),
                             pg_encoding_to_char(encoding),
@@ -7725,7 +7737,38 @@ ALTER STATISTICS #statistics_name#
                                             quote_literal(c.comment)
                                         )
                                 ELSE ''
-                            END))
+                            END
+                            )
+                        )
+                        """
+        else:
+            datcollate = 'datcollate ||' if self.version_num >= 80400 else ""
+            datctype = 'datctype ||' if self.version_num >= 80400 else ""
+
+            base_query = f"""
+                E'CREATE DATABASE ' || quote_ident(d.datname) || 
+                      '\nOWNER ' || quote_ident(r.rolname) ||
+                      '\nENCODING ' || pg_encoding_to_char(encoding) ||
+                      '\nLC_COLLATE ' || {datcollate} '\nLC_CTYPE ' || {datctype} 
+                      '\nTABLESPACE ' || quote_ident(t.spcname) || 
+                      '\nALLOW_CONNECTIONS ' || CASE WHEN datallowconn THEN 'true' ELSE 'false' END ||
+                      '\nCONNECTION LIMIT ' || datconnlimit || 
+                      '\nIS_TEMPLATE ' || CASE WHEN datistemplate THEN 'true' ELSE 'false' END ||
+                      '; ' || (CASE WHEN c.comment IS NOT NULL
+                                THEN 
+                                    E'\n\nCOMMENT ON DATABASE ' || quote_ident(d.datname) || ' is ' || quote_literal(c.comment) || ';'
+                                ELSE ''
+                            END
+                            )
+"""
+
+        return self.v_connection.ExecuteScalar(f'''
+            WITH comments AS (
+                SELECT shobj_description(oid, 'pg_database') AS comment
+                FROM pg_database
+                WHERE quote_ident(datname) = '{p_object}'
+            )
+            select {base_query}
             from pg_database d
             inner join pg_roles r
             on r.oid = d.datdba
@@ -7733,9 +7776,10 @@ ALTER STATISTICS #statistics_name#
             on t.oid = d.dattablespace
             LEFT JOIN comments c
                     ON 1 = 1
-            where quote_ident(d.datname) = '{0}'
-        '''.format(p_object))
+            where quote_ident(d.datname) = '{p_object}'
+        ''')
     
+
     @lock_required
     def GetDDLExtension(self, p_object):
         return self.v_connection.ExecuteScalar(
