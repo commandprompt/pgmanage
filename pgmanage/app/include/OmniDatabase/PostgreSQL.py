@@ -123,24 +123,6 @@ class PostgreSQL:
             'varchar': { 'quoted': True }
         }
 
-
-        self.v_has_schema = True
-        self.v_has_functions = True
-        self.v_has_procedures = True
-        self.v_has_packages = False
-        self.v_has_sequences = True
-        self.v_has_primary_keys = True
-        self.v_has_foreign_keys = True
-        self.v_has_uniques = True
-        self.v_has_indexes = True
-        self.v_has_checks = True
-        self.v_has_excludes = True
-        self.v_has_rules = True
-        self.v_has_triggers = True
-        self.v_has_partitions = True
-        self.v_has_statistics = True
-
-        self.v_has_update_rule = True
         self.v_can_rename_table = True
         self.v_rename_table_command = "alter table #p_table_name# rename to #p_new_table_name#"
         self.v_create_pk_command = "constraint #p_constraint_name# primary key (#p_columns#)"
@@ -713,10 +695,83 @@ class PostgreSQL:
             'ZONE',
         ]
         self.v_console_help = "Console tab. Type the commands in the editor below this box. \\? to view command list."
-        self.v_version = ''
-        self.v_version_num = ''
-        self.major_version = ''
+        self._version = None
+        self._version_num = None
+        self._major_version = None
         self.v_use_server_cursor = True
+        self.set_default_feature_flags()
+        if self.version_num:
+            self.edit_feature_flags()
+
+
+    @property
+    def version(self):
+        if self._version is None:
+            self._fetch_version()
+        return self._version
+
+        
+    @property
+    def version_num(self):
+        if self._version_num is None:
+            self._fetch_version()
+        return self._version_num
+    
+        
+    @property
+    def major_version(self):
+        if self._major_version is None:
+            self._fetch_version()
+        return self._major_version
+        
+    
+    def _fetch_version(self):
+        try:
+            self._version = self.v_connection.ExecuteScalar('show server_version')
+            self._version_num = int(self.v_connection.ExecuteScalar('show server_version_num'))
+            self._major_version = self.version_num // 10000
+        except Exception:
+            self._version = None
+            self._version_num = None
+            self._major_version = None
+    
+
+    def set_default_feature_flags(self):
+        self.has_schema = True
+        self.has_functions = True
+        self.has_procedures = True
+        self.has_packages = False
+        self.has_sequences = True
+        self.has_primary_keys = True
+        self.has_foreign_keys = True
+        self.has_uniques = True
+        self.has_indexes = True
+        self.has_checks = True
+        self.has_excludes = True
+        self.has_rules = True
+        self.has_triggers = True
+        self.has_partitions = True
+        self.has_statistics = True
+
+        self.has_extensions = False
+        self.has_fdw = False
+        self.has_event_triggers = False
+        self.has_event_trigger_functions = False
+        self.has_procedures = False
+        self.has_replication_slots = False
+        self.has_logical_replication = False
+        self.has_update_rule = True
+
+    
+    def edit_feature_flags(self):
+        self.has_schema = True
+        self.has_extensions = self.version_num >= 90100
+        self.has_fdw = self.version_num >= 90300
+        self.has_event_triggers = self.version_num >= 90300
+        self.has_event_trigger_functions = self.version_num >= 90300
+        self.has_procedures = self.version_num >= 110000
+        self.has_replication_slots = self.version_num >= 90400
+        self.has_logical_replication = self.version_num >= 100000
 
     # Decorator to acquire lock before performing action
     def lock_required(function):
@@ -750,10 +805,7 @@ class PostgreSQL:
 
     @lock_required
     def GetVersion(self):
-        self.v_version = self.v_connection.ExecuteScalar('show server_version')
-        self.v_version_num = self.v_connection.ExecuteScalar('show server_version_num')
-        self.major_version = int(self.v_version_num[:2])
-        return 'PostgreSQL ' + self.v_version.split(' ')[0]
+        return f"PostgreSQL {self.version.split(' ')[0]}" if self.version else "Unknown"
 
     @lock_required
     def GetUserSuper(self):
@@ -1817,7 +1869,7 @@ class PostgreSQL:
                 v_filter = "and quote_ident(np.nspname) not in ('information_schema','pg_catalog') and quote_ident(cp.relname) = {0}".format(p_table)
             else:
                 v_filter = "and quote_ident(np.nspname) not in ('information_schema','pg_catalog') "
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) >= 100000:
+        if self.version_num >= 100000:
             return self.v_connection.Query('''
                 select quote_ident(np.nspname) as parent_schema,
                        quote_ident(cp.relname) as parent_table,
@@ -4578,7 +4630,7 @@ ALTER TABLESPACE #tablespace_name#
 DROP TABLESPACE #tablespace_name#''')
 
     def TemplateCreateDatabase(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createdatabase.html
 CREATE DATABASE name
 --OWNER user_name
@@ -4591,7 +4643,7 @@ CREATE DATABASE name
 --CONNECTION LIMIT connlimit
 --IS_TEMPLATE istemplate
 ''')
-        elif int(self.v_connection.ExecuteScalar("show server_version_num")) >= 130000 and int(self.v_connection.ExecuteScalar("show server_version_num")) < 150000:
+        elif self.version_num >= 130000 and self.version_num < 150000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createdatabase.html
 CREATE DATABASE name
 --OWNER user_name
@@ -4641,7 +4693,7 @@ ALTER DATABASE #database_name#
 ''')
 
     def TemplateDropDatabase(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropdatabase.html
 DROP DATABASE #database_name#''')
         else:
@@ -4731,7 +4783,7 @@ $function$
 ''')
 
     def TemplateAlterFunction(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterfunction.html
 ALTER FUNCTION #function_name#
 --CALLED ON NULL INPUT
@@ -4854,7 +4906,7 @@ $function$
 ''')
 
     def TemplateAlterTriggerFunction(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterfunction.html
 ALTER FUNCTION #function_name#
 --CALLED ON NULL INPUT
@@ -4936,7 +4988,7 @@ $function$
 ''')
 
     def TemplateAlterEventTriggerFunction(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterfunction.html
 ALTER FUNCTION #function_name#
 --CALLED ON NULL INPUT
@@ -5054,7 +5106,7 @@ SELECT ...
 ''')
 
     def TemplateAlterView(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterview.html
 ALTER VIEW #view_name#
 --ALTER COLUMN column_name SET DEFAULT expression
@@ -5224,7 +5276,7 @@ DROP CONSTRAINT #constraint_name#
 ''')
 
     def TemplateCreateIndex(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createindex.html
 CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] name
 ON [ ONLY ] #table_name#
@@ -5246,7 +5298,7 @@ ON [ ONLY ] #table_name#
 ''')
 
     def TemplateAlterIndex(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterindex.html
 ALTER INDEX #index_name#
 --RENAME to new_name
@@ -5372,7 +5424,7 @@ ON #table_name#
 ''')
 
     def TemplateAlterTrigger(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertrigger.html
 ALTER TRIGGER #trigger_name# ON #table_name#
 --RENAME TO new_name
@@ -5501,7 +5553,7 @@ CREATE TYPE #schema_name#.name
 ''')
 
     def TemplateAlterType(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertype.html
 ALTER TYPE #type_name#
 --ADD ATTRIBUTE attribute_name data_type [ COLLATE collation ] [ CASCADE | RESTRICT ]
@@ -5571,7 +5623,7 @@ ALTER DOMAIN #domain_name#
 ''')
 
     def TemplateVacuum(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-vacuum.html
 VACUUM
 --FULL
@@ -5596,7 +5648,7 @@ VACUUM
 ''')
 
     def TemplateVacuumTable(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-vacuum.html
 VACUUM
 --FULL
@@ -5854,7 +5906,7 @@ TRUNCATE
         return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE \nSELECT pg_drop_replication_slot('#slot_name#')''')
 
     def TemplateCreateLogicalReplicationSlot(self):
-        if int(self.v_version_num) >= 100000:
+        if self.version_num >= 100000:
             return Template(f''' -- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE \nSELECT * FROM pg_create_logical_replication_slot('slot_name', 'pgoutput')''')
         else:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE \nSELECT * FROM pg_create_logical_replication_slot('slot_name', 'test_decoding')''')
@@ -5863,7 +5915,7 @@ TRUNCATE
         return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE \nSELECT pg_drop_replication_slot('#slot_name#')''')
 
     def TemplateCreatePublication(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createpublication.html
 CREATE PUBLICATION name
 --FOR TABLE [ ONLY ] table_name [ * ] [, ...]
@@ -5880,7 +5932,7 @@ CREATE PUBLICATION name
 ''')
 
     def TemplateAlterPublication(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterpublication.html
 ALTER PUBLICATION #pub_name#
 --ADD TABLE [ ONLY ] table_name [ * ] [, ...]
@@ -6134,7 +6186,7 @@ FROM #table_name#
 ''')
 
     def TemplateAlterStatistics(self):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return Template(f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterstatistics.html
 ALTER STATISTICS #statistics_name#
 --OWNER to {{ new_owner | CURRENT_USER | SESSION_USER }}
@@ -7390,7 +7442,7 @@ ALTER STATISTICS #statistics_name#
 
     @lock_required
     def GetPropertiesPublication(self, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return self.v_connection.Query('''
                 SELECT current_database() as "Database",
                        p.pubname AS "Name",
@@ -9187,7 +9239,7 @@ ALTER STATISTICS #statistics_name#
 
     @lock_required
     def GetDDLPublication(self, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return self.v_connection.ExecuteScalar("""
                 WITH publication AS (
                     SELECT oid,
@@ -9825,7 +9877,7 @@ ALTER STATISTICS #statistics_name#
 
     @lock_required
     def GetDDLTableField(self, p_schema, p_table, p_object):
-        if int(self.v_connection.ExecuteScalar('show server_version_num')) < 130000:
+        if self.version_num < 130000:
             return self.v_connection.ExecuteScalar(
                 '''
                     WITH columns AS (
