@@ -50,7 +50,7 @@
                   <div class="form-switch m-0">
                     <input
                       :checked="widget.visible"
-                      @click="this.$emit('toggleWidget', widget)"
+                      @click="this.$emit('toggleWidget', widget, !widget.visible)"
                       type="checkbox"
                       class="form-check-input"
                       >
@@ -60,13 +60,13 @@
 
               <div class="col d-flex me-2 justify-content-end">
                 <button
-                  @click='moveWidgetUp(index)'
+                  @click='this.$emit("moveWidgetUp", index)'
                   class="btn btn-icon btn-icon-secondary" title="Move widget up" type="button">
                   <i class="fas fa-circle-up"></i>
                 </button>
 
                 <button
-                  @click='moveWidgetDown(index)'
+                  @click='this.$emit("moveWidgetDown", index)'
                   class="btn btn-icon btn-icon-secondary ms-2" title="Move widget down" type="button">
                   <i class="fas fa-circle-down"></i>
                 </button>
@@ -121,6 +121,7 @@
     :modal-visible="editModalVisible"
     :widget-id="editWidgetId"
     @modal-hide="onEditHide"
+    @widget-created="onWidgetCreated"
   />
 </template>
 
@@ -145,7 +146,7 @@ export default {
     widgets: Array,
   },
   mixins: [HumanizeDurationMixin],
-  emits: ["modalHide", "toggleWidget"],
+  emits: ["modalHide", "toggleWidget", "moveWidgetUp", "moveWidgetDown", "deleteWidget", "addWidget"],
   data() {
     return {
       table: null,
@@ -165,7 +166,6 @@ export default {
       if (newVal) {
         this.modalInstance = Modal.getOrCreateInstance(this.$refs.monitoringWidgetsModal)
         this.modalInstance.show();
-        this.getMonitoringWidgetList();
       } else {
         if (!!this.table) this.table.destroy();
       }
@@ -177,58 +177,14 @@ export default {
         (widget) => widget.id === id
       )
     },
-    getMonitoringWidgetList() {
-      // axios
-      //   .post("/monitoring-widgets", {
-      //     workspace_id: this.workspaceId,
-      //     database_index: this.databaseIndex,
-      //   })
-      //   .then((resp) => {
-      //     this.availableWidgets = resp.data.widgets;
-      //   })
-      //   .catch((error) => {
-      //     handleError(error);
-      //   });
-      // // axios
-      //   .post("/monitoring-widgets/list", {
-      //     database_index: this.databaseIndex,
-      //     workspace_id: this.workspaceId,
-      //   })
-      //   .then((resp) => {
-      //     this.availableWidgets = resp.data.data
-      //   })
-      //   .catch((error) => {
-      //     handleError(error);
-      //   });
-    },
-    moveWidgetUp(index) {
-      // prevent moving newly added column above existing ones in "alter" mode
-      if(index == 0) return;
-      let widgetAbove = this.widgets[index-1]
-      let widget = this.widgets.splice(index, 1)[0]
-      this.widgets.splice(index-1, 0, col)
-    },
-    moveWidgetDown(index) {
-      if(index == this.widgets.length-1) return;
-      let w = this.widgets.splice(index, 1)[0]
-      this.widget.splice(index+1, 0, w)
-    },
-    revertColumn(index) {
-      this.columns[index] = JSON.parse(JSON.stringify(this.initialColumns[index]));
-    },
-    
     deleteMonitorWidget(widgetId) {
       messageModalStore.showModal(
         "Are you sure you want to delete this monitor widget?",
         () => {
-          let widget = this.widgets.find((widget) => widget.id === widgetId);
-          if (!!widget) {
-            this.$emit("toggleWidget", widget);
-          }
           axios
             .delete(`/monitoring-widgets/user-created/${widgetId}`)
             .then((resp) => {
-              this.getMonitoringWidgetList();
+              this.$emit("deleteWidget", widgetId)
             })
             .catch((error) => {
               handleError(error);
@@ -245,6 +201,9 @@ export default {
       this.editModalVisible = false;
       this.editWidgetId = null;
     },
+    onWidgetCreated(widgetData) {
+      this.$emit("addWidget", widgetData)
+    }
   },
 };
 </script>

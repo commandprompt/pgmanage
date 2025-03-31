@@ -205,7 +205,7 @@ export default {
     widgetId: Number,
     tabId: String,
   },
-  emits: ["modalHide"],
+  emits: ["modalHide", "widgetCreated"],
   data() {
     return {
       widgetTypes: ["timeseries", "chart", "grid"],
@@ -367,6 +367,7 @@ export default {
           this.resetToDefault();
           this.modalInstance.hide();
           this.$emit("modalHide");
+          this.$emit("widgetCreated", resp.data)
           showToast("success", "Monitoring widget created.");
         })
         .catch((error) => {

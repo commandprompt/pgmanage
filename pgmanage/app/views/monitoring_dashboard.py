@@ -130,7 +130,7 @@ def user_created_widget_detail(request, widget_id):
 @database_required(check_timeout=False, open_connection=False)
 def create_widget(request, database):
     data = request.data
-
+    database_index = data.get("database_index")
     widget_name = data.get("widget_name")
     widget_type = data.get("widget_type")
     widget_interval = data.get("widget_interval")
@@ -153,8 +153,28 @@ def create_widget(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     widget.save()
+    # create widget configuration for current database connection
+    conn_object = Connection.objects.get(id=database_index)
+    lastconfig = MonWidgetsConnections.objects.filter(connection_id=database_index).order_by('-position').first()
+    position = 0
+    if lastconfig:
+        position = lastconfig.position + 1
+    widget_config = MonWidgetsConnections(
+        unit=widget.id,
+        user=request.user,
+        connection=conn_object,
+        interval=widget.interval,
+        plugin_name='',
+        visible = True,
+        position = position
+    )
+    widget_config.save()
+    data = model_to_dict(widget)
+    data['visible'] = widget_config.visible
+    data['saved_id'] = widget_config.id
+    data['position'] = widget_config.position
 
-    return JsonResponse(data=model_to_dict(widget), status=201)
+    return JsonResponse(data=data, status=201)
 
 # lists widgets available on the dashboard
 # gets widget configs, creates if no configs found
@@ -321,30 +341,23 @@ def widget_detail(request, widget_id):
     if request.method == "PATCH":
         data = json.loads(request.body or "{}")
         interval = data.get("interval")
+        position = data.get("posistion")
+        visible = data.get("visible")
         widget = MonWidgetsConnections.objects.filter(
             user=request.user, id=widget_id
         ).first()
         if not widget:
             return JsonResponse(data={"data": "Widget not found."}, status=404)
 
-        widget.interval = interval or 5
+        if interval is not None:
+            widget.interval = interval
+        if position is not None:
+            widget.position = position
+        if visible is not None:
+            widget.visible = visible
         widget.save()
 
         return HttpResponse(status=204)
-
-@user_authenticated
-@database_required(check_timeout=True, open_connection=True)
-def toggle_monitoring_widget(request, database, widget_saved_id):
-    visible = request.data.get("visible")
-    widget = MonWidgetsConnections.objects.filter(
-        user=request.user, id=widget_saved_id
-    ).first()
-    if not widget:
-        return JsonResponse(data={"data": "Widget not found."}, status=404)
-    widget.visible = visible
-    widget.save()
-
-    return HttpResponse(status=204)
 
 
 @user_authenticated

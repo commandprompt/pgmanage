@@ -26,20 +26,24 @@
           :database-index="databaseIndex"
           :refresh-widget="refreshWidget"
           @widget-refreshed="waitForAllAndRefreshCounter"
-          @widget-close="closeWidget"
+          @toggle-widget="toggleWidget"
           @interval-updated="updateWidgetInterval"
         />
       </div>
     </div>
     <Teleport to="body">
       <MonitoringWidgetsModal
-        :widgets="widgets"
+        :widgets="sortedWidgets"
         :workspace-id="workspaceId"
         :tab-id="tabId"
         :database-index="databaseIndex"
         :widgets-modal-visible="monitoringModalVisible"
         @modal-hide="monitoringModalVisible = false"
         @toggle-widget="toggleWidget"
+        @move-widget-up="moveWidgetUp"
+        @move-widget-down="moveWidgetDown"
+        @delete-widget="deleteWidget"
+        @add-widget="addWidget"
       />
     </Teleport>
   </div>
@@ -97,9 +101,6 @@ export default {
         this.counter = 0;
       }
     },
-    closeWidget(widgetSavedId) {
-      this.toggleWidget()
-    },
     updateWidgetInterval({ saved_id, interval }) {
       let widget = this.widgets.find((widget) => widget.saved_id === saved_id);
       widget.interval = interval;
@@ -107,56 +108,64 @@ export default {
     showMonitoringWidgetsList() {
       this.monitoringModalVisible = true;
     },
-    toggleWidget(widgetSavedId, visible = false) {
-      debugger
-      let widgetIdx = this.widgets.findIndex(
-        (widget) => widget.saved_id === widgetSavedId
-      );
-
+    toggleWidget(widget, visible) {
       axios
-        .post(`/monitoring-widgets/${widgetSavedId}/toggle`, {
-          visible: false
+        .patch(`/monitoring-widgets/${widget.saved_id}`, {
+          visible: visible,
         })
         .then(() => {
-          this.widgets[widgetIdx].visible = visible;
+          widget.visible = visible;
         })
         .catch((error) => {
           handleError(error);
         });
-      // if (widgetIdx === -1) {
-      //   let newWidget = {
-      //     id: widgetData.id,
-      //     title: widgetData.title,
-      //     interval: widgetData.interval,
-      //     plugin_name: widgetData.plugin_name ?? "",
-      //     type: widgetData.type,
-      //   };
-      //   this.saveWidgetToDatabaseAndShow(newWidget);
-      // } else {
-      //   let widget = this.widgets[widgetIdx];
-      //   this.closeWidget(widget.saved_id);
-      // }
     },
-    // saveWidgetToDatabaseAndShow(newWidget) {
-    //   axios
-    //     .post("/monitoring-widgets/create", {
-    //       workspace_id: this.workspaceId,
-    //       database_index: this.databaseIndex,
-    //       widget_data: newWidget,
-    //     })
-    //     .then((resp) => {
-    //       newWidget.saved_id = resp.data.user_widget.id;
-
-    //       this.widgets.unshift(newWidget);
-    //     })
-    //     .catch((error) => {
-    //       handleError(error);
-    //     });
-    // },
+    moveWidgetUp(index) {
+      // prevent moving newly added column above existing ones in "alter" mode
+      if(index == 0) return;
+      let widgetAbove = this.sortedWidgets[index-1]
+      let widget = this.sortedWidgets[index]
+      let posTmp = this.sortedWidgets[index].position
+      widget.position = widgetAbove.position
+      widgetAbove.position = posTmp
+    },
+    moveWidgetDown(index) {
+      if(index == this.sortedWidgets.length-1) return;
+      let widgetBelow = this.sortedWidgets[index+1]
+      let widget = this.sortedWidgets[index]
+      let posTmp = this.sortedWidgets[index].position
+      widget.position = widgetBelow.position
+      widgetBelow.position = posTmp
+    },
+    deleteWidget(widgetId) {
+      let widgetIdx = this.widgets.findIndex(
+        (w) => w.id === widgetId
+      );
+      if(widgetIdx !== -1) {
+        this.widgets.splice(widgetIdx, 1)
+      }
+    },
+    addWidget(widgetData) {
+      this.widgets.push({
+        id: widgetData.id,
+        saved_id: widgetData.saved_id,
+        title: widgetData.title,
+        visible: widgetData.visible,
+        position: widgetData.position,
+        editable: widgetData.editable,
+        type: widgetData.type,
+        interval: widgetData.interval,
+        plugin_name: '',
+        widget_data: {}
+      })
+    },
   },
   computed: {
     visibleSortedWidgets() {
       return this.widgets.filter(widget => widget.visible).sort((a, b) => (a.position > b.position) ? 1 : -1)
+    },
+    sortedWidgets() {
+      return this.widgets.sort((a, b) => (a.position > b.position) ? 1 : -1)
     }
   }
 };

@@ -299,7 +299,6 @@ base_urlpatterns = [
     path("monitoring-widgets/<int:widget_saved_id>/refresh", views.monitoring_dashboard.refresh_monitoring_widget, name="refresh-monitoring-widget"),
     path("monitoring-widgets/user-created", views.monitoring_dashboard.create_widget, name="create-custom-widget"),
     path("monitoring-widgets/user-created/<int:widget_id>", views.monitoring_dashboard.user_created_widget_detail, name="widget-detail"),
-    path("monitoring-widgets/<int:widget_saved_id>/toggle", views.monitoring_dashboard.toggle_monitoring_widget, name="toggle-monitoring-widget"),
     
     # Configuration
     path('configuration/<int:config_id>/', views.configuration.delete_config, name="delete_configuration"),

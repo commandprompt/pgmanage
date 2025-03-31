@@ -143,7 +143,7 @@ export default {
       default: false,
     },
   },
-  emits: ["widgetRefreshed", "widgetClose", "intervalUpdated"],
+  emits: ["widgetRefreshed", "toggleWidget", "intervalUpdated"],
   data() {
     return {
       showLoading: true,
@@ -444,7 +444,7 @@ export default {
     },
     closeMonitoringWidget() {
       clearTimeout(this.timeoutObject);
-      this.$emit("widgetClose", this.monitoringWidget.saved_id);
+      this.$emit("toggleWidget", this.monitoringWidget, false);
     },
     pauseMonitoringWidget() {
       clearTimeout(this.timeoutObject);
