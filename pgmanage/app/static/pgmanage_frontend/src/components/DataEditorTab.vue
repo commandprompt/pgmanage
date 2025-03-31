@@ -163,8 +163,7 @@ export default {
         action.after(() => {
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-              this.handleResize()
-              this.tabulator.redraw();
+              this.handleResize();
             })
           })
         })
@@ -178,8 +177,6 @@ export default {
   updated() {
     if (tabsStore.selectedPrimaryTab?.metaData?.selectedTab?.id === this.tabId) {
       this.handleResize();
-      if (this.tabulator)
-        this.tabulator.redraw();
     }
   },
   methods: {
