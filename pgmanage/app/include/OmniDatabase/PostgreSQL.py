@@ -700,8 +700,8 @@ class PostgreSQL:
         self._major_version = None
         self.v_use_server_cursor = True
         self.set_default_feature_flags()
-        if self.version_num:
-            self.edit_feature_flags()
+        if self.version_num: # self.version_num indicates that the connection is active and we can now fetch db capabilities
+            self.update_feature_flags()
 
 
     @property
@@ -763,7 +763,7 @@ class PostgreSQL:
         self.has_update_rule = True
 
     
-    def edit_feature_flags(self):
+    def update_feature_flags(self):
         self.has_schema = True
         self.has_extensions = self.version_num >= 90100
         self.has_fdw = self.version_num >= 90300
