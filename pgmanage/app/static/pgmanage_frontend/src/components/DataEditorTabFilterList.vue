@@ -104,6 +104,9 @@ export default {
     filters: {
       type: Array,
     },
+    updatedRawQuery: {
+      type: String
+    }
   },
   data() {
     return {
@@ -131,6 +134,11 @@ export default {
       },
       deep: true,
     },
+    updatedRawQuery(newValue) {
+      if (newValue) {
+        this.rawQuery = newValue
+      }
+    }
   },
   methods: {
     addFilter() {
@@ -159,7 +167,7 @@ export default {
       this.$emit("update", { mode: this.mode });
     },
     convertFiltersToManual(filters) {
-      return filters
+      const convertedFilters = filters
         .filter((f) => f.operator && f.column && f.value)
         .map((filter, index) => {
           const condition = index === 0 ? "" : filter.condition || "AND";
@@ -175,6 +183,7 @@ export default {
           return `${condition} ${filter.column} ${filter.operator} '${filter.value}'`;
         })
         .join("\n");
+          return !!convertedFilters ? `where ${convertedFilters}` : "";
     },
     emitRawQuery() {
       this.rawInputDirty = true;
@@ -185,11 +194,11 @@ export default {
 </script>
 
 <style scoped>
-  .col-w-fixed {
-    min-width: 3.7rem;
-  }
+.col-w-fixed {
+  min-width: 3.7rem;
+}
 
-  .btn-w-fixed {
-    min-width: 3.5rem;
-  }
+.btn-w-fixed {
+  min-width: 3.5rem;
+}
 </style>

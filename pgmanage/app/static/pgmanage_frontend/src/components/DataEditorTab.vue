@@ -5,7 +5,7 @@
         <label class="mb-2">
           <span class="fw-bold">Filter</span>
         </label>
-      <DataEditorTabFilter :columns="columnNames" :filters="queryFilters" @update="handleFilterUpdate"/>
+      <DataEditorTabFilter :updated-raw-query="updatedRawQuery" :columns="columnNames" :filters="queryFilters" @update="handleFilterUpdate"/>
     </div>
     <div class="form-group col-2">
       <div class="form" @submit.prevent>
@@ -60,6 +60,25 @@ import { handleError } from '../logging/utils';
 
 // TODO: run query in transaction
 
+function escapeColumnName(name) {
+  if (name === "*") return name;
+  const nestedMatch = name.match(/(.*?)(\[[0-9]\])/);
+  return nestedMatch
+    ? `${escapeColumnName(nestedMatch[1])}${nestedMatch[2]}`
+    : `"${name.replace(/"/g, '""')}"`;
+}
+
+function extractOrderByClause (queryFilter) {
+        const orderByRegex = /\bORDER\s+BY\s+([\w\s",.]+)$/i;
+        const match = queryFilter.match(orderByRegex);
+
+        if (!match)
+          return { queryFilterCleaned: queryFilter, orderByClause: "" };
+
+        const queryFilterCleaned = queryFilter.replace(orderByRegex, "").trim();
+        return { queryFilterCleaned, orderByClause: `ORDER BY ${match[1]}` };
+      };
+
 export default {
   name: "DataEditorTab",
   components: {
@@ -92,6 +111,7 @@ export default {
       maxInitialWidth: 200,
       queryState: requestState.Idle,
       rawQuery: "",
+      updatedRawQuery: "",
     };
   },
   computed: {
@@ -272,7 +292,13 @@ export default {
           handleError(error);
         });
     },
-    getTableData(_url, _config, params) {
+    buildQueryFilter() {
+      if (this.mode === dataEditorFilterModes.MANUAL) {
+        return this.processManualModeQuery();
+      } 
+      return this.processAutoModeFilters();
+    },
+    processAutoModeFilters() {
       const preprocessFilters = (rawFilters) => {
         return rawFilters
           .filter((f) => f.operator && f.column && f.value)
@@ -281,13 +307,6 @@ export default {
             value:
               f.operator === "in" ? f.value.split(/\s*,\s*/) : String(f.value),
           }));
-      };
-      const escapeColumnName = (name) => {
-        if (name === "*") return name;
-        const nestedMatch = name.match(/(.*?)(\[[0-9]\])/);
-        return nestedMatch
-          ? `${escapeColumnName(nestedMatch[1])}${nestedMatch[2]}`
-          : `"${name.replace(/"/g, '""')}"`;
       };
 
       const combineFilters = (filterStrings, filterObjects) => {
@@ -298,20 +317,9 @@ export default {
               return `${acc} ${logic} ${filter}`;
             });
       };
-      let queryFilter = "";
-      let orderBy = this.tableColumns[0]?.name ? `ORDER BY ${this.tableColumns[0].name}` : "";
 
-      if (params?.sort) {
-        orderBy = "ORDER BY " + params.sort.map((item) => {
-          const columnName = this.columnNames[item.field]
-          return `${escapeColumnName(columnName)} ${item.dir.toUpperCase()}`
-        }).join(",")
-      }
-
-      if (this.mode === dataEditorFilterModes.MANUAL) {
-        queryFilter = !!this.rawQuery.trim().length ? `WHERE  ${this.rawQuery.trim()}` : '';
-      } else {
-        const filters = preprocessFilters(this.queryFilters);
+      let queryFilter = ""
+      const filters = preprocessFilters(this.queryFilters);
         if (filters?.length > 0) {
           const filterClauses = filters.map((filter) => {
             if (filter.operator === "in" && isArray(filter.value)) {
@@ -329,8 +337,98 @@ export default {
           });
           queryFilter = "WHERE " + combineFilters(filterClauses, filters);
         }
+        return queryFilter
+    },
+    buildOrderByClause(params) {
+      const parseOrderBy = (query) => {
+        const orderByRegex = /ORDER\s+BY\s+([\w\s",.]+)$/i;
+        const match = query.match(orderByRegex);
+
+        if (!match) return [];
+
+        return match[1].split(",").map((part) => {
+          let [column, direction] = part.trim().split(/\s+/);
+          direction = direction ? direction.toLowerCase() : "asc";
+
+          if (column.includes(".")) {
+            column = column.split(".")[1];
+          }
+
+          return { name: column, dir: direction };
+        });
+      };
+
+      const mapColumnsToIndexes = (orderByColumns, tableColumns) => {
+        return orderByColumns
+          .map((column) => {
+            const columnIndex = tableColumns.findIndex(
+              (col) => col.name === column.name
+            );
+            return columnIndex !== -1
+              ? { column: columnIndex, dir: column.dir }
+              : null;
+          })
+          .filter((item) => item !== null);
+      };
+
+      const trimmedQuery = this.rawQuery.trim().toLowerCase();
+      const { queryFilterCleaned, orderByClause } =
+        extractOrderByClause(trimmedQuery);
+
+      const orderByColumns = parseOrderBy(orderByClause);
+
+      if (!params?.sort && orderByClause) {
+        const result = mapColumnsToIndexes(orderByColumns, this.tableColumns);
+        this.tabulator.setSort(result);
+        return null;
       }
-      const finalFilter = `${queryFilter} ${orderBy}`;
+
+      if (params?.sort && params.sort.length === 1) {
+        let sortColumnName = this.columnNames[params.sort[0].field];
+
+        if (
+          orderByColumns.length >= 2 ||
+          (orderByColumns.length === 1 &&
+            orderByColumns[0]?.name !== sortColumnName)
+        ) {
+          const updatedOrderClause = `ORDER BY ${sortColumnName} ${params.sort[0].dir}`;
+          this.updatedRawQuery = `${queryFilterCleaned} ${updatedOrderClause}`;
+          return updatedOrderClause;
+        }
+      }
+
+      if (params?.sort) {
+        return (
+          "ORDER BY " +
+          params.sort
+            .map((item) => {
+              const columnName = this.columnNames[item.field];
+              return `${escapeColumnName(
+                columnName
+              )} ${item.dir.toUpperCase()}`;
+            })
+            .join(",")
+        );
+      } else {
+        this.tabulator.setSort("0", "asc");
+        return null;
+      }
+    },
+    processManualModeQuery() {
+      const trimmedQuery = this.rawQuery.trim().toLowerCase();
+      const hasWhere = trimmedQuery.startsWith("where ");
+      const hasOrderBy = trimmedQuery.includes("order by");
+      const { queryFilterCleaned } = extractOrderByClause(trimmedQuery);
+
+      if (!trimmedQuery) return ""
+      if (hasOrderBy) {
+        if (!!queryFilterCleaned) return hasWhere ? queryFilterCleaned : `WHERE ${queryFilterCleaned}`;
+        return ""
+      } else {
+        return hasWhere ? trimmedQuery : `WHERE ${trimmedQuery}`;
+      }
+    },
+    sendDataRequest(finalFilter) {
       var message_data = {
         table: this.table,
         schema: this.schema,
@@ -357,6 +455,18 @@ export default {
           tab.metaData.isLoading = true;
       }, 1000);
       tab.metaData.isReady = false;
+    },
+    getTableData(_url, _config, params) {
+      const queryFilter = this.buildQueryFilter();
+      const orderBy = this.buildOrderByClause(params);
+
+      if (orderBy === null) {
+        return 
+      }
+
+      const finalFilter = `${queryFilter} ${orderBy}`;
+
+      this.sendDataRequest(finalFilter)
 
       // we need to return promise for tabulator ajaxRequestFunc to work
       return new Promise((resolve, reject) => {
