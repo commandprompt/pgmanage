@@ -528,7 +528,6 @@ const useTabsStore = defineStore("tabs", {
         },
         dblClickFunction: renameTab,
       });
-      const primaryTab = this.selectedPrimaryTab;
 
       tab.metaData.databaseIndex =
         this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
