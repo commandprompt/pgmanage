@@ -5,7 +5,7 @@
         <label class="mb-2">
           <span class="fw-bold">Filter</span>
         </label>
-      <DataEditorTabFilter :updated-raw-query="updatedRawQuery" :columns="columnNames" :filters="queryFilters" @update="handleFilterUpdate"/>
+      <DataEditorTabFilter :operators="dialectOperators" :updated-raw-query="updatedRawQuery" :columns="columnNames" :filters="queryFilters" @update="handleFilterUpdate"/>
     </div>
     <div class="form-group col-2">
       <div class="form" @submit.prevent>
@@ -57,6 +57,7 @@ import { settingsStore, tabsStore, messageModalStore } from '../stores/stores_in
 import DataEditorTabFilterList from './DataEditorTabFilterList.vue'
 import { dataEditorFilterModes } from '../constants';
 import { handleError } from '../logging/utils';
+import dialects from './dialect-data';
 
 // TODO: run query in transaction
 
@@ -112,6 +113,7 @@ export default {
       queryState: requestState.Idle,
       rawQuery: "",
       updatedRawQuery: "",
+      dialectData: {},
     };
   },
   computed: {
@@ -135,9 +137,13 @@ export default {
     },
     columnNames() {
       return this.tableColumns.map(col => col.name)
+    },
+    dialectOperators() {
+      return this.dialectData?.operators ?? [];
     }
   },
   mounted() {
+    this.dialectData = dialects[this.dialect];
     this.handleResize()
     let table = new Tabulator(this.$refs.tabulator, {
       placeholder: "No Data Available",

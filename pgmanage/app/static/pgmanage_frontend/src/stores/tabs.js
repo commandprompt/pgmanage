@@ -632,6 +632,7 @@ const useTabsStore = defineStore("tabs", {
       const DIALECT_MAP = {
         oracle: "oracledb",
         mariadb: "mysql",
+        postgresql: "postgres",
       };
       let dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
       let mappedDialect = DIALECT_MAP[dialect] || dialect;

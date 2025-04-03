@@ -30,7 +30,7 @@
     </div>
     <FilterItem
       :columns="columns"
-      :comparison-operators="comparisonOperators"
+      :comparison-operators="localOperators"
       :value="filter"
       @update="updateFilter(index, $event)"
     />
@@ -106,12 +106,16 @@ export default {
     },
     updatedRawQuery: {
       type: String
+    },
+    operators: {
+      type: Array,
+      default: []
     }
   },
   data() {
     return {
       localFilters: this.filters,
-      comparisonOperators: ["=", "!=", "<", "<=", ">", ">=", "like", "in"],
+      defaultOperators: ["=", "!=", "<", "<=", ">", ">=", "like", "in"],
       mode: dataEditorFilterModes.BUILDER,
       rawQuery: "",
       rawInputDirty: false,
@@ -120,6 +124,9 @@ export default {
   computed: {
     modes() {
       return dataEditorFilterModes;
+    },
+    localOperators() {
+      return [...this.defaultOperators, ...this.operators];
     },
   },
   watch: {
