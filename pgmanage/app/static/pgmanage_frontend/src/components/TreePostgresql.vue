@@ -71,6 +71,7 @@ export default {
         },
       ],
       currentSchema: "public",
+      cm_server_extra: [],
     };
   },
   computed: {
@@ -84,7 +85,7 @@ export default {
       };
 
       return {
-        cm_server: [this.cmRefreshObject],
+        cm_server: [this.cmRefreshObject, ...this.cm_server_extra],
         cm_databases: [
           this.cmRefreshObject,
           {
@@ -3097,10 +3098,8 @@ export default {
         const response = await this.api.post("/get_tree_info_postgresql/")
 
         this.removeChildNodes(node);
-  
-        this.contextMenu.cm_server = [this.cmRefreshObject];
-        this.contextMenu.cm_server.push(
-          {
+        
+        this.cm_server_extra = [{
             label: "Server Configuration",
             icon: "fas fa-cog",
             onClick: () => {
@@ -3186,8 +3185,7 @@ export default {
                 )}/sql-commands.html`
               );
             },
-          }
-        );
+          }];
   
         this.templates = response.data;
   

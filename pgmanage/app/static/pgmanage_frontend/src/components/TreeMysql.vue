@@ -68,12 +68,13 @@ export default {
         },
       ],
       templates: "",
+      cm_server_extra: [],
     };
   },
   computed: {
     contextMenu() {
       return {
-        cm_server: [this.cmRefreshObject],
+        cm_server: [this.cmRefreshObject, ...this.cm_server_extra],
         cm_databases: [
           this.cmRefreshObject,
           {
@@ -783,8 +784,7 @@ export default {
             type: "database_list",
             contextMenu: "cm_databases",
           });
-          this.contextMenu.cm_server = [this.cmRefreshObject];
-          this.contextMenu.cm_server.push({
+          this.cm_server_extra = [{
             label: "Monitoring",
             icon: "fas fa-chart-line",
             children: [
@@ -796,7 +796,7 @@ export default {
                 },
               },
             ],
-          });
+          }];
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
