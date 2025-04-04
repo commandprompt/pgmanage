@@ -603,6 +603,7 @@ export default {
           this.applyLayout();
           this.table.rowManager.element.scrollTop = scrollTop;
           this.table.rowManager.scrollLeft = scrollLeft;
+          this.addHeaderMenuOverlayElement();
         });
 
         table.on(
