@@ -142,19 +142,7 @@ class MySQL:
         self.v_create_index_command = "create index #p_index_name# on #p_table_name# (#p_columns#)";
         self.v_create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
         self.v_drop_index_command = "drop index #p_schema_name#.#p_index_name#"
-        self.v_update_rules = [
-            "NO ACTION",
-            "RESTRICT",
-			"SET NULL",
-			"CASCADE"
-        ]
-        self.v_delete_rules = [
-            "NO ACTION",
-            "RESTRICT",
-			"SET NULL",
-			"CASCADE"
-        ]
-        self.v_reserved_words = []
+
         self.v_console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
         self.v_use_server_cursor = False
 
