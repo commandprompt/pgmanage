@@ -1468,7 +1468,7 @@ def thread_query_edit_data(self, args) -> None:
         client_object: Client = args["client_object"]
 
         try:
-            if database.v_has_schema:
+            if database.has_schema:
                 table_data = database.QueryTableRecords(
                     "*", table, schema, query_filter, count
                 )

@@ -128,6 +128,7 @@ def get_tree_info(request, database):
             "create_statistics": database.TemplateCreateStatistics().v_text,
             "alter_statistics": database.TemplateAlterStatistics().v_text,
             "drop_statistics": database.TemplateDropStatistics().v_text,
+            "has_replication_slots": database.has_replication_slots,
         }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -143,15 +144,23 @@ def get_database_objects(request, database):
         lambda extension: extension[0] == "pg_cron"
         and extension[2] not in unsupported_versions
     )
-
+    has_pg_cron = False
     try:
         current_schema = "public"
         schema = database.QueryCurrentSchema().Rows
         if schema:
             [current_schema] = schema[0]
-        extensions = database.QueryExtensions().Rows
-        has_pg_cron = len(list(filter(version_filter, extensions))) > 0
-        data = {"has_pg_cron": has_pg_cron, "current_schema": current_schema}
+        if database.has_extensions:
+            extensions = database.QueryExtensions().Rows
+            has_pg_cron = len(list(filter(version_filter, extensions))) > 0
+        data = {
+            "has_extensions": database.has_extensions,
+            "has_fdw": database.has_fdw,
+            "has_event_triggers": database.has_event_triggers,
+            "has_logical_replication": database.has_logical_replication,
+            "has_pg_cron": has_pg_cron,
+            "current_schema": current_schema
+            }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

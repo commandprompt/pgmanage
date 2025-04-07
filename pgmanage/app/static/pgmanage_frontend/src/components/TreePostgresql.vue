@@ -3192,28 +3192,30 @@ export default {
         this.$refs.tree.updateNode(node.path, {
           title: response.data.version,
         });
-  
-        this.insertNode(node, "Replication Slots", {
-          icon: "fas node-all fa-sitemap node-repslot-list",
-          type: "replication",
-          database: false,
-        });
-  
-        const replication_node = this.getFirstChildNode(node);
-  
-        this.insertNode(replication_node, "Logical Replication Slots", {
-          icon: "fas node-all fa-sitemap node-repslot-list",
-          type: "logical_replication_slot_list",
-          contextMenu: "cm_logical_replication_slots",
-          database: false,
-        });
-  
-        this.insertNode(replication_node, "Physical Replication Slots", {
-          icon: "fas node-all fa-sitemap node-repslot-list",
-          type: "physical_replication_slot_list",
-          contextMenu: "cm_physical_replication_slots",
-          database: false,
-        });
+        
+        if (response.data.has_replication_slots) {
+          this.insertNode(node, "Replication Slots", {
+            icon: "fas node-all fa-sitemap node-repslot-list",
+            type: "replication",
+            database: false,
+          });
+    
+          const replication_node = this.getFirstChildNode(node);
+    
+          this.insertNode(replication_node, "Logical Replication Slots", {
+            icon: "fas node-all fa-sitemap node-repslot-list",
+            type: "logical_replication_slot_list",
+            contextMenu: "cm_logical_replication_slots",
+            database: false,
+          });
+    
+          this.insertNode(replication_node, "Physical Replication Slots", {
+            icon: "fas node-all fa-sitemap node-repslot-list",
+            type: "physical_replication_slot_list",
+            contextMenu: "cm_physical_replication_slots",
+            database: false,
+          });
+        }
   
         this.insertNode(node, "Roles", {
           icon: "fas node-all fa-users node-user-list",
@@ -3278,41 +3280,50 @@ export default {
             contextMenu: "cm_jobs",
           });
         }
-        this.insertNode(node, "Logical Replication", {
-          icon: "fas node-all fa-sitemap node-logrep",
-          type: "replication",
-        });
-        const logical_replication_node = this.getFirstChildNode(node);
+
+        if (response.data.has_logical_replication) {
+          this.insertNode(node, "Logical Replication", {
+            icon: "fas node-all fa-sitemap node-logrep",
+            type: "replication",
+          });
+          const logical_replication_node = this.getFirstChildNode(node);
+    
+          this.insertNode(logical_replication_node, "Subscriptions", {
+            icon: "fas node-all fa-arrow-alt-circle-up node-subscription-list",
+            type: "subscription_list",
+            contextMenu: "cm_subscriptions",
+          });
+    
+          this.insertNode(logical_replication_node, "Publications", {
+            icon: "fas node-all fa-arrow-alt-circle-down node-publication-list",
+            type: "publication_list",
+            contextMenu: "cm_publications",
+          });
+        }
+        
+        if (response.data.has_event_triggers) {
+          this.insertNode(node, "Event Triggers", {
+            icon: "fas node-all fa-bolt node-eventtrigger",
+            type: "event_trigger_list",
+            contextMenu: "cm_event_triggers",
+          });
+        }
   
-        this.insertNode(logical_replication_node, "Subscriptions", {
-          icon: "fas node-all fa-arrow-alt-circle-up node-subscription-list",
-          type: "subscription_list",
-          contextMenu: "cm_subscriptions",
-        });
-  
-        this.insertNode(logical_replication_node, "Publications", {
-          icon: "fas node-all fa-arrow-alt-circle-down node-publication-list",
-          type: "publication_list",
-          contextMenu: "cm_publications",
-        });
-  
-        this.insertNode(node, "Event Triggers", {
-          icon: "fas node-all fa-bolt node-eventtrigger",
-          type: "event_trigger_list",
-          contextMenu: "cm_event_triggers",
-        });
-  
-        this.insertNode(node, "Foreign Data Wrappers", {
-          icon: "fas node-all fa-cube node-fdw-list",
-          type: "foreign_data_wrapper_list",
-          contextMenu: "cm_foreign_data_wrappers",
-        });
-  
-        this.insertNode(node, "Extensions", {
-          icon: "fas node-all fa-cubes node-extension-list",
-          type: "extension_list",
-          contextMenu: "cm_extensions",
-        });
+        if (response.data.has_fdw) {
+          this.insertNode(node, "Foreign Data Wrappers", {
+            icon: "fas node-all fa-cube node-fdw-list",
+            type: "foreign_data_wrapper_list",
+            contextMenu: "cm_foreign_data_wrappers",
+          });
+        }
+
+        if (response.data.has_extensions) {
+          this.insertNode(node, "Extensions", {
+            icon: "fas node-all fa-cubes node-extension-list",
+            type: "extension_list",
+            contextMenu: "cm_extensions",
+          });
+        } 
   
         this.insertNode(node, "Schemas", {
           icon: "fas node-all fa-layer-group node-schema-list",

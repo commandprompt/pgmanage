@@ -308,11 +308,11 @@ def get_table_columns(request, database):
     data = request.data
     table = data["table"]
 
-    if database.v_has_schema:
+    if database.has_schema:
         schema = data["schema"]
 
     try:
-        if database.v_has_schema:
+        if database.has_schema:
             pk = database.QueryTablesPrimaryKeys(table, False, schema)
             columns = database.QueryTablesFields(table, False, schema)
         else:
@@ -323,7 +323,7 @@ def get_table_columns(request, database):
         order_by = ''
         pk_column_names = []
         if pk is not None and len(pk.Rows) > 0:
-            if database.v_has_schema:
+            if database.has_schema:
                 pk_cols = database.QueryTablesPrimaryKeysColumns(
                     pk.Rows[0]["constraint_name"], table, False, schema
                 )
@@ -359,7 +359,7 @@ def get_database_meta(request, database):
     schema_list = []
 
     try:
-        if database.v_has_schema:
+        if database.has_schema:
             schemas = database.QuerySchemas().Rows if hasattr(database, 'QuerySchemas') else [{"schema_name": database.v_schema}]
         else:
             schemas = [{'schema_name': '-noschema-'}]
@@ -388,7 +388,7 @@ def get_database_meta(request, database):
                 table_data['columns'] = list((c['column_name'] for c in table_columns))
                 schema_data['tables'].append(table_data)
             
-            if database.v_has_schema:
+            if database.has_schema:
                 views = database.QueryViews(p_all_schemas=False, p_schema=schema["schema_name"])
             else:
                 views = database.QueryViews()
@@ -400,7 +400,7 @@ def get_database_meta(request, database):
                 }
                 view_name = view.get('name_raw') or view["table_name"]
 
-                if database.v_has_schema:
+                if database.has_schema:
                     view_columns = database.QueryViewFields(p_table=view_name, p_all_schemas=False, p_schema=schema["schema_name"])
                 else:
                     view_columns = database.QueryViewFields(p_table=view_name)

@@ -103,7 +103,7 @@ class Oracle:
             self.v_schema = self.v_user
         self.v_connection = Spartacus.Database.Oracle(self.v_active_server, self.v_active_port, self.v_active_service, self.v_active_user, self.v_password, p_conn_string, connection_params=self.connection_params)
 
-        self.v_has_schema = True
+        self.has_schema = True
         self.v_has_functions = True
         self.v_has_procedures = True
         self.v_has_packages = True

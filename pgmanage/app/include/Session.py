@@ -231,7 +231,7 @@ class Session(object):
                 self.AddDatabase(conn.id,conn.technology.name,database,prompt_password,tunnel_information,conn.alias,conn.public, decryption_failed=decryption_failed)
         # No connections
         except Exception as exc:
-            None
+            logger.error(str(exc))
 
     def Execute(self,
                 p_database,
