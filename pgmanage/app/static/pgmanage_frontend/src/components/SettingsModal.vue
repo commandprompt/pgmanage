@@ -72,7 +72,7 @@
                   </select>
                 </div>
 
-                <div class="col-6">
+                <div class="form-group col-6">
                   <label for="txt_csv_delimiter" class="fw-bold mb-2">CSV Delimiter</label>
                   <input type="text" id="txt_csv_delimiter" placeholder="Delimiter"
                     :class="['form-control', { 'is-invalid': v$.csvDelimiter.$invalid }]"
@@ -169,7 +169,7 @@
                     minlength="8" required>
                   <password-meter :password="password" />
                 </div>
-                <div class="col-6">
+                <div class="form-group col-6">
                   <label for="txt_confirm_new_pwd" class="fw-bold mb-2">Confirm</label>
                   <input ref="passwordConfirm" v-model="passwordConfirm" id="txt_confirm_new_pwd" type="password"
                     class="form-control" @input="checkPassword" minlength="8" required>

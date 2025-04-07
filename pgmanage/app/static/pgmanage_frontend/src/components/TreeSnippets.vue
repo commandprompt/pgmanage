@@ -206,7 +206,10 @@ export default {
       if (mode === "folder") placeholder = "Folder Name";
 
       showConfirm(
-        `<input id="element_name" required class="form-control" placeholder="${placeholder}" style="width: 100%;">`,
+        `<div class="form-group">
+          <input id="element_name" required class="form-control" placeholder="${placeholder}" style="width: 100%;">
+        </div>
+        `,
         () => {
           let value = document.getElementById("element_name").value.trim();
           if (!value) {

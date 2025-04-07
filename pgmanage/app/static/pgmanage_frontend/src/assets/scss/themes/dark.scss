@@ -326,6 +326,16 @@ SOFTWARE.
     }
   }
 
+  /* Switch */
+  label.omnidb__switch--label {
+    background-color: #404958;
+
+    span {
+      color: #FFF;
+      background-color: #161D2D;
+    }
+  }
+
   /* EXPLAIN */
   .omnidb__query-result-tabs__content  {
     .table thead th,

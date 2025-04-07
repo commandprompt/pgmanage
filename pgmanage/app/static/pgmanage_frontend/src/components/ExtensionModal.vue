@@ -44,7 +44,7 @@
           </div>
 
           <div class="form-group mb-2">
-            <PreviewBox :editor-text="generatedSQL" style="height: 10vh" />
+            <PreviewBox :editor-text="generatedSQL" databaseTechnology="postgresql" style="height: 10vh" />
           </div>
         </div>
 

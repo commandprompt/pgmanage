@@ -83,7 +83,7 @@ def superuser_required(function):
     @session_required
     @wraps(function)
     def wrap(request, session, *args, **kwargs):
-        if session.v_super_user:
+        if request.user.is_superuser:
             return function(request, *args, **kwargs)
         return JsonResponse({"data": "You must be superuser to perform this operation"}, status=403)
     return wrap

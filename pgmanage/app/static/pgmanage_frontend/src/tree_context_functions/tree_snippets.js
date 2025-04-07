@@ -47,7 +47,9 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
       icon: "fas fa-save",
       onClick: function () {
         showConfirm(
-          '<input id="element_name" class="form-control" placeholder="Snippet Name" style="width: 100%;">',
+          `<div class="form-group">
+              <input id="element_name" class="form-control" placeholder="Snippet Name" style="width: 100%;">
+            </div>`,
           function () {
             const snippetName = document.getElementById("element_name").value;
 

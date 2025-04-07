@@ -129,12 +129,15 @@
                   ><i class="fas fa-house fa-xl"></i
                 ></a>
               </div>
-              <input
-                class="w-75 form-control"
+              <div class="form-group w-75 mb-0">
+                <input
+                class="form-control"
                 type="text"
                 :value="currentPath"
                 disabled
               />
+              </div>
+
               <a
                 v-if="currentView === 'table'"
                 class="btn btn-outline-secondary btn-sm"
@@ -151,99 +154,107 @@
               ></a>
             </div>
 
-            <!-- Box format for files and folders -->
-            <div v-if="isGrid" class="d-flex p-2 flex-wrap files-grid">
-              <div
-                v-for="file in files"
-                :key="file.file_name"
-                :class="[
-                  'files-grid__item',
-                  'text-center',
-                  'border-0',
-                  'pt-3',
-                  'me-2',
-                  { active: file === selectedFile },
-                ]"
-                @click="selectFileOrDir(file.file_name)"
-                @dblclick="
-                  file.is_directory
-                    ? getDirContent(file.path)
-                    : confirmSelection()
-                "
-              >
-                <div class="position-relative">
-                  <i
-                    :class="[
-                      'fas',
-                      'fa-2xl',
-                      'me-2',
-                      {
-                        'fa-folder': file.is_directory,
-                        'fa-file': !file.is_directory,
-                      },
-                    ]"
-                    :style="{
-                      color: file.is_directory ? '#0ea5e9' : 'rgb(105 114 118)',
-                    }"
-                  ></i>
+            <div v-if="isDirEmpty" class="align-items-center d-flex flex-column h-75 justify-content-center">
+              
+              <i class="fas fa-regular fa-folder fs-1 text-secondary"></i>
+              <span class="mt-2 fw-medium user-select-none">Folder is Empty</span>
+            </div>
+            <template v-else>
+              <!-- Box format for files and folders -->
+              <div v-if="isGrid" class="d-flex p-2 flex-wrap files-grid">
+                <div
+                  v-for="file in files"
+                  :key="file.file_name"
+                  :class="[
+                    'files-grid__item',
+                    'text-center',
+                    'border-0',
+                    'pt-3',
+                    'me-2',
+                    { active: file === selectedFile },
+                  ]"
+                  @click="selectFileOrDir(file.file_name)"
+                  @dblclick="
+                    file.is_directory
+                      ? getDirContent(file.path)
+                      : confirmSelection()
+                  "
+                >
+                  <div class="position-relative">
+                    <i
+                      :class="[
+                        'fas',
+                        'fa-2xl',
+                        'me-2',
+                        {
+                          'fa-folder': file.is_directory,
+                          'fa-file': !file.is_directory,
+                        },
+                      ]"
+                      :style="{
+                        color: file.is_directory ? '#0ea5e9' : 'rgb(105 114 118)',
+                      }"
+                    ></i>
+                  </div>
+                  <p class="clipped-text mt-1">{{ file.file_name }}</p>
                 </div>
-                <p class="clipped-text mt-1">{{ file.file_name }}</p>
               </div>
-            </div>
+  
+              <!-- Table format for files and folders-->
+              <div v-else class="file-table">
+                <div class="p-0">
+                  <ul class="list-group list-group-flush form-group">
+                    <li
+                      class="list-group-item d-flex row g-0 fw-bold mb-1 border-0 file-table-header bg-transparent"
+                    >
+                      <div class="col-7">Name</div>
+                      <div class="col-2">Size</div>
+                      <div class="col-3">Modified</div>
+                    </li>
+                    <li
+                      class="list-group-item d-flex row g-0 mb-1 border-0"
+                      :class="{ active: file === selectedFile }"
+                      v-for="file in files"
+                      :key="file.file_name"
+                      @click="selectFileOrDir(file.file_name)"
+                      @dblclick="
+                        file.is_directory
+                          ? getDirContent(file.path)
+                          : confirmSelection()
+                      "
+                    >
+                      <div class="col-7">
+                        <i
+                          :class="[
+                            'fas',
+                            'fa-2xl',
+                            {
+                              'fa-folder': file.is_directory,
+                              'fa-file': !file.is_directory,
+                            },
+                          ]"
+                          :style="{
+                            color: file.is_directory
+                              ? '#0ea5e9'
+                              : 'rgb(105 114 118)',
+                          }"
+                        ></i>
+                        {{ file.file_name }}
+                      </div>
+                      <div class="col-2" v-if="!file.is_directory">
+                        {{ file.file_size }}
+                      </div>
+                      <div class="col-2" v-if="file.is_directory">
+                        {{ file.dir_size }}
+                        {{ file.dir_size == 1 ? "item" : "items" }}
+                      </div>
+                      <div class="col-3">{{ file.modified }}</div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
 
-            <!-- Table format for files and folders-->
-            <div v-else class="file-table">
-              <div class="p-0">
-                <ul class="list-group list-group-flush form-group">
-                  <li
-                    class="list-group-item d-flex row g-0 fw-bold mb-1 border-0 file-table-header bg-transparent"
-                  >
-                    <div class="col-7">Name</div>
-                    <div class="col-2">Size</div>
-                    <div class="col-3">Modified</div>
-                  </li>
-                  <li
-                    class="list-group-item d-flex row g-0 mb-1 border-0"
-                    :class="{ active: file === selectedFile }"
-                    v-for="file in files"
-                    :key="file.file_name"
-                    @click="selectFileOrDir(file.file_name)"
-                    @dblclick="
-                      file.is_directory
-                        ? getDirContent(file.path)
-                        : confirmSelection()
-                    "
-                  >
-                    <div class="col-7">
-                      <i
-                        :class="[
-                          'fas',
-                          'fa-2xl',
-                          {
-                            'fa-folder': file.is_directory,
-                            'fa-file': !file.is_directory,
-                          },
-                        ]"
-                        :style="{
-                          color: file.is_directory
-                            ? '#0ea5e9'
-                            : 'rgb(105 114 118)',
-                        }"
-                      ></i>
-                      {{ file.file_name }}
-                    </div>
-                    <div class="col-2" v-if="!file.is_directory">
-                      {{ file.file_size }}
-                    </div>
-                    <div class="col-2" v-if="file.is_directory">
-                      {{ file.dir_size }}
-                      {{ file.dir_size == 1 ? "item" : "items" }}
-                    </div>
-                    <div class="col-3">{{ file.modified }}</div>
-                  </li>
-                </ul>
-              </div>
-            </div>
+            </template>
           </div>
           <div class="modal-footer justify-content-between">
             <div class="w-75">
@@ -330,6 +341,9 @@ export default {
     },
     isGrid() {
       return this.currentView === "grid";
+    },
+    isDirEmpty() {
+      return this.files.length === 0;
     },
   },
   mounted() {
