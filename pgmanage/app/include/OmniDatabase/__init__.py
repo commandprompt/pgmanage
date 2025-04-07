@@ -24,17 +24,25 @@ SOFTWARE.
 '''
 
 from app.include.OmniDatabase.SQLite import SQLite
-from app.include.OmniDatabase.PostgreSQL import PostgreSQL
 from app.include.OmniDatabase.Oracle import Oracle
 from app.include.OmniDatabase.MariaDB import MariaDB
 from app.include.OmniDatabase.MySQL import MySQL
+
+
+from pgmanage.settings import ENTERPRISE_EDITION
+
+if ENTERPRISE_EDITION:
+    from enterprise.include.OmniDatabase.PostgreSQL import PostgreSQL
+else:
+    from app.include.OmniDatabase.PostgreSQL import PostgreSQL
+
 
 '''
 ------------------------------------------------------------------------
 Generic
 ------------------------------------------------------------------------
 '''
-class Generic(object):
+class Generic:
     @staticmethod
     def InstantiateDatabase(p_db_type,
                             p_server,

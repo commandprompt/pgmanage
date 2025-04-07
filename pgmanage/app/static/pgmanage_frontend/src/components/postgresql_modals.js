@@ -9,7 +9,7 @@ function createExtensionModal(node, mode) {
 
   const app = createApp({
     components: {
-      "extension-modal": defineAsyncComponent(() => import("@/components/ExtensionModal.vue")),
+      "extension-modal": defineAsyncComponent(() => import("@src/components/ExtensionModal.vue")),
     },
     data() {
       return {
@@ -42,7 +42,7 @@ function createPgCronModal(node, mode) {
 
   const app = createApp({
     components: {
-      "pgcron-modal": defineAsyncComponent(() => import("@/components/PgCronModal.vue")),
+      "pgcron-modal": defineAsyncComponent(() => import("@src/components/PgCronModal.vue")),
     },
     data() {
       return {
@@ -72,7 +72,7 @@ function createRoleModal(node, mode, version) {
 
   const app = createApp({
     components: {
-      "role-modal": defineAsyncComponent(() => import("@/components/RoleModal.vue")),
+      "role-modal": defineAsyncComponent(() => import("@src/components/RoleModal.vue")),
     },
     data() {
       return {

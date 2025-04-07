@@ -113,7 +113,7 @@ export default {
   name: "ConnectionTab",
   components: {
     DatabaseTabs,
-    TreePostgresql: defineAsyncComponent(() => import("./TreePostgresql.vue")),
+    TreePostgresql: defineAsyncComponent(() => import("@conditional/components/TreePostgresql.vue")),
     TreeSqlite: defineAsyncComponent(() => import("./TreeSqlite.vue")),
     TreeMariaDB: defineAsyncComponent(() => import("./TreeMariaDB.vue")),
     TreeOracle: defineAsyncComponent(() => import("./TreeOracle.vue")),
