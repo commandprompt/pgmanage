@@ -92,11 +92,11 @@ export default {
         });
     },
     refreshWidgets() {
-      if (this.widgets.length > 0) this.refreshWidget = true;
+      if (this.visibleSortedWidgets.length > 0) this.refreshWidget = true;
     },
     waitForAllAndRefreshCounter() {
       this.counter++;
-      if (this.counter === this.widgets.length) {
+      if (this.counter === this.visibleSortedWidgets.length) {
         this.refreshWidget = false;
         this.counter = 0;
       }
