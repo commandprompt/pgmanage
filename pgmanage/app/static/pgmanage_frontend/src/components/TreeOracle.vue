@@ -60,12 +60,13 @@ export default {
         },
       ],
       templates: "",
+      cm_server_extra: [],
     };
   },
   computed: {
     contextMenu() {
       return {
-        cm_server: [this.cmRefreshObject],
+        cm_server: [this.cmRefreshObject, ...this.cm_server_extra],
         cm_database: [
           {
             label: "ER Diagram",
@@ -757,8 +758,7 @@ export default {
           this.templates = resp.data;
 
           if (resp.data.superuser) {
-            this.contextMenu.cm_server = [this.cmRefreshObject];
-            this.contextMenu.cm_server.push({
+            this.cm_server_extra = [{
               label: "Monitoring",
               icon: "fas fa-chart-line",
               children: [
@@ -770,7 +770,7 @@ export default {
                   },
                 },
               ],
-            });
+            }];
 
             this.insertNode(node, "Roles", {
               icon: "fas node-all fa-users node-user-list",
