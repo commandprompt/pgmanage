@@ -166,10 +166,9 @@ export default {
     table.on("tableBuilt", () => {
       this.tabulator = table;
       this.tabulator.on("cellEdited", this.cellEdited);
+      this.knex = Knex({ client: this.dialect || 'postgres'})
+      this.getTableColumns().then(() => {this.tabulator.setSort("0", "asc")});
     })
-
-    this.knex = Knex({ client: this.dialect || 'postgres'})
-    this.getTableColumns().then(() => {this.tabulator.setSort("0", "asc")});
 
     emitter.on(`${this.tabId}_query_edit`, () => {
       this.confirmGetTableData();
