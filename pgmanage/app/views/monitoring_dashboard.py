@@ -45,14 +45,16 @@ def _hook_import(name, *args, **kwargs):
         raise ImportError(f"You cannot import {name} module in this sandbox.")
     return __import__(name, *args, **kwargs)
 
-
+# lists all available widgets with the same db type , used in widget config modal
+# list consist from builtin widgets with the same technology + user customized widgets
 @user_authenticated
 @database_required(check_timeout=False, open_connection=False)
 def monitoring_widgets_list(request, database):
     widget_list = []
+    db_type = 'mysql' if database.v_db_type == 'mariadb' else database.v_db_type
     try:
         for _, mon_widget in builtin_monitoring_widgets.items():
-            if mon_widget.get("dbms") == database.v_db_type:
+            if mon_widget.get("dbms") == db_type:
                 widget_list.append(
                     {
                         "id": mon_widget.get("id"),
@@ -128,7 +130,7 @@ def user_created_widget_detail(request, widget_id):
 @database_required(check_timeout=False, open_connection=False)
 def create_widget(request, database):
     data = request.data
-
+    database_index = data.get("database_index")
     widget_name = data.get("widget_name")
     widget_type = data.get("widget_type")
     widget_interval = data.get("widget_interval")
@@ -151,84 +153,140 @@ def create_widget(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     widget.save()
+    # create widget configuration for current database connection
+    conn_object = Connection.objects.get(id=database_index)
+    lastconfig = MonWidgetsConnections.objects.filter(connection_id=database_index).order_by('-position').first()
+    position = 0
+    if lastconfig:
+        position = lastconfig.position + 1
+    widget_config = MonWidgetsConnections(
+        unit=widget.id,
+        user=request.user,
+        connection=conn_object,
+        interval=widget.interval,
+        plugin_name='',
+        visible = True,
+        position = position
+    )
+    widget_config.save()
+    data = model_to_dict(widget)
+    data['visible'] = widget_config.visible
+    data['saved_id'] = widget_config.id
+    data['position'] = widget_config.position
 
-    return JsonResponse(data=model_to_dict(widget), status=201)
+    return JsonResponse(data=data, status=201)
 
-
+# lists widgets available on the dashboard
+# gets widget configs, creates if no configs found
 @user_authenticated
 @database_required(check_timeout=False, open_connection=False)
 def monitoring_widgets(request, database):
     database_index = request.data.get("database_index")
     widgets = []
     try:
-        user_widgets = MonWidgetsConnections.objects.filter(
+        technology = Technology.objects.filter(name=database.v_db_type).first()
+        conn_object = Connection.objects.get(id=database_index)
+        custom_widget_ids = list(MonWidgets.objects.filter(
+            user=request.user, technology=technology.id
+        ).values_list('id', flat=True))
+        # get widget configs for the curernt connection
+
+        builtin_widget_ids = [
+            k[1] for k,v in builtin_monitoring_widgets.items() if v.get("dbms") == technology.name
+        ]
+        available_widget_ids = builtin_widget_ids + custom_widget_ids
+        widget_configs = MonWidgetsConnections.objects.filter(
+            user=request.user, connection=database_index
+        )
+        widget_config_ids = list(widget_configs.values_list('unit', flat=True))
+        # go over available widget ids and create widget configs for current connection
+        for idx, widget_id in enumerate(available_widget_ids):
+            # check if the current widget does not have config 
+            if(widget_id not in widget_config_ids):
+                # builtin widgets have negative ids
+                if(widget_id < 0 ):
+                    widget = next((
+                        w for w in builtin_monitoring_widgets.values()
+                        if w.get('dbms') == technology.name and w.get('id') == widget_id
+                    ), None)
+                    if widget:
+                        widget_config = MonWidgetsConnections(
+                            unit=widget.get("id"),
+                            user=request.user,
+                            connection=conn_object,
+                            interval=widget.get("interval"),
+                            plugin_name=widget.get("plugin_name"),
+                            visible = widget.get("default"),
+                            position = idx
+                        )
+                        widget_config.save()
+                else:
+                    widget = MonWidgets.objects.filter(pk=widget_id).first()
+                    widget_config = MonWidgetsConnections(
+                            unit=widget.id,
+                            user=request.user,
+                            connection=conn_object,
+                            interval=widget.interval,
+                            plugin_name='',
+                            visible = False,
+                            position = idx
+                        )
+                    widget_config.save()
+
+        # reload widget configs
+        widget_configs = MonWidgetsConnections.objects.filter(
             user=request.user, connection=database_index
         )
 
-        # There are no widgets for this user/connection pair, create defaults
-
-        if not user_widgets:
-            conn_object = Connection.objects.get(id=database_index)
-
-            for _, mon_widget in builtin_monitoring_widgets.items():
-                if (
-                    mon_widget.get("default") is True
-                    and mon_widget.get("dbms") == database.v_db_type
-                ):
-                    user_widget = MonWidgetsConnections(
-                        unit=mon_widget.get("id"),
-                        user=request.user,
-                        connection=conn_object,
-                        interval=mon_widget.get("interval"),
-                        plugin_name=mon_widget.get("plugin_name"),
-                    )
-                    user_widget.save()
-
-            # Retrieve user widgets again
-            user_widgets = MonWidgetsConnections.objects.filter(
-                user=request.user, connection=database_index
-            )
-
-        for user_widget in user_widgets:
-            if user_widget.plugin_name == "":
+        for widget_config in widget_configs:
+            # custom widget
+            if widget_config.plugin_name == "":
                 try:
-                    default_widget = MonWidgets.objects.get(id=user_widget.unit)
+
+                    default_widget = MonWidgets.objects.get(id=widget_config.unit)
                     widget = {
-                        "saved_id": user_widget.id,
+                        "saved_id": widget_config.id,
                         "id": default_widget.id,
                         "title": default_widget.title,
                         "plugin_name": "",
-                        "interval": user_widget.interval,
+                        "interval": widget_config.interval,
                         "type": default_widget.type,
                         "widget_data": None,
+                        "position": widget_config.position,
+                        "visible": widget_config.visible,
+                        "editable": True
                     }
                     widgets.append(widget)
                 except Exception:
-                    user_widget.delete()
+                    widget_config.delete()
             else:
+                # builtin widget
                 # search plugin data
                 found = False
 
                 for _, mon_widget in builtin_monitoring_widgets.items():
                     if (
-                        mon_widget.get("id") == user_widget.unit
-                        and mon_widget.get("plugin_name") == user_widget.plugin_name
+                        mon_widget.get("id") == widget_config.unit
+                        and mon_widget.get("plugin_name") == widget_config.plugin_name
                         and mon_widget.get("dbms") == database.v_db_type
                     ):
                         found = True
                         widget = {
-                            "saved_id": user_widget.id,
-                            "id": user_widget.unit,
+                            "saved_id": widget_config.id,
+                            "id": widget_config.unit,
                             "title": mon_widget.get("title"),
-                            "plugin_name": user_widget.plugin_name,
-                            "interval": user_widget.interval,
+                            "plugin_name": widget_config.plugin_name,
+                            "interval": widget_config.interval,
                             "type": mon_widget.get("type"),
                             "widget_data": None,
+                            "position": widget_config.position,
+                            "visible": widget_config.visible,
+                            "editable": False
                         }
                         widgets.append(widget)
                         break
                 if not found:
-                    user_widget.delete()
+                    widget_config.delete()
     # No mon widgets connections
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -283,13 +341,20 @@ def widget_detail(request, widget_id):
     if request.method == "PATCH":
         data = json.loads(request.body or "{}")
         interval = data.get("interval")
+        position = data.get("posistion")
+        visible = data.get("visible")
         widget = MonWidgetsConnections.objects.filter(
             user=request.user, id=widget_id
         ).first()
         if not widget:
             return JsonResponse(data={"data": "Widget not found."}, status=404)
 
-        widget.interval = interval or 5
+        if interval is not None:
+            widget.interval = interval
+        if position is not None:
+            widget.position = position
+        if visible is not None:
+            widget.visible = visible
         widget.save()
 
         return HttpResponse(status=204)

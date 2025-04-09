@@ -27,6 +27,10 @@ $dropdownMinWidth: 11rem;
         &-md {
             max-height: $dropdownMaxHeightMd;
         }
+
+        &-width-auto {
+            min-width: auto;
+        }
     }
 
     &-item {

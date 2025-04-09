@@ -514,6 +514,16 @@ const useTabsStore = defineStore("tabs", {
       this.selectTab(tab);
     },
     createMonitoringDashboardTab() {
+      let secondaryTabs = this.selectedPrimaryTab.metaData.secondaryTabs;
+      let existingTab = secondaryTabs.filter((t) => {
+        return t.component === "MonitoringDashboard"
+      })[0]
+
+      if(existingTab) {
+        this.selectTab(existingTab);
+        return
+      }
+
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
         name: "Monitoring",
