@@ -10,11 +10,11 @@ import { queryRequestCodes, operationModes } from "../constants";
 import { showMenuNewTabOuter, renameTab } from "../workspace";
 import { h } from "vue";
 
-import postgresqlIcon from '@/assets/images/db_icons/postgresql.svg'
-import mysqlIcon from '@/assets/images/db_icons/mysql.svg'
-import mariadbIcon from '@/assets/images/db_icons/mariadb.svg'
-import oracleIcon from '@/assets/images/db_icons/oracle.svg'
-import sqliteIcon from '@/assets/images/db_icons/sqlite.svg'
+import postgresqlIcon from '@src/assets/images/db_icons/postgresql.svg'
+import mysqlIcon from '@src/assets/images/db_icons/mysql.svg'
+import mariadbIcon from '@src/assets/images/db_icons/mariadb.svg'
+import oracleIcon from '@src/assets/images/db_icons/oracle.svg'
+import sqliteIcon from '@src/assets/images/db_icons/sqlite.svg'
 
 const useTabsStore = defineStore("tabs", {
   state: () => ({

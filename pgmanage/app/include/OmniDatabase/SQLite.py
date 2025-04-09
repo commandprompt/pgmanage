@@ -65,7 +65,7 @@ class SQLite:
         self.v_schema = ''
         self.v_connection = Spartacus.Database.SQLite(p_service, p_foreignkeys)
 
-        self.v_has_schema = False
+        self.has_schema = False
         self.v_has_functions = False
         self.v_has_procedures = False
         self.v_has_packages = False

@@ -220,7 +220,7 @@ DJANGO_VITE_DEV_MODE = DEBUG
 DJANGO_VITE_DEV_SERVER_PORT = 3000
 
 if not DEBUG:
-    DJANGO_VITE_MANIFEST_PATH = os.path.join(STATIC_ROOT, "dist", 'manifest.json')
+    DJANGO_VITE_MANIFEST_PATH = os.path.join(STATIC_ROOT, "dist", '.vite', 'manifest.json')
     DJANGO_VITE_STATIC_URL_PREFIX = "dist"
     DJANGO_VITE_ASSETS_PATH = os.path.join(STATIC_ROOT, "dist")
 else:

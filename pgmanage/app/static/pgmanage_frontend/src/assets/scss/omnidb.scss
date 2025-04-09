@@ -277,11 +277,14 @@ a:not([href]):not([tabindex]){
 .omnidb__query-result-tabs .omnidb__tab-menu__link,
 .omnidb__modal-config .nav-link {
   line-height: 1;
-
+}
+.omnidb__tree-tabs .omnidb__tab-menu__link {
   &:not(.active):hover {
-    border-color: transparent;
+    transition: all .3s ease-in;
+    background-color: rgba(116, 125, 141, 0.1);
   }
 }
+
 .omnidb__tab-menu--secondary .omnidb__tab-menu__link-icon,
 .omnidb__tree-tabs .omnidb__tab-menu__link-icon,
 .omnidb__query-result-tabs .omnidb__tab-menu__link-icon {

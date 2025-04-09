@@ -89,11 +89,11 @@
 </template>
 
 <script>
-import postgresqlLargeIcon from '@/assets/images/db_icons/postgresql_large.png'
-import mysqlLargeIcon from '@/assets/images/db_icons/mysql_large.png'
-import mariadbLargeIcon from '@/assets/images/db_icons/mariadb_large.png'
-import oracleLargeIcon from '@/assets/images/db_icons/oracle_large.png'
-import sqliteLargeIcon from '@/assets/images/db_icons/sqlite_large.png'
+import postgresqlLargeIcon from '@src/assets/images/db_icons/postgresql_large.png'
+import mysqlLargeIcon from '@src/assets/images/db_icons/mysql_large.png'
+import mariadbLargeIcon from '@src/assets/images/db_icons/mariadb_large.png'
+import oracleLargeIcon from '@src/assets/images/db_icons/oracle_large.png'
+import sqliteLargeIcon from '@src/assets/images/db_icons/sqlite_large.png'
 
 
 export default {
