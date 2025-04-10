@@ -89,6 +89,7 @@
 <script>
 import DataEditorTabFilterItem from "./DataEditorTabFilterItem.vue";
 import { dataEditorFilterModes } from "../constants";
+import { extractOrderByClause } from '../utils';
 
 export default {
   name: "DataEditorFilter",
@@ -165,7 +166,10 @@ export default {
     },
     switchToManual() {
       if (!this.rawInputDirty) {
-        this.rawQuery = this.convertFiltersToManual(this.localFilters);
+        const trimmedQuery = this.rawQuery.trim().toLowerCase();
+        const { orderByClause } = extractOrderByClause(trimmedQuery);
+        const convertedFilters = this.convertFiltersToManual(this.localFilters);
+        this.rawQuery = `${convertedFilters} ${orderByClause}`
       }
       this.mode = this.modes.MANUAL;
       this.$emit("update", { mode: this.mode, rawQuery: this.rawQuery });
