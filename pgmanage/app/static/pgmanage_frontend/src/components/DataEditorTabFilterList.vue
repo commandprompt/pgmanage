@@ -144,6 +144,7 @@ export default {
     updatedRawQuery(newValue) {
       if (newValue) {
         this.rawQuery = newValue
+        this.$emit("update", { mode: this.mode, rawQuery: this.rawQuery });
       }
     }
   },
