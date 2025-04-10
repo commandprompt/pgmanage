@@ -80,7 +80,7 @@
         class="form-control"
         type="text"
         placeholder="Type your filter query here"
-        @change="emitRawQuery"
+        @input="emitRawQuery"
       />
     </div>
   </div>
