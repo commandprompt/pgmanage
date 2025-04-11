@@ -298,6 +298,9 @@ export default {
           this.longQuery = false;
           this.tempData = [];
           this.lastQuery = query.trim();
+          if (cmd_type === "explain" && this.getEditorContent(true) !== query) {
+            this.lastQuery = this.getEditorContent(true);
+          } 
 
           let message_data = {
             sql_cmd: query,
