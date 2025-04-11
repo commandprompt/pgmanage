@@ -152,7 +152,7 @@ export default {
       sortMode: 'remote',
       headerSortClickElement:"icon",
       ajaxURL: "http://fake",
-      ajaxRequestFunc: this.confirmGetTableData,
+      ajaxRequestFunc: this.getTableData,
     })
 
     table.on("tableBuilt", () => {
