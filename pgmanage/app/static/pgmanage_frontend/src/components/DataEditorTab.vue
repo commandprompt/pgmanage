@@ -58,6 +58,7 @@ import DataEditorTabFilterList from './DataEditorTabFilterList.vue'
 import { dataEditorFilterModes } from '../constants';
 import { handleError } from '../logging/utils';
 import dialects from './dialect-data';
+import { extractOrderByClause } from '../utils';
 
 // TODO: run query in transaction
 
@@ -69,16 +70,7 @@ function escapeColumnName(name) {
     : `"${name.replace(/"/g, '""')}"`;
 }
 
-function extractOrderByClause (queryFilter) {
-        const orderByRegex = /\bORDER\s+BY\s+([\w\s",.]+)$/i;
-        const match = queryFilter.match(orderByRegex);
 
-        if (!match)
-          return { queryFilterCleaned: queryFilter, orderByClause: "" };
-
-        const queryFilterCleaned = queryFilter.replace(orderByRegex, "").trim();
-        return { queryFilterCleaned, orderByClause: `ORDER BY ${match[1]}` };
-      };
 
 export default {
   name: "DataEditorTab",
@@ -390,16 +382,9 @@ export default {
 
       if (params?.sort && params.sort.length === 1) {
         let sortColumnName = this.columnNames[params.sort[0].field];
-
-        if (
-          orderByColumns.length >= 2 ||
-          (orderByColumns.length === 1 &&
-            orderByColumns[0]?.name !== sortColumnName)
-        ) {
-          const updatedOrderClause = `ORDER BY ${sortColumnName} ${params.sort[0].dir}`;
-          this.updatedRawQuery = `${queryFilterCleaned} ${updatedOrderClause}`;
-          return updatedOrderClause;
-        }
+        const updatedOrderClause = `ORDER BY ${sortColumnName} ${params.sort[0].dir}`;
+        this.updatedRawQuery = `${queryFilterCleaned} ${updatedOrderClause}`;
+        return updatedOrderClause;
       }
 
       if (params?.sort) {
