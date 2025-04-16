@@ -62,7 +62,9 @@ describe("MonitoringWidgetEditModal", () => {
       .setValue("Test Widget");
     await wrapper
       .get("[data-testid='widget-edit-refresh-interval']")
-      .setValue(10);
+      .findAll('option')
+      .at(2)
+      .setSelected()
 
     await wrapper
       .get("[data-testid='widget-edit-save-button']")
@@ -80,7 +82,9 @@ describe("MonitoringWidgetEditModal", () => {
       .setValue("Test Widget");
     await wrapper
       .get("[data-testid='widget-edit-refresh-interval']")
-      .setValue(10);
+      .findAll('option')
+      .at(2)
+      .setSelected()
 
     await wrapper
       .get("[data-testid='widget-edit-save-button']")
@@ -93,7 +97,9 @@ describe("MonitoringWidgetEditModal", () => {
       .setValue("Test Widget");
     await wrapper
       .get("[data-testid='widget-edit-refresh-interval']")
-      .setValue(10);
+      .findAll('option')
+      .at(2)
+      .setSelected()
 
     wrapper.vm.v$.$validate();
     expect(wrapper.vm.v$.widgetName.$invalid).toBeFalsy();
@@ -102,31 +108,6 @@ describe("MonitoringWidgetEditModal", () => {
 
     wrapper.vm.v$.$validate();
     expect(wrapper.vm.v$.widgetName.$invalid).toBeTruthy();
-  });
-  test("validation error on change widget interval to below 5 or empty", async () => {
-    await wrapper
-      .get("[data-testid='widget-edit-name']")
-      .setValue("Test Widget");
-    await wrapper
-      .get("[data-testid='widget-edit-refresh-interval']")
-      .setValue(10);
-    wrapper.vm.v$.$validate();
-    expect(wrapper.vm.v$.widgetInterval.$invalid).toBeFalsy();
-
-    await wrapper
-      .get("[data-testid='widget-edit-refresh-interval']")
-      .setValue(4);
-
-    wrapper.vm.v$.$validate();
-
-    expect(wrapper.vm.v$.widgetInterval.$invalid).toBeTruthy();
-
-    await wrapper
-      .get("[data-testid='widget-edit-refresh-interval']")
-      .setValue("");
-
-    wrapper.vm.v$.$validate();
-    expect(wrapper.vm.v$.widgetInterval.$invalid).toBeTruthy();
   });
   test("disabled 'Save' button when validation error", async () => {
     await wrapper.get("[data-testid='widget-edit-name']").setValue("");
