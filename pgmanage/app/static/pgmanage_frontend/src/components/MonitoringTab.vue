@@ -2,6 +2,7 @@
   <div class="p-2">
     <div ref="topToolbar">
       <button
+        data-testid="monitoring-refresh-button"
         class="btn btn-primary btn-sm my-2 me-1"
         title="Refresh"
         @click="refreshMonitoring"
@@ -34,6 +35,7 @@
         <div class="dropdown-menu dropdown-menu-width-auto">
           <a
             v-for="(option, index) in refreshIntervalOptions" :key=index
+            :data-testid="`refresh-option-${option}`"
             @click="monitoringInterval=option"
             class="dropdown-item"
             href="#"
