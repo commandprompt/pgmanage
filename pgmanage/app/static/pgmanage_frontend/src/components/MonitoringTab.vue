@@ -27,25 +27,20 @@
       >
         <i class="fas fa-pause-circle fa-light"></i>
       </button>
-      <div class="d-inline-flex align-items-center">
-        <input
-          data-testid="monitoring-interval-input"
-          v-model.number="v$.monitoringInterval.$model"
-          :class="[
-            'form-control',
-            'form-control-sm',
-            'me-2',
-            { 'is-invalid': v$.monitoringInterval.$invalid },
-          ]"
-          style="width: 60px"
-        />
-        <div class="invalid-feedback">
-          <a v-for="error of v$.monitoringInterval.$errors" :key="error.$uid">
-            {{ error.$message }}
-            <br />
+      <div
+        class="d-inline-flex align-items-center refresh-menu ms-1"
+        data-bs-toggle="dropdown">
+        <a class="refresh-menu__link" href="">{{ humanizeDuration(monitoringInterval) }}</a>
+        <div class="dropdown-menu dropdown-menu-width-auto">
+          <a
+            v-for="(option, index) in refreshIntervalOptions" :key=index
+            @click="monitoringInterval=option"
+            class="dropdown-item"
+            href="#"
+          >
+            {{ humanizeDuration(option) }}
           </a>
         </div>
-        <span>seconds</span>
       </div>
       <span class="float-end"> Total processes: {{ dataLength }} </span>
     </div>
@@ -78,6 +73,7 @@ import {
 import { useVuelidate } from "@vuelidate/core";
 import { minValue, required } from "@vuelidate/validators";
 import { handleError } from "../logging/utils";
+import HumanizeDurationMixin from '../mixins/humanize_duration_mixin'
 
 export default {
   name: "MonitoringTab",
@@ -86,6 +82,7 @@ export default {
       v$: useVuelidate({ $lazy: true }),
     };
   },
+  mixins: [HumanizeDurationMixin],
   props: {
     tabId: String,
     query: String,
@@ -102,6 +99,7 @@ export default {
       isActive: true,
       monitoringInterval: 10,
       showLoading: true,
+      refreshIntervalOptions: [5, 10, 30, 60, 120, 300]
     };
   },
   computed: {
