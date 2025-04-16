@@ -14,8 +14,8 @@ import { Modal } from 'bootstrap'
 function checkBeforeChangeDatabase(p_cancel_function, p_ok_function) {
 
   for (const tab of tabsStore.selectedPrimaryTab.metaData.secondaryTabs) {
-    if(["edit", "alter", "debug", "monitoring_dashboard", "data_mining"].includes(tab.metaData.mode)) {
-      showAlert('Before changing connection please close any tab that belongs to the following types: <br/><br/><b>Edit Data<br/><br/>Alter Table<br/><br/>Function Debugging<br/><br/>Monitoring Dashboard<br/><br/>Advanced Object Search');
+    if(["edit", "alter", "monitoring_dashboard"].includes(tab.metaData.mode)) {
+      showAlert('Before changing connection please close any tab that belongs to the following types: <br/><br/><b>Edit Data<br/><br/>Alter Table<br/><br/>Monitoring Dashboard');
       if (p_cancel_function!=null) {
         p_cancel_function();
       }
