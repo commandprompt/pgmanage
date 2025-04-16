@@ -1,5 +1,5 @@
 import { setActivePinia, createPinia } from "pinia";
-import { useSnippetsStore } from "../../src/stores/snippets";
+import { useSnippetsStore } from "@src/stores/snippets";
 import { beforeEach, test, expect, describe } from "vitest";
 
 describe("Snippets Store", () => {

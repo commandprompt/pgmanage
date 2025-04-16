@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import { useTabsStore } from "@/stores/tabs";
-import { emitter } from "../../src/emitter";
-import * as worspaceModule from "@/workspace";
+import { useTabsStore } from "@src/stores/tabs";
+import { emitter } from "@src/emitter";
+import * as worspaceModule from "@src/workspace";
 
 vi.hoisted(() => {
   vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
   vi.stubGlobal("app_base_path", "test_folder");
 });
 
-vi.mock("@/workspace");
+vi.mock("@src/workspace");
 
-vi.mock("@/stores/stores_initializer", () => {
+vi.mock("@src/stores/stores_initializer", () => {
   const connectionsStore = {
     connections: [{ id: 1, technology: "terminal" }],
     getConnection: vi.fn(() => {

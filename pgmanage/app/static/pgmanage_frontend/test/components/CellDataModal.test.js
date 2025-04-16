@@ -1,8 +1,8 @@
 import "ace-builds/src-noconflict/ace";
 import { flushPromises, mount } from "@vue/test-utils";
 import { describe, test, beforeEach, vi, expect, afterEach } from "vitest";
-import CellDataModal from "@/components/CellDataModal.vue";
-import { useCellDataModalStore } from "@/stores/celldata_modal";
+import CellDataModal from "@src/components/CellDataModal.vue";
+import { useCellDataModalStore } from "@src/stores/celldata_modal";
 
 vi.hoisted(() => {
   vi.stubGlobal("v_csrf_cookie_name", "test_cookie");

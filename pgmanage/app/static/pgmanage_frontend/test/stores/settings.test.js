@@ -1,23 +1,23 @@
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { settingsStore } from "@/stores/stores_initializer";
+import { settingsStore } from "@src/stores/stores_initializer";
 import axios from "axios";
-import { showToast } from "@/notification_control";
+import { showToast } from "@src/notification_control";
 import moment from "moment";
 import { Modal } from "bootstrap";
-import { handleError } from "@/logging/utils";
+import { handleError } from "@src/logging/utils";
 
 vi.hoisted(() => {
   vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
   vi.stubGlobal("app_base_path", "test_folder");
 });
 
-vi.mock("@/logging/utils", () => ({
+vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
 
 vi.mock("axios");
-vi.mock("@/notification_control", () => ({
+vi.mock("@src/notification_control", () => ({
   showToast: vi.fn(),
 }));
 

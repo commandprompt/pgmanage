@@ -1,6 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
-import SearchableDropdown from "@/components/SearchableDropdown.vue";
+import SearchableDropdown from "@src/components/SearchableDropdown.vue";
 
 describe("SearchableDropdown.vue", () => {
   it("renders dropdown input and options", () => {

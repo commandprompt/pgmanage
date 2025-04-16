@@ -1,5 +1,5 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import UtilityJobs from "@/components/UtilityJobs.vue";
+import UtilityJobs from "@src/components/UtilityJobs.vue";
 import axios from "axios";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import moment from "moment";

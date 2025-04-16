@@ -1,20 +1,20 @@
 import { mount } from "@vue/test-utils";
-import CancelButton from "@/components/CancelSQLButton.vue";
-import { emitter } from "@/emitter";
-import { tabsStore } from "@/stores/stores_initializer";
+import CancelButton from "@src/components/CancelSQLButton.vue";
+import { emitter } from "@src/emitter";
+import { tabsStore } from "@src/stores/stores_initializer";
 import { createRequest, removeContext } from "../../src/long_polling";
-import { queryRequestCodes } from "@/constants";
+import { queryRequestCodes } from "@src/constants";
 import { describe, vi, beforeEach, afterEach, it, expect } from "vitest";
 
 vi.stubGlobal("app_base_path", "test_folder");
 
-vi.mock("@/stores/stores_initializer", () => ({
+vi.mock("@src/stores/stores_initializer", () => ({
   tabsStore: {
     getSelectedSecondaryTab: vi.fn(),
   },
 }));
 
-vi.mock("@/long_polling", () => ({
+vi.mock("@src/long_polling", () => ({
   createRequest: vi.fn(),
   removeContext: vi.fn(),
 }));

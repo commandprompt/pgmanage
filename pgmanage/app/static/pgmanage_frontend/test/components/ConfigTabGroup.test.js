@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
-import ConfigTabGroup from "@/components/ConfigTabGroup.vue";
-import ConfigTabGroupItemInput from "@/components/ConfigTabGroupItemInput.vue";
+import ConfigTabGroup from "@src/components/ConfigTabGroup.vue";
+import ConfigTabGroupItemInput from "@src/components/ConfigTabGroupItemInput.vue";
 import { vi, describe, it, beforeEach, expect } from "vitest";
 
 vi.hoisted(() => {

@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi } from "vitest";
-import AboutModal from "@/components/AboutModal.vue";
+import AboutModal from "@src/components/AboutModal.vue";
 
 vi.stubGlobal("pgmanage_version", "1.0.0");
 

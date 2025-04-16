@@ -1,6 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import UtilityJobDetail from "@/components/UtilityJobsJobDetail.vue";
-import { utilityJobStore } from "@/stores/stores_initializer";
+import UtilityJobDetail from "@src/components/UtilityJobsJobDetail.vue";
+import { utilityJobStore } from "@src/stores/stores_initializer";
 import axios from "axios";
 import { Modal } from "bootstrap";
 import { vi, describe, beforeEach, it, expect, afterEach } from "vitest";

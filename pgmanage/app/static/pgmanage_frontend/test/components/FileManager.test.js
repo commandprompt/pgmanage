@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import FileManager from "@/components/FileManager.vue";
+import FileManager from "@src/components/FileManager.vue";
 import axios from "axios";
 
 vi.mock("axios");

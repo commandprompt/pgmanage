@@ -1,7 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { test, describe, beforeEach, vi, expect } from "vitest";
-import MonitoringDashboard from "../../src/components/MonitoringDashboard.vue";
-import MonitoringWidget from "../../src/components/MonitoringWidget.vue";
+import MonitoringDashboard from "@src/components/MonitoringDashboard.vue";
+import MonitoringWidget from "@src/components/MonitoringWidget.vue";
 
 import axios from "axios";
 
