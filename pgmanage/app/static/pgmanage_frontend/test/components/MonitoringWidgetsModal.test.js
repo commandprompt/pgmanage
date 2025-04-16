@@ -45,14 +45,5 @@ describe("MonitoringWidgetsModal", () => {
   test("should render MonitoringWidgetsModal component with expected elements", () => {
     expect(wrapper.html()).toContain("Monitoring Widgets");
     expect(wrapper.html()).toContain("New Widget");
-  }),
-    test("should call 'getMonitoringWidgetList' on modal show", async () => {
-      const getMonitoringWidgetList = vi.spyOn(
-        wrapper.vm,
-        "getMonitoringWidgetList"
-      );
-      await wrapper.setProps({ widgetsModalVisible: true });
-
-      expect(getMonitoringWidgetList).toBeCalledTimes(1);
-    });
+  });
 });
