@@ -1,5 +1,5 @@
 import { mount, flushPromises } from "@vue/test-utils";
-import FileManagerActionsModal from "@/components/FileManagerActionsModal.vue";
+import FileManagerActionsModal from "@src/components/FileManagerActionsModal.vue";
 import axios from "axios";
 import { vi, describe, beforeEach, it, expect } from "vitest";
 

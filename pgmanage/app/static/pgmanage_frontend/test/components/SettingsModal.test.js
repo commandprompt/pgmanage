@@ -1,6 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import SettingsModal from "@/components/SettingsModal.vue";
-import { useSettingsStore } from "../../src/stores/settings";
+import SettingsModal from "@src/components/SettingsModal.vue";
+import { useSettingsStore } from "@src/stores/settings";
 import { vi, describe, beforeEach, afterEach, it, expect } from "vitest";
 import axios from "axios";
 
@@ -9,7 +9,7 @@ vi.hoisted(() => {
   vi.stubGlobal("app_base_path", "test_folder");
 });
 
-vi.mock("@/notification_control", () => {
+vi.mock("@src/notification_control", () => {
   const showAlert = vi.fn();
   return {
     showAlert,

@@ -1,8 +1,8 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi } from "vitest";
-import SnippetPanel from "@/components/SnippetPanel.vue";
+import SnippetPanel from "@src/components/SnippetPanel.vue";
 import axios from "axios";
-import { emitter } from "@/emitter";
+import { emitter } from "@src/emitter";
 
 vi.hoisted(() => {
   vi.stubGlobal("v_csrf_cookie_name", "test_cookie");

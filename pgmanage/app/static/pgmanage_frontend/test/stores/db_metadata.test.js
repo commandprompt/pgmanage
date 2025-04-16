@@ -1,7 +1,7 @@
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import axios from "axios";
-import { useDbMetadataStore } from "@/stores/db_metadata";
+import { useDbMetadataStore } from "@src/stores/db_metadata";
 
 vi.mock("axios");
 

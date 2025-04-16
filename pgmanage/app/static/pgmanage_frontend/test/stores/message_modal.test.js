@@ -1,6 +1,6 @@
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useMessageModalStore } from "@/stores/message_modal";
+import { useMessageModalStore } from "@src/stores/message_modal";
 
 describe("messageModal store", () => {
   beforeEach(() => {

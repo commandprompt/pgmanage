@@ -1,25 +1,25 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import PgCronModal from "@/components/PgCronModal.vue";
-import { operationModes } from "@/constants";
+import PgCronModal from "@src/components/PgCronModal.vue";
+import { operationModes } from "@src/constants";
 import axios from "axios";
 import { vi, describe, it, expect, beforeAll, afterEach } from "vitest";
-import { useSettingsStore } from "@/stores/settings.js";
-import "@/ace_extras/themes/theme-omnidb.js";
+import { useSettingsStore } from "@src/stores/settings.js";
+import "@src/ace_extras/themes/theme-omnidb.js";
 import "ace-builds/src-noconflict/mode-sql";
-import { emitter } from "@/emitter";
-import { operationModes } from "@/constants";
-import { handleError } from "@/logging/utils";
+import { emitter } from "@src/emitter";
+import { operationModes } from "@src/constants";
+import { handleError } from "@src/logging/utils";
 
 vi.hoisted(() => {
   vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
   vi.stubGlobal("app_base_path", "test_folder");
 });
 
-vi.mock("@/logging/utils", () => ({
+vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
 
-vi.mock("@/notification_control", () => ({
+vi.mock("@src/notification_control", () => ({
   showToast: vi.fn(),
 }));
 

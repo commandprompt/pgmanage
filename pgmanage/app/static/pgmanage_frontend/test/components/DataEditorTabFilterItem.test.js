@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, test, expect, beforeEach } from "vitest";
-import DataEditorTabFilterItem from "@/components/DataEditorTabFilterItem.vue";
+import DataEditorTabFilterItem from "@src/components/DataEditorTabFilterItem.vue";
 
 describe("FilterItem.vue", () => {
   let wrapper;
