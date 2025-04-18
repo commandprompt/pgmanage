@@ -286,13 +286,15 @@ describe("useTabsStore", () => {
     );
   });
 
-  it("should create a Monitoring Dashboard tab", () => {
+  it("should create a Monitoring Dashboard tab", async () => {
     const store = useTabsStore();
+    await store.createConnectionTab(0);
     store.createMonitoringDashboardTab();
-    const tab = store.tabs.find((tab) => tab.name === "Monitoring");
+    const tab = store.selectedPrimaryTab.metaData.secondaryTabs.find(
+      (tab) => tab.name === "Monitoring"
+    );
     expect(tab).toBeTruthy();
     expect(tab.component).toBe("MonitoringDashboard");
-    expect(store.selectedPrimaryTab).toBe(tab);
   });
 
   it("should create a Configuration tab", () => {
