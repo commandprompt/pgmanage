@@ -37,7 +37,7 @@
           </div>
         </div>
 
-        <form>
+        <form autocomplete="off">
           <div class="row mt-3">
             <div class="form-group col-6 position-relative">
               <label for="connectionName" class="fw-bold mb-2">Name</label>

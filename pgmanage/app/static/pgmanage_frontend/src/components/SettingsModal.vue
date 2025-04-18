@@ -124,7 +124,7 @@
                   <div class="d-flex">
                     <div class="input-group">
                       <input id="binary_path" type="text" class="form-control" v-model="binaryPath"
-                        :placeholder="`${action} binary path..`">
+                        :placeholder="`${action} binary path..`" autocomplete="off">
                       <label v-if="desktopMode" class="btn btn-outline-secondary mb-0" type="button">
                         Select
                         <input type="file" @change="setPostgresqlPath" nwdirectory hidden>
@@ -143,7 +143,7 @@
                   <div class="d-flex">
                     <div class="input-group">
                       <input id="pigz_path" type="text" class="form-control" v-model="pigzPath"
-                        :placeholder="`${action} binary path..`">
+                        :placeholder="`${action} binary path..`" autocomplete="off">
                       <label v-if="desktopMode" class="btn btn-outline-secondary mb-0" type="button">
                         Select
                         <input type="file" @change="setPigzPath" nwdirectory hidden>

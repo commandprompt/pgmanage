@@ -5,7 +5,7 @@
       <div class="form-group mb-3">
         <label for="groupName" class="fw-bold mb-2">Group Name</label>
         <input v-model="v$.groupLocal.name.$model" type="text"
-          :class="['form-control', { 'is-invalid': v$.groupLocal.name.$invalid }]" id="groupName" placeholder="Group name">
+          :class="['form-control', { 'is-invalid': v$.groupLocal.name.$invalid }]" id="groupName" placeholder="Group name" autocomplete="off">
         <div class="invalid-feedback">
           <span v-for="error of v$.groupLocal.name.$errors" :key="error.$uid">
             {{ error.$message }}
