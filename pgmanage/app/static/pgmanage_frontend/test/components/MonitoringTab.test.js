@@ -1,4 +1,4 @@
-import { flushPromises, mount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import { test, describe, beforeEach, vi, expect } from "vitest";
 import MonitoringTab from "@src/components/MonitoringTab.vue";
 
@@ -19,7 +19,6 @@ vi.mock("tabulator-tables", () => {
   return { TabulatorFull };
 });
 
-
 describe("MonitoringTab", () => {
   let monTabWrapper;
 
@@ -28,9 +27,9 @@ describe("MonitoringTab", () => {
     vi.restoreAllMocks();
     axios.delete.mockResolvedValue("Deleted");
     axios.post
-      .mockResolvedValue({ data: { data: "1234" } })
-      .mockResolvedValueOnce({ data: { data: "1234" } });
-      monTabWrapper = mount(MonitoringTab, {
+      .mockResolvedValue({ data: { data: [{ name: "1234" }] } })
+      .mockResolvedValueOnce({ data: { data: [{ name: "1234" }] } });
+    monTabWrapper = mount(MonitoringTab, {
       props: {
         workspaceId: "workspaceId",
       },
@@ -51,17 +50,15 @@ describe("MonitoringTab", () => {
       .trigger("click");
 
     expect(refreshWidgetsSpy).toBeCalledTimes(1);
-
   });
-  
+
   test("should change refresh interval when different refresh option is clicked", async () => {
     await monTabWrapper
       .get('[data-testid="refresh-option-300"]')
       .trigger("click");
     expect(monTabWrapper.vm.monitoringInterval).toBe(300);
-
   });
-  
+
   test("should pause refresh when pause button is is clicked", async () => {
     const pauseSpy = vi.spyOn(monTabWrapper.vm, "pauseMonitoring");
     await monTabWrapper
@@ -80,5 +77,4 @@ describe("MonitoringTab", () => {
       .trigger("click");
     expect(playSpy).toBeCalledTimes(1);
   });
-
 });

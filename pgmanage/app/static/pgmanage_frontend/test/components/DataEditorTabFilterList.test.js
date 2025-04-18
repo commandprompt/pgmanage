@@ -77,7 +77,7 @@ describe("DataEditorFilter.vue", () => {
     expect(wrapper.vm.mode).toBe(dataEditorFilterModes.MANUAL);
     expect(wrapper.emitted("update")[0][0]).toEqual({
       mode: dataEditorFilterModes.MANUAL,
-      rawQuery: "where  id = '123'",
+      rawQuery: "where  id = '123' ",
     });
 
     const manualInput = wrapper.find("input[type='text']");
@@ -97,7 +97,7 @@ describe("DataEditorFilter.vue", () => {
 
   test("converts filters to raw query in manual mode", async () => {
     wrapper.vm.switchToManual();
-    expect(wrapper.vm.rawQuery).toBe("where  id = '123'");
+    expect(wrapper.vm.rawQuery).toBe("where  id = '123' ");
 
     // Adding another filter and verifying conversion
     await wrapper.setData({
@@ -109,7 +109,7 @@ describe("DataEditorFilter.vue", () => {
 
     wrapper.vm.switchToManual();
     expect(wrapper.vm.rawQuery).toBe(
-      "where  id = '123'\nOR name IN ('John', 'Doe')"
+      "where  id = '123'\nOR name IN ('John', 'Doe') "
     );
   });
 

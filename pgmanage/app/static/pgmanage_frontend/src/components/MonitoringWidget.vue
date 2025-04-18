@@ -17,6 +17,7 @@
             <div class="dropdown-menu dropdown-menu-width-auto">
               <a
                 v-for="(option, index) in refreshIntervalOptions" :key=index
+                :data-testid="`refresh-option-${option}`"
                 @click="updateInterval(option)"
                 class="dropdown-item"
                 href="#"
