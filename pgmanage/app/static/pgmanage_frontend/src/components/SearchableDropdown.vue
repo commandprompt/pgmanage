@@ -202,8 +202,8 @@
             this.selected = this.options.filter(option => newVal?.includes(option));
           } else {
             this.selected = this.options.find(option => option === newVal) || newVal;
-            this.searchFilter = this.selected;
           }
+          this.searchFilter = this.selected;
         },
         immediate: true
       },
