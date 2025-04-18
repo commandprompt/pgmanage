@@ -1,5 +1,11 @@
 $theme-map: null; //important! do not delete this
 
+// external libs
+@import 'vue-toast-notification/dist/theme-sugar.css';
+@import '@xterm/xterm/css/xterm.css';
+@import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css';
+@import "tabulator-tables/dist/css/tabulator.min.css";
+
 @import './common/themes';
 @import './common/variables';
 @import './common/typography';

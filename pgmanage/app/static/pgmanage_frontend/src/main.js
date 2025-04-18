@@ -20,9 +20,6 @@ import './ace_extras/themes/theme-omnidb.js';
 import './ace_extras/themes/theme-omnidb_dark.js';
 import './workspace'
 import './components/postgresql_modals'
-import 'vue-toast-notification/dist/theme-sugar.css';
-import '@xterm/xterm/css/xterm.css'
-import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css'
 import './assets/scss/omnidb.scss'
 import './assets/scss/pgmanage.scss'
 import omniURL from './ace_extras/themes/theme-omnidb.js?url'
@@ -31,7 +28,6 @@ import extendedPgsqlUrl from "./ace_extras/mode-pgsql-extended.js?url";
 import extendedMysqlUrl from "./ace_extras/mode-mysql-extended.js?url"
 import axios from 'axios'
 import { getCookie } from './ajax_control.js';
-import "tabulator-tables/dist/css/tabulator.min.css"
 import App from './App.vue'
 import { createApp } from 'vue';
 import ToastPlugin from 'vue-toast-notification';
