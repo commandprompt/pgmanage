@@ -104,6 +104,8 @@ import {
 } from "../stores/stores_initializer";
 import { Modal } from "bootstrap";
 
+const chunkSize = 100000;
+
 export default {
   name: "CellDataModal",
   data() {
@@ -150,6 +152,7 @@ export default {
         this.modalInstance.hide();
         // erase leftover css classes left after editor destruction
         this.$refs.editor.classList.remove("ace-omnidb", "ace-omnidb_dark");
+        this.editor.destroy();
       }
     });
   },
@@ -175,13 +178,43 @@ export default {
       this.editor.commands.bindKey("Ctrl-,", null);
       this.editor.commands.bindKey("Cmd-Delete", null);
       this.editor.commands.bindKey("Ctrl-Delete", null);
+      this.editor.getSession().on("changeScrollTop", this.onEditorScroll);
+    },
+    onEditorScroll() {
+      const scrollTop = this.editor.renderer.scrollTop;
+      const scrollHeight = this.editor.renderer.scrollBarV.scrollHeight;
+      const clientHeight = this.editor.renderer.$size.scrollerHeight;
+
+      const nearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+
+      if (nearBottom) {
+        this.appendNextChunk();
+      }
+    },
+    appendNextChunk() {
+      if (!this.store.cellContent || this.store.cellContent.length === 0)
+        return;
+
+      let cellContent = this.store.cellContent;
+      const nextChunk = cellContent.slice(0, chunkSize);
+      this.store.cellContent = cellContent.slice(chunkSize);
+
+      if (nextChunk) {
+        const currentLength = this.editor.session.getLength();
+        this.editor.session.insert(
+          { row: currentLength, column: 0 },
+          nextChunk
+        );
+        this.formatContent();
+      }
     },
     setEditorContent() {
       let cellContent = this.store.cellContent || "";
       if (cellContent) cellContent = this.store.cellContent.toString();
       const cellType = this.store.cellType || "default";
 
-      this.editor.setValue(cellContent);
+      this.editor.setValue(cellContent.slice(0, chunkSize));
+      this.store.cellContent = cellContent.slice(chunkSize);
       this.contentMode = this.getAceMode(cellType);
       this.editor.clearSelection();
       this.showLoading = false;
