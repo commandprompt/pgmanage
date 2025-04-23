@@ -206,6 +206,7 @@ export default {
           nextChunk
         );
         this.formatContent();
+        this.editor.resize(); // updates scroll position if it wasn't updated
       }
     },
     setEditorContent() {
