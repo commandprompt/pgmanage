@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { test, describe, beforeEach, vi, expect } from "vitest";
 import MonitoringTab from "@src/components/MonitoringTab.vue";
 
@@ -76,5 +76,39 @@ describe("MonitoringTab", () => {
       .get('[data-testid="monitoring-play-button"]')
       .trigger("click");
     expect(playSpy).toBeCalledTimes(1);
+  });
+
+  test("refreshMonitoring should set up a timer", async () => {
+    const setIntervalSpy = vi.spyOn(global, "setTimeout");
+    monTabWrapper.vm.refreshMonitoring();
+
+    await flushPromises();
+
+    expect(setIntervalSpy).toHaveBeenCalledWith(
+      expect.any(Function),
+      monTabWrapper.vm.monitoringInterval * 1000
+    );
+  });
+
+  test("pauseMonitoring should clear interval", async () => {
+    monTabWrapper.vm.refreshMonitoring();
+    await flushPromises();
+
+    const clearSpy = vi.spyOn(global, "clearTimeout");
+    expect(monTabWrapper.vm.timeoutObject).not.toBeNull();
+    await monTabWrapper.vm.pauseMonitoring();
+    expect(clearSpy).toHaveBeenCalledWith(monTabWrapper.vm.timeoutObject);
+  });
+
+  test("playMonitoring should set isActive to true", async () => {
+    monTabWrapper.vm.isActive = false;
+    await monTabWrapper.vm.playMonitoring();
+    expect(monTabWrapper.vm.isActive).toBe(true);
+  });
+
+  test("pauseMonitoring should set isActive to false", async () => {
+    monTabWrapper.vm.isActive = true;
+    await monTabWrapper.vm.pauseMonitoring();
+    expect(monTabWrapper.vm.isActive).toBe(false);
   });
 });
