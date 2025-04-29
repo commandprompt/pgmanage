@@ -1,4 +1,10 @@
 <template>
+        <button
+        class="btn btn-primary btn-sm mt-2 me-2"
+        @click="resetToDefault"
+      >
+        Reset
+      </button>
   <div class="pt-3" style="width: 100%; height: calc(100vh - 70px); visibility: hidden" ref="cyContainer"></div>
 </template>
 
@@ -9,6 +15,7 @@ import cytoscape from 'cytoscape';
 import nodeHtmlLabel from 'cytoscape-node-html-label'
 import { tabsStore } from '../stores/stores_initializer';
 import { handleError } from '../logging/utils';
+import isEmpty from 'lodash/isEmpty';
 
 
 export default {
@@ -30,7 +37,42 @@ export default {
       edges: [],
       cy: {},
       layout: {},
-      instance_uid: ''
+      instance_uid: '',
+      options: {
+        boxSelectionEnabled: false,
+        wheelSensitivity: 0.4,
+        style: [
+          {
+            selector: 'node',
+            style: {
+              "shape": "round-rectangle",
+              "background-color": "#F8FAFC",
+              "background-opacity": 1,
+              "height": 40,
+              "width": 140,
+              shape: "round-rectangle",
+            }
+          },
+          {
+            selector: 'edge',
+            style: {
+              'curve-style': 'straight',
+              'target-arrow-shape': 'triangle',
+              'width': 2,
+              'line-style': 'solid'
+            }
+          },
+          {
+            selector: 'edge:selected',
+            style: {
+              'width': 4,
+              'line-color': '#F76707',
+              'target-arrow-color': '#F76707',
+              'source-arrow-color': '#F76707',
+            }
+          },
+        ],
+      }
     };
   },
   mounted() {
@@ -41,6 +83,18 @@ export default {
     this.$refs.cyContainer.style.visibility = 'visible';
   },
   methods: {
+    resetToDefault() {
+      this.layout = this.cy.layout({
+          name: "grid",
+          padding: 50,
+          spacingFactor: 0.85,
+        })
+
+        setTimeout(() => {
+        this.adjustSizes()
+        this.saveGraphState();
+      }, 100)
+    },
     loadSchemaGraph() {
       axios.post('/draw_graph/', {
         database_index: this.databaseIndex,
@@ -48,6 +102,7 @@ export default {
         schema: this.schema,
       })
       .then((response) => {
+        this.isDefault = !response.data.nodes[0]?.position
         this.nodes = response.data.nodes.map((node) => (
           {
             data: {
@@ -61,12 +116,12 @@ export default {
                   cgid: column.cgid,
                   is_pk: column.is_pk,
                   is_fk: column.is_fk,
-                  is_highlighed: false
+                  is_highlighted: false
                 }
               )),
               type: 'table'
             },
-            position: {},
+            position: node?.position ?? {},
             classes: 'group' + node.group
           }
         ))
@@ -107,81 +162,44 @@ export default {
         classes.push('pk-column')
       if(column.is_fk)
         classes.push('fk-column')
-      if(column.is_highlighed)
+      if(column.is_highlighted)
         classes.push('highlighted')
       return classes.join(' ')
     },
     initGraph() {
-      this.cy = cytoscape({
-        container: this.$refs.cyContainer,
-        boxSelectionEnabled: false,
-        wheelSensitivity: 0.4,
-        style: [
-          {
-            selector: 'node',
-            style: {
-              "shape": "round-rectangle",
-              "background-color": "#F8FAFC",
-              "background-opacity": 0,
-              "height": 40,
-              "width": 140,
-              shape: "round-rectangle",
-            }
-          },
-          {
-            selector: 'edge',
-            style: {
-              'curve-style': 'straight',
-              'target-arrow-shape': 'triangle',
-              'width': 2,
-              'line-style': 'solid'
-            }
-          },
-          {
-            selector: 'edge:selected',
-            style: {
-              'width': 4,
-              'line-color': '#F76707',
-              'target-arrow-color': '#F76707',
-              'source-arrow-color': '#F76707',
-            }
-          },
-        ],
-        elements: {
-          selectable: true,
-          grabbable: false,
-          nodes: this.nodes,
-          edges: this.edges
-        }
-      })
-
-      this.cy.on('select unselect', 'edge', function(evt) {
-        let should_highlight = evt.type == 'select'
-        let {source_col, target_col} = evt.target.data()
-        let edge = evt.target
-        let srccols = edge.source().data('columns')
-        srccols.find((c) => c.name === source_col).is_highlighed = should_highlight
-        edge.source().data('columns', srccols)
-        let dstcols = edge.target().data('columns')
-        dstcols.find((c) => c.name === target_col).is_highlighed = should_highlight
-        edge.target().data('columns', dstcols)
-      })
-
-      this.layout = this.cy.layout({
-        name: 'grid',
-        padding: 50,
-        spacingFactor: 0.85,
-      })
-
-      this.cy.on('click', 'node', function (evt) {
-        if (evt.originalEvent) {
-          const element = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
-          if(element.dataset.cgid) {
-            let edge = this.cy().edges().filter(( ele ) => ele.data('cgid') === element.dataset.cgid)
-            setTimeout(() => {edge.select()}, 1)
+      if (this.isDefault) {
+        this.cy = cytoscape({
+          container: this.$refs.cyContainer,
+          ...this.options,
+          elements: {
+            selectable: true,
+            grabbable: false,
+            nodes: [...this.nodes],
+            edges: [...this.edges]
           }
-        }
-      })
+        })
+        this.layout = this.cy.layout({
+          name: "grid",
+          padding: 50,
+          spacingFactor: 0.85,
+        })
+
+      } else {
+        this.cy = cytoscape({
+          container: this.$refs.cyContainer,
+          ...this.options,
+          elements: {
+            selectable: true,
+            grabbable: false,
+            nodes: [...this.nodes],
+            edges: [...this.edges]
+          },
+          layout: {
+            name: 'preset'
+          }
+        })
+      }
+      this.setupEvents();
 
       this.cy.nodeHtmlLabel(
         [{
@@ -209,12 +227,6 @@ export default {
         }],
       )
 
-      this.cy.on("resize", () => {
-        if(!(tabsStore.selectedPrimaryTab.metaData.selectedTab.id === this.tabId)) return;
-        this.cy.fit()
-      })
-
-
       setTimeout(() => {
         this.adjustSizes()
       }, 100)
@@ -228,9 +240,57 @@ export default {
             node.style('height', el.parentElement.clientHeight + padding)
           }
         })
-        this.layout.run()
+        if (!isEmpty(this.layout)) this.layout.run()
         this.cy.fit()
         this.$refs.cyContainer.style.visibility = 'visible'
+    },
+    saveGraphState() {
+      const state = this.cy.nodes().map(node => ({
+        id: node.id(), // table name
+        position: node.position(),
+      }));
+
+      axios.post('/save_graph_state/', {
+        workspace_id: this.workspaceId,
+        schema: this.schema,
+        database_name: this.databaseName,
+        database_index: this.databaseIndex,
+        node_positions: state,
+      }).catch((error) => {
+        handleError(error);
+      });
+    },
+    setupEvents() {
+      this.cy.on('select unselect', 'edge', function(evt) {
+        let should_highlight = evt.type == 'select'
+        let {source_col, target_col} = evt.target.data()
+        let edge = evt.target
+        let srccols = edge.source().data('columns')
+        srccols.find((c) => c.name === source_col).is_highlighted = should_highlight
+        edge.source().data('columns', srccols)
+        let dstcols = edge.target().data('columns')
+        dstcols.find((c) => c.name === target_col).is_highlighted = should_highlight
+        edge.target().data('columns', dstcols)
+      });
+
+      this.cy.on('click', 'node', function (evt) {
+        if (evt.originalEvent) {
+          const element = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
+          if(element.dataset.cgid) {
+            let edge = this.cy().edges().filter(( ele ) => ele.data('cgid') === element.dataset.cgid)
+            setTimeout(() => {edge.select()}, 1)
+          }
+        }
+      });
+
+      this.cy.on("resize", () => {
+        if(!(tabsStore.selectedPrimaryTab.metaData.selectedTab.id === this.tabId)) return;
+        this.cy.fit()
+      });
+
+      this.cy.on("dragfree", () => {
+        this.saveGraphState();
+      });
     },
   },
 };

@@ -5,6 +5,7 @@ import sys
 from datetime import datetime, timezone
 
 from app.client_manager import client_manager
+from app.file_manager.file_manager import FileManager
 from app.models.main import Connection, Shortcut, Tab, UserDetails
 from app.utils.crypto import make_hash
 from app.utils.decorators import database_required, user_authenticated
@@ -225,7 +226,8 @@ def renew_password(request, session):
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def draw_graph(request, database):
-    schema = request.data.get("schema", '')
+    data = request.data
+    schema = data.get("schema", '')
     edge_dict = {}
     node_dict = {}
 
@@ -293,13 +295,58 @@ def draw_graph(request, database):
                         col['is_pk'] = True
                         col['cgid'] = f"{fkcol['r_table_name']}-{fkcol['r_column_name']}"
 
-        response_data = {"nodes": list(node_dict.values()), "edges": list(edge_dict.values())}
+
+        file_manager = FileManager(request.user)
+        database_name = (
+            "sqlite3" if database.v_db_type == "sqlite" else database.v_service
+        )
+        path = os.path.join(
+            file_manager.storage,
+            ".erd_layouts",
+            f'{data.get("database_index")}-{database_name}-{data.get("schema")}',
+        )
+
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                json_data = json.load(f)
+
+            json_data_saved = {obj["id"] for obj in json_data}
+            data_loaded = set(list(node_dict.keys()))
+
+            if json_data_saved == data_loaded:
+                for node in json_data:
+                    node_dict[node["id"]]["position"] = node["position"]
+
+        response_data = {
+            "nodes": list(node_dict.values()),
+            "edges": list(edge_dict.values()),
+        }
 
     except Exception as exc:
         return JsonResponse(data={'data': str(exc)}, status=400)
-
     return JsonResponse(response_data)
 
+
+@user_authenticated
+def save_graph_state(request):
+    file_manager = FileManager(request.user)
+    data = request.data
+    layout = data.get("node_positions")
+    database_name = (
+        "sqlite3"
+        if os.path.isfile(data.get("database_name"))
+        else data.get("database_name")
+    )
+    path = os.path.join(
+        file_manager.storage,
+        ".erd_layouts",
+        f'{data.get("database_index")}-{database_name}-{data.get("schema", "-noschema-")}',
+    )
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(layout, f, indent=2)
+
+    return JsonResponse({"status": "saved"})
 
 
 @user_authenticated
