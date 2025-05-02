@@ -11,22 +11,22 @@ class FileManager:
         self.user = current_user
         self.storage = self._get_storage_directory()
 
-    def _get_storage_directory(self) -> str:
+    def _get_storage_directory(self) -> Optional[str]:
         """
         Get the storage directory for the current user, creating it if it does not exist.
 
         Returns:
-            str: The absolute path to the user's storage directory.
+            Optional[str]: The absolute path to the user's storage directory if not in desktop mode,
+            otherwise None.
         """
-        storage_dir = os.path.join(HOME_DIR, "storage", self.user.username)
+        if not DESKTOP_MODE:
+            storage_dir = os.path.join(HOME_DIR, "storage", self.user.username)
 
-        if not os.path.exists(storage_dir):
-            os.makedirs(storage_dir)
+            if not os.path.exists(storage_dir):
+                os.makedirs(storage_dir)
 
-        if not os.path.exists(os.path.join(storage_dir, ".erd_layouts")):
-            os.makedirs(os.path.join(storage_dir, ".erd_layouts"))
-
-        return storage_dir
+            return storage_dir
+        return None
 
     def _create_file(self, path: str) -> None:
         """Create an empty file at the specified path."""
@@ -74,7 +74,7 @@ class FileManager:
             name: The name of the file or directory to create.
             file_type: The type of entity to create ("file" or "dir").
         """
-        normalized_path = "." if path == "/" else os.path.normpath(path.lstrip("/"))
+        normalized_path = "." if path == "/" else os.path.normpath(path.lstrip('/'))
         abs_path = self.resolve_path(normalized_path)
         full_path = os.path.abspath(os.path.join(abs_path, name))
 
@@ -100,7 +100,7 @@ class FileManager:
         if path is None:
             abs_path = self.storage
         else:
-            normalized_path = "." if path == "/" else os.path.normpath(path.lstrip("/"))
+            normalized_path = "." if path == "/" else os.path.normpath(path.lstrip('/'))
             abs_path = os.path.join(self.storage, normalized_path)
 
         rel_path = os.path.relpath(abs_path, self.storage)

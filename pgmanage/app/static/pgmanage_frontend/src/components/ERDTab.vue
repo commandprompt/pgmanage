@@ -28,9 +28,8 @@ import axios from 'axios'
 import ShortUniqueId from 'short-unique-id'
 import cytoscape from 'cytoscape';
 import nodeHtmlLabel from 'cytoscape-node-html-label'
-import { tabsStore } from '../stores/stores_initializer';
 import { handleError } from '../logging/utils';
-import isEmpty from 'lodash/isEmpty';
+import debounce from 'lodash/debounce'
 
 
 export default {
@@ -117,42 +116,47 @@ export default {
         schema: this.schema,
       })
       .then((response) => {
-        this.isDefault = !response.data.nodes[0]?.position
-        this.nodes = response.data.nodes.map((node) => (
-          {
-            data: {
-              id: node.id,
-              html_id: node.id.replace(/[^a-zA-Z_.-:]+/, '_'),
-              label: node.label,
-              columns: node.columns.map((column) => (
-                {
-                  name: column.name,
-                  type: this.shortDataType(column.type),
-                  cgid: column.cgid,
-                  is_pk: column.is_pk,
-                  is_fk: column.is_fk,
-                  is_highlighted: false
-                }
-              )),
-              type: 'table'
-            },
-            position: node?.position ?? {},
-            classes: 'group' + node.group
-          }
-        ))
-
-        this.edges = response.data.edges.map((edge) => (
-          {
-            data: {
-              source: edge.from,
-              target: edge.to,
-              source_col: edge.from_col,
-              target_col: edge.to_col,
-              label: edge.label,
-              cgid: edge.cgid
+        if (response.data.layout) {
+          this.jsonLayout = response.data.layout
+          this.new_nodes = response.data.new_nodes
+          this.new_edges = response.data.new_edges
+        } else {
+          this.nodes = response.data.nodes.map((node) => (
+            {
+              data: {
+                id: node.id,
+                html_id: node.id.replace(/[^a-zA-Z_.-:]+/, '_'),
+                label: node.label,
+                columns: node.columns.map((column) => (
+                  {
+                    name: column.name,
+                    type: this.shortDataType(column.type),
+                    cgid: column.cgid,
+                    is_pk: column.is_pk,
+                    is_fk: column.is_fk,
+                    is_highlighted: false
+                  }
+                )),
+                type: 'table'
+              },
+              position: node?.position ?? {},
+              classes: 'group' + node.group
             }
-          }
-        ))
+          ))
+  
+          this.edges = response.data.edges.map((edge) => (
+            {
+              data: {
+                source: edge.from,
+                target: edge.to,
+                source_col: edge.from_col,
+                target_col: edge.to_col,
+                label: edge.label,
+                cgid: edge.cgid
+              }
+            }
+          ))
+        }
       })
       .then(() => { this.initGraph() })
       .catch((error) => {
@@ -182,7 +186,54 @@ export default {
       return classes.join(' ')
     },
     initGraph() {
-      if (this.isDefault) {
+      if (this.jsonLayout) {
+        this.cy = cytoscape({
+          container: this.$refs.cyContainer,
+          ...this.options,
+          elements: [],
+        })
+        this.cy.json(this.jsonLayout)
+
+        if (this.new_nodes && this.new_nodes.length > 0) {
+          const formattedNodes = this.new_nodes.map(node => ({
+            group: 'nodes',
+            data: {
+              id: node.id,
+              html_id: node.id.replace(/[^a-zA-Z_.-:]+/, '_'),
+              label: node.label,
+              columns: node.columns.map((column) => (
+                  {
+                    name: column.name,
+                    type: this.shortDataType(column.type),
+                    cgid: column.cgid,
+                    is_pk: column.is_pk,
+                    is_fk: column.is_fk,
+                    is_highlighted: false
+                  }
+                )),
+              type: 'table'
+            },
+            classes: 'group' + node.group
+          }));
+          this.cy.add(formattedNodes);
+        }
+
+        if (this.new_edges && this.new_edges.length > 0) {
+          const formattedEdges = this.new_edges.map(edge => ({
+            group: 'edges',
+            data: {
+              source: edge.from,
+                target: edge.to,
+                source_col: edge.from_col,
+                target_col: edge.to_col,
+                label: edge.label,
+                cgid: edge.cgid
+            }
+          }));
+          this.cy.add(formattedEdges);
+        }
+        
+      } else {
         this.cy = cytoscape({
           container: this.$refs.cyContainer,
           ...this.options,
@@ -198,22 +249,12 @@ export default {
           padding: 50,
           spacingFactor: 0.85,
         })
-
-      } else {
-        this.cy = cytoscape({
-          container: this.$refs.cyContainer,
-          ...this.options,
-          elements: {
-            selectable: true,
-            grabbable: false,
-            nodes: [...this.nodes],
-            edges: [...this.edges]
-          },
-          layout: {
-            name: 'preset'
-          }
-        })
+        
+        setTimeout(() => {
+          this.adjustSizes()
+        }, 100)
       }
+    
       this.setupEvents();
 
       this.cy.nodeHtmlLabel(
@@ -242,35 +283,29 @@ export default {
         }],
       )
 
-      setTimeout(() => {
-        this.adjustSizes()
-      }, 100)
+      this.$refs.cyContainer.style.visibility = 'visible';
     },
     adjustSizes() {
       const padding = 2;
-        this.cy.nodes().forEach((node) => {
-          let el = document.querySelector(`#${this.instance_uid}-${node.data().html_id}`)
-          if (el) {
-            node.style('width', el.parentElement.clientWidth + padding)
-            node.style('height', el.parentElement.clientHeight + padding)
-          }
-        })
-        if (!isEmpty(this.layout)) this.layout.run()
-        this.cy.fit()
-        this.$refs.cyContainer.style.visibility = 'visible'
+      this.cy.nodes().forEach((node) => {
+        let el = document.querySelector(`#${this.instance_uid}-${node.data().html_id}`)
+        if (el) {
+          node.style('width', el.parentElement.clientWidth + padding)
+          node.style('height', el.parentElement.clientHeight + padding)
+        }
+      })
+      this.layout.run()
+      this.cy.fit()
     },
     saveGraphState() {
-      const state = this.cy.nodes().map(node => ({
-        id: node.id(), // table name
-        position: node.position(),
-      }));
+      const layoutData = this.cy.json(); 
 
       axios.post('/save_graph_state/', {
         workspace_id: this.workspaceId,
         schema: this.schema,
         database_name: this.databaseName,
         database_index: this.databaseIndex,
-        node_positions: state,
+        layout: layoutData,
       }).catch((error) => {
         handleError(error);
       });
@@ -298,14 +333,13 @@ export default {
         }
       });
 
-      this.cy.on("resize", () => {
-        if(!(tabsStore.selectedPrimaryTab.metaData.selectedTab.id === this.tabId)) return;
-        this.cy.fit()
-      });
-
       this.cy.on("dragfree", () => {
         this.saveGraphState();
       });
+
+      this.cy.on('viewport', debounce(() => {
+        this.saveGraphState();
+      }, 500));
     },
     zoomIn() {
       if (this.cy) {
