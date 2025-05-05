@@ -72,6 +72,9 @@ export default {
     },
     onToggle(node, e) {
       this.$refs.tree.select(node.path);
+      if (this.getRootNode().title !== "Snippets") {
+        this.getProperties(node);
+      }
       if (node.isExpanded) return;
       this.refreshTree(node);
       if(settingsStore.scrollTree) {
