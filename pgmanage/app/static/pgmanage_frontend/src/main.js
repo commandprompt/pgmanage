@@ -21,7 +21,6 @@ import './ace_extras/themes/theme-omnidb.js';
 import './ace_extras/themes/theme-omnidb_dark.js';
 import './workspace'
 import './components/postgresql_modals'
-import './assets/scss/omnidb.scss'
 import './assets/scss/pgmanage.scss'
 import omniURL from './ace_extras/themes/theme-omnidb.js?url'
 import omniDarkURL from './ace_extras/themes/theme-omnidb_dark.js?url'
