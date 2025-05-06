@@ -57,6 +57,7 @@ def index(request):
         "master_key": "new"
         if not bool(user_details.masterpass_check)
         else bool(key_manager.get(request.user)),
+        'user_name': request.user.username,
     }
 
     # wiping saved tabs databases list

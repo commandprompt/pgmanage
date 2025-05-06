@@ -7,6 +7,7 @@ const useUtilitiesMenuStore = defineStore("utitiesMenu", {
   }),
   actions: {
     addItem({
+      id,
       name,
       icon,
       clickFunction,
@@ -16,6 +17,7 @@ const useUtilitiesMenuStore = defineStore("utitiesMenu", {
       const isUserMatch = superuserRequired ? window.v_super_user : true;
       const isModeMatch = settingsStore.desktopMode === desktop;
       let item = {
+        id: id,
         name: name,
         icon: icon,
         clickFunction: clickFunction,
