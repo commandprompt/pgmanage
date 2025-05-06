@@ -5187,8 +5187,9 @@ ANALYZE #table_name#
 
     def TemplateInsert(self, p_schema, p_table):
         v_fields = self.QueryTablesFields(p_table, False, p_schema)
+        v_sql = f'-- https://www.postgresql.org/docs/{self.major_version}/sql-insert.html \n'
         if len(v_fields.Rows) > 0:
-            v_sql = 'INSERT INTO {0}.{1} (\n'.format(p_schema, p_table)
+            v_sql += 'INSERT INTO {0}.{1} (\n'.format(p_schema, p_table)
             v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
             if len(v_pk.Rows) > 0:
                 v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
@@ -5234,14 +5235,13 @@ ANALYZE #table_name#
             for v in v_values:
                 v_sql += v
             v_sql += '\n)'
-        else:
-            v_sql = ''
         return Template(v_sql)
 
     def TemplateUpdate(self, p_schema, p_table):
         v_fields = self.QueryTablesFields(p_table, False, p_schema)
+        v_sql = f'-- https://www.postgresql.org/docs/{self.major_version}/sql-update.html \n'
         if len(v_fields.Rows) > 0:
-            v_sql = 'UPDATE {0}.{1}\nSET '.format(p_schema, p_table)
+            v_sql += 'UPDATE {0}.{1}\nSET '.format(p_schema, p_table)
             v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
             if len(v_pk.Rows) > 0:
                 v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
@@ -5278,8 +5278,6 @@ ANALYZE #table_name#
                         else:
                             v_sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
             v_sql += '\nWHERE condition'
-        else:
-            v_sql = ''
         return Template(v_sql)
 
     def TemplateDelete(self):
