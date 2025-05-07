@@ -16,6 +16,7 @@ import 'ace-builds/src-noconflict/mode-xml';
 import 'ace-builds/src-noconflict/ext-language_tools'
 import 'ace-builds/src-noconflict/ext-searchbox'
 import 'ace-builds/src-noconflict/worker-json';
+import 'ace-builds/src-noconflict/worker-xml';
 import "./ace_extras/ext-hoverlink.js"
 import './ace_extras/themes/theme-omnidb.js';
 import './ace_extras/themes/theme-omnidb_dark.js';
@@ -25,7 +26,9 @@ import './assets/scss/pgmanage.scss'
 import omniURL from './ace_extras/themes/theme-omnidb.js?url'
 import omniDarkURL from './ace_extras/themes/theme-omnidb_dark.js?url'
 import extendedPgsqlUrl from "./ace_extras/mode-pgsql-extended.js?url";
-import extendedMysqlUrl from "./ace_extras/mode-mysql-extended.js?url"
+import extendedMysqlUrl from "./ace_extras/mode-mysql-extended.js?url";
+import workerJsonUrl from  'ace-builds/src-noconflict/worker-json.js?url';
+import workerXmlUrl from  'ace-builds/src-noconflict/worker-xml.js?url';
 import axios from 'axios'
 import { getCookie } from './ajax_control.js';
 import App from './App.vue'
@@ -52,6 +55,8 @@ ace.config.setModuleUrl('ace/theme/omnidb', omniURL)
 ace.config.setModuleUrl('ace/theme/omnidb_dark', omniDarkURL)
 ace.config.setModuleUrl('ace/mode/pgsql_extended', extendedPgsqlUrl)
 ace.config.setModuleUrl('ace/mode/mysql_extended', extendedMysqlUrl)
+ace.config.setModuleUrl('ace/mode/json_worker', workerJsonUrl)
+ace.config.setModuleUrl('ace/mode/xml_worker', workerXmlUrl)
 ace.config.set("loadWorkerFromBlob", false)
 
 axios.defaults.headers.common['X-CSRFToken'] = getCookie(v_csrf_cookie_name);
