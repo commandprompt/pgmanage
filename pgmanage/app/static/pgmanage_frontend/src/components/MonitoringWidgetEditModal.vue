@@ -78,6 +78,7 @@
                   >Refresh Interval</label
                 >
                 <select
+                  data-testid="widget-edit-refresh-interval"
                   id="widgetInterval"
                   class="form-select"
                   v-model="widgetInterval"

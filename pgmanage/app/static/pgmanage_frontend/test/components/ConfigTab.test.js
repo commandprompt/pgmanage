@@ -1,22 +1,22 @@
 import { flushPromises, mount, enableAutoUnmount } from "@vue/test-utils";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import ConfigTab from "@/components/ConfigTab.vue";
+import ConfigTab from "@src/components/ConfigTab.vue";
 import axios from "axios";
-import { tabsStore } from "@/stores/stores_initializer";
-import { handleError } from "@/logging/utils";
+import { tabsStore } from "@src/stores/stores_initializer";
+import { handleError } from "@src/logging/utils";
 
 vi.hoisted(() => {
   vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
   vi.stubGlobal("app_base_path", "test_folder");
 });
 
-vi.mock("@/logging/utils", () => ({
+vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
 
 vi.mock("axios");
 
-vi.mock("@/stores/stores_initializer", () => ({
+vi.mock("@src/stores/stores_initializer", () => ({
   tabsStore: {
     getSecondaryTabById: vi.fn(),
   },

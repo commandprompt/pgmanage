@@ -1,8 +1,8 @@
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import axios from "axios";
-import { useConnectionsStore } from "@/stores/connections";
-import { tabsStore } from "@/stores/stores_initializer";
+import { useConnectionsStore } from "@src/stores/connections";
+import { tabsStore } from "@src/stores/stores_initializer";
 import { flushPromises } from "@vue/test-utils";
 
 vi.hoisted(() => {
@@ -10,7 +10,7 @@ vi.hoisted(() => {
   vi.stubGlobal("app_base_path", "test_folder");
 });
 
-vi.mock("@/stores/stores_initializer", () => {
+vi.mock("@src/stores/stores_initializer", () => {
   const tabsStore = vi.fn();
   return {
     tabsStore,

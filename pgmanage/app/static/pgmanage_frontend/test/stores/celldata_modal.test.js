@@ -1,6 +1,6 @@
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach } from "vitest";
-import { useCellDataModalStore } from "@/stores/celldata_modal";
+import { useCellDataModalStore } from "@src/stores/celldata_modal";
 
 describe("cellDataModal store", () => {
   beforeEach(() => {

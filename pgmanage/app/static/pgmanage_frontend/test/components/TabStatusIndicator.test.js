@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
-import TabStatusIndicator from "@/components/TabStatusIndicator.vue";
-import { tabStatusMap } from "@/constants";
+import TabStatusIndicator from "@src/components/TabStatusIndicator.vue";
+import { tabStatusMap } from "@src/constants";
 import { describe, it, expect } from "vitest";
 
 describe("TabStatusIndicator.vue", () => {

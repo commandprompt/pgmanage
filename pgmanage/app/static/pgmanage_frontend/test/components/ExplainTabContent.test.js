@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import ExplainTab from "@/components/ExplainTabContent.vue";
+import ExplainTab from "@src/components/ExplainTabContent.vue";
 import { Plan } from "pev2";
 import { describe, it, expect } from "vitest";
 

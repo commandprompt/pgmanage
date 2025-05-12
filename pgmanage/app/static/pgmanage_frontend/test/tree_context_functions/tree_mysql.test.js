@@ -2,14 +2,14 @@ import {
   TemplateSelectMysql,
   TemplateInsertMysql,
   TemplateUpdateMysql,
-} from "@/tree_context_functions/tree_mysql";
-import { tabSQLTemplate } from "@/tree_context_functions/tree_postgresql";
-import { emitter } from "@/emitter";
-import { tabsStore } from "@/stores/stores_initializer";
+} from "@src/tree_context_functions/tree_mysql";
+import { tabSQLTemplate } from "@src/tree_context_functions/tree_postgresql";
+import { emitter } from "@src/emitter";
+import { tabsStore } from "@src/stores/stores_initializer";
 import axios from "axios";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { flushPromises } from "@vue/test-utils";
-import { handleError } from "@/logging/utils";
+import { handleError } from "@src/logging/utils";
 
 vi.hoisted(() => {
   vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
@@ -17,16 +17,16 @@ vi.hoisted(() => {
 });
 
 vi.mock("axios");
-vi.mock("@/logging/utils", () => ({
+vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
-vi.mock("@/emitter", () => ({
+vi.mock("@src/emitter", () => ({
   emitter: {
     emit: vi.fn(),
   },
 }));
 
-vi.mock("@/stores/stores_initializer", () => ({
+vi.mock("@src/stores/stores_initializer", () => ({
   tabsStore: {
     selectedPrimaryTab: {
       metaData: {
@@ -40,7 +40,7 @@ vi.mock("@/stores/stores_initializer", () => ({
     createQueryTab: vi.fn(),
   },
 }));
-vi.mock("@/tree_context_functions/tree_postgresql", () => ({
+vi.mock("@src/tree_context_functions/tree_postgresql", () => ({
   tabSQLTemplate: vi.fn(),
 }));
 
