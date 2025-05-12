@@ -26,7 +26,20 @@ const useDbMetadataStore = defineStore("dbMetadata", {
         this.dbMeta[conn_id] = {}
       this.dbMeta[conn_id][db_name] = meta_response.data.schemas
       return meta_response
-    }
+    },
+    async refreshDBMeta(conn_id, workspace_id, db_name) {
+      const meta_response = await axios.post("/get_database_meta/", {
+        database_index: conn_id,
+        workspace_id: workspace_id,
+        database_name: db_name,
+      });
+
+      if (!this.dbMeta[conn_id]) this.dbMeta[conn_id] = {};
+
+      this.dbMeta[conn_id][db_name] = meta_response.data.schemas;
+
+      return meta_response;
+    },
   },
 });
 

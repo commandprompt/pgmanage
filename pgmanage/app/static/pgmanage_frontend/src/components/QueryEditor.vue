@@ -73,7 +73,7 @@ export default {
       this.editor.setFontSize(state.fontSize);
     });
     if(this.databaseIndex && this.databaseName) {
-      dbMetadataStore.fetchDbMeta(this.databaseIndex, this.tabId, this.databaseName).then(() => {
+      dbMetadataStore.fetchDbMeta(this.databaseIndex, this.workspaceId, this.databaseName).then(() => {
         this.setupCompleter(); 
       })
     }
@@ -83,15 +83,25 @@ export default {
         liveAutocompletionDelay: 100,
       })
     }
+
+    dbMetadataStore.$onAction((action) => {
+      if (action.name === "refreshDBMeta") {
+        if (
+          action.args[0] === this.databaseIndex &&
+          action.args[1] === this.workspaceId &&
+          action.args[2] === this.databaseName
+        ) {
+          action.after(() => {
+            this.setupCompleter();
+          });
+        }
+      }
+    });
   },
   unmounted() {
     this.clearEvents();
   },
   methods: {
-    refetchMetaHandler(e) {
-      if(e.databaseIndex == this.databaseIndex)
-        dbMetadataStore.fetchDbMeta(this.databaseIndex, this.tabId, this.databaseName)
-    },
     setupEditor() {
       let editor_mode = editorModeMap[this.dialect] || 'sql'
 
@@ -302,8 +312,6 @@ export default {
         this.editor.execCommand("find")
       });
 
-      // by using a scoped function we can then unsubscribe with mitt.off
-      emitter.on("refetchMeta", this.refetchMetaHandler)
     },
     clearEvents() {
       emitter.all.delete(`${this.tabId}_show_autocomplete_results`);
@@ -312,7 +320,6 @@ export default {
       emitter.all.delete(`${this.tabId}_indent_sql`);
       emitter.all.delete(`${this.tabId}_find_replace`);
 
-      emitter.off("refetchMeta", this.refetchMetaHandler)
     },
   }
 };

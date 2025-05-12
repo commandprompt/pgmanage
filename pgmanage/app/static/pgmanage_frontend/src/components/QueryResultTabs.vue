@@ -343,8 +343,17 @@ export default {
                 ? `${status[1].toLowerCase()}_list`
                 : null;
 
-              if (!!node_type)
-                emitter.emit(`refreshTreeRecursive_${this.workspaceId}`, node_type);
+              if (!!node_type) {
+                emitter.emit(
+                  `refreshTreeRecursive_${this.workspaceId}`,
+                  node_type
+                );
+                emitter.emit("dbMetaRefresh", {
+                  workspace_id: this.workspaceId,
+                  database_name: context.tab.metaData.databaseName,
+                  database_index: context.tab.metaData.databaseIndex,
+                });
+              }
             }
           }
         }
