@@ -38,6 +38,7 @@ describe("CellDataModal.vue", () => {
             session: {
               setMode: vi.fn(),
             },
+            destroy: vi.fn(),
           },
         };
       },
@@ -145,6 +146,7 @@ describe("CellDataModal.vue", () => {
   });
 
   test("closes modal on close button click", async () => {
+    wrapper.vm.setupEditor();
     const spy = vi.spyOn(cellDataModalStore, "hideModal");
     await wrapper.find('[data-testid="close-modal-button"]').trigger("click");
     expect(spy).toHaveBeenCalled();
