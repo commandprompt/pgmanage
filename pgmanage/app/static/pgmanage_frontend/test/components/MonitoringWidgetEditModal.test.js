@@ -55,7 +55,7 @@ describe("MonitoringWidgetEditModal", () => {
     );
 
     await wrapper.setProps({ widgetId: 123 });
-    await wrapper.setData({ widgetName: "Test Widget" });
+    await wrapper.setData({ widgetName: "Test Widget", selectedWidget: 'testWidget' });
 
     await wrapper
       .get("[data-testid='widget-edit-name']")
@@ -77,6 +77,7 @@ describe("MonitoringWidgetEditModal", () => {
       "createMonitoringWidget"
     );
 
+    await wrapper.setData({selectedWidget: 'testWidget'})
     await wrapper
       .get("[data-testid='widget-edit-name']")
       .setValue("Test Widget");
