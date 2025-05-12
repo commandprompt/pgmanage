@@ -526,7 +526,15 @@ export default {
         let msg = response.data.status === "CREATE TABLE" ? `Table "${this.localTable.tableName}" created` : `Table "${this.localTable.tableName}" updated`
         showToast("success", msg)
 
-        emitter.emit(`schemaChanged_${this.workspaceId}`, { database_name: this.databaseName, schema_name: this.localTable.schema })
+        emitter.emit(`schemaChanged_${this.workspaceId}`, {
+          database_name: this.databaseName,
+          schema_name: this.localTable.schema,
+        });
+        emitter.emit("dbMetaRefresh", {
+          workspace_id: this.workspaceId,
+          database_name: this.databaseName,
+          database_index: this.databaseIndex,
+        });
         // ALTER: load table changes into UI
         if(this.mode === operationModes.UPDATE) {
           this.loadTableDefinition().then(() => {
