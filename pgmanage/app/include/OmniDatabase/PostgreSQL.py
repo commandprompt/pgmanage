@@ -157,8 +157,6 @@ class PostgreSQL:
         self._major_version = None
         self.v_use_server_cursor = True
         self.set_default_feature_flags()
-        if self.version_num: # self.version_num indicates that the connection is active and we can now fetch db capabilities
-            self.update_feature_flags()
 
 
     @property
@@ -262,6 +260,8 @@ class PostgreSQL:
 
     @lock_required
     def GetVersion(self):
+        if self.version_num: # self.version_num indicates that the connection is active and we can now fetch db capabilities
+            self.update_feature_flags()
         return f"PostgreSQL {self.version.split(' ')[0]}" if self.version else "Unknown"
 
     @lock_required
@@ -291,6 +291,7 @@ class PostgreSQL:
         if self.v_conn_string and self.v_conn_string_error!='':
             return self.v_conn_string_error
         try:
+            self.v_connection.connection_params["connect_timeout"] = 5
             self.v_connection.Open()
             v_schema = self.QuerySchemas()
             if len(v_schema.Rows) > 0:
@@ -298,6 +299,7 @@ class PostgreSQL:
             self.v_connection.Close()
         except Exception as exc:
             v_return = str(exc)
+        self.v_connection.connection_params.pop("connect_timeout")
         return v_return
 
     def GetErrorPosition(self, p_error_message, sql_cmd):
