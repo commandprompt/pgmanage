@@ -1390,6 +1390,7 @@ class PostgreSQL(Generic):
         return value
     def Open(self, p_autocommit=True):
         try:
+            self.connection_params.setdefault("connect_timeout", 10)
             self.v_con = psycopg2.connect(
                 self.GetConnectionString(),
                 cursor_factory=psycopg2.extras.DictCursor,
