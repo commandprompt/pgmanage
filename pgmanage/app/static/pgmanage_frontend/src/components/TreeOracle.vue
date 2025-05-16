@@ -766,7 +766,7 @@ export default {
                   label: "Sessions",
                   icon: "fas fa-chart-line",
                   onClick: () => {
-                    tabsStore.createMonitoringTab("Sessions", "select * from v$session")
+                    tabsStore.createMonitoringTab("Sessions", "/*pgmanage-dash*/ select * from v$session")
                   },
                 },
               ],

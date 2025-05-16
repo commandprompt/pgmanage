@@ -844,7 +844,7 @@ export default {
                 label: "Process List",
                 icon: "fas fa-chart-line",
                 onClick: () => {
-                  tabsStore.createMonitoringTab("Process List", "select * from information_schema.processlist")
+                  tabsStore.createMonitoringTab("Process List", "/*pgmanage-dash*/ select * from information_schema.processlist")
                 },
               },
             ],

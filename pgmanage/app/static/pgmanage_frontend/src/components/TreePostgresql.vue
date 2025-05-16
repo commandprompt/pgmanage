@@ -3137,7 +3137,8 @@ export default {
                 onClick: () => {
                   tabsStore.createMonitoringTab(
                     "Backends",
-                    'select pid as "Pid",\
+                    '/*pgmanage-dash*/ \
+                    select pid as "Pid",\
                     datname as "Database",\
                     usename as "User",\
                     application_name as "Application",\
