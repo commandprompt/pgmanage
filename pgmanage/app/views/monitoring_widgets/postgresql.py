@@ -507,6 +507,7 @@ else:
 datasets = []
 datasets.append({
         "label": 'Rate (MB/s)',
+        "fill": True,
         "tension": 0.2,
         "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
