@@ -66,9 +66,9 @@ from datetime import datetime
 from random import randint
 
 if previous_data != None:
-    query = "select round((sum(xact_commit+xact_rollback) - " + previous_data["current_count"] + ")/(extract(epoch from now()::time - '" + previous_data["current_time"] + "'::time))::numeric,2) as tps, sum(xact_commit+xact_rollback) as current_count, now()::time as current_time FROM pg_stat_database"
+    query = "/*pgmanage-dash*/ select round((sum(xact_commit+xact_rollback) - " + previous_data["current_count"] + ")/(extract(epoch from now()::time - '" + previous_data["current_time"] + "'::time))::numeric,2) as tps, sum(xact_commit+xact_rollback) as current_count, now()::time as current_time FROM pg_stat_database"
 else:
-    query = 'select 0 as tps, sum(xact_commit+xact_rollback) as current_count, now()::time as current_time FROM pg_stat_database'
+    query = '/*pgmanage-dash*/ select 0 as tps, sum(xact_commit+xact_rollback) as current_count, now()::time as current_time FROM pg_stat_database'
 
 query_data = connection.Query(query)
 
@@ -103,7 +103,7 @@ result = {
 'interval': 10,
 'default': True,
 'script_chart': """
-max_connections = connection.ExecuteScalar('SHOW max_connections')
+max_connections = connection.ExecuteScalar('/*pgmanage-dash*/ SHOW max_connections')
 
 result = {
     "type": "line",
@@ -164,6 +164,7 @@ result = {
 from datetime import datetime
 
 backends = connection.Query('''
+/*pgmanage-dash*/
 SELECT count(*) as count
 FROM pg_stat_activity
 ''')
@@ -254,6 +255,7 @@ result = {
 from datetime import datetime
 
 query_data = connection.Query('''
+/*pgmanage-dash*/
 SELECT current_setting('autovacuum_max_workers')::bigint - (SELECT count(*) FROM pg_stat_activity WHERE query LIKE 'autovacuum: %') free,
 (SELECT count(*) FROM pg_stat_activity WHERE query LIKE 'autovacuum: %') used,
 current_setting('autovacuum_max_workers')::bigint total
@@ -351,6 +353,7 @@ version = int(connection.Query('show server_version_num').Rows[0][0])
 if version < 100000:
     if previous_data == None:
         r = connection.Query(\"\"\"
+        /*pgmanage-dash*/
         SELECT 0 as rate,
                current_lsn,
                current_time::text
@@ -362,6 +365,7 @@ if version < 100000:
         \"\"\")
     else:
         r = connection.Query(\"\"\"
+        /*pgmanage-dash*/
         SELECT round((pg_xlog_location_diff(current_lsn,'\"\"\" + previous_data["current_lsn"] + \"\"\"')/1048576.0)/(extract(epoch from now()::time - '\"\"\" + previous_data["current_time"] + \"\"\"'::time))::numeric,2) as rate,
                current_lsn,
                current_time::text
@@ -374,6 +378,7 @@ if version < 100000:
 else:
     if previous_data == None:
         r = connection.Query(\"\"\"
+        /*pgmanage-dash*/
         SELECT 0 as rate,
                current_lsn,
                current_time::text
@@ -385,6 +390,7 @@ else:
         \"\"\")
     else:
         r = connection.Query(\"\"\"
+        /*pgmanage-dash*/
         SELECT round((pg_wal_lsn_diff(current_lsn,'\"\"\" + previous_data["current_lsn"] + \"\"\"')/1048576.0)/(extract(epoch from now()::time - '\"\"\" + previous_data["current_time"] + \"\"\"'::time))::numeric,2) as rate,
                current_lsn,
                current_time::text
@@ -484,6 +490,7 @@ from random import randint
 
 if previous_data == None:
     r = connection.Query(\"\"\"
+    /*pgmanage-dash*/
     SELECT 0 as rate,
            sum(temp_bytes) current_temp_bytes,
            now()::text as current_time
@@ -525,7 +532,7 @@ result = {
 'interval': 10,
 'default': True,
 'script_chart': """
-max_age = connection.ExecuteScalar('SHOW autovacuum_freeze_max_age')
+max_age = connection.ExecuteScalar('/*pgmanage-dash*/ SHOW autovacuum_freeze_max_age')
 
 result = {
     "type": "line",
@@ -587,6 +594,7 @@ from datetime import datetime
 from random import randint
 
 r = connection.Query('''
+    /*pgmanage-dash*/
     SELECT round(max(t.perc::numeric),2) as perc
     FROM (
     SELECT (greatest(age(c.relfrozenxid), age(t.relfrozenxid))::INT8 / current_setting('autovacuum_freeze_max_age')::FLOAT)*100 as perc
@@ -682,6 +690,7 @@ result = {
 from datetime import datetime
 
 query_data = connection.Query('''
+    /*pgmanage-dash*/
     SELECT count(*)
     FROM  pg_catalog.pg_locks blocked_locks
     WHERE NOT blocked_locks.GRANTED;
@@ -774,6 +783,7 @@ from datetime import datetime
 from decimal import Decimal
 
 query_data = connection.Query('''
+    /*pgmanage-dash*/
     SELECT sum(pg_database_size(datname)) AS sum
     FROM pg_stat_database
     WHERE datname IS NOT NULL
@@ -866,6 +876,7 @@ from datetime import datetime
 
 if previous_data != None:
     query = f'''
+        /*pgmanage-dash*/
         SELECT round(
                    ((sum(pg_database_size(datname)) - {previous_data['current_sum']})/1048576.0) / (extract(epoch from now()::time - '{previous_data['current_time']}'::time))::numeric,
                    2
@@ -877,6 +888,7 @@ if previous_data != None:
     '''
 else:
     query = '''
+        /*pgmanage-dash*/
         SELECT 0 AS database_growth,
                sum(pg_database_size(datname)) AS current_sum,
                now()::text AS current_time
@@ -916,7 +928,7 @@ result = {
 'interval': 10,
 'default': True,
 'script_chart': """
-database_name = connection.ExecuteScalar('SELECT current_database()')
+database_name = connection.ExecuteScalar('/*pgmanage-dash*/ SELECT current_database()')
 
 result = {
     "type": "line",
@@ -978,6 +990,7 @@ from datetime import datetime
 
 if previous_data != None:
     query = f'''
+        /*pgmanage-dash*/
         SELECT sum(heap_blks_read) AS current_reads,
                sum(heap_blks_hit) AS current_hits,
                now()::time AS current_time,
@@ -992,6 +1005,7 @@ if previous_data != None:
     '''
 else:
     query = '''
+        /*pgmanage-dash*/
         SELECT sum(heap_blks_read) AS current_reads,
                sum(heap_blks_hit) AS current_hits,
                now()::time AS current_time,
@@ -1032,7 +1046,7 @@ result = {
 'interval': 10,
 'default': True,
 'script_chart': """
-database_name = connection.ExecuteScalar('SELECT current_database()')
+database_name = connection.ExecuteScalar('/*pgmanage-dash*/ SELECT current_database()')
 
 result = {
     "type": "line",
@@ -1094,6 +1108,7 @@ from datetime import datetime
 
 if previous_data != None:
     query = f'''
+        /*pgmanage-dash*/
         SELECT sum(idx_blks_read) AS current_reads,
                sum(idx_blks_hit) AS current_hits,
                now()::time AS current_time,
@@ -1108,6 +1123,7 @@ if previous_data != None:
     '''
 else:
     query = '''
+        /*pgmanage-dash*/
         SELECT sum(idx_blks_read) AS current_reads,
                sum(idx_blks_hit) AS current_hits,
                now()::time AS current_time,
@@ -1148,7 +1164,7 @@ result = {
 'interval': 10,
 'default': True,
 'script_chart': """
-database_name = connection.ExecuteScalar('SELECT current_database()')
+database_name = connection.ExecuteScalar('/*pgmanage-dash*/ SELECT current_database()')
 
 result = {
     "type": "line",
@@ -1210,6 +1226,7 @@ from datetime import datetime
 
 if previous_data != None:
     query = f'''
+        /*pgmanage-dash*/
         SELECT sum(seq_scan) as current_seq,
                sum(idx_scan) as current_idx,
                now()::time AS current_time,
@@ -1224,6 +1241,7 @@ if previous_data != None:
     '''
 else:
     query = '''
+        /*pgmanage-dash*/
         SELECT sum(seq_scan) as current_seq,
                sum(idx_scan) as current_idx,
                now()::time AS current_time,
@@ -1323,6 +1341,7 @@ from datetime import datetime
 
 if int(connection.ExecuteScalar('show server_version_num')) < 100000:
     query = '''
+        /*pgmanage-dash*/
         SELECT seconds
         FROM (
             SELECT ROUND(EXTRACT(EPOCH FROM (clock_timestamp()-xact_start))::numeric,2) as seconds
@@ -1336,6 +1355,7 @@ if int(connection.ExecuteScalar('show server_version_num')) < 100000:
     '''
 else:
     query = '''
+        /*pgmanage-dash*/
         SELECT seconds
         FROM (
             SELECT ROUND(EXTRACT(EPOCH FROM (clock_timestamp()-xact_start))::numeric,2) as seconds
@@ -1437,6 +1457,7 @@ from datetime import datetime
 
 if int(connection.ExecuteScalar('show server_version_num')) < 100000:
     query = '''
+        /*pgmanage-dash*/
         SELECT seconds
             FROM (
                 SELECT ROUND(EXTRACT(EPOCH FROM (clock_timestamp()-query_start))::numeric,2) as seconds
@@ -1453,6 +1474,7 @@ if int(connection.ExecuteScalar('show server_version_num')) < 100000:
     '''
 else:
     query = '''
+        /*pgmanage-dash*/
         SELECT seconds
         FROM (
             SELECT ROUND(EXTRACT(EPOCH FROM (clock_timestamp()-query_start))::numeric,2) as seconds
@@ -1557,6 +1579,7 @@ from datetime import datetime
 
 if int(connection.ExecuteScalar('show server_version_num')) < 100000:
     query = '''
+        /*pgmanage-dash*/
         SELECT seconds
         FROM (
             SELECT ROUND(EXTRACT(EPOCH FROM (clock_timestamp()-query_start))::numeric,2) as seconds
@@ -1573,6 +1596,7 @@ if int(connection.ExecuteScalar('show server_version_num')) < 100000:
     '''
 else:
     query = '''
+        /*pgmanage-dash*/
         SELECT seconds
         FROM (
             SELECT ROUND(EXTRACT(EPOCH FROM (clock_timestamp()-query_start))::numeric,2) as seconds
@@ -1678,14 +1702,14 @@ from datetime import datetime
 version = int(connection.Query('show server_version_num').Rows[0][0])
 if version < 170000:
     if previous_data != None:
-        query = "select (checkpoints_timed+checkpoints_req) - " + str(previous_data["current_checkpoints"]) + " as checkpoints_diff, (checkpoints_timed+checkpoints_req) as current_checkpoints FROM pg_stat_bgwriter"
+        query = "/*pgmanage-dash*/ select (checkpoints_timed+checkpoints_req) - " + str(previous_data["current_checkpoints"]) + " as checkpoints_diff, (checkpoints_timed+checkpoints_req) as current_checkpoints FROM pg_stat_bgwriter"
     else:
-        query = 'select 0 as checkpoints_diff, (checkpoints_timed+checkpoints_req) as current_checkpoints FROM pg_stat_bgwriter'
+        query = '/*pgmanage-dash*/ select 0 as checkpoints_diff, (checkpoints_timed+checkpoints_req) as current_checkpoints FROM pg_stat_bgwriter'
 else:
     if previous_data != None:
-        query = "select (num_timed+num_requested) - " + str(previous_data["current_checkpoints"]) + " as checkpoints_diff, (num_timed+num_requested) as current_checkpoints FROM pg_stat_checkpointer"
+        query = "/*pgmanage-dash*/ select (num_timed+num_requested) - " + str(previous_data["current_checkpoints"]) + " as checkpoints_diff, (num_timed+num_requested) as current_checkpoints FROM pg_stat_checkpointer"
     else:
-        query = 'select 0 as checkpoints_diff, (num_timed+num_requested) as current_checkpoints FROM pg_stat_checkpointer'
+        query = '/*pgmanage-dash*/ select 0 as checkpoints_diff, (num_timed+num_requested) as current_checkpoints FROM pg_stat_checkpointer'
 
 query_data = connection.Query(query)
 
@@ -1722,6 +1746,7 @@ result = {
 from datetime import datetime
 
 data = connection.Query('''
+/*pgmanage-dash*/
     SELECT *
     FROM pg_stat_activity
 ''')
@@ -1745,6 +1770,7 @@ result = {
 from datetime import datetime
 
 data = connection.Query('''
+/*pgmanage-dash*/
     SELECT z.current_database,z.schemaname,z.tablename, pg_size_pretty(sum_wasted) AS total_bloat
     FROM (
     SELECT y.schemaname, y.tablename, y.current_database, sum(wastedbytes+wastedibytes)::bigint AS sum_wasted
@@ -1817,6 +1843,7 @@ result = {
 'script_chart': '',
 'script_data': """
 data = connection.Query('''
+/*pgmanage-dash*/
     SELECT pg_is_in_recovery() as "In Recovery"
 ''')
 
@@ -1839,6 +1866,7 @@ result = {
 from datetime import datetime
 
 data = connection.Query('''
+/*pgmanage-dash*/
     SELECT relname as table_name,
            pg_size_pretty(pg_table_size(oid)) as table_size,
            age(relfrozenxid) as xid_age,
@@ -1866,6 +1894,7 @@ result = {
 'default': True,
 'script_chart': """
 total_size = connection.ExecuteScalar('''
+/*pgmanage-dash*/
     SELECT round(sum(pg_catalog.pg_database_size(datname)/1048576.0),2)
     FROM pg_catalog.pg_database
     WHERE NOT datistemplate
@@ -1898,6 +1927,7 @@ from datetime import datetime
 from random import randint
 
 databases = connection.Query('''
+/*pgmanage-dash*/
     SELECT d.datname AS datname,
            round(pg_catalog.pg_database_size(d.datname)/1048576.0,2) AS size
     FROM pg_catalog.pg_database d
@@ -1942,7 +1972,7 @@ result = {
 'interval': 60,
 'default': True,
 'script_chart': """
-max_connections = connection.ExecuteScalar('SHOW max_connections')
+max_connections = connection.ExecuteScalar('/*pgmanage-dash*/ SHOW max_connections')
 
 result = {
     "type": "pie",
@@ -1970,6 +2000,7 @@ from datetime import datetime
 from random import randint
 
 databases = connection.Query('''
+/*pgmanage-dash*/
     SELECT d.datname,
            s.numbackends
     FROM pg_stat_database s
