@@ -340,7 +340,8 @@ export default {
           onClick: () => {
             tabsStore.createMonitoringTab(
               "Backends",
-              'select pid as "Pid",\
+              '/*pgmanage-dash*/ \
+              select pid as "Pid",\
               datname as "Database",\
               usename as "User",\
               application_name as "Application",\
@@ -365,7 +366,7 @@ export default {
           onClick: () => {
             tabsStore.createMonitoringTab(
               "Process List",
-              "select * from information_schema.processlist"
+              "/*pgmanage-dash*/ select * from information_schema.processlist"
             );
           },
         });
