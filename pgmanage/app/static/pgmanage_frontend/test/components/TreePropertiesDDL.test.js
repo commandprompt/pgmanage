@@ -3,6 +3,7 @@ import { mount } from "@vue/test-utils";
 import "ace-builds";
 import "ace-builds/esm-resolver";
 import "@src/ace_extras/themes/theme-omnidb.js";
+import "@src/ace_extras/ext-hoverlink.js"
 import TreePropertiesDDL from "@src/components/TreePropertiesDDL.vue";
 import { useSettingsStore } from "@src/stores/settings.js";
 
