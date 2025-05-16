@@ -249,9 +249,6 @@ export default {
         required,
         minValue: minValue(5),
       },
-      selectedWidget: {
-        required
-      }
     };
   },
   watch: {
