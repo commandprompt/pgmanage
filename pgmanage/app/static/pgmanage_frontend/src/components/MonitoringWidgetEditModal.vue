@@ -103,7 +103,6 @@
                   data-testid="widget-edit-template-select"
                   :class="[
                     'form-select',
-                    { 'is-invalid': v$.selectedWidget.$invalid },
                   ]"
                   v-model="selectedWidget"
                   @change="changeTemplate"
@@ -118,12 +117,6 @@
                     ({{ widget.type }}) {{ widget.title }}
                   </option>
                 </select>
-                <div class="invalid-feedback">
-                  <a v-for="error of v$.selectedWidget.$errors" :key="error.$uid">
-                    {{ error.$message }}
-                    <br />
-                  </a>
-                </div>
               </div>
             </div>
 
