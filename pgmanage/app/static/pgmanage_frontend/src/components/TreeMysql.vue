@@ -7,23 +7,40 @@
     </template>
 
     <template v-slot:title="{ node }">
-      <span class="item-icon">
-        <i :class="['icon_tree', node.data.icon]"></i>
-      </span>
-      <span v-if="node.data.raw_html" v-html="node.title"> </span>
-      <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
-        ">
-        <b>{{ node.title }}</b>
-      </span>
-      <span v-else>
-        {{ formatTitle(node) }}
-      </span>
+      <div class="d-flex flex-grow-1 justify-content-between">
+        <div>
+          <span class="item-icon">
+            <i :class="['icon_tree', node.data.icon]"></i>
+          </span>
+          <span v-if="node.data.raw_html" v-html="node.title"> </span>
+          <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
+            ">
+            <b>{{ node.title }}</b>
+          </span>
+          <span v-else>
+            {{ formatTitle(node) }}
+          </span>
+
+        </div>
+        
+        <!-- Pin icon for database nodes -->
+        <span>
+         <i
+           v-if="node.data.type === 'database'"
+           class="fas fa-thumbtack database-pin-icon me-2"
+           :class="node.data.pinned ? 'text-primary pinned' : 'text-muted'"
+           @click.stop="pinDatabase(node)"
+           title="Pin this database"
+         ></i>
+       </span>
+      </div>
     </template>
   </PowerTree>
 </template>
 
 <script>
 import TreeMixin from "../mixins/power_tree.js";
+import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import {
@@ -42,7 +59,7 @@ export default {
   components: {
     PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, PinDatabaseMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -818,8 +835,11 @@ export default {
               type: "database",
               contextMenu: "cm_database",
               database: el.name,
+              pinned: el.pinned,
             });
           }, null);
+          const databasesNode = this.$refs.tree.getNode(node.path)
+          this.sortPinnedNodes(databasesNode)
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
