@@ -1,3 +1,4 @@
+from app.models.main import Connection
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
 
@@ -262,8 +263,16 @@ def get_indexes_columns(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_databases(request, database):
     try:
+        conn_object = Connection.objects.get(id=database.v_conn_id)
+
         databases = database.QueryDatabases()
-        list_databases = [{"name": db[0]} for db in databases.Rows]
+        list_databases = [
+            {
+                "name": db[0],
+                "pinned": db[0] in conn_object.pinned_databases,
+            }
+            for db in databases.Rows
+        ]
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

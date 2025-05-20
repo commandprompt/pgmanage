@@ -823,8 +823,8 @@ def get_schemas(request, database):
 def get_databases(request, database):
     list_databases = []
 
-    conn_object = Connection.objects.get(id=database.v_conn_id)
     try:
+        conn_object = Connection.objects.get(id=database.v_conn_id)
         databases = database.QueryDatabases()
         for database_object in databases.Rows:
             database_data = {
