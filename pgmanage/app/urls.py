@@ -329,7 +329,9 @@ base_urlpatterns = [
 
     path('validate_binary_path/', views.workspace.validate_binary_path, name='validate_binary_path'),
 
-    path('log/', views.logging.log_message, name="log_message")
+    path('log/', views.logging.log_message, name="log_message"),
+
+    path('pin_database/', views.workspace.toggle_pin_database, name="toggle_pin_database"),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

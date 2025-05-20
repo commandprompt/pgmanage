@@ -474,6 +474,32 @@ def master_password(request, session):
 
     return HttpResponse(status=200)
 
+@user_authenticated
+def toggle_pin_database(request):
+    data = request.data
+
+    database_index: int = data.get("database_index")
+    database_name: str = data.get("database_name")
+    pinned: bool = data.get("pinned")
+
+    if not database_index or not database_name:
+        return JsonResponse(data={"data": "database_index and database_name cannot be empty."}, status=400)
+
+    connection = Connection.objects.filter(id=database_index).first()
+
+    if pinned:
+        if database_name not in connection.pinned_databases:
+            connection.pinned_databases.append(database_name)
+    else:
+        connection.pinned_databases = [
+            db_name
+            for db_name in connection.pinned_databases
+            if database_name != db_name
+        ]
+
+    connection.save()
+    return HttpResponse(status=200)
+
 
 @user_authenticated
 def reset_master_password(request):
