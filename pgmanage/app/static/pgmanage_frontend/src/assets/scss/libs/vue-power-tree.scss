@@ -66,6 +66,10 @@
     flex-wrap: nowrap;
     flex-grow: 1;
     white-space: nowrap;
+    
+    &:hover .database-pin-icon {
+      visibility: visible;
+    }
   }
 
   &-cursor {
@@ -92,5 +96,15 @@
     background-repeat: no-repeat;
     vertical-align: middle;
     text-align: center;
+  }
+
+  .database-pin-icon {
+    visibility: hidden;
+    cursor: pointer;
+
+    &.pinned {
+      visibility: visible;
+      color: $primaryBlue !important;
+    }
   }
 }

@@ -1,8 +1,10 @@
 import ast
 
+from app.models.main import Connection
 from app.utils.crypto import pg_scram_sha256
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
+
 
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True, prefer_database='postgres')
@@ -822,12 +824,15 @@ def get_databases(request, database):
     list_databases = []
 
     try:
+        conn_object = Connection.objects.get(id=database.v_conn_id)
         databases = database.QueryDatabases()
         for database_object in databases.Rows:
             database_data = {
                 "name": database_object["database_name"],
                 "name_raw": database_object["name_raw"],
                 "oid": database_object["oid"],
+                "pinned": database_object["database_name"]
+                in conn_object.pinned_databases,
             }
             list_databases.append(database_data)
     except Exception as exc:
