@@ -250,7 +250,7 @@ export default {
       if (spaceNeededForScroll <= spaceAvailableForScroll) {
         nodeElement.scrollIntoView({
           block: "start",
-          inline: "end",
+          inline: "start",
           behavior: "smooth",
         });
       } 
