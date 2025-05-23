@@ -47,6 +47,7 @@
     "d3-scale-chromatic": "^3.1.0",
     "daterangepicker": "^3.1.0",
     "events": "^3.3.0",
+    "fuse.js": "^7.1.0",
     "jaro-winkler": "^0.2.8",
     "jquery": "^3.7.0",
     "knex": "^3.1.0",
