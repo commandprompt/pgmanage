@@ -6,6 +6,7 @@ from app.include import OmniDatabase
 from app.include.OmniDatabase import PostgreSQL
 from app.models.main import Connection, Technology
 from app.tests.utils_testing import USERS, execute_client_login
+from app.utils.crypto import encrypt
 from app.views.pgextras import (
     delete_pgcron_job,
     delete_pgcron_job_logs,
@@ -29,6 +30,7 @@ class PgCronJobViewsTests(TestCase):
         cls.service = "dellstore"
         cls.role = "postgres"
         cls.password = "postgres"
+        cls.encrypted_password = encrypt(cls.password, key=USERS["ADMIN"]["PASSWORD"])
         cls.db_type = "postgresql"
         cls.test_connection = Connection.objects.create(
             user=User.objects.get(username="admin"),
@@ -37,7 +39,7 @@ class PgCronJobViewsTests(TestCase):
             port=cls.port,
             database=cls.service,
             username=cls.role,
-            password=cls.password,
+            password=cls.encrypted_password,
             alias="Pgmanage Tests",
         )
         cls.database = OmniDatabase.Generic.InstantiateDatabase(
