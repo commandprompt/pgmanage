@@ -6,6 +6,7 @@ from app.include import OmniDatabase
 from app.include.OmniDatabase import PostgreSQL
 from app.models.main import ConfigHistory, Connection, Technology
 from app.tests.utils_testing import USERS, execute_client_login
+from app.utils.crypto import encrypt
 from app.views.configuration import (
     delete_config,
     get_configuration,
@@ -32,8 +33,9 @@ class ConfigurationViewTests(TestCase):
         cls.port = "5433"
         cls.service = "dellstore"
         cls.role = "postgres"
-        cls.password = "postgres"
         cls.db_type = "postgresql"
+        cls.password = "postgres"
+        cls.encrypted_password = encrypt(cls.password, key=USERS["ADMIN"]["PASSWORD"])
         cls.test_connection = Connection.objects.create(
             user=User.objects.get(username="admin"),
             technology=Technology.objects.filter(name=cls.db_type).first(),
@@ -41,7 +43,7 @@ class ConfigurationViewTests(TestCase):
             port=cls.port,
             database=cls.service,
             username=cls.role,
-            password=cls.password,
+            password=cls.encrypted_password,
             alias="Pgmanage Tests",
         )
         cls.database = OmniDatabase.Generic.InstantiateDatabase(
