@@ -1,17 +1,17 @@
 <template>
   <div
     v-if="isOpen"
-    ref="searchInput"
     id="searchPalette"
     class="position-absolute top-0 start-50 translate-middle-x w-100"
     style="max-width: 700px; z-index: 1050"
   >
     <div class="bg-dark text-white rounded p-2">
       <input
+        ref="searchInput"
         type="text"
         class="form-control bg-secondary text-white border-0 form-control-sm"
         placeholder="Search..."
-        autofocus
+        @blur="close"
         v-model="query"
       />
       <ul class="list-group" style="max-height: 300px; overflow-y: auto">
@@ -20,10 +20,13 @@
           :key="item.id"
           class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between"
           :class="{ 'mt-2': idx == 0 }"
-          @click="selectItem(item)"
+          @mousedown="selectItem(item)"
           role="button"
         >
-          <span>{{ item.name }}</span>
+          <div>
+            <div>{{ item.name }}</div>
+            <small class="text-muted">{{ item.schema }}</small>
+          </div>
           <span class="text-muted">{{ item.type }}</span>
         </li>
       </ul>
@@ -33,6 +36,8 @@
 
 <script>
 import Fuse from "fuse.js";
+import { emitter } from "../emitter";
+import { tabsStore, dbMetadataStore } from "../stores/stores_initializer";
 
 export default {
   name: "SearchModal",
@@ -41,12 +46,7 @@ export default {
       isOpen: false,
       query: "",
       searchInput: null,
-      items: [
-        { name: "users", type: "table", id: "table:users" },
-        { name: "get_user", type: "function", id: "function:get_user" },
-        { name: "analytics_view", type: "view", id: "view:analytics_view" },
-        { name: "app_db", type: "database", id: "db:app_db" },
-      ],
+      items: [],
       fuse: null,
     };
   },
@@ -57,25 +57,29 @@ export default {
     },
   },
   mounted() {
-    this.fuse = new Fuse(this.items, {
-      keys: ["name"],
-      threshold: 0.3,
+    emitter.on("show_quick_search", (event) => {
+      console.log(tabsStore.selectedPrimaryTab);
+      // const workspaceId = tabsStore.selectedPrimaryTab.id
+      const databaseIndex =
+        tabsStore.selectedPrimaryTab.metaData.selectedDatabaseIndex;
+      const databaseName =
+        tabsStore.selectedPrimaryTab.metaData.selectedDatabase;
+      this.items = this.flattenSchemas(
+        dbMetadataStore.getDbMeta(databaseIndex, databaseName)
+      );
+      this.fuse = new Fuse(this.items, {
+        keys: ["name"],
+        threshold: 0.3,
+      });
+      this.open();
     });
-
-    window.addEventListener("keydown", this.handleShortcut);
     window.addEventListener("keydown", this.handleEsc);
   },
   beforeUnmount() {
-    window.removeEventListener("keydown", this.handleShortcut);
+    emitter.all.delete("show_quick_search");
     window.removeEventListener("keydown", this.handleEsc);
   },
   methods: {
-    handleShortcut(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
-        e.preventDefault();
-        this.open();
-      }
-    },
     open() {
       this.isOpen = true;
       this.$nextTick(() => {
@@ -87,12 +91,59 @@ export default {
       this.query = "";
     },
     selectItem(item) {
+      item.clickCallback();
       this.close();
     },
     handleEsc(e) {
       if (e.key === "Escape") {
         this.close();
       }
+    },
+    flattenSchemas(schemas) {
+      const result = [];
+      const databaseName =
+        tabsStore.selectedPrimaryTab.metaData.selectedDatabase;
+
+      for (const schema of schemas) {
+        const schemaName = schema.name;
+
+        // Tables
+        for (const table of schema.tables || []) {
+          result.push({
+            name: table.name,
+            type: "table",
+            schema: schemaName,
+            database: databaseName,
+            id: `table:${schemaName}.${table.name}`,
+            clickCallback: function () {
+              const workspaceId = tabsStore.selectedPrimaryTab.id
+              emitter.emit(`goToNode_${workspaceId}`, {type: "table", name: table.name, schema: schemaName})
+              console.log("clicked");
+            },
+          });
+        }
+
+        // Views
+        for (const view of schema.views || []) {
+          result.push({
+            name: view.name,
+            type: "view",
+            schema: schemaName,
+            database: databaseName,
+            id: `view:${schemaName}.${view.name}`,
+          });
+        }
+
+        result.push({
+          name: schemaName,
+          type: "schema",
+          schema: schemaName,
+          database: databaseName,
+          id: `schema:${schemaName}`,
+        });
+      }
+
+      return result;
     },
   },
 };

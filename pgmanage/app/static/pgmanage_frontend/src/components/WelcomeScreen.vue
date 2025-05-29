@@ -189,7 +189,8 @@ export default {
         'shortcut_right_inner_tab': 'Switch Tab Right',
         'shortcut_autocomplete': 'Autocomplete',
         'shortcut_explain': 'Explain Query',
-        'shortcut_explain_analyze': 'Analyze Query'
+        'shortcut_explain_analyze': 'Analyze Query',
+        'shortcut_quick_search': 'Quick Search'
       };
       return LABEL_MAP[shortcut.shortcut_code] || 'unknown'
     },
