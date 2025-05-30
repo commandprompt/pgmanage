@@ -265,5 +265,13 @@ export default {
       });
       return true;
     },
+    async expandAndRefreshIfNeeded(node) {
+      if (!node.children || node.children.length === 0) {
+        await this.refreshTree(node, true);
+        this.expandNode(node);
+      } else {
+        this.expandNode(node);
+      }
+    },
   },
 };

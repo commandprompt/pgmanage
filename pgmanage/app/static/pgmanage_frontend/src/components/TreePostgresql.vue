@@ -55,6 +55,7 @@ import { createExtensionModal, createPgCronModal, createRoleModal } from "./post
 import { operationModes } from "../constants";
 import { connectionsStore, messageModalStore, tabsStore, dbMetadataStore } from "../stores/stores_initializer";
 import ContextMenu from "@imengyu/vue3-context-menu";
+import { findNode, findChild } from "../utils.js";
 
 
 export default {
@@ -2788,6 +2789,59 @@ export default {
       // this is to handle cases when tables_node is absent because schema_node is not expanded and therefore empty
       this.refreshTree(tables_node || schema_node, true);
     });
+
+    emitter.on(`goToNode_${this.workspaceId}`, async ({ name, type, schema }) => {
+      const rootNode = this.getRootNode();
+       // Step 1: Find "Databases" node
+      const databasesRoot = rootNode.children.find(child => child.data.type === "database_list");
+      if (!databasesRoot) return;
+
+      await this.expandAndRefreshIfNeeded(databasesRoot);
+      const updatedDatabasesRoot = this.$refs.tree.getNode(databasesRoot.path)
+      
+      // Step 2: Find the specific database node
+      const databaseNode = findNode(updatedDatabasesRoot, node => node.data?.database === this.selectedDatabase && node.data.type === 'database');
+      if (!databaseNode) return;
+
+      await this.expandAndRefreshIfNeeded(databaseNode);
+      const updateddatabaseNode = this.$refs.tree.getNode(databaseNode.path)
+
+      // Step 3: Find "schemas_node"
+      const schemasNode = findChild(updateddatabaseNode, 'schema_list');
+      if (!schemasNode) return;
+      await this.expandAndRefreshIfNeeded(schemasNode);
+
+      const updatedSchemasNode = this.$refs.tree.getNode(schemasNode.path)
+
+      const schemaNode = findNode(updatedSchemasNode, node => node.title === schema && node.data.type === 'schema');
+      if (!schemaNode) return;
+      await this.expandAndRefreshIfNeeded(schemaNode);
+
+      const updatedSchemaNode = this.$refs.tree.getNode(schemaNode.path)
+
+      // Step 3: Find '_list' that we need
+      const containerType = `${type}_list`;
+      const containerNode = findChild(updatedSchemaNode, containerType);
+      if (!containerNode) return;
+      await this.expandAndRefreshIfNeeded(containerNode);
+
+      const updatedContainerNode = this.$refs.tree.getNode(containerNode.path)
+
+      // Step 4: Find the target node
+      const targetNode = findNode(updatedContainerNode, node => node.title === name && node.data.type === type);
+      if (!targetNode) return;
+
+      // Step 5: Select and scroll to it
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.$refs.tree.select(targetNode.path);
+          this.getNodeEl(targetNode.path).scrollIntoView({
+            block: "start",
+            inline: "end",
+          });
+        })
+      })
+    });
   },
   unmounted() {
     emitter.all.delete(`schemaChanged_${this.workspaceId}`);
@@ -2928,28 +2982,39 @@ export default {
         return Promise.resolve('success');
       }
     },
-    refreshTree(node, force) {
-      this.checkCurrentDatabase(
-        node,
-        true,
-        () => {
-          setTimeout(() => {
-            if (!this.shouldUpdateNode(node, force)) return
-            if (node.children.length == 0) this.insertSpinnerNode(node);
-            this.refreshTreePostgresqlConfirm(node).then(() => {
-              this.$hooks?.add_tree_node_item?.forEach((hook) => {
-                hook(node);
-              });
-            })
-            .catch((error) => {
-              this.nodeOpenError(error, node);
-            });
-          }, 100);
-        },
-        () => {
-          this.toggleNode(node);
-        }
-      );
+    refreshTree(node, force = false) {
+      return new Promise((resolve, reject) => {
+        this.checkCurrentDatabase(
+          node,
+          true,
+          () => {
+            setTimeout(() => {
+              if (!this.shouldUpdateNode(node, force)) {
+                resolve();
+                return;
+              }
+
+              if (node.children.length === 0) this.insertSpinnerNode(node);
+
+              this.refreshTreePostgresqlConfirm(node)
+                .then(() => {
+                  this.$hooks?.add_tree_node_item?.forEach((hook) => {
+                    hook(node);
+                  });
+                  resolve();
+                })
+                .catch((error) => {
+                  this.nodeOpenError(error, node);
+                  reject(error);
+                });
+            }, 100);
+          },
+          () => {
+            this.toggleNode(node);
+            resolve();
+          }
+        );
+      });
     },
     checkCurrentDatabase(
       node,

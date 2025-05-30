@@ -91,7 +91,7 @@ export default {
       this.query = "";
     },
     selectItem(item) {
-      item.clickCallback();
+      if (item?.clickCallback) item.clickCallback();
       this.close();
     },
     handleEsc(e) {
@@ -116,9 +116,12 @@ export default {
             database: databaseName,
             id: `table:${schemaName}.${table.name}`,
             clickCallback: function () {
-              const workspaceId = tabsStore.selectedPrimaryTab.id
-              emitter.emit(`goToNode_${workspaceId}`, {type: "table", name: table.name, schema: schemaName})
-              console.log("clicked");
+              const workspaceId = tabsStore.selectedPrimaryTab.id;
+              emitter.emit(`goToNode_${workspaceId}`, {
+                type: "table",
+                name: table.name,
+                schema: schemaName,
+              });
             },
           });
         }
@@ -131,6 +134,14 @@ export default {
             schema: schemaName,
             database: databaseName,
             id: `view:${schemaName}.${view.name}`,
+            clickCallback: function () {
+              const workspaceId = tabsStore.selectedPrimaryTab.id;
+              emitter.emit(`goToNode_${workspaceId}`, {
+                type: "view",
+                name: view.name,
+                schema: schemaName,
+              });
+            },
           });
         }
 
