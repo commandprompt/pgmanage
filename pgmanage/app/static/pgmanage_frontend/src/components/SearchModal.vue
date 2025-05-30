@@ -58,7 +58,6 @@ export default {
   },
   mounted() {
     emitter.on("show_quick_search", (event) => {
-      console.log(tabsStore.selectedPrimaryTab);
       // const workspaceId = tabsStore.selectedPrimaryTab.id
       const databaseIndex =
         tabsStore.selectedPrimaryTab.metaData.selectedDatabaseIndex;
