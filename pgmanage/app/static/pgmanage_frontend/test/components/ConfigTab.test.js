@@ -39,8 +39,14 @@ describe("ConfigTab.vue", () => {
   const settingsResponse = {
     data: {
       settings: [
-        { category: "Category 1", rows: [] },
-        { category: "Category 2", rows: [] },
+        {
+          category: "Category 1",
+          rows: [{ name: "autovacuum", desc: "Starts the autovacuum" }],
+        },
+        {
+          category: "Category 2",
+          rows: [{ name: "temp_file_limit", desc: "Limits the total" }],
+        },
       ],
     },
   };
@@ -167,5 +173,34 @@ describe("ConfigTab.vue", () => {
         setting1: { name: "setting1", setting: "value1" },
       })
     );
+  });
+
+  it("returns correct suggestions according to query_filter", () => {
+    wrapper.vm.query_filter = "autovacuum";
+
+    expect(wrapper.vm.currentResult[0]["rows"]).toContainEqual({
+      name: "autovacuum",
+      desc: "Starts the autovacuum",
+    });
+    expect(wrapper.vm.currentResult[0]["rows"]).not.toContainEqual({
+      name: "temp_file_limit",
+      desc: "Limits the total",
+    });
+  });
+
+  it("hasRevertValues returns false if no config differs", () => {
+    wrapper.setData({
+      configDiffData: "",
+    });
+
+    expect(wrapper.vm.hasRevertValues).toBe(false);
+  });
+
+  it("hasRevertValues returns true if config differs", () => {
+    wrapper.setData({
+      configDiffData: [{ name: "max_connections", value: "100" }],
+    });
+
+    expect(wrapper.vm.hasRevertValues).toBe(true);
   });
 });
