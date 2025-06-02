@@ -122,6 +122,7 @@ export default {
       this.editor.commands.bindKey("Ctrl-Down", null);
       this.editor.commands.bindKey("Ctrl-F", null);
       this.editor.commands.bindKey("Ctrl-,", null);
+      this.editor.commands.bindKey("ctrl-p", null);
 
       const scoreMap = {
         COLUMN: 5000,
