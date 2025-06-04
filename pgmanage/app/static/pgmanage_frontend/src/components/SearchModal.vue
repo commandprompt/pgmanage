@@ -233,13 +233,13 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+
 .search-item.selected {
-  background-color: #007bff;
-  color: white;
+  background-color: rgba($primaryBlue, 0.15);
 }
 
 .search-item:hover {
-  background-color: yellow;
+  background-color: rgba($primaryMutedColor, 0.15);
 }
 </style>
