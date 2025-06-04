@@ -512,7 +512,7 @@ export default {
       },
       shortcut_quick_search: function(e) {
         if (tabsStore.selectedPrimaryTab.metaData.mode === 'connection') {
-          emitter.emit("show_quick_search", e)
+          emitter.emit(`${tabsStore.selectedPrimaryTab.id}_show_quick_search`, e)
         }
       }
     }

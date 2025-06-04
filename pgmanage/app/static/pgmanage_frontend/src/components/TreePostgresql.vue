@@ -2790,7 +2790,7 @@ export default {
       this.refreshTree(tables_node || schema_node, true);
     });
 
-    emitter.on(`goToNode_${this.workspaceId}`, async ({ name, type, schema }) => {
+    emitter.on(`goToNode_${this.workspaceId}`, async ({ name, type, schema, database }) => {
       const rootNode = this.getRootNode();
        // Step 1: Find "Databases" node
       const databasesRoot = rootNode.children.find(child => child.data.type === "database_list");
@@ -2800,14 +2800,24 @@ export default {
       const updatedDatabasesRoot = this.$refs.tree.getNode(databasesRoot.path)
       
       // Step 2: Find the specific database node
-      const databaseNode = findNode(updatedDatabasesRoot, node => node.data?.database === this.selectedDatabase && node.data.type === 'database');
+      const databaseNode = findNode(updatedDatabasesRoot, node => node.data?.database === database && node.data.type === 'database');
       if (!databaseNode) return;
 
       await this.expandAndRefreshIfNeeded(databaseNode);
-      const updateddatabaseNode = this.$refs.tree.getNode(databaseNode.path)
+      const updatedDatabaseNode = this.$refs.tree.getNode(databaseNode.path)
+
+      // If target is a database, stop here
+      if (type === 'database') {
+        this.$refs.tree.select(updatedDatabaseNode.path);
+        this.getNodeEl(updatedDatabaseNode.path).scrollIntoView({
+          block: "start",
+          inline: "end",
+        });
+        return;
+      }
 
       // Step 3: Find "schemas_node"
-      const schemasNode = findChild(updateddatabaseNode, 'schema_list');
+      const schemasNode = findChild(updatedDatabaseNode, 'schema_list');
       if (!schemasNode) return;
       await this.expandAndRefreshIfNeeded(schemasNode);
 
@@ -2818,6 +2828,16 @@ export default {
       await this.expandAndRefreshIfNeeded(schemaNode);
 
       const updatedSchemaNode = this.$refs.tree.getNode(schemaNode.path)
+
+      // If target is a schema, stop here
+      if (type === 'schema') {
+        this.$refs.tree.select(updatedSchemaNode.path);
+        this.getNodeEl(updatedSchemaNode.path).scrollIntoView({
+          block: "start",
+          inline: "end",
+        });
+        return;
+      }
 
       // Step 3: Find '_list' that we need
       const containerType = `${type}_list`;

@@ -6,7 +6,6 @@
   <UtilityJobsJobDetail />
   <template v-if="initialized">
     <ConnectionsModal />
-    <SearchModal />
   </template>
   <GenericMessageModal />
   <CellDataModal />
@@ -32,7 +31,6 @@ import FileManager from "./components/FileManager.vue";
 import UtilitiesMenu from "./components/UtilitiesMenu.vue";
 import AboutModal from "./components/AboutModal.vue";
 import CommandsHistoryModal from "./components/CommandsHistoryModal.vue";
-import SearchModal from "./components/SearchModal.vue"
 import { emitter } from "./emitter";
 import { startTutorial } from "./tutorial";
 import { createOmnis } from "./omnis-control";
@@ -53,7 +51,6 @@ export default {
     UtilitiesMenu,
     AboutModal,
     CommandsHistoryModal,
-    SearchModal
   },
   data() {
     return {

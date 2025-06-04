@@ -93,6 +93,7 @@
         </pane>
       </splitpanes>
     </div>
+    <SearchModal :workspace-id="workspaceId" />
   </div>
 </template>
 
@@ -108,6 +109,7 @@ import TreePropertiesDDL from "./TreePropertiesDDL.vue";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import { Tooltip } from "bootstrap";
 import { handleError } from "../logging/utils";
+import SearchModal from "./SearchModal.vue";
 
 export default {
   name: "ConnectionTab",
@@ -121,6 +123,7 @@ export default {
     Splitpanes,
     Pane,
     TreePropertiesDDL,
+    SearchModal,
   },
   mixins: [TabTitleUpdateMixin],
   props: {
