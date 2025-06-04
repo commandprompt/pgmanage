@@ -12,19 +12,18 @@
         type="text"
         class="form-control bg-secondary text-white border-0 form-control-sm"
         placeholder="Search..."
-        @keyup.up="keyMonitor"
-        @keyup.down="keyMonitor"
+        @keydown.up.prevent="keyMonitor"
+        @keydown.down.prevent="keyMonitor"
         @keyup.enter="onEnter"
         @keyup.esc="close"
         @blur="close"
         v-model="query"
         autocomplete="off"
       />
-      <ul class="list-group" style="max-height: 300px; overflow-y: auto">
+      <ul class="list-group overflow-y-auto" style="max-height: 300px">
         <li
-          ref="dropdownItems"
+          ref="searchItems"
           v-for="(item, idx) in results"
-          :key="item.id"
           class="list-group-item d-flex justify-content-between search-item p-1"
           :class="{ 'mt-2': idx == 0, selected: idx === selectedIndex }"
           @mousedown="selectItem(item)"
@@ -215,12 +214,10 @@ export default {
       this.scrollToSelected();
     },
     scrollToSelected() {
-      this.$nextTick(() => {
-        const selectedEl = this.$refs.dropdownItems?.[this.selectedIndex];
-        if (selectedEl) {
-          selectedEl.scrollIntoView({ block: "nearest", behavior: "instant" });
-        }
-      });
+      const selectedEl = this.$refs.searchItems?.[this.selectedIndex];
+      if (selectedEl) {
+        selectedEl.scrollIntoView({ block: "start", behavior: "instant" });
+      }
     },
     onEnter() {
       if (this.selectedIndex >= 0 && this.results[this.selectedIndex]) {
@@ -234,7 +231,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .search-item.selected {
   background-color: rgba($primaryBlue, 0.15);
 }
