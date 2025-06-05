@@ -1,44 +1,47 @@
 <template>
-  <div
-    v-if="isOpen"
-    id="searchPalette"
-    class="position-absolute top-0 start-50 translate-middle-x w-100"
-    style="max-width: 700px; z-index: 1050"
-  >
-    <div class="bg-dark text-white rounded p-2">
-      <input
-        :id="`${workspaceId}_search_input`"
-        ref="searchInput"
-        type="text"
-        class="form-control bg-secondary text-white border-0 form-control-sm"
-        placeholder="Search..."
-        @keydown.up.prevent="keyMonitor"
-        @keydown.down.prevent="keyMonitor"
-        @keyup.enter="onEnter"
-        @keyup.esc="close"
-        @blur="close"
-        v-model="query"
-        autocomplete="off"
-      />
-      <ul class="list-group overflow-y-auto" style="max-height: 300px">
-        <li
-          ref="searchItems"
-          v-for="(item, idx) in results"
-          class="list-group-item d-flex justify-content-between search-item p-1"
-          :class="{ 'mt-2': idx == 0, selected: idx === selectedIndex }"
-          @mousedown="selectItem(item)"
-          role="button"
-        >
-          <div>
-            <div>{{ item.name }}</div>
-            <small class="text-muted">{{ item.database }}</small
-            >@<small class="text-muted">{{ item.schema }}</small>
-          </div>
-          <span class="text-muted">{{ item.type }}</span>
-        </li>
-      </ul>
+  <Teleport to="body">
+    <div
+      v-if="isOpen"
+      id="searchPalette"
+      class="position-absolute top-0 start-50 translate-middle-x w-100"
+      style="max-width: 700px; z-index: 1050"
+    >
+      <div class="bg-dark text-white rounded p-2">
+        <input
+          :id="`${workspaceId}_search_input`"
+          ref="searchInput"
+          type="text"
+          class="form-control bg-secondary text-white border-0 form-control-sm"
+          placeholder="Search..."
+          @keydown.up.prevent="keyMonitor"
+          @keydown.down.prevent="keyMonitor"
+          @keyup.enter="onEnter"
+          @keyup.esc="close"
+          @blur="close"
+          v-model="query"
+          autocomplete="off"
+        />
+        <ul class="list-group overflow-y-auto" style="max-height: 300px">
+          <li
+            ref="searchItems"
+            v-for="(item, idx) in results"
+            class="list-group-item d-flex justify-content-between search-item p-1"
+            :class="{ 'mt-2': idx == 0, selected: idx === selectedIndex }"
+            @mousedown="selectItem(item)"
+            role="button"
+          >
+            <div>
+              <div>{{ item.name }}</div>
+              <small class="text-muted">{{ item.schema }}</small>
+              <small class="text-muted">.{{ item.name }}</small>
+              <small class="text-muted">@{{ item.database }}</small>
+            </div>
+            <span class="text-muted">{{ item.type }}</span>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -216,7 +219,7 @@ export default {
     scrollToSelected() {
       const selectedEl = this.$refs.searchItems?.[this.selectedIndex];
       if (selectedEl) {
-        selectedEl.scrollIntoView({ block: "start", behavior: "instant" });
+        selectedEl.scrollIntoView({ block: "nearest", behavior: "instant" });
       }
     },
     onEnter() {
