@@ -93,7 +93,7 @@
         </pane>
       </splitpanes>
     </div>
-    <SearchModal :workspace-id="workspaceId" />
+    <SearchModal :workspace-id="workspaceId" :database-index="databaseIndex" :database-technology="databaseTechnology" />
   </div>
 </template>
 

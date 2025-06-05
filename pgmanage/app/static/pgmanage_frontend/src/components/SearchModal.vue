@@ -32,9 +32,11 @@
           >
             <div>
               <div>{{ item.name }}</div>
-              <small class="text-muted">{{ item.schema }}</small>
-              <small class="text-muted">.{{ item.name }}</small>
-              <small class="text-muted">@{{ item.database }}</small>
+              <div class="meta-tags">
+                <small v-for="meta in getMetaTags(item)" class="text-muted">
+                  {{ meta.text }}
+                </small>
+              </div>
             </div>
             <span class="text-muted">{{ item.type }}</span>
           </li>
@@ -53,6 +55,8 @@ export default {
   name: "SearchModal",
   props: {
     workspaceId: String,
+    databaseIndex: Number,
+    databaseTechnology: String,
   },
   data() {
     return {
@@ -75,12 +79,10 @@ export default {
       keys: ["name"],
     });
     emitter.on(`${this.workspaceId}_show_quick_search`, (event) => {
-      const databaseIndex =
-        tabsStore.selectedPrimaryTab.metaData.selectedDatabaseIndex;
       const databaseName =
         tabsStore.selectedPrimaryTab.metaData.selectedDatabase;
       const newItems = this.flattenSchemas(
-        dbMetadataStore.getDbMeta(databaseIndex, databaseName)
+        dbMetadataStore.getDbMeta(this.databaseIndex, databaseName)
       );
 
       const existingItemMap = new Map(
@@ -94,7 +96,7 @@ export default {
       this.items = Array.from(existingItemMap.values());
       this.fuse.setCollection(this.items);
 
-      const databases = dbMetadataStore.getDatabases(databaseIndex);
+      const databases = dbMetadataStore.getDatabases(this.databaseIndex);
       databases.forEach((db) => {
         const id = `database:${db}`;
         if (!this.items.find((item) => item.id === id)) {
@@ -120,6 +122,23 @@ export default {
     emitter.all.delete(`${this.workspaceId}_show_quick_search`);
   },
   methods: {
+    getMetaTags(item) {
+      if (this.databaseTechnology === "sqlite") return [];
+
+      if (item.type === "schema") {
+        return [{ text: `@${item.database}` }];
+      }
+
+      if (item.type === "database") {
+        return [];
+      }
+
+      return [
+        { text: item.schema },
+        { text: `.${item.name}` },
+        { text: `@${item.database}` },
+      ];
+    },
     open() {
       this.selectedIndex = 0;
       this.isOpen = true;
