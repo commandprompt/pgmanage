@@ -359,7 +359,9 @@ def get_database_meta(request, database):
     schema_list = []
 
     try:
-        if database.has_schema:
+        if database.v_db_type in ["mysql", "mariadb"]:
+            schemas = [{"schema_name": database.v_service}]
+        elif database.has_schema:
             schemas = database.QuerySchemas().Rows if hasattr(database, 'QuerySchemas') else [{"schema_name": database.v_schema}]
         else:
             schemas = [{'schema_name': '-noschema-'}]
