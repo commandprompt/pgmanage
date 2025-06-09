@@ -372,6 +372,7 @@ export default {
   },
   unmounted() {
     emitter.all.delete(`schemaChanged_${this.workspaceId}`);
+    emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
     async refreshTree(node, force) {

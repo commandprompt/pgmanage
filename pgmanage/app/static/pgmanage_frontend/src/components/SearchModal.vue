@@ -133,6 +133,9 @@ export default {
         return [];
       }
 
+      if (["mariadb", "mysql"].includes(this.databaseTechnology)) {
+        return [{ text: `${item.name}` }, { text: `@${item.database}` }];
+      }
       return [
         { text: item.schema },
         { text: `.${item.name}` },
@@ -200,21 +203,23 @@ export default {
           });
         }
 
-        result.push({
-          name: schemaName,
-          type: "schema",
-          schema: schemaName,
-          database: databaseName,
-          id: `schema:${databaseName}.${schemaName}`,
-          clickCallback: () => {
-            emitter.emit(`goToNode_${this.workspaceId}`, {
-              type: "schema",
-              name: schemaName,
-              schema: schemaName,
-              database: databaseName,
-            });
-          },
-        });
+        if (!["mariadb", "mysql"].includes(this.databaseTechnology)) {
+          result.push({
+            name: schemaName,
+            type: "schema",
+            schema: schemaName,
+            database: databaseName,
+            id: `schema:${databaseName}.${schemaName}`,
+            clickCallback: () => {
+              emitter.emit(`goToNode_${this.workspaceId}`, {
+                type: "schema",
+                name: schemaName,
+                schema: schemaName,
+                database: databaseName,
+              });
+            },
+          });
+        }
       }
 
       return result;

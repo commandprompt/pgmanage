@@ -697,6 +697,9 @@ export default {
       })
     })
   },
+  unmounted() {
+    emitter.all.delete(`goToNode_${this.workspaceId}`);
+  },
   methods: {
     async refreshTree(node, force) {
       if (!this.shouldUpdateNode(node, force)) return
