@@ -52,7 +52,6 @@ class Session(object):
         self.v_csv_delimiter = p_csv_delimiter
         self.v_tabs_databases = dict([])
 
-        self.RefreshDatabaseList()
 
     def AddDatabase(self,
                     p_conn_id = None,
