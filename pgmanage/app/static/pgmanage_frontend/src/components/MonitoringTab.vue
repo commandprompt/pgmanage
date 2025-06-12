@@ -1,64 +1,91 @@
 <template>
-  <div class="p-2">
-    <div ref="topToolbar">
-      <button
-        data-testid="monitoring-refresh-button"
-        class="btn btn-primary btn-sm my-2 me-1"
-        title="Refresh"
-        @click="refreshMonitoring"
-      >
-        <i class="fas fa-sync-alt me-2"></i>Refresh
-      </button>
-      <button
-        v-if="!isActive"
-        data-testid="monitoring-play-button"
-        class="btn btn-secondary btn-sm me-1"
-        title="Play"
-        @click="playMonitoring"
-      >
-        <i class="fas fa-play-circle fa-light"></i>
-      </button>
+  <!-- schema-editor-scrollable class copy pasted for nav tabs to look like other nav tabs, maybe we should consider using more common name -->
+  <div class="schema-editor-scrollable ps-1">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <button class="nav-item nav-link active omnidb__tab-menu__link" :id="`${tabId}-backends-tab`"
+              data-bs-toggle="tab" :data-bs-target="`#${tabId}-backends-tab-pane`"
+              type="button" role="tab"
+              aria-selected="true">
+              Backends?
+        </button>
+      </li>
+      <li class="nav-item">
+           <button class="nav-item nav-link omnidb__tab-menu__link" :id="`${tabId}-logs-tab`"
+              data-bs-toggle="tab" :data-bs-target="`#${tabId}-logs-tab-pane`"
+              type="button" role="tab"
+              aria-selected="false">
+              Logs
+        </button>
+      </li>
+    </ul>
 
-      <button
-        v-else
-        data-testid="monitoring-pause-button"
-        class="btn btn-secondary btn-sm me-1"
-        title="Pause"
-        @click="pauseMonitoring"
-      >
-        <i class="fas fa-pause-circle fa-light"></i>
-      </button>
-      <div
-        class="d-inline-flex align-items-center refresh-menu ms-1"
-        data-bs-toggle="dropdown">
-        <a class="refresh-menu__link" href="">{{ humanizeDuration(monitoringInterval) }}</a>
-        <div class="dropdown-menu dropdown-menu-width-auto">
-          <a
-            v-for="(option, index) in refreshIntervalOptions" :key=index
-            :data-testid="`refresh-option-${option}`"
-            @click="monitoringInterval=option"
-            class="dropdown-item"
-            href="#"
-          >
-            {{ humanizeDuration(option) }}
-          </a>
-        </div>
-      </div>
-      <span class="float-end"> Total processes: {{ dataLength }} </span>
-    </div>
-    <div class="card border-0">
-      <Transition :duration="100">
-        <div v-if="showLoading" class="div_loading d-block" style="z-index: 10">
-          <div class="div_loading_cover"></div>
-          <div class="div_loading_content">
-            <div class="spinner-border spinner-size text-primary" role="status">
-              <span class="sr-only">Loading...</span>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" role="tabpanel" :id="`${tabId}-backends-tab-pane`">
+          <div ref="topToolbar">
+            <button
+              data-testid="monitoring-refresh-button"
+              class="btn btn-primary btn-sm my-2 me-1"
+              title="Refresh"
+              @click="refreshMonitoring"
+            >
+              <i class="fas fa-sync-alt me-2"></i>Refresh
+            </button>
+            <button
+              v-if="!isActive"
+              data-testid="monitoring-play-button"
+              class="btn btn-secondary btn-sm me-1"
+              title="Play"
+              @click="playMonitoring"
+            >
+              <i class="fas fa-play-circle fa-light"></i>
+            </button>
+      
+            <button
+              v-else
+              data-testid="monitoring-pause-button"
+              class="btn btn-secondary btn-sm me-1"
+              title="Pause"
+              @click="pauseMonitoring"
+            >
+              <i class="fas fa-pause-circle fa-light"></i>
+            </button>
+            <div
+              class="d-inline-flex align-items-center refresh-menu ms-1"
+              data-bs-toggle="dropdown">
+              <a class="refresh-menu__link" href="">{{ humanizeDuration(monitoringInterval) }}</a>
+              <div class="dropdown-menu dropdown-menu-width-auto">
+                <a
+                  v-for="(option, index) in refreshIntervalOptions" :key=index
+                  :data-testid="`refresh-option-${option}`"
+                  @click="monitoringInterval=option"
+                  class="dropdown-item"
+                  href="#"
+                >
+                  {{ humanizeDuration(option) }}
+                </a>
+              </div>
             </div>
+            <span class="float-end"> Total processes: {{ dataLength }} </span>
           </div>
-        </div>
-      </Transition>
-
-      <div ref="tabulator" class="tabulator-custom grid-height pb-3"></div>
+          <div class="card border-0">
+            <Transition :duration="100">
+              <div v-if="showLoading" class="div_loading d-block" style="z-index: 10">
+                <div class="div_loading_cover"></div>
+                <div class="div_loading_content">
+                  <div class="spinner-border spinner-size text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+      
+            <div ref="tabulator" class="tabulator-custom grid-height pb-3"></div>
+          </div>
+      </div>
+      <div class="tab-pane fade" role="tabpanel" :id="`${tabId}-logs-tab-pane`">
+        <MonitoringTabLogs :database-index="databaseIndex" :workspace-id="workspaceId" />
+      </div>
     </div>
   </div>
 </template>
@@ -76,9 +103,13 @@ import { useVuelidate } from "@vuelidate/core";
 import { minValue, required } from "@vuelidate/validators";
 import { handleError } from "../logging/utils";
 import HumanizeDurationMixin from '../mixins/humanize_duration_mixin'
+import MonitoringTabLogs from "./MonitoringTabLogs.vue";
 
 export default {
   name: "MonitoringTab",
+  components: {
+    MonitoringTabLogs,
+  },
   setup() {
     return {
       v$: useVuelidate({ $lazy: true }),
