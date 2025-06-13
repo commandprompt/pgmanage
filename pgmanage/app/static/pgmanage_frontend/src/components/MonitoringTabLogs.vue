@@ -3,14 +3,12 @@
     <div class="row">
       <div class="align-items-center d-flex col-2 offset-10">
         <span class="me-1"> Format: </span>
-        <select class="form-select" v-model="contentMode">
-          <option
-            v-for="(modePath, modeName, index) in contentModes"
-            :value="modePath"
-            :key="index"
-          >
-            {{ modeName }}
-          </option>
+        <select class="form-select" v-model="formatMode">
+          <template v-for="(modeObj, modeName, index) in formatModes">
+            <option v-if="modeObj.available" :value="modeName" :key="index">
+              {{ modeObj.text }}
+            </option>
+          </template>
         </select>
       </div>
     </div>
@@ -32,19 +30,15 @@ export default {
   data() {
     return {
       editor: null,
-      contentModes: {
-        TEXT: "ace/mode/pgsql_extended",
-        JSON: "ace/mode/json",
-        CSV: "ace/mode/xml",
-      },
-      contentMode: "ace/mode/pgsql_extended",
+      formatModes: {},
+      formatMode: "stderr",
     };
   },
   watch: {
-    contentMode(newValue) {
-      this.editor.session.setMode(newValue);
-      //   beautify(this.editor.getSession());
-      // this.formatContent();
+    formatMode(newValue) {
+      const aceMode =
+        this.formatModes[newValue]?.ace_mode ?? "ace/mode/pgsql_extended";
+      this.editor.session.setMode(aceMode);
     },
   },
   mounted() {
@@ -80,7 +74,6 @@ export default {
         })
         .then((response) => {
           this.data = response.data;
-          console.log(response.data.data);
           this.editor.setValue(response.data.data[0][0]);
           this.editor.clearSelection();
           this.editor.session.setMode(this.contentMode);
@@ -96,7 +89,23 @@ export default {
           workspace_id: this.workspaceId,
         })
         .then((resp) => {
-          console.log(resp.formats);
+          this.formatModes = {
+            stderr: {
+              ace_mode: "ace/mode/pgsql_extended",
+              text: "TEXT",
+              available: !!resp.data.formats[0]?.includes("stderr"),
+            },
+            csvlog: {
+              ace_mode: "ace/mode/xml",
+              text: "CSV",
+              available: !!resp.data.formats[0]?.includes("csvlog"),
+            },
+            jsonlog: {
+              ace_mode: "ace/mode/json",
+              text: "JSON",
+              available: !!resp.data.formats[0]?.includes("jsonlog"),
+            },
+          };
         })
         .catch((error) => {
           console.log(error);
