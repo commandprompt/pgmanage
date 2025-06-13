@@ -149,8 +149,8 @@ base_urlpatterns = [
     path('get_postgresql_version/', views.tree_postgresql.get_version, name='get_version'),
     path('change_role_password_postgresql/', views.tree_postgresql.change_role_password, name='change_role_password'),
     path('get_object_description_postgresql/', views.tree_postgresql.get_object_description, name='get_object_description'),
-    path('get_postgres_server_log/', views.tree_postgresql.server_log, name="get_postgres_server_log"),
-    path('get_postgres_server_log_formats/', views.tree_postgresql.log_format, name="get_postgres_server_log_formats"),
+    path('get_postgres_server_log/', views.tree_postgresql.get_server_log, name="get_postgres_server_log"),
+    path('get_postgres_server_log_formats/', views.tree_postgresql.get_log_formats, name="get_postgres_server_log_formats"),
 
     #PG_CRON
     path('get_pgcron_jobs/', views.pgextras.get_pgcron_jobs, name='get_pgcron_jobs'),

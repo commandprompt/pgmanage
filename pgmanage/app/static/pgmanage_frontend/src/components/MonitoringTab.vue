@@ -84,7 +84,7 @@
           </div>
       </div>
       <div class="tab-pane fade" role="tabpanel" :id="`${tabId}-logs-tab-pane`">
-        <MonitoringTabLogs :database-index="databaseIndex" :workspace-id="workspaceId" />
+        <MonitoringTabLogs :database-index="databaseIndex" :workspace-id="workspaceId" :tab-id="tabId" />
       </div>
     </div>
   </div>

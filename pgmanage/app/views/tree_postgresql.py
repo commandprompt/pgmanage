@@ -1728,27 +1728,25 @@ def get_object_description(request, database):
     return JsonResponse(data={"data": object_description})
 
 
-
-
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
-def server_log(request, database):
-    # data = request.data
+def get_server_log(request, database):
+    data = request.data
+    log_format = data.get("log_format")
     try:
-        data = database.Query("SELECT pg_read_file(pg_current_logfile())")
+        data = database.Query(
+            f"SELECT pg_read_file(pg_current_logfile('{log_format}'))"
+        )
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data={"data": data.Rows})
 
 
-
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
-def log_format(request, database):
+def get_log_formats(request, database):
     try:
         data = database.Query("show log_destination")
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data={"formats": list(chain.from_iterable(data.Rows))})
-
-
