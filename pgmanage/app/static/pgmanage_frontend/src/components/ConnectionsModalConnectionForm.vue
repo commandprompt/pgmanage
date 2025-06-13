@@ -627,14 +627,14 @@ import { handleError } from '../logging/utils';
     watch: {
       initialConnection: {
         handler(newVal, oldVal) {
-          this.connectionLocal = {...newVal};
+          this.connectionLocal = JSON.parse(JSON.stringify(newVal));
           this.connectionLocal.tunnel = {...newVal.tunnel};
           this.v$.connectionLocal.$reset();
         },
         deep: true
       },
       'connectionLocal.technology': function (newVal, oldVal) {
-        if (oldVal === undefined || this.connectionLocal.id) {
+        if (oldVal === undefined) {
           this.tempMode  = Object.keys(this.connectionLocal.connection_params)[0]
           return
         }
