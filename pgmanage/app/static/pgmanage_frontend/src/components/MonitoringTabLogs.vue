@@ -12,13 +12,36 @@
         </select>
       </div>
     </div>
-    <div ref="editor" class="ace-editor"></div>
+    <div class="card border-0">
+      <Transition :duration="100">
+        <div v-if="showLoading" class="div_loading d-block" style="z-index: 10">
+          <div class="div_loading_cover"></div>
+          <div class="div_loading_content">
+            <div class="spinner-border spinner-size text-primary" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </Transition>
+      <div ref="editor" class="ace-editor"></div>
+    </div>
   </div>
 </template>
 
 <script>
 import { settingsStore, tabsStore } from "../stores/stores_initializer";
 import { handleError } from "../logging/utils";
+
+// TODO:
+// 1.add timemout log fetching
+// 2.redraw backends table on click
+// 3.find out initial maximum log size, so we can fetch more with timout
+// 4.hide log tab for non postgres dialects
+// 5.add loading state
+// implement these cases handling:
+// 1.log is not enabled
+// 2.no log files
+//
 
 import axios from "axios";
 export default {
@@ -35,6 +58,7 @@ export default {
       formatModes: {},
       formatMode: "stderr",
       heightSubtract: 150,
+      showLoading: true,
     };
   },
   computed: {
@@ -105,6 +129,7 @@ export default {
       //   this.editor.getSession().on("changeScrollTop", this.onEditorScroll);
     },
     getLog() {
+      this.showLoading = true;
       axios
         .post("/get_postgres_server_log/", {
           database_index: this.databaseIndex,
@@ -112,13 +137,14 @@ export default {
           log_format: this.formatMode,
         })
         .then((response) => {
-          this.data = response.data;
-          this.editor.setValue(response.data.data[0][0]);
+          this.editor.setValue(response.data.logs);
           this.editor.clearSelection();
           // this.editor.session.setMode(this.contentMode);
+          this.showLoading = false;
         })
         .catch((error) => {
           console.log(error);
+          this.showLoading = false;
         });
     },
     getLogFormat() {
@@ -132,17 +158,17 @@ export default {
             stderr: {
               ace_mode: "ace/mode/pgsql_extended",
               text: "TEXT",
-              available: !!resp.data.formats[0]?.includes("stderr"),
+              available: !!resp.data.formats?.includes("stderr"),
             },
             csvlog: {
               ace_mode: "ace/mode/xml",
               text: "CSV",
-              available: !!resp.data.formats[0]?.includes("csvlog"),
+              available: !!resp.data.formats?.includes("csvlog"),
             },
             jsonlog: {
               ace_mode: "ace/mode/json",
               text: "JSON",
-              available: !!resp.data.formats[0]?.includes("jsonlog"),
+              available: !!resp.data.formats?.includes("jsonlog"),
             },
           };
         })

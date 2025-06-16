@@ -1739,7 +1739,7 @@ def get_server_log(request, database):
         )
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
-    return JsonResponse(data={"data": data.Rows})
+    return JsonResponse(data={"logs": data.Rows[0]['pg_read_file']})
 
 
 @user_authenticated
@@ -1749,4 +1749,4 @@ def get_log_formats(request, database):
         data = database.Query("show log_destination")
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
-    return JsonResponse(data={"formats": list(chain.from_iterable(data.Rows))})
+    return JsonResponse(data={"formats": data.Rows[0]["log_destination"]})
