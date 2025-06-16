@@ -1,5 +1,14 @@
 <template>
-  <div>
+  <div
+    v-if="loggingDisabled"
+    class="alert alert-warning d-flex align-items-center justify-content-center"
+    role="alert"
+  >
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <div>Please enable logging to view the server logs.</div>
+  </div>
+
+  <div v-else>
     <div ref="topToolbar" class="row p-1">
       <div class="align-items-center d-flex col-2 offset-10">
         <span class="me-1"> Format: </span>
@@ -32,17 +41,6 @@
 import { settingsStore, tabsStore } from "../stores/stores_initializer";
 import { handleError } from "../logging/utils";
 
-// TODO:
-// 1.add timemout log fetching
-// 2.redraw backends table on click
-// 3.find out initial maximum log size, so we can fetch more with timout
-// 4.hide log tab for non postgres dialects
-// 5.add loading state
-// implement these cases handling:
-// 1.log is not enabled
-// 2.no log files
-//
-
 import axios from "axios";
 export default {
   name: "MonitoringTabLogs",
@@ -59,6 +57,7 @@ export default {
       formatMode: "stderr",
       heightSubtract: 150,
       showLoading: true,
+      loggingDisabled: false,
     };
   },
   computed: {
@@ -77,7 +76,6 @@ export default {
   mounted() {
     this.setupEditor();
     this.getLogFormat();
-    this.getLog();
 
     window.addEventListener("resize", () => {
       if (
@@ -111,12 +109,14 @@ export default {
     const tabEl = document.getElementById(`${this.tabId}-logs-tab`);
     tabEl.addEventListener("shown.bs.tab", (event) => {
       this.handleResize();
+      this.getLog();
     });
   },
   methods: {
     setupEditor() {
       this.editor = ace.edit(this.$refs.editor);
       this.editor.$blockScrolling = Infinity;
+      this.editor.session.setMode("ace/mode/pgsql_extended");
       this.editor.setTheme(`ace/theme/${settingsStore.editorTheme}`);
       this.editor.setFontSize(settingsStore.fontSize);
       this.editor.setShowPrintMargin(false);
@@ -137,13 +137,17 @@ export default {
           log_format: this.formatMode,
         })
         .then((response) => {
+          if (response.data.logs === null) {
+            this.loggingDisabled = true;
+          }
+
           this.editor.setValue(response.data.logs);
           this.editor.clearSelection();
           // this.editor.session.setMode(this.contentMode);
           this.showLoading = false;
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
           this.showLoading = false;
         });
     },
@@ -173,8 +177,7 @@ export default {
           };
         })
         .catch((error) => {
-          console.log(error);
-          // handleError(error);
+          handleError(error);
         });
     },
     handleResize() {

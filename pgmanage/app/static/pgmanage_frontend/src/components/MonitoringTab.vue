@@ -7,7 +7,7 @@
               data-bs-toggle="tab" :data-bs-target="`#${tabId}-backends-tab-pane`"
               type="button" role="tab"
               aria-selected="true">
-              Backends?
+              Processes
         </button>
       </li>
       <li class="nav-item">
