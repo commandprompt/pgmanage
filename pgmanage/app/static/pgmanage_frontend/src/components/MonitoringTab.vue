@@ -1,7 +1,7 @@
 <template>
   <!-- schema-editor-scrollable class copy pasted for nav tabs to look like other nav tabs, maybe we should consider using more common name -->
   <div class="schema-editor-scrollable ps-1">
-    <ul class="nav nav-tabs" role="tablist">
+    <ul v-if="postgresqlDialect" class="nav nav-tabs" role="tablist">
       <li class="nav-item">
         <button class="nav-item nav-link active omnidb__tab-menu__link" :id="`${tabId}-backends-tab`"
               data-bs-toggle="tab" :data-bs-target="`#${tabId}-backends-tab-pane`"
@@ -83,7 +83,7 @@
             <div ref="tabulator" class="tabulator-custom grid-height pb-3"></div>
           </div>
       </div>
-      <div class="tab-pane fade" role="tabpanel" :id="`${tabId}-logs-tab-pane`">
+      <div v-if="postgresqlDialect" class="tab-pane fade" role="tabpanel" :id="`${tabId}-logs-tab-pane`">
         <MonitoringTabLogs :database-index="databaseIndex" :workspace-id="workspaceId" :tab-id="tabId" />
       </div>
     </div>
@@ -138,6 +138,9 @@ export default {
   computed: {
     gridHeight() {
       return `calc(100vh - ${this.heightSubtract}px)`;
+    },
+    postgresqlDialect() {
+      return this.dialect === "postgresql";
     },
   },
   validations() {
