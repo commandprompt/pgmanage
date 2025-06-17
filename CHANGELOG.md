@@ -13,10 +13,11 @@
     - added support for exporting query results in JSON format
     - added support for code folding in SQL editor
     - set backup type based on output file extension, set extension base on output type (#531)
-    - add Postgres documentation links to SQL templates for quicker docs access
-    - add column alias support in autocomplete engine
-    - add advanced clipboard copy for data grids (#217)
+    - added Postgres documentation links to SQL templates for quicker docs access
+    - added column alias support in autocomplete engine
+    - added advanced clipboard copy for data grids (#217)
     - added support for running EXPLAIN on a selected part of the query (#533)
+    - added "copy to editor" feature for DDL tab and "Generated SQL" preview box components (#536)
     - new cell data viewer modal with syntax highlighting and support different data types
     - added support for Postgres 17
     
@@ -29,10 +30,11 @@
     - fixed autocomplete switch colors in dark theme
     - fixed DB object tree node data not loading in some cases
     - prevent starting duplicate backup/restore jobs (#572)
-    - improved readability of Backends tab UI
+    - fixed empty SSL option appearing in connection form when connection type is changed (#674)
     
   - UI/UX Improvements:
     - improved console tab size change handling
+    - improved readability of Backends tab UI
     - added data loading/saving indication for data editor tab
     - added support for keyboard navigation for searchable drop-down lists
     - improved layout of Server Configuration tab toolbar
