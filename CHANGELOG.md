@@ -13,10 +13,11 @@
     - added support for exporting query results in JSON format
     - added support for code folding in SQL editor
     - set backup type based on output file extension, set extension base on output type (#531)
-    - add Postgres documentation links to SQL templates for quicker docs access
-    - add column alias support in autocomplete engine
-    - add advanced clipboard copy for data grids (#217)
+    - added Postgres documentation links to SQL templates for quicker docs access
+    - added column alias support in autocomplete engine
+    - added advanced clipboard copy for data grids (#217)
     - added support for running EXPLAIN on a selected part of the query (#533)
+    - added "copy to editor" feature for DDL tab and "Generated SQL" preview box components (#536)
     - new cell data viewer modal with syntax highlighting and support different data types
     - added support for Postgres 17
     
