@@ -29,10 +29,11 @@
     - fixed autocomplete switch colors in dark theme
     - fixed DB object tree node data not loading in some cases
     - prevent starting duplicate backup/restore jobs (#572)
-    - improved readability of Backends tab UI
+    - fixed empty SSL option appearing in connection form when connection type is changed (#674)
     
   - UI/UX Improvements:
     - improved console tab size change handling
+    - improved readability of Backends tab UI
     - added data loading/saving indication for data editor tab
     - added support for keyboard navigation for searchable drop-down lists
     - improved layout of Server Configuration tab toolbar
