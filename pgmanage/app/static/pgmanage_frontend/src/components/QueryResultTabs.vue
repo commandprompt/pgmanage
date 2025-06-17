@@ -133,6 +133,7 @@ export default {
       colWidthArray: [],
       columns: [],
       colTypes: [],
+      defaultColWidthArray: [],
     };
   },
   computed: {
@@ -499,10 +500,8 @@ export default {
         },{
           label:"Reset Layout",
           action:() => {
-            this.customLayout = undefined
-            this.table.blockRedraw();
-            this.table.setColumns(columns);
-            this.table.restoreRedraw();
+            this.customLayout = undefined;
+            this.applyLayout();
           }
         },
       ]
@@ -534,6 +533,9 @@ export default {
       })
       table.on("tableBuilt", () => {
         this.table = table;
+        if (this.defaultColWidthArray.length !== this.table.getColumns().length) {
+          this.defaultColWidthArray = this.table.getColumns().map(col => col.getWidth());
+        }
         if (this.customLayout !== undefined && this.colWidthArray.length !== 0) {
           
           this.table.getColumns().forEach((col, idx) => {
@@ -557,8 +559,6 @@ export default {
     },
      applyLayout() {
       this.colWidthArray = []
-      if(this.customLayout === undefined)
-        return
 
       this.table.blockRedraw();
 
@@ -578,6 +578,10 @@ export default {
           if(this.customLayout == 'fitcontent') {
             col.setWidth(true);
             this.colWidthArray.push(true)
+          }
+
+          if(this.customLayout === undefined) {
+            col.setWidth(this.defaultColWidthArray[idx]);
           }
         }
       });
