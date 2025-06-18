@@ -126,7 +126,6 @@ export default {
       this.editor.commands.bindKey("Ctrl-,", null);
       this.editor.commands.bindKey("Cmd-Delete", null);
       this.editor.commands.bindKey("Ctrl-Delete", null);
-      //   this.editor.getSession().on("changeScrollTop", this.onEditorScroll);
     },
     getLog() {
       this.showLoading = true;
@@ -143,7 +142,6 @@ export default {
 
           this.editor.setValue(response.data.logs);
           this.editor.clearSelection();
-          // this.editor.session.setMode(this.contentMode);
           this.showLoading = false;
         })
         .catch((error) => {

@@ -4,7 +4,6 @@ from app.models.main import Connection
 from app.utils.crypto import pg_scram_sha256
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
-from itertools import chain
 
 
 @user_authenticated
