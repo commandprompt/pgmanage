@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import ShortUniqueId from "short-unique-id";
-import { connectionsStore, messageModalStore } from "./stores_initializer";
+import { connectionsStore, messageModalStore, dbMetadataStore } from "./stores_initializer";
 import { showToast, showConfirm } from "../notification_control";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { createRequest, removeContext } from "../long_polling";
@@ -842,6 +842,7 @@ const useTabsStore = defineStore("tabs", {
       if (tabsToRemove.length > 0) {
         createRequest(queryRequestCodes.CloseTab, tabsToRemove);
       }
+      dbMetadataStore.deleteDbMeta(connectionTab.metaData.selectedDatabaseIndex);
       this.removeTab(connectionTab);
     },
   },
