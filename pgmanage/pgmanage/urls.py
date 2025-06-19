@@ -18,7 +18,6 @@ from django.urls import path, include
 from pgmanage.settings import ENTERPRISE_EDITION
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', include('app.urls'))
 ]
 

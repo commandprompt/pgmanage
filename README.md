@@ -9,11 +9,11 @@
 [![Static Badge](https://img.shields.io/badge/DISCORD-grey?style=for-the-badge&logo=discord&logoColor=white&color=%235865F2)](https://discord.com/channels/710918545906597938/1077284441279443054)
 
 # ⚡ Supported Databases
-<img src="https://cdn.simpleicons.org/postgresql/000/fff" alt="postgresql" width=19 height=19> **PostgreSQL**
-&nbsp;&nbsp;<img src="https://cdn.simpleicons.org/mariadb/000/fff" alt="mariadb" width=19 height=19> **MariaDB**
-&nbsp;&nbsp;<img src="https://cdn.simpleicons.org/mysql/000/fff" alt="mysql" width=19 height=19> **MySQL**
-&nbsp;&nbsp;<img src="https://cdn.simpleicons.org/sqlite/000/fff" alt="sqlite" width=19 height=19> **SQLite**
-&nbsp;&nbsp;<img src="https://cdn.simpleicons.org/oracle/000/fff" alt="oracle" width=19 height=19> **Oracle**
+<img src="https://cdn.simpleicons.org/postgresql/000/fff#1" alt="postgresql" width=19 height=19> **PostgreSQL**
+&nbsp;&nbsp;<img src="https://cdn.simpleicons.org/mariadb/000/fff#1" alt="mariadb" width=19 height=19> **MariaDB**
+&nbsp;&nbsp;<img src="https://cdn.simpleicons.org/mysql/000/fff#1" alt="mysql" width=19 height=19> **MySQL**
+&nbsp;&nbsp;<img src="https://cdn.simpleicons.org/sqlite/000/fff#1" alt="sqlite" width=19 height=19> **SQLite**
+&nbsp;&nbsp;O **Oracle**
 
 # ✨ Features
 * Multiple Workspaces: connect to and work with multiple databases at once

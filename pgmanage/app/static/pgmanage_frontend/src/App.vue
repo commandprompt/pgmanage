@@ -96,7 +96,7 @@ export default {
       v_omnis.div.style.top =
         v_omnis.root.getBoundingClientRect().height - 45 + "px";
       v_omnis.div.style.left =
-        v_omnis.root.getBoundingClientRect().width - 45 + "px";
+        v_omnis.root.getBoundingClientRect().width - 60 + "px";
       v_omnis.div.style["z-index"] = "99999999";
       v_omnis.div.style.opacity = 0;
       v_omnis.div.innerHTML = v_omnis.template;

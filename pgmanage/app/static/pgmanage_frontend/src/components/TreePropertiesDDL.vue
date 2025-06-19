@@ -74,7 +74,13 @@
           role="tabpanel"
           :aria-labelledby="`${workspaceId}_tree_ddl_nav`"
         >
-         <PreviewBox :database-technology="databaseTechnology" class="pb-3" style="height: 90%" :editor-text="ddlData" :show-label="false"/>
+          <PreviewBox
+            :database-technology="databaseTechnology"
+            class="pb-3"
+            style="height: 90%"
+            :editor-text="ddlData"
+            :show-label="false"
+          />
         </div>
       </div>
     </div>
@@ -104,11 +110,12 @@ export default {
     return {
       table: null,
       editor: null,
+      tableBuilt: false,
     };
   },
   watch: {
     propertiesData(newValue, oldValue) {
-      this.table.setData(newValue);
+      if (this.tableBuilt) this.table.setData(newValue);
     },
   },
   mounted() {
@@ -142,6 +149,10 @@ export default {
         ],
         layout: "fitColumns",
         selectableRows: false,
+      });
+
+      this.table.on("tableBuilt", () => {
+        this.tableBuilt = true;
       });
     },
   },

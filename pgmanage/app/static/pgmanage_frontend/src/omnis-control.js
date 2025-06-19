@@ -36,7 +36,7 @@ function createOmnis() {
        viewBox="0 0 512 512"
        version="1.1"
        x="0px" y="0px"
-       width="36px" height="36px"
+       width="30px" height="30px"
        id="svg4"
        xmlns="http://www.w3.org/2000/svg"
        xmlns:svg="http://www.w3.org/2000/svg">

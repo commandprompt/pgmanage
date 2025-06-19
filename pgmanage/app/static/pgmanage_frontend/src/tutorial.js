@@ -98,17 +98,23 @@ function startTutorial(p_tutorial_name) {
       {
         p_callback_end: function() {$('.omnidb__utilities-menu').removeClass('omnidb__utilities-menu--show');},
         p_callback_start: function() {$('.omnidb__utilities-menu').addClass('omnidb__utilities-menu--show');},
+        p_callback_after_update_start: function() {setTimeout(function(){
+            if (v_omnis.omnis_ui_assistant.divClonedElement.children[0]) {
+              v_omnis.omnis_ui_assistant.divClonedElement.children[0].style.width='';
+            }
+          },50);
+        },
         p_clone_target: true,
         p_message: `
         <p>If you just configured Pgmanage and logged with the default <strong>admin</strong> user, you should create the first user.</p>
         <p>Follow this walkthrough if you want to create other users as well.</p>
         `,
         p_next_button: true,
-        p_target: document.getElementById('omnidb__utilities-menu__link-user'),
+        p_target: document.getElementById('utilities-menu__link-user'),
         p_title: 'Managing Users'
       },
       {
-        p_callback_start: function() { listUsers();},
+        p_callback_start: function() { document.getElementById('utilities-menu__link-user').click();},
         p_callback_after_update_start: function() {setTimeout(function(){
             if (v_omnis.omnis_ui_assistant.divClonedElement.children[0]) {
               v_omnis.omnis_ui_assistant.divClonedElement.children[0].classList.remove('ms-2');
@@ -120,21 +126,19 @@ function startTutorial(p_tutorial_name) {
         <p>Click on <strong>Add new user</strong>.</p>
         `,
         p_next_button: false,
-        p_target: function() {var v_target = document.getElementById('omnidb_utilities_menu_btn_new_user'); return v_target},
+        p_target: function() {var v_target = document.getElementById('add_new_user_button'); return v_target},
         p_title: 'Add a New User',
         p_update_delay: 1000
       },
       {
-        p_callback_start: function() { newUser() },
+        p_callback_start: function() { document.getElementById('add_new_user_button').click() },
         p_message: `
         <ul>
         <li><i class="fas fa-user omnidb__theme__text--primary me-2"></i>PgManage login name.</li>
         <li><i class="fas fa-key omnidb__theme__text--primary me-2"></i>PgManage login password.</li>
-        <li><i class="fas fa-star omnidb__theme__text--primary me-2"></i>Defines if the user can manage other PgManage users.</li>
         </ul>
-        <div class="alert alert-danger">The default <strong>admin user</strong> should be deleted once a new super user has been created.</div>
         `,
-        p_target: function() {var v_target = document.getElementById('omnidb_user_content'); return v_target},
+        p_target: function() {var v_target = document.getElementsByClassName("modal-users__form")[0]; return v_target},
         p_title: 'User Options',
         p_update_delay: 350
       }

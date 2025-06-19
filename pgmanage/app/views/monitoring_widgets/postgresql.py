@@ -426,7 +426,7 @@ result = {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
 'id': -5,
-'title': 'Temp Files Creation Rate',
+'title': 'Temp File Creation Rate',
 'type': 'timeseries',
 'interval': 10,
 'default': True,
@@ -507,9 +507,11 @@ else:
 datasets = []
 datasets.append({
         "label": 'Rate (MB/s)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
+        "borderWidth": 1.2,
         "data": [{
             "x": datetime.now(),
             "y":r.Rows[0]['rate']
