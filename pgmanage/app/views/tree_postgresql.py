@@ -161,8 +161,8 @@ def get_database_objects(request, database):
             "has_event_triggers": database.has_event_triggers,
             "has_logical_replication": database.has_logical_replication,
             "has_pg_cron": has_pg_cron,
-            "current_schema": current_schema
-            }
+            "current_schema": current_schema,
+        }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -876,6 +876,7 @@ def get_roles(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data={"data": list_roles})
 
+
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def get_role_details(request, database):
@@ -909,7 +910,6 @@ def get_role_details(request, database):
 
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
-
 
     return JsonResponse(data=role_details)
 
@@ -1736,9 +1736,13 @@ def get_server_log(request, database):
         data = database.Query(
             f"SELECT pg_read_file(pg_current_logfile('{log_format}'))"
         )
+        logs = data.Rows[0]["pg_read_file"]
+
+        data = database.Query(f"SELECT pg_current_logfile('{log_format}')")
+        current_logfile = data.Rows[0]["pg_current_logfile"]
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
-    return JsonResponse(data={"logs": data.Rows[0]['pg_read_file']})
+    return JsonResponse(data={"logs": logs, "current_logfile": current_logfile})
 
 
 @user_authenticated

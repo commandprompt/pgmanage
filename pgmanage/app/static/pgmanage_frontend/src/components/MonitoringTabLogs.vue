@@ -1,24 +1,57 @@
 <template>
   <div
     v-if="loggingDisabled"
-    class="alert alert-warning d-flex align-items-center justify-content-center"
+    class="alert alert-warning d-flex align-items-center justify-content-center m-4"
     role="alert"
   >
     <i class="fas fa-exclamation-triangle me-2"></i>
-    <div>Please enable logging to view the server logs.</div>
+    <div>
+      <span>Please enable logging to view the server logs.</span>
+      <br />
+      <span
+        >More information:
+        <a
+          target="_blank"
+          href="https://www.postgresql.org/docs/17/runtime-config-logging.html"
+        >
+          Error Reporting and Logging
+        </a></span
+      >
+    </div>
   </div>
 
-  <div v-else>
-    <div ref="topToolbar" class="row p-1">
-      <div class="align-items-center d-flex col-2 offset-10">
-        <span class="me-1"> Format: </span>
-        <select class="form-select" v-model="formatMode">
-          <template v-for="(modeObj, modeName, index) in formatModes">
-            <option v-if="modeObj.available" :value="modeName" :key="index">
-              {{ modeObj.text }}
-            </option>
-          </template>
-        </select>
+  <div v-show="!loggingDisabled">
+    <div
+      ref="topToolbar"
+      class="row align-items-center justify-content-end p-1"
+    >
+      <div class="col">
+        <span class="text-muted">Current log file: {{ currentLogFile }}</span>
+      </div>
+      <div class="col-1">
+        <div class="form-check form-switch pt-1">
+          <input
+            :id="`${tabId}-logs-autoscroll`"
+            class="form-check-input"
+            type="checkbox"
+            v-model="autoScroll"
+          />
+          <label class="form-check-label" :for="`${tabId}-logs-autoscroll`">
+            Autoscroll
+          </label>
+        </div>
+      </div>
+      <div class="col-2">
+        <div class="align-items-center d-flex">
+          <label class="mx-2">Format:</label>
+          <select class="form-select" v-model="formatMode">
+            <template v-for="(modeObj, modeName, index) in formatModes">
+              <option v-if="modeObj.available" :value="modeName" :key="index">
+                {{ modeObj.text }}
+              </option>
+            </template>
+          </select>
+        </div>
       </div>
     </div>
     <div class="card border-0">
@@ -41,6 +74,8 @@
 import { settingsStore, tabsStore } from "../stores/stores_initializer";
 import { handleError } from "../logging/utils";
 
+// TODO: change hard code postgres link to dynamic one
+
 import axios from "axios";
 export default {
   name: "MonitoringTabLogs",
@@ -58,6 +93,8 @@ export default {
       heightSubtract: 150,
       showLoading: true,
       loggingDisabled: false,
+      autoScroll: true,
+      currentLogFile: "",
     };
   },
   computed: {
@@ -136,13 +173,15 @@ export default {
           log_format: this.formatMode,
         })
         .then((response) => {
-          if (response.data.logs === null) {
-            this.loggingDisabled = true;
-          }
+          this.loggingDisabled = response.data.logs === null;
+
+          this.currentLogFile = response.data.current_logfile;
 
           this.editor.setValue(response.data.logs);
           this.editor.clearSelection();
           this.showLoading = false;
+
+          this.scrollToBottom();
         })
         .catch((error) => {
           handleError(error);
@@ -179,10 +218,17 @@ export default {
         });
     },
     handleResize() {
-      if (this.$refs === null) return;
+      if (this.$refs === null || this.loggingDisabled) return;
 
       this.heightSubtract =
         this.$refs.topToolbar.getBoundingClientRect().bottom;
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        if (this.autoScroll) {
+          this.editor.renderer.scrollToLine(Number.POSITIVE_INFINITY);
+        }
+      });
     },
   },
 };
