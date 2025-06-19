@@ -2,21 +2,20 @@ import { flushPromises, mount, enableAutoUnmount } from "@vue/test-utils";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import ConfigTab from "@/components/ConfigTab.vue";
 import axios from "axios";
-import { showToast } from "@/notification_control";
-import { Modal } from "bootstrap";
 import { tabsStore } from "@/stores/stores_initializer";
+import { handleError } from "@/logging/utils";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
+vi.mock("@/logging/utils", () => ({
+  handleError: vi.fn(),
+}));
 
 vi.mock("axios");
-vi.mock("@/notification_control", () => ({
-  showToast: vi.fn(),
-}));
-vi.mock("bootstrap", () => ({
-  Modal: {
-    getOrCreateInstance: vi.fn(() => ({
-      show: vi.fn(),
-    })),
-  },
-}));
+
 vi.mock("@/stores/stores_initializer", () => ({
   tabsStore: {
     getSecondaryTabById: vi.fn(),
@@ -120,14 +119,14 @@ describe("ConfigTab.vue", () => {
       new_config: true,
     });
     expect(wrapper.vm.updateSettings).toEqual({});
-    expect(showToast).not.toHaveBeenCalled();
+    expect(handleError).not.toHaveBeenCalled();
   });
 
   it("displays error on failed configuration save", async () => {
-    const errorMessage = "Failed to save configuration";
-    axios.post.mockRejectedValueOnce({
-      response: { data: { data: errorMessage } },
-    });
+    const errorResponse = {
+      response: { data: { data: "Failed to save configuration" } },
+    };
+    axios.post.mockRejectedValueOnce(errorResponse);
     wrapper.setData({
       updateSettings: { setting1: { name: "setting1", setting: "value1" } },
     });
@@ -136,7 +135,7 @@ describe("ConfigTab.vue", () => {
 
     await flushPromises();
 
-    expect(showToast).toHaveBeenCalledWith("error", errorMessage);
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("truncates text correctly", () => {

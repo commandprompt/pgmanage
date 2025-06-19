@@ -34,6 +34,7 @@ import base64
 import app.include.Spartacus as Spartacus
 import app.include.Spartacus.prettytable as prettytable
 from urllib.parse import urlparse
+from pgmanage import settings
 
 v_supported_rdbms = []
 
@@ -882,17 +883,7 @@ class SQLite(Generic):
             else:
                 v_keep = True
 
-            if len(p_sql.split(";\n")) >= 2:
-                try:
-                    self.v_cur.execute("BEGIN")
-                    for sql in p_sql.split(";\n"):
-                        self.v_cur.execute(sql)
-                    self.v_con.commit()
-                except sqlite3.Error as exc:
-                    self.v_con.rollback()
-                    raise Spartacus.Database.Exception(str(exc))
-            else:
-                self.v_cur.execute(p_sql)
+            self.v_cur.execute(p_sql)
         except Spartacus.Database.Exception as exc:
             raise exc
         except sqlite3.Error as exc:
@@ -1015,17 +1006,7 @@ class SQLite(Generic):
                 raise Spartacus.Database.Exception('This method should be called in the middle of Open() and Close() calls.')
             else:
                 if self.v_start:
-                    if len(p_sql.split(";\n")) >= 2:
-                        try:
-                            self.v_cur.execute("BEGIN")
-                            for sql in p_sql.split(";\n"):
-                                self.v_cur.execute(sql)
-                            self.v_con.commit()
-                        except sqlite3.Error as exc:
-                            self.v_con.rollback()
-                            raise Spartacus.Database.Exception(str(exc))
-                    else:
-                        self.v_cur.execute(p_sql)
+                    self.v_cur.execute(p_sql)
                 v_table = DataTable(None, p_alltypesstr, p_simple)
                 if self.v_cur.description:
                     for c in self.v_cur.description:
@@ -1409,6 +1390,7 @@ class PostgreSQL(Generic):
         return value
     def Open(self, p_autocommit=True):
         try:
+            self.connection_params.setdefault("connect_timeout", 10)
             self.v_con = psycopg2.connect(
                 self.GetConnectionString(),
                 cursor_factory=psycopg2.extras.DictCursor,
@@ -1770,9 +1752,9 @@ class PostgreSQL(Generic):
                 v_table = DataTable()
                 if self.v_cursor:
                     if p_blocksize > 0:
-                        self.v_cur.execute('FETCH {0} {1}'.format(p_blocksize, self.v_cursor))
+                        self.v_cur.execute('FETCH {0} FROM {1}'.format(p_blocksize, self.v_cursor))
                     else:
-                        self.v_cur.execute('FETCH ALL {0}'.format(self.v_cursor))
+                        self.v_cur.execute('FETCH ALL FROM {0}'.format(self.v_cursor))
                 if self.v_cur.description:
                     for c in self.v_cur.description:
                         v_table.AddColumn(c[0])

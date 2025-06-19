@@ -4,7 +4,7 @@ const useFileManagerStore = defineStore("fileManager", {
   state: () => ({
     onChange: () => {},
     dialogType: null,
-    filePath: null,
+    file: null,
     visible: false,
     desktopMode: null,
   }),
@@ -15,8 +15,8 @@ const useFileManagerStore = defineStore("fileManager", {
       this.onChange = onChange;
       this.dialogType = dialogType;
     },
-    changeFile(filePath) {
-      this.filePath = filePath;
+    changeFile(file) {
+      this.file = file;
     },
     hideModal() {
       this.visible = false;
@@ -25,7 +25,7 @@ const useFileManagerStore = defineStore("fileManager", {
     reset() {
       this.onChange = () => {};
       this.dialogType = null;
-      this.filePath = null;
+      this.file = null;
       this.desktopMode = null;
     },
   },

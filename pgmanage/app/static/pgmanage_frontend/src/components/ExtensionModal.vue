@@ -44,14 +44,12 @@
           </div>
 
           <div class="form-group mb-2">
-            <p class="fw-bold mb-1">Preview</p>
-            <div id="generated_sql_div" style="height: 10vh">
-            </div>
+            <PreviewBox :editor-text="generatedSQL" databaseTechnology="postgresql" style="height: 10vh" />
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary me-2" :disabled="!selectedExtension || noUpdates"
+          <button data-testid="save-extension-button" type="button" class="btn btn-primary me-2" :disabled="!selectedExtension || noUpdates"
             @click="saveExtension">
             Save
           </button>
@@ -65,13 +63,17 @@
 <script>
 import { emitter } from '../emitter'
 import axios from 'axios'
-import { showToast } from '../notification_control'
-import { settingsStore, messageModalStore } from '../stores/stores_initializer';
+import { messageModalStore } from '../stores/stores_initializer';
 import { operationModes } from '../constants';
 import { Modal } from 'bootstrap';
+import PreviewBox from './PreviewBox.vue';
+import { handleError } from '../logging/utils';
 
 export default {
   name: 'ExtensionModal',
+  components: {
+    PreviewBox,
+  },
   props: {
     mode: operationModes,
     treeNode: Object,
@@ -137,10 +139,6 @@ export default {
     selectedExtension() {
       if (this.mode === operationModes.CREATE) this.selectedVersion = ''
     },
-    generatedSQL() {
-      this.editor.setValue(this.generatedSQL)
-      this.editor.clearSelection();
-    }
   },
   created() {
     // allows for using operationModes in the template
@@ -152,7 +150,6 @@ export default {
     if (this.mode === operationModes.UPDATE) {
       this.getExtensionDetails()
     }
-    this.setupEditor()
     if (this.mode !== operationModes.DELETE) {
       this.modalInstance = new Modal('#postgresqlExtensionModal')
       this.modalInstance.show()
@@ -170,7 +167,7 @@ export default {
           this.availableExtensions.push(...resp.data.available_extensions)
         })
         .catch((error) => {
-          console.log(error)
+          handleError(error);
         })
     },
     getSchemas() {
@@ -182,7 +179,7 @@ export default {
           this.schemaList = resp.data
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     saveExtension() {
@@ -196,19 +193,8 @@ export default {
           this.modalInstance.hide()
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
-    },
-    setupEditor() {
-      this.editor = ace.edit('generated_sql_div');
-      this.editor.setTheme("ace/theme/" + settingsStore.editorTheme);
-      this.editor.session.setMode("ace/mode/sql");
-      this.editor.setFontSize(Number(settingsStore.fontSize));
-      this.editor.setReadOnly(true);
-      this.editor.$blockScrolling = Infinity;
-
-      this.editor.setValue(this.generatedSQL)
-      this.editor.clearSelection();
     },
     getExtensionDetails() {
       axios.post('/get_extension_details/', {
@@ -223,7 +209,7 @@ export default {
           this.selectedVersion = resp.data.version
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     dropExtension() {
@@ -239,7 +225,7 @@ export default {
           emitter.emit(`refreshTreeRecursive_${this.workspaceId}`, "extension_list");
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     }
 

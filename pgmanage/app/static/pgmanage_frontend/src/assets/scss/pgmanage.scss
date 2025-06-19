@@ -1,6 +1,14 @@
 $theme-map: null; //important! do not delete this
 
-@import './common/themes.scss';
+@import './omnidb.scss';
+
+// external libs
+@import 'vue-toast-notification/dist/theme-sugar.css';
+@import '@xterm/xterm/css/xterm.css';
+@import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css';
+@import "tabulator-tables/dist/css/tabulator.min.css";
+
+@import './common/themes';
 @import './common/variables';
 @import './common/typography';
 @import './common/ui-elements';
@@ -34,6 +42,7 @@ $theme-map: null; //important! do not delete this
 @import '@fortawesome/fontawesome-free/scss/fontawesome.scss';
 @import '@fortawesome/fontawesome-free/scss/solid.scss';
 @import '@fortawesome/fontawesome-free/scss/brands.scss';
+@import '@fortawesome/fontawesome-free/scss/regular.scss';
 
 body {
     font-family: $fontFamily;
@@ -48,4 +57,19 @@ body {
 
 .xterm-screen {
     padding: 0.5rem 1rem;
+}
+
+.refresh-menu {
+    &__link {
+        color: $primaryMutedColor;
+        text-decoration: none;
+        transition: all .15s ease-in-out;
+
+        &:hover, &:active {
+            color: $primaryBlue;
+            i {
+                color: $primaryBlue;
+            }
+        }
+    }
 }

@@ -213,7 +213,7 @@ export default {
           this.masterPassConfirmed = true;
         })
         .catch((error) => {
-          this.passwordMessage = error.response.data.data;
+          this.passwordMessage = error?.response?.data?.data ?? error;
         });
     },
     resetPassword() {

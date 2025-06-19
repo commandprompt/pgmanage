@@ -77,27 +77,20 @@
                 <label for="refreshInterval" class="fw-bold mb-2"
                   >Refresh Interval</label
                 >
-                <input
-                  type="text"
-                  :class="[
-                    'form-control',
-                    { 'is-invalid': v$.widgetInterval.$invalid },
-                  ]"
-                  id="refreshInterval"
-                  data-testid="widget-edit-refresh-interval"
-                  placeholder="Widget Interval"
-                  v-model.number="v$.widgetInterval.$model"
+                <select
+                  id="widgetInterval"
+                  class="form-select"
+                  v-model="widgetInterval"
                   :disabled="showTestWidget"
-                />
-                <div class="invalid-feedback">
-                  <a
-                    v-for="error of v$.widgetInterval.$errors"
-                    :key="error.$uid"
+                >
+                  <option
+                    v-for="(option, index) in refreshIntervalOptions"
+                    :key="index"
+                    :value="option"
                   >
-                    {{ error.$message }}
-                    <br />
-                  </a>
-                </div>
+                    {{ humanizeDuration(option) }}
+                  </option>
+                </select>
               </div>
 
               <div class="form-group col-3">
@@ -107,7 +100,9 @@
                 <select
                   id="widgetTemplates"
                   data-testid="widget-edit-template-select"
-                  class="form-select"
+                  :class="[
+                    'form-select',
+                  ]"
                   v-model="selectedWidget"
                   @change="changeTemplate"
                   :disabled="showTestWidget"
@@ -191,6 +186,8 @@ import MonitoringWidget from "./MonitoringWidget.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { required, minValue, minLength } from "@vuelidate/validators";
 import { Modal } from "bootstrap";
+import { handleError } from "../logging/utils";
+import HumanizeDurationMixin from '../mixins/humanize_duration_mixin';
 
 export default {
   name: "MonitoringWidgetEditModal",
@@ -202,6 +199,7 @@ export default {
       v$: useVuelidate({ $lazy: true }),
     };
   },
+  mixins: [HumanizeDurationMixin],
   props: {
     workspaceId: String,
     databaseIndex: Number,
@@ -209,7 +207,7 @@ export default {
     widgetId: Number,
     tabId: String,
   },
-  emits: ["modalHide"],
+  emits: ["modalHide", "widgetCreated"],
   data() {
     return {
       widgetTypes: ["timeseries", "chart", "grid"],
@@ -220,11 +218,12 @@ export default {
       widgetTemplate: null,
       selectedType: "timeseries",
       widgetName: "",
-      widgetInterval: "",
+      widgetInterval: 5,
       showTestWidget: false,
       testWidgetData: {},
       heightSubtract: 150,
       modalInstance: null,
+      refreshIntervalOptions: [5, 10, 30, 60, 120, 300]
     };
   },
   computed: {
@@ -276,7 +275,7 @@ export default {
           this.widgets = resp.data.data;
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     getMonitoringWidgetDetails() {
@@ -290,7 +289,7 @@ export default {
           this.setScriptEditorValue(resp.data.script_chart);
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     setupEditor(editorDiv) {
@@ -331,7 +330,7 @@ export default {
           this.setScriptEditorValue(resp.data.script_chart);
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     resetToDefault() {
@@ -370,10 +369,11 @@ export default {
           this.resetToDefault();
           this.modalInstance.hide();
           this.$emit("modalHide");
+          this.$emit("widgetCreated", resp.data)
           showToast("success", "Monitoring widget created.");
         })
         .catch((error) => {
-          showToast("error", error.response?.data?.data);
+          handleError(error);
         });
     },
     updateMonitoringWidget() {
@@ -392,7 +392,7 @@ export default {
           showToast("success", "Monitoring widget updated.");
         })
         .catch((error) => {
-          showToast("error", error.response?.data?.data);
+          handleError(error);
         });
     },
     closeModal() {

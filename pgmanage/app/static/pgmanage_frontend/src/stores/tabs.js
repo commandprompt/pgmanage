@@ -10,6 +10,12 @@ import { queryRequestCodes, operationModes } from "../constants";
 import { showMenuNewTabOuter, renameTab } from "../workspace";
 import { h } from "vue";
 
+import postgresqlIcon from '@src/assets/images/db_icons/postgresql.svg'
+import mysqlIcon from '@src/assets/images/db_icons/mysql.svg'
+import mariadbIcon from '@src/assets/images/db_icons/mariadb.svg'
+import oracleIcon from '@src/assets/images/db_icons/oracle.svg'
+import sqliteIcon from '@src/assets/images/db_icons/sqlite.svg'
+
 const useTabsStore = defineStore("tabs", {
   state: () => ({
     id: new ShortUniqueId({
@@ -211,14 +217,14 @@ const useTabsStore = defineStore("tabs", {
             items: [
               {
                 label: "Confirm",
-                icon: "fas cm-all fa-check",
+                icon: "fas fa-check",
                 onClick: function () {
                   confirmFunction();
                 },
               },
               {
                 label: "Cancel",
-                icon: "fas cm-all fa-times",
+                icon: "fas fa-times",
               },
             ],
           });
@@ -313,22 +319,16 @@ const useTabsStore = defineStore("tabs", {
             }
           }
 
-          const imgPath =
-            import.meta.env.MODE === "development"
-              ? `${import.meta.env.BASE_URL}src/assets/images/`
-              : `${import.meta.env.BASE_URL}assets/`;
-
-          let imgName;
-          if (
-            import.meta.env.MODE === "development" ||
-            connection.technology === "sqlite"
-          ) {
-            imgName = connection.technology;
-          } else {
-            imgName = `${connection.technology}2`;
+          const dbIcons = {
+            'postgresql': postgresqlIcon,
+            'mysql': mysqlIcon,
+            'mariadb': mariadbIcon,
+            'oracle': oracleIcon,
+            'sqlite': sqliteIcon,
           }
 
-          let icon = `<img src="${app_base_path}${imgPath}${imgName}.svg"/>`;
+          let imgPath = dbIcons[connection.technology];
+          let icon = `<img src="${imgPath}"/>`;
 
           const connTab = this.addTab({
             name: connName,
@@ -514,6 +514,16 @@ const useTabsStore = defineStore("tabs", {
       this.selectTab(tab);
     },
     createMonitoringDashboardTab() {
+      let secondaryTabs = this.selectedPrimaryTab.metaData.secondaryTabs;
+      let existingTab = secondaryTabs.filter((t) => {
+        return t.component === "MonitoringDashboard"
+      })[0]
+
+      if(existingTab) {
+        this.selectTab(existingTab);
+        return
+      }
+
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
         name: "Monitoring",
@@ -528,7 +538,6 @@ const useTabsStore = defineStore("tabs", {
         },
         dblClickFunction: renameTab,
       });
-      const primaryTab = this.selectedPrimaryTab;
 
       tab.metaData.databaseIndex =
         this.selectedPrimaryTab?.metaData?.selectedDatabaseIndex;
@@ -538,7 +547,7 @@ const useTabsStore = defineStore("tabs", {
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
         name: "Configuration",
-        icon: '<i class="fas cm-all fa-cog icon-tab-title"></i>',
+        icon: '<i class="fas fa-cog icon-tab-title"></i>',
         component: "ConfigTab",
         mode: "configuration",
         closeFunction: (e, tab) => {
@@ -563,7 +572,7 @@ const useTabsStore = defineStore("tabs", {
       let mode = utility.toLowerCase();
       let icon = `<i class="fas ${
         mode === "backup" ? "fa-download" : "fa-upload"
-      } cm-all icon-tab-title"></i>`;
+      } icon-tab-title"></i>`;
 
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
@@ -618,6 +627,9 @@ const useTabsStore = defineStore("tabs", {
         name: tabName,
         component: "DataEditorTab",
         mode: "edit",
+        selectFunction: function () {
+          emitter.emit(`${this.id}_check_query_edit_status`);
+        },
         closeFunction: (e, tab) => {
           this.closeTabWithConfirmation(
             tab,
@@ -630,6 +642,7 @@ const useTabsStore = defineStore("tabs", {
       const DIALECT_MAP = {
         oracle: "oracledb",
         mariadb: "mysql",
+        postgresql: "postgres",
       };
       let dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
       let mappedDialect = DIALECT_MAP[dialect] || dialect;
@@ -652,7 +665,7 @@ const useTabsStore = defineStore("tabs", {
         mode === operationModes.UPDATE ? `Alter: ${tableName}` : "New Table";
       let icon = `<i class="fas ${
         mode === operationModes.CREATE ? "fa-plus" : "fa-edit"
-      } cm-all icon-tab-title"></i>`;
+      } icon-tab-title"></i>`;
 
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
@@ -692,8 +705,8 @@ const useTabsStore = defineStore("tabs", {
         component: "MonitoringTab",
         icon: `<i class="fas fa-tasks icon-tab-title"></i>`,
         mode: "monitor_grid",
-        selectFunction: () => {
-          document.title = "PgManage";
+        selectFunction: function() {
+          emitter.emit(`${this.id}_redraw_monitoring_tab`);
         },
         closeFunction: (e, tab) => {
           this.closeTab(tab);
@@ -718,7 +731,7 @@ const useTabsStore = defineStore("tabs", {
           emitter.emit(`${tab.id}_check_console_status`);
           break;
         case "edit":
-          console.log("Not implemented"); // TODO: implement check tab status functionality for edit tab
+          emitter.emit(`${tab.id}_check_query_edit_status`);
           break;
         default:
           break;
@@ -728,7 +741,7 @@ const useTabsStore = defineStore("tabs", {
       let optionList = [
         {
           label: "Adjust Terminal Dimensions",
-          icon: "fas cm-all fa-window-maximize",
+          icon: "fas fa-window-maximize",
           onClick: function () {
             emitter.emit(`${tab.id}_adjust_terminal_dimensions`);
           },
@@ -738,7 +751,7 @@ const useTabsStore = defineStore("tabs", {
             class: "mb-0",
             innerHTML: "Close Terminal",
           }),
-          icon: "fas cm-all fa-plug-circle-xmark",
+          icon: "fas fa-plug-circle-xmark",
           onClick: () => {
             ContextMenu.closeContextMenu();
             this.closeTab(tab);

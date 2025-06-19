@@ -65,7 +65,7 @@ class SQLite:
         self.v_schema = ''
         self.v_connection = Spartacus.Database.SQLite(p_service, p_foreignkeys)
 
-        self.v_has_schema = False
+        self.has_schema = False
         self.v_has_functions = False
         self.v_has_procedures = False
         self.v_has_packages = False
@@ -98,21 +98,6 @@ class SQLite:
         self.v_create_index_command = "create index #p_index_name# on #p_table_name# (#p_columns#)";
         self.v_create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
         self.v_drop_index_command = "drop index #p_index_name#"
-        self.v_update_rules = [
-            "NO ACTION",
-			"RESTRICT",
-			"SET NULL",
-			"SET DEFAULT",
-			"CASCADE"
-        ]
-        self.v_delete_rules = [
-            "NO ACTION",
-			"RESTRICT",
-			"SET NULL",
-			"SET DEFAULT",
-			"CASCADE"
-        ]
-        self.v_reserved_words = []
         self.v_console_help = "Console tab."
         self.v_use_server_cursor = False
         self.v_version = ''
@@ -181,6 +166,7 @@ class SQLite:
         v_return = ''
         try:
             if os.path.isfile(self.v_service):
+                self.v_connection.Query("PRAGMA schema_version;")
                 v_return = 'Connection successful.'
             else:
                 v_return = 'File does not exist, if you try to manage this connection a database file will be created.'
@@ -195,6 +181,7 @@ class SQLite:
                 quote(name) as name_raw
 		    from sqlite_master
 			where type = 'table'
+            order by table_name ASC
         ''', True)
 
     @lock_required
@@ -647,6 +634,7 @@ class SQLite:
                    quote(name) as name_raw
 		    from sqlite_master
 			where type = 'view'
+            order by table_name ASC
         ''', True)
 
     @lock_required

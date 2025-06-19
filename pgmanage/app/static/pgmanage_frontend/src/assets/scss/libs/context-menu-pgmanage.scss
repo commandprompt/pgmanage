@@ -40,6 +40,11 @@
         i {
             width: 20px;
             height: 16px;
+            &.icon {
+                @include themify() {
+                    color: themed($primaryBlueWhiteSwitching);
+                }                    
+            }
 
             &.node {
                 @include themify() {

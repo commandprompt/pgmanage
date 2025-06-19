@@ -148,7 +148,7 @@ function showToast(type, message) {
   $toast.open({
     message: html_msg,
     type: type,
-    duration: type === 'error' ? 0 : 3000
+    duration: type === 'error' ? 30000 : 3000
   })
 }
 

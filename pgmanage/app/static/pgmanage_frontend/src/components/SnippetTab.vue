@@ -55,7 +55,7 @@ import {
   messageModalStore,
   fileManagerStore
 } from "../stores/stores_initializer";
-import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_plugins";
+import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_extras/plugins";
 import FileInputChangeMixin from "../mixins/file_input_mixin";
 import { maxLinesForIndentSQL } from "../constants";
 import { showToast } from "../notification_control";

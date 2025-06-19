@@ -8,8 +8,8 @@ import { snippetsStore, settingsStore, dbMetadataStore  } from "../stores/stores
 import { buildSnippetContextMenuObjects } from "../tree_context_functions/tree_snippets";
 import { emitter } from "../emitter";
 import { format } from "sql-formatter";
-import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_plugins";
-import { maxLinesForIndentSQL } from "../constants";
+import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_extras/plugins";
+import { editorModeMap, maxLinesForIndentSQL } from "../constants";
 import { showToast } from "../notification_control";
 import { SQLAutocomplete, SQLDialect } from 'sql-autocomplete';
 
@@ -72,17 +72,10 @@ export default {
       this.editor.setTheme(`ace/theme/${state.editorTheme}`);
       this.editor.setFontSize(state.fontSize);
     });
-
     if(this.databaseIndex && this.databaseName) {
-      dbMetadataStore.$onAction((action) => {
-        if (action.name === "fetchDbMeta" && action.args[0] == this.databaseIndex) {
-          action.after((result) => {
-            this.setupCompleter();
-          });
-        }
-      });
-
-      dbMetadataStore.fetchDbMeta(this.databaseIndex, this.workspaceId, this.tabId, this.databaseName)
+      dbMetadataStore.fetchDbMeta(this.databaseIndex, this.tabId, this.databaseName).then(() => {
+        this.setupCompleter(); 
+      })
     }
     if(this.autocomplete) {
       this.editor.setOptions({
@@ -100,14 +93,7 @@ export default {
         dbMetadataStore.fetchDbMeta(this.databaseIndex, this.tabId, this.databaseName)
     },
     setupEditor() {
-      const EDITOR_MODEMAP = {
-        'postgresql': 'pgsql',
-        'mysql': 'mysql',
-        'mariadb': 'mysql',
-        'oracle': 'plsql'
-      }
-
-      let editor_mode = EDITOR_MODEMAP[this.dialect] || 'sql'
+      let editor_mode = editorModeMap[this.dialect] || 'sql'
 
       this.editor = ace.edit(this.$refs.editor);
       this.editor.$blockScrolling = Infinity;
@@ -160,6 +146,7 @@ export default {
             triggerCharacters: [".",],
           }
         ],
+        enableHoverLinking: true
       });
 
       this.editor.focus();
@@ -194,37 +181,55 @@ export default {
 
       this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, filteredMeta);
     },
-    getQueryEditorValue(raw_query) {
-      if (raw_query) return this.editor.getValue();
-      let selectedText = this.editor.getSelectedText();
-      let lineAtCursor = this.editor.session.getLine(
-        this.editor.getCursorPosition().row
-      );
-      return !!selectedText ? selectedText : lineAtCursor;
+    getEditorContent(fullContent, onlySelected) {
+      if (fullContent) return this.editor.getValue()
+      
+      let selectedText = this.editor.getSelectedText()
+
+      if (onlySelected) return selectedText
+      return selectedText || this.editor.getValue()
     },
     getQueryOffset() {
       return this.editor.selection.getRange().start.row
     },
     contextMenu(event) {
+      const hasSelectedContent = !!this.editor.getSelectedText()
       let option_list = [
         {
-          label: "Run selection/line at cursor",
-          icon: "fas cm-all fa-play fa-light",
+          label: "Run selection",
+          icon: "fas fa-play",
+          disabled: !hasSelectedContent,
           onClick: () => {
             this.$emit("run-selection");
           },
         },
         {
+          label: "Explain selection",
+          icon: "fas fa-chart-simple",
+          disabled: !hasSelectedContent,
+          onClick: () => {
+            this.$emit("run-selection-explain");
+          },
+        },
+        {
+          label: "Explain Analyze selection",
+          icon: "fas fa-magnifying-glass-chart",
+          disabled: !hasSelectedContent,
+          onClick: () => {
+            this.$emit("run-selection-explain-analyze");
+          },
+        },
+        {
           label: "Copy",
-          icon: "fas cm-all fa-terminal",
-          disabled: !this.editor.getSelectedText(),
+          icon: "fas fa-terminal",
+          disabled: !hasSelectedContent,
           onClick: () => {
             document.execCommand("copy");
           },
         },
         {
           label: "Save as snippet",
-          icon: "fas cm-all fa-save",
+          icon: "fas fa-save",
           children: buildSnippetContextMenuObjects(
             "save",
             snippetsStore,
@@ -236,7 +241,7 @@ export default {
       if (snippetsStore.files.length != 0 || snippetsStore.folders.length != 0)
         option_list.push({
           label: "Use snippet",
-          icon: "fas cm-all fa-file-code",
+          icon: "fas fa-file-code",
           children: buildSnippetContextMenuObjects(
             "load",
             snippetsStore,

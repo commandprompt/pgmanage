@@ -91,11 +91,6 @@ class UserDetailsModelTest(TestCase):
         csv_delimiter_default = user_details._meta.get_field("csv_delimiter").default
         self.assertEqual(csv_delimiter_default, ",")
 
-    def test_welcome_closed_default(self):
-        user_details = UserDetails.objects.get(id=1)
-        welcome_closed_default = user_details._meta.get_field("welcome_closed").default
-        self.assertFalse(welcome_closed_default)
-
     def test_masterpass_check_max_length(self):
         user_details = UserDetails.objects.get(id=1)
         max_length = user_details._meta.get_field("masterpass_check").max_length

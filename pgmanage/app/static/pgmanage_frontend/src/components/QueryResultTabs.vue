@@ -1,7 +1,7 @@
 <template>
   <div ref="resultDiv" :id="`query_result_tabs_container_${tabId}`" class="omnidb__query-result-tabs pe-2">
     <button :id="`bt_fullscreen_${tabId}`" style="position: absolute; top: 0.25rem; right: 0.5rem" type="button"
-      class="btn btn-sm btn-icon btn-icon-secondary" @click="toggleFullScreen()">
+      class="btn btn-sm btn-icon btn-icon-primary" @click="toggleFullScreen()">
       <i class="fas fa-expand"></i>
     </button>
 
@@ -14,7 +14,6 @@
             :aria-controls="`nav_data_${tabId}`" aria-selected="true">
             <span class="omnidb__tab-menu__link-name">Data</span>
           </a>
-          <template v-if="postgresqlDialect">
             <a ref="messagesTab" class="omnidb__tab-menu__link nav-item nav-link" :id="`nav_messages_tab_${tabId}`"
             data-bs-toggle="tab" :data-bs-target="`#nav_messages_${tabId}`" type="button" role="tab"
               :aria-controls="`nav_messages_${tabId}`" aria-selected="true">
@@ -23,12 +22,11 @@
                 <span v-if="noticesCount" class="badge badge-pill badge-primary">{{ noticesCount }}</span>
               </span>
             </a>
-            <a ref="explainTab" class="nav-item nav-link omnidb__tab-menu__link" :id="`nav_explain_tab_${tabId}`"
+            <a v-if="postgresqlDialect" ref="explainTab" class="nav-item nav-link omnidb__tab-menu__link" :id="`nav_explain_tab_${tabId}`"
             data-bs-toggle="tab" :data-bs-target="`#nav_explain_${tabId}`" type="button" role="tab"
               :aria-controls="`nav_explain_${tabId}`" aria-selected="false">
               <span class="omnidb__tab-menu__link-name"> Explain </span>
             </a>
-          </template>
         </div>
       </div>
 
@@ -38,30 +36,26 @@
           <div class="result-div">
             <template v-if="exportFileName && exportDownloadName">
               The file is ready.
-              <a class="link_text" :href="exportFileName" :download="exportDownloadName">Save</a>
+              <a class="text-info" :href="exportFileName" :download="exportDownloadName">Save</a>
             </template>
             <template v-else-if="errorMessage" class="error_text" style="white-space: pre">
               {{ errorMessage }}
             </template>
-            <template v-else-if="queryInfoText">
-              <div class="query_info">
-                {{ queryInfoText }}
-              </div>
-            </template>
             <div v-show="showTable" ref="tabulator" class="tabulator-custom"></div>
           </div>
         </div>
-        <template v-if="postgresqlDialect">
           <div class="tab-pane" :id="`nav_messages_${tabId}`" role="tabpanel"
             :aria-labelledby="`nav_messages_tab_${tabId}`">
             <div class="messages__wrap p-2">
               <div class="result-div">
+                <div class="query_info">
+                {{ queryInfoText }}
+              </div>
                 <p v-for="notice in notices">{{ notice }}</p>
               </div>
             </div>
           </div>
-          <ExplainTabContent :tab-id="tabId" :query="query" :plan="plan" />
-        </template>
+          <ExplainTabContent v-if="postgresqlDialect" :tab-id="tabId" :query="query" :plan="plan" />
       </div>
     </div>
   </div>
@@ -73,12 +67,13 @@ import { queryModes, tabStatusMap } from "../constants";
 import { emitter } from "../emitter";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { settingsStore, tabsStore, cellDataModalStore } from "../stores/stores_initializer";
-import { showToast } from "../notification_control";
 import escape from 'lodash/escape';
 import isNil from 'lodash/isNil';
 import isEmpty from 'lodash/isEmpty';
 import mean from 'lodash/mean';
+import last from 'lodash/last';
 import { Tab } from "bootstrap";
+import { handleError } from "../logging/utils";
 
 export default {
   components: {
@@ -114,7 +109,10 @@ export default {
         data: [],
         placeholderHeaderFilter: "No Matching Data",
         autoResize: false,
-        selectableRows: true,
+        selectableRangeAutoFocus:false,
+        selectableRange:1,
+        selectableRangeColumns:true,
+        selectableRangeRows:true,
         height: "100%",
         layout: "fitDataStretch",
         columnDefaults: {
@@ -123,7 +121,7 @@ export default {
           maxInitialWidth: 200,
         },
         clipboard: "copy",
-        clipboardCopyRowRange: "selected",
+        clipboardCopyRowRange: "range",
         clipboardCopyConfig: {
           columnHeaders: false, //do not include column headers in clipboard output
         },
@@ -133,6 +131,9 @@ export default {
       table: null,
       heightSubtract: 200,
       colWidthArray: [],
+      columns: [],
+      colTypes: [],
+      defaultColWidthArray: [],
     };
   },
   computed: {
@@ -180,6 +181,7 @@ export default {
     let table = new Tabulator(this.$refs.tabulator, this.tableSettings);
     table.on("tableBuilt", () => {
       this.table = table;
+      document.querySelector(`#${this.tabId}_content .tabulator-range-overlay`).classList.add('invisible'); // hides cell range overlay on table initialization
     });
     settingsStore.$onAction((action) => {
       if (action.name === "setFontSize") {
@@ -206,8 +208,110 @@ export default {
     this.handleResize();
   },
   methods: {
+    copyTableData(format) {
+      const data = last(this.table.getRangesData());
+
+      let headers = [];
+      let headerIndexMap = {}; // Map header titles to their original indices
+
+      Object.keys(last(data)).forEach((key) => {
+          const originalIndex = parseInt(key, 10);
+          const header = this.columns[originalIndex];
+          headers.push(header);
+          headerIndexMap[header] = originalIndex;
+      });
+
+      if (format === "json") {
+        const jsonOutput = this.generateJson(data, headers, headerIndexMap);
+        this.copyToClipboard(jsonOutput);
+      } else if (format === "csv") {
+        const csvOutput = this.generateCsv(data, headers, headerIndexMap);
+        this.copyToClipboard(csvOutput);
+      } else if (format === "markdown") {
+        const markdownOutput = this.generateMarkdown(data, headers, headerIndexMap);
+        this.copyToClipboard(markdownOutput);
+      }
+    },
+    copyToClipboard(text) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+        })
+        .catch((error) => {
+          handleError(error);
+        });
+    },
+    generateJson(data, headers, headerIndexMap) {
+      const mappedData = data.map((row) => {
+        const mappedRow = {};
+        headers.forEach((header) => {
+          const originalIndex = headerIndexMap[header];
+          mappedRow[header] = row[originalIndex];
+        });
+        return mappedRow;
+      });
+
+      return JSON.stringify(mappedData, null, 2);
+    },
+    generateCsv(data, headers, headerIndexMap) {
+      const csvRows = [];
+
+      // Add header row
+      csvRows.push(headers.join(settingsStore.csvDelimiter));
+
+      data.forEach((row) => {
+        const rowValues = headers.map((header) => {
+          const originalIndex = headerIndexMap[header];
+          return row[originalIndex] || ""; 
+        })
+        csvRows.push(rowValues.join(settingsStore.csvDelimiter));
+      });
+
+      return csvRows.join("\n");
+    },
+    generateMarkdown(data, headers, headerIndexMap) {
+      const columnWidths = headers.map((header) => {
+        const originalIndex = headerIndexMap[header];
+        const maxDataLength = data.reduce(
+          (max, row) => Math.max(max, (row[originalIndex] || "").toString().length),
+          0
+        );
+        return Math.max(header.length, maxDataLength);
+      });
+
+      // Helper to pad strings to a given length
+      const pad = (str, length) => str.toString().padEnd(length, " ");
+
+      const mdRows = [];
+
+      // Add padded header row
+      mdRows.push(
+        `| ${headers
+          .map((header, index) => pad(header, columnWidths[index]))
+          .join(" | ")} |`
+      );
+
+      // Add separator row
+      mdRows.push(
+        `| ${columnWidths.map((width) => "-".repeat(width)).join(" | ")} |`
+      );
+
+      data.forEach((row) => {
+      const rowValues = headers.map((header, index) => {
+        const originalIndex = headerIndexMap[header];
+        return pad(row[originalIndex] || "", columnWidths[index]);
+      });
+      mdRows.push(`| ${rowValues.join(" | ")} |`);
+    });
+
+      return mdRows.join("\n");
+    },
     cellFormatter(cell, params, onRendered) {
       let cellVal = cell.getValue()
+      if (!!cellVal && cellVal?.length > 1000) {
+          let filtered = escape(cellVal.slice(0, 1000).toString().replace(/\n/g, ' ↲ '))
+          return `${filtered}...`;
+        }
       if (isNil(cellVal)) {
         return '<span class="text-muted">[null]</span>'
       }
@@ -298,29 +402,53 @@ export default {
     showDataOperationResult(data) {
       if (data.data.length === 0) {
         if (data.col_names.length === 0) {
-          this.queryInfoText = data.status ? data.status : "Done";
+          Tab.getOrCreateInstance(this.$refs.messagesTab).show()
+          return this.queryInfoText = data.status ? data.status : "Done";
         }
       }
       this.updateTableData(data);
     },
     prepareColumns(colNames, colTypes) {
-      let cellContextMenu = [
-        {
-          label:
-            '<div style="position: absolute;"><i class="fas fa-copy cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy</div>',
-          action: function (e, cell) {
-            cell.getTable().copyToClipboard("selected");
+      this.colTypes = colTypes;
+      this.columns = colNames.map((colName, idx) => {
+        return colName === '?column?' ? `column-${idx}` : colName
+      })
+      let cellContextMenu = (e, cellComponent) => {
+        const selectedRange = cellComponent.getTable().getRanges()[0]
+        const isOneCellSelected =
+          selectedRange.getBottomEdge() === selectedRange.getTopEdge() &&
+          selectedRange.getRightEdge() === selectedRange.getLeftEdge();
+
+        return [
+          {
+            label: '<i class="fas fa-copy"></i><span>Copy</span>',
+            action: function (e, cell) {
+              cell.getTable().copyToClipboard();
+            },
           },
-        },
-        {
-          label:
-            '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
-          action: (e, cell) => {
-            cellDataModalStore.showModal(cell.getValue())
+          {
+            label: '<i class="fas fa-copy"></i><span>Copy as JSON</span>',
+            action: () => this.copyTableData("json"),
           },
-        },
-      ];
-      let columns = colNames.map((col, idx) => {
+          {
+            label: '<i class="fas fa-copy"></i><span>Copy as CSV</span>',
+            action: () => this.copyTableData("csv"),
+          },
+          {
+            label: '<i class="fas fa-copy"></i><span>Copy as Mardown</span>',
+            action: () => this.copyTableData("markdown"),
+          },
+          {
+            label: '<i class="fas fa-edit"></i><span>View Content</span>',
+            action: (e, cell) => {
+              const colType = this.colTypes[cell.getColumn().getField()]
+              cellDataModalStore.showModal(cell.getValue(), colType, true)
+            },
+            disabled: !isOneCellSelected
+          },
+        ];
+      } 
+      let columns = this.columns.map((col, idx) => {
         let formatTitle = function(col, idx) {
           if(colTypes?.length === 0 )
             return col
@@ -372,10 +500,8 @@ export default {
         },{
           label:"Reset Layout",
           action:() => {
-            this.customLayout = undefined
-            this.table.blockRedraw();
-            this.table.setColumns(columns);
-            this.table.restoreRedraw();
+            this.customLayout = undefined;
+            this.applyLayout();
           }
         },
       ]
@@ -407,6 +533,9 @@ export default {
       })
       table.on("tableBuilt", () => {
         this.table = table;
+        if (this.defaultColWidthArray.length !== this.table.getColumns().length) {
+          this.defaultColWidthArray = this.table.getColumns().map(col => col.getWidth());
+        }
         if (this.customLayout !== undefined && this.colWidthArray.length !== 0) {
           
           this.table.getColumns().forEach((col, idx) => {
@@ -415,19 +544,21 @@ export default {
             }
           });
         }
+        this.addHeaderMenuOverlayElement();
       });
 
       table.on(
         "cellDblClick",
-        function (e, cell) {
-          if (cell.getValue()) cellDataModalStore.showModal(cell.getValue())
+        (e, cell) => {
+          if (cell.getValue()) {
+            const colType = this.colTypes[cell.getColumn().getField()];
+            cellDataModalStore.showModal(cell.getValue(), colType, true);
+          }
         }
       );
     },
      applyLayout() {
       this.colWidthArray = []
-      if(this.customLayout === undefined)
-        return
 
       this.table.blockRedraw();
 
@@ -447,6 +578,10 @@ export default {
           if(this.customLayout == 'fitcontent') {
             col.setWidth(true);
             this.colWidthArray.push(true)
+          }
+
+          if(this.customLayout === undefined) {
+            col.setWidth(this.defaultColWidthArray[idx]);
           }
         }
       });
@@ -472,12 +607,16 @@ export default {
           this.applyLayout();
           this.table.rowManager.element.scrollTop = scrollTop;
           this.table.rowManager.scrollLeft = scrollLeft;
+          this.addHeaderMenuOverlayElement();
         });
 
         table.on(
           "cellDblClick",
-          function (e, cell) {
-            if (cell.getValue()) cellDataModalStore.showModal(cell.getValue())
+          (e, cell) => {
+            if (cell.getValue()) {
+              const colType = this.colTypes[cell.getColumn().getField()];
+              cellDataModalStore.showModal(cell.getValue(), colType, true);
+            }
           }
         );
       } else {
@@ -502,6 +641,35 @@ export default {
 
       this.heightSubtract = this.$refs.tabContent.getBoundingClientRect().top;
     },
+    addHeaderMenuOverlayElement() {
+      const targetElement = document.querySelector(`#${this.tabId}_content .tabulator-frozen-left .tabulator-header-popup-button`)
+
+      const overlay = document.createElement("div");
+      overlay.className =  "position-absolute w-100 h-100";
+      overlay.style.zIndex = "1000"; 
+      overlay.style.cursor = "pointer"
+      overlay.style.backgroundColor = "rgba(0, 0, 0, 0)";
+
+      targetElement.appendChild(overlay)
+
+      targetElement.addEventListener("mousedown", (e) => {
+        const { clientX, clientY } = e;
+
+        const clickEvent = new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          clientX: clientX,
+          clientY: clientY,
+        });
+
+        const targetElement = document.querySelector(`#${this.tabId}_content .tabulator-frozen-left .actions-menu`)
+        
+        e.stopPropagation();
+        e.preventDefault();
+
+        targetElement.dispatchEvent(clickEvent);
+      });
+    }
   },
 };
 </script>

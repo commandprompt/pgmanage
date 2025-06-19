@@ -7,7 +7,7 @@ set -e -e
 
 APP_VERSION="$1"
 REPO="https://github.com/commandprompt/pgmanage"
-BRANCH="master"
+BRANCH="${2:-master}"
 DEPLOY_DIR=$(pwd)
 TEMP_DIR=$DEPLOY_DIR/tmp
 
@@ -111,7 +111,15 @@ sed -i '' "s/version_placeholder/v$APP_VERSION/" $APP_LONG_VERSION.app/Contents/
 cp $DEPLOY_DIR/mac-icon.icns $APP_LONG_VERSION.app/Contents/Resources/app.icns
 cp $DEPLOY_DIR/mac-icon.icns $APP_LONG_VERSION.app/Contents/Resources/document.icns
 
+# removes unnecessary keys from Info.plist
+plutil -remove ASWebAuthenticationSessionWebBrowserSupportCapabilities $APP_LONG_VERSION.app/Contents/Info.plist
+plutil -remove CFBundleDocumentTypes $APP_LONG_VERSION.app/Contents/Info.plist
+plutil -remove CFBundleURLTypes $APP_LONG_VERSION.app/Contents/Info.plist
+plutil -remove UTExportedTypeDeclarations $APP_LONG_VERSION.app/Contents/Info.plist
+plutil -remove UTImportedTypeDeclarations $APP_LONG_VERSION.app/Contents/Info.plist
+
 # Set up correct application name
+plutil -replace CFBundleName -string "$APP_NAME" $APP_LONG_VERSION.app/Contents/Info.plist
 
 plutil -replace CFBundleDisplayName -string "$APP_NAME" $APP_LONG_VERSION.app/Contents/Info.plist
 

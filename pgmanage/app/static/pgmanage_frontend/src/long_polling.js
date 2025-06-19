@@ -6,6 +6,7 @@ import { debugResponse } from "./debug";
 import { getCookie } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
 import { emitter } from './emitter';
+import { handleError } from './logging/utils';
 
 const uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4})
 
@@ -15,7 +16,7 @@ let request_map = new Map()
 // send heartbeat to prevent db session from being terminated by back-end
 $(function () {
   setInterval(function() {
-    axios.get(`${app_base_path}/client_keep_alive/`)
+    axios.get('/client_keep_alive/')
   }, 60000);
 });
 
@@ -29,7 +30,7 @@ $(window).on('beforeunload', () => {
 function call_polling(startup) {
     polling_busy = true
     axios.post(
-      `${app_base_path}/long_polling/`,
+      '/long_polling/',
       {startup: startup}
     ).then((resp) => {
       polling_busy = false
@@ -48,7 +49,7 @@ function call_polling(startup) {
     })
     .catch((error) => {
       polling_busy = false
-      console.log(error?.response?.data?.data)
+      handleError(error);
     })
 }
 
@@ -163,6 +164,12 @@ function polling_response(message) {
       }
       break;
     }
+    case parseInt(queryResponseCodes.SchemaEditResult): {
+      if (context) {
+        context.callback(message);
+        removeContext(context_code);
+      }
+    }
     default: {
       break;
     }
@@ -235,7 +242,7 @@ function createRequest(request_type, message_data, context) {
   }
 
   axios.post(
-    `${app_base_path}/create_request/`,
+    '/create_request/',
     {
       request_type: request_type,
       context_code: context_code || 0,

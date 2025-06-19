@@ -1,7 +1,7 @@
 monitoring_widgets = [{
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 0,
+'id': -1,
 'title': 'Transaction Rate',
 'type': 'timeseries',
 'interval': 10,
@@ -20,7 +20,8 @@ result = {
             },
             "tooltip": {
                 "mode": "index",
-                "intersect": False
+                "intersect": False,
+                "animation": False
             },
         },
         "responsive": True,
@@ -35,6 +36,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -50,7 +62,6 @@ result = {
 }
 """,
 'script_data': """
-
 from datetime import datetime
 from random import randint
 
@@ -63,17 +74,20 @@ query_data = connection.Query(query)
 
 datasets = []
 datasets.append({
-        "label": 'Rate',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "label": 'Xact/sec',
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['tps']]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now().isoformat(),
+            "y":query_data.Rows[0]['tps']
+        }]
+
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_count": query_data.Rows[0]['current_count'],
     'current_time': query_data.Rows[0]['current_time']
@@ -83,7 +97,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 1,
+'id': -2,
 'title': 'Backends',
 'type': 'timeseries',
 'interval': 10,
@@ -120,6 +134,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -137,7 +162,6 @@ result = {
 """,
 'script_data': """
 from datetime import datetime
-from random import randint
 
 backends = connection.Query('''
 SELECT count(*) as count
@@ -147,16 +171,18 @@ FROM pg_stat_activity
 datasets = []
 datasets.append({
         "label": 'Backends',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [backends.Rows[0]["count"]]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y":backends.Rows[0]['count']
+        }]
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -164,7 +190,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 2,
+'id': -3,
 'title': 'Autovacuum Workers Usage',
 'type': 'timeseries',
 'interval': 10,
@@ -198,6 +224,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -215,7 +252,6 @@ result = {
 """,
 'script_data': """
 from datetime import datetime
-from random import randint
 
 query_data = connection.Query('''
 SELECT current_setting('autovacuum_max_workers')::bigint - (SELECT count(*) FROM pg_stat_activity WHERE query LIKE 'autovacuum: %') free,
@@ -228,16 +264,18 @@ perc = round((float(query_data.Rows[0]['used']))/(float(query_data.Rows[0]['tota
 datasets = []
 datasets.append({
         "label": 'Workers busy (%)',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [perc]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y":perc
+        }]
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -245,7 +283,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 3,
+'id': -4,
 'title': 'WAL Production Rate',
 'type': 'timeseries',
 'interval': 10,
@@ -278,7 +316,18 @@ result = {
                 "display": True,
                 "title": {
                     "display": False,
-                    "text": "Time"
+                    "text": "Time",
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -349,16 +398,18 @@ else:
 datasets = []
 datasets.append({
         "label": 'Rate (MB/s)',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [r.Rows[0]['rate']]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y":r.Rows[0]['rate']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_lsn": r.Rows[0]['current_lsn'],
     'current_time': r.Rows[0]['current_time']
@@ -368,8 +419,8 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 4,
-'title': 'Temp Files Creation Rate',
+'id': -5,
+'title': 'Temp File Creation Rate',
 'type': 'timeseries',
 'interval': 10,
 'default': True,
@@ -402,6 +453,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -438,16 +500,18 @@ else:
 datasets = []
 datasets.append({
         "label": 'Rate (MB/s)',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [r.Rows[0]['rate']]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y":r.Rows[0]['rate']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_temp_bytes": r.Rows[0]['current_temp_bytes'],
     'current_time': r.Rows[0]['current_time']
@@ -457,7 +521,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 5,
+'id': -6,
 'title': 'Autovacuum Freeze',
 'type': 'timeseries',
 'interval': 10,
@@ -492,8 +556,19 @@ result = {
             "x": {
                 "display": True,
                 "title": {
-                    "display": True,
+                    "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -526,16 +601,18 @@ r = connection.Query('''
 datasets = []
 datasets.append({
         "label": 'Freeze (%)',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [r.Rows[0]['perc']]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y":r.Rows[0]['perc']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -543,7 +620,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 6,
+'id': -7,
 'title': 'Blocked Locks',
 'type': 'timeseries',
 'interval': 10,
@@ -558,7 +635,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text":"Locks Blocked"
             },
             "tooltip": {
@@ -578,6 +655,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -604,16 +692,18 @@ query_data = connection.Query('''
 datasets = []
 datasets.append({
         "label": 'Locks Blocked',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]["count"]]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y":query_data.Rows[0]['count']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
@@ -621,7 +711,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 7,
+'id': -8,
 'title': 'Database Size',
 'type': 'timeseries',
 'interval': 10,
@@ -636,7 +726,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display":False,
                 "text":"Database Size"
             },
             "tooltip": {
@@ -656,6 +746,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -683,23 +784,25 @@ query_data = connection.Query('''
 datasets = []
 datasets.append({
         "label": 'Database Size',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [round(query_data.Rows[0]["sum"] / Decimal(1048576.0),1)]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y": round(query_data.Rows[0]["sum"] / Decimal(1048576.0),1)
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
 }, {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 8,
+'id': -9,
 'title': 'Database Growth Rate',
 'type': 'timeseries',
 'interval': 10,
@@ -714,7 +817,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display":False,
                 "text": "Database Growth Rate"
             },
             "tooltip": {
@@ -734,6 +837,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -777,16 +891,18 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Rate',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['database_growth']]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['database_growth']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_sum": query_data.Rows[0]['current_sum'],
     'current_time': query_data.Rows[0]['current_time']
@@ -796,7 +912,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 9,
+'id': -10,
 'title': 'Heap Cache Miss Ratio',
 'type': 'timeseries',
 'interval': 10,
@@ -833,6 +949,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -879,16 +1006,18 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Miss Ratio',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]["miss_ratio"]]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['miss_ratio']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_reads": query_data.Rows[0]['current_reads'],
     "current_hits": query_data.Rows[0]['current_hits'],
@@ -899,7 +1028,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 10,
+'id': -11,
 'title': 'Index Cache Miss Ratio',
 'type': 'timeseries',
 'interval': 10,
@@ -936,6 +1065,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -982,16 +1122,18 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Miss Ratio',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]["miss_ratio"]]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['miss_ratio']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_reads": query_data.Rows[0]['current_reads'],
     "current_hits": query_data.Rows[0]['current_hits'],
@@ -1002,7 +1144,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 11,
+'id': -12,
 'title': 'Seq Scan Ratio',
 'type': 'timeseries',
 'interval': 10,
@@ -1039,6 +1181,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1085,16 +1238,18 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Seq Scan Ratio',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]["ratio"]]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['ratio']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_seq": query_data.Rows[0]['current_seq'],
     "current_idx": query_data.Rows[0]['current_idx'],
@@ -1104,7 +1259,7 @@ result = {
 }, {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 12,
+'id': -13,
 'title': 'Long Transaction',
 'type': 'timeseries',
 'interval': 10,
@@ -1119,7 +1274,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text": "Long Transaction"
             },
             "tooltip": {
@@ -1139,6 +1294,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1189,23 +1355,25 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Seconds',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['seconds']]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['seconds']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
 }, {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 13,
+'id': -14,
 'title': 'Long Query',
 'type': 'timeseries',
 'interval': 10,
@@ -1220,7 +1388,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text": "Long Query"
             },
             "tooltip": {
@@ -1240,6 +1408,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1296,23 +1475,25 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Seconds',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['seconds']]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['seconds']
+        }]
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
 }, {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 14,
+'id': -15,
 'title': 'Long Autovacuum',
 'type': 'timeseries',
 'interval': 10,
@@ -1327,7 +1508,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text": "Long Autovacuum"
             },
             "tooltip": {
@@ -1347,6 +1528,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1403,23 +1595,25 @@ query_data = connection.Query(query)
 datasets = []
 datasets.append({
         "label": 'Seconds',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['seconds']]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['seconds']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """
 }, {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 15,
+'id': -16,
 'title': 'Checkpoints',
 'type': 'timeseries',
 'interval': 10,
@@ -1434,7 +1628,7 @@ result = {
                 "display": False
             },
             "title":{
-                "display":True,
+                "display": False,
                 "text": "Checkpoints"
             },
             "tooltip": {
@@ -1454,6 +1648,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -1472,26 +1677,35 @@ result = {
 
 from datetime import datetime
 
-if previous_data != None:
-    query = "select (checkpoints_timed+checkpoints_req) - " + str(previous_data["current_checkpoints"]) + " as checkpoints_diff, (checkpoints_timed+checkpoints_req) as current_checkpoints FROM pg_stat_bgwriter"
+version = int(connection.Query('show server_version_num').Rows[0][0])
+if version < 170000:
+    if previous_data != None:
+        query = "select (checkpoints_timed+checkpoints_req) - " + str(previous_data["current_checkpoints"]) + " as checkpoints_diff, (checkpoints_timed+checkpoints_req) as current_checkpoints FROM pg_stat_bgwriter"
+    else:
+        query = 'select 0 as checkpoints_diff, (checkpoints_timed+checkpoints_req) as current_checkpoints FROM pg_stat_bgwriter'
 else:
-    query = 'select 0 as checkpoints_diff, (checkpoints_timed+checkpoints_req) as current_checkpoints FROM pg_stat_bgwriter'
+    if previous_data != None:
+        query = "select (num_timed+num_requested) - " + str(previous_data["current_checkpoints"]) + " as checkpoints_diff, (num_timed+num_requested) as current_checkpoints FROM pg_stat_checkpointer"
+    else:
+        query = 'select 0 as checkpoints_diff, (num_timed+num_requested) as current_checkpoints FROM pg_stat_checkpointer'
 
 query_data = connection.Query(query)
 
 datasets = []
 datasets.append({
         "label": 'Checkpoints',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "tension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [query_data.Rows[0]['checkpoints_diff']]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now(),
+            "y": query_data.Rows[0]['checkpoints_diff']
+        }],
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets,
     "current_checkpoints": query_data.Rows[0]['current_checkpoints']
 }
@@ -1500,7 +1714,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 16,
+'id': -17,
 'title': 'Activity',
 'type': 'grid',
 'interval': 10,
@@ -1523,7 +1737,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 17,
+'id': -18,
 'title': 'Bloat: Top 20 Tables',
 'type': 'grid',
 'interval': 30,
@@ -1597,7 +1811,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 18,
+'id': -19,
 'title': 'In Recovery',
 'type': 'grid',
 'interval': 120,
@@ -1617,7 +1831,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 19,
+'id': -20,
 'title': 'Autovac Freeze: Top 20 Tables',
 'type': 'grid',
 'interval': 60,
@@ -1647,7 +1861,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 20,
+'id': -21,
 'title': 'Database Size',
 'type': 'chart',
 'interval': 60,
@@ -1660,12 +1874,15 @@ total_size = connection.ExecuteScalar('''
 ''')
 
 result = {
-    "type": "pie",
+    "type": "doughnut",
     "data": None,
     "options": {
         "plugins": {
             "legend": {
                 "position": "bottom",
+                "labels": {
+                    "usePointStyle": True,
+                }
             },
             "title":{
                 "display":True,
@@ -1674,6 +1891,7 @@ result = {
         },
         "maintainAspectRatio": False,
         "responsive": True,
+        "cutout": 50
     }
 }
 """,
@@ -1686,15 +1904,14 @@ databases = connection.Query('''
            round(pg_catalog.pg_database_size(d.datname)/1048576.0,2) AS size
     FROM pg_catalog.pg_database d
     WHERE d.datname not in ('template0','template1')
+    ORDER BY size DESC
 ''')
 
 data = []
-color = []
 label = []
 
 for db in databases.Rows:
     data.append(db["size"])
-    color.append("rgb(" + str(randint(125, 225)) + "," + str(randint(125, 225)) + "," + str(randint(125, 225)) + ")")
     label.append(db["datname"])
 
 total_size = connection.ExecuteScalar('''
@@ -1708,8 +1925,10 @@ result = {
     "datasets": [
         {
             "data": data,
-            "backgroundColor": color,
-            "label": "Dataset 1"
+            "label": "DB Sizes",
+            "cutout": "60%",
+            "borderWidth": 1,
+            "borderColor": "#00000020"
         }
     ],
     "title": "Database Size (Total: " + str(total_size) + " MB)"
@@ -1719,7 +1938,7 @@ result = {
 {
 'dbms': 'postgresql',
 'plugin_name': 'postgresql',
-'id': 21,
+'id': -22,
 'title': 'Backends',
 'type': 'chart',
 'interval': 60,
@@ -1734,6 +1953,9 @@ result = {
         "plugins": {
             "legend": {
                 "position": "bottom",
+                "labels": {
+                    "usePointStyle": True,
+                }
             },
             "title":{
                 "display":True,
@@ -1759,12 +1981,10 @@ databases = connection.Query('''
 ''')
 
 data = []
-color = []
 label = []
 
 for db in databases.Rows:
     data.append(db["numbackends"])
-    color.append("rgb(" + str(randint(125, 225)) + "," + str(randint(125, 225)) + "," + str(randint(125, 225)) + ")")
     label.append(db["datname"])
 
 result = {
@@ -1772,8 +1992,10 @@ result = {
     "datasets": [
         {
             "data": data,
-            "backgroundColor": color,
-            "label": "Dataset 1"
+            "label": "Backends",
+            "cutout": "60%",
+            "borderWidth": 1,
+            "borderColor": "#00000020"
         }
     ]
 }

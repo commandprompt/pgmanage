@@ -179,16 +179,18 @@ def create_restore(request, database):
                 data={"data": str(exc)},
                 status=400,
             )
+    file_manager = FileManager(request.user)
 
     try:
-        FileManager(request.user).check_access_permission(backup_file)
+        resolved_path = file_manager.resolve_path(backup_file)
+        file_manager.check_access_permission(resolved_path)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=403)
 
-    args = get_args_param_values(data, database, backup_file)
+    args = get_args_param_values(data, database, resolved_path)
 
     restore_message = RestoreMessage(
-        database.v_conn_id, backup_file, *args, database=data.get("database")
+        database.v_conn_id, resolved_path, *args, database=data.get("database")
     )
     try:
         job = BatchJob(
@@ -213,8 +215,11 @@ def preview_command(request, database):
 
     backup_file = data.get("fileName")
 
+    file_manager = FileManager(request.user)
+
     try:
-        FileManager(request.user).check_access_permission(backup_file)
+        resolved_path = file_manager.resolve_path(backup_file)
+        file_manager.check_access_permission(resolved_path)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=403)
 
@@ -236,10 +241,10 @@ def preview_command(request, database):
         except FileNotFoundError as exc:
             return JsonResponse(data={"data": str(exc)}, status=400)
 
-    args = get_args_param_values(data, database, backup_file)
+    args = get_args_param_values(data, database, resolved_path)
 
     restore_message = RestoreMessage(
-        database.v_conn_id, backup_file, *args, database=data.get("database")
+        database.v_conn_id, resolved_path, *args, database=data.get("database")
     )
 
     return JsonResponse(data={"command": restore_message.details(utility_path)})

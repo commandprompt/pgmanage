@@ -18,7 +18,7 @@
 
       <div class="monitoring-widgets row">
         <MonitoringWidget
-          v-for="widget in widgets"
+          v-for="widget in visibleSortedWidgets"
           :key="widget.saved_id"
           :monitoring-widget="widget"
           :workspace-id="workspaceId"
@@ -26,20 +26,24 @@
           :database-index="databaseIndex"
           :refresh-widget="refreshWidget"
           @widget-refreshed="waitForAllAndRefreshCounter"
-          @widget-close="closeWidget"
+          @toggle-widget="toggleWidget"
           @interval-updated="updateWidgetInterval"
         />
       </div>
     </div>
     <Teleport to="body">
       <MonitoringWidgetsModal
-        :widgets="widgets"
+        :widgets="sortedWidgets"
         :workspace-id="workspaceId"
         :tab-id="tabId"
         :database-index="databaseIndex"
         :widgets-modal-visible="monitoringModalVisible"
         @modal-hide="monitoringModalVisible = false"
         @toggle-widget="toggleWidget"
+        @move-widget-up="moveWidgetUp"
+        @move-widget-down="moveWidgetDown"
+        @delete-widget="deleteWidget"
+        @add-widget="addWidget"
       />
     </Teleport>
   </div>
@@ -48,8 +52,8 @@
 <script>
 import axios from "axios";
 import MonitoringWidget from "./MonitoringWidget.vue";
-import { showToast } from "../notification_control";
 import MonitoringWidgetsModal from "./MonitoringWidgetsModal.vue";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "MonitoringDashboard",
@@ -84,31 +88,18 @@ export default {
           this.widgets = resp.data.widgets;
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
     refreshWidgets() {
-      if (this.widgets.length > 0) this.refreshWidget = true;
+      if (this.visibleSortedWidgets.length > 0) this.refreshWidget = true;
     },
     waitForAllAndRefreshCounter() {
       this.counter++;
-      if (this.counter === this.widgets.length) {
+      if (this.counter === this.visibleSortedWidgets.length) {
         this.refreshWidget = false;
         this.counter = 0;
       }
-    },
-    closeWidget(widgetSavedId) {
-      let widgetIdx = this.widgets.findIndex(
-        (widget) => widget.saved_id === widgetSavedId
-      );
-      axios
-        .delete(`/monitoring-widgets/${widgetSavedId}`)
-        .then(() => {
-          this.widgets.splice(widgetIdx, 1);
-        })
-        .catch((error) => {
-          showToast("error", error);
-        });
     },
     updateWidgetInterval({ saved_id, interval }) {
       let widget = this.widgets.find((widget) => widget.saved_id === saved_id);
@@ -117,42 +108,66 @@ export default {
     showMonitoringWidgetsList() {
       this.monitoringModalVisible = true;
     },
-    toggleWidget(widgetData) {
-      let widgetIdx = this.widgets.findIndex(
-        (widget) => widget.id === widgetData.id
-      );
-
-      if (widgetIdx === -1) {
-        let newWidget = {
-          id: widgetData.id,
-          title: widgetData.title,
-          interval: widgetData.interval,
-          plugin_name: widgetData.plugin_name ?? "",
-          type: widgetData.type,
-        };
-        this.saveWidgetToDatabaseAndShow(newWidget);
-      } else {
-        let widget = this.widgets[widgetIdx];
-        this.closeWidget(widget.saved_id);
-      }
-    },
-    saveWidgetToDatabaseAndShow(newWidget) {
+    toggleWidget(widget, visible) {
       axios
-        .post("/monitoring-widgets/create", {
-          workspace_id: this.workspaceId,
-          database_index: this.databaseIndex,
-          widget_data: newWidget,
+        .patch(`/monitoring-widgets/${widget.saved_id}`, {
+          visible: visible,
         })
-        .then((resp) => {
-          newWidget.saved_id = resp.data.user_widget.id;
-
-          this.widgets.unshift(newWidget);
+        .then(() => {
+          widget.visible = visible;
         })
         .catch((error) => {
-          showToast("error", error);
+          handleError(error);
         });
     },
+    moveWidgetUp(index) {
+      // prevent moving newly added column above existing ones in "alter" mode
+      if(index == 0) return;
+      let widgetAbove = this.sortedWidgets[index-1]
+      let widget = this.sortedWidgets[index]
+      let posTmp = this.sortedWidgets[index].position
+      widget.position = widgetAbove.position
+      widgetAbove.position = posTmp
+    },
+    moveWidgetDown(index) {
+      if(index == this.sortedWidgets.length-1) return;
+      let widgetBelow = this.sortedWidgets[index+1]
+      let widget = this.sortedWidgets[index]
+      let posTmp = this.sortedWidgets[index].position
+      widget.position = widgetBelow.position
+      widgetBelow.position = posTmp
+    },
+    deleteWidget(widgetId) {
+      let widgetIdx = this.widgets.findIndex(
+        (w) => w.id === widgetId
+      );
+      if(widgetIdx !== -1) {
+        this.widgets.splice(widgetIdx, 1)
+      }
+    },
+    addWidget(widgetData) {
+      this.widgets.push({
+        id: widgetData.id,
+        saved_id: widgetData.saved_id,
+        title: widgetData.title,
+        visible: widgetData.visible,
+        position: widgetData.position,
+        editable: widgetData.editable,
+        type: widgetData.type,
+        interval: widgetData.interval,
+        plugin_name: '',
+        widget_data: {}
+      })
+    },
   },
+  computed: {
+    visibleSortedWidgets() {
+      return this.widgets.filter(widget => widget.visible).sort((a, b) => (a.position > b.position) ? 1 : -1)
+    },
+    sortedWidgets() {
+      return this.widgets.sort((a, b) => (a.position > b.position) ? 1 : -1)
+    }
+  }
 };
 </script>
 

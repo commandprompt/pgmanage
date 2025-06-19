@@ -3,6 +3,7 @@ import axios from "axios";
 import { showToast } from "../notification_control.js";
 import moment from "moment";
 import { Modal } from "bootstrap";
+import { handleError } from "../logging/utils.js";
 
 const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -20,6 +21,7 @@ const useSettingsStore = defineStore("settings", {
     dateFormat: "",
     shortcuts: {},
     currentOS: "Unknown OS",
+    max_upload_size: "",
   }),
   actions: {
     async getSettings() {
@@ -40,6 +42,7 @@ const useSettingsStore = defineStore("settings", {
           dateFormat: !userSettings.date_format
             ? "YYYY-MM-DD, HH:mm:ss"
             : userSettings.date_format,
+          max_upload_size: userSettings.max_upload_size,
         });
 
         this.shortcuts = Object.assign(
@@ -52,7 +55,7 @@ const useSettingsStore = defineStore("settings", {
 
         return response.data;
       } catch (error) {
-        showToast("error", error.response.data.data);
+        handleError(error);
         return error;
       }
     },
@@ -78,7 +81,7 @@ const useSettingsStore = defineStore("settings", {
         showToast("success", "Configuration saved.");
         return response.data;
       } catch (error) {
-        showToast("error", error.response.data.data);
+        handleError(error);
         return error;
       }
     },

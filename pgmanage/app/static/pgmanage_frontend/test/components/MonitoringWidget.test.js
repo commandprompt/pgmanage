@@ -12,12 +12,18 @@ import MonitoringWidget from "../../src/components/MonitoringWidget.vue";
 import axios from "axios";
 import { emitter } from "../../src/emitter";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 vi.mock("axios");
 
 vi.mock("tabulator-tables", () => {
   const TabulatorFull = vi.fn();
   TabulatorFull.prototype.redraw = vi.fn();
   TabulatorFull.prototype.setData = vi.fn();
+  TabulatorFull.prototype.replaceData = vi.fn();
   return { TabulatorFull };
 });
 
@@ -49,9 +55,12 @@ describe("MonitoringWidget", () => {
       attachTo: document.body,
       shallow: true,
     });
+    // Advance timers to trigger the refresh
+    vi.advanceTimersByTime(150);
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     wrapper.unmount();
   });
 
@@ -95,6 +104,8 @@ describe("MonitoringWidget", () => {
       },
       attachTo: document.body,
     });
+
+    vi.advanceTimersByTime(150);
     expect(refreshMonitoringWidgetSpy).toBeCalled();
   });
 

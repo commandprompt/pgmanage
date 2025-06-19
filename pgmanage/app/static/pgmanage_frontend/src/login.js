@@ -2,7 +2,6 @@ import "vite/modulepreload-polyfill";
 import "bootstrap/scss/bootstrap.scss";
 import "./assets/css/font-poppins.css";
 import "./assets/scss/login.scss";
-import { showAlert } from "./notification_control";
 import { getCookie } from "./ajax_control";
 import axios from "axios";
 
@@ -34,7 +33,7 @@ function signIn() {
 
   axios
     .post(
-      `/sign_in/`,
+      `${app_base_path}/sign_in/`,
       { username: username.value, password: password.value },
       { headers: { "X-CSRFToken": getCookie(v_csrf_cookie_name) } }
     )

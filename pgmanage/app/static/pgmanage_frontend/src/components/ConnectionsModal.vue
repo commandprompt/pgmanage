@@ -4,7 +4,7 @@
       <div class="modal-content modal-connections__content h-100">
         <div class="modal-header align-items-center">
           <h2 class="modal-title fw-bold">Manage connections</h2>
-          <button type="btn" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body modal-connections__body p-0">
           <div class="row g-0 h-100">
@@ -99,7 +99,7 @@ import { emitter } from '../emitter'
 import { messageModalStore, tabsStore, settingsStore, connectionsStore } from '../stores/stores_initializer';
 import { useVuelidate } from '@vuelidate/core'
 import { Modal, Collapse } from 'bootstrap'
-import { showToast } from '../notification_control';
+import { handleError } from '../logging/utils';
 
 export default {
   name: 'ConnectionsModal',
@@ -161,7 +161,7 @@ export default {
         connectionsStore.$patch({
           groups: []
         })
-        console.log(error)
+        handleError(error);
       })
     },
     getConnections(init) {
@@ -183,7 +183,7 @@ export default {
         connectionsStore.$patch({
           connections: []
         })
-        console.log(error)
+        handleError(error);
       })
     },
     loadData(init) {
@@ -204,7 +204,7 @@ export default {
         this.loadData()
       })
       .catch((error) => {
-        console.log(error)
+        handleError(error);
       })
     },
     deleteConnection(connection) {
@@ -215,7 +215,7 @@ export default {
         this.activeForm = undefined
       })
       .catch((error) => {
-        console.log(error)
+        handleError(error);
       })
     },
     cloneConnection(connection) {
@@ -241,7 +241,7 @@ export default {
         this.loadData()
       })
       .catch((error) => {
-        showToast("error", error.response.data.data);
+        handleError(error);
       })
     },
     deleteGroup(group) {
@@ -253,7 +253,7 @@ export default {
         this.activeForm = undefined
       })
       .catch((error) => {
-        console.log(error)
+        handleError(error);
       })
     },
     connectionSubtitle(connection) {
@@ -358,8 +358,8 @@ export default {
             });
           }
         })
-        .catch((response) => {
-          console.log(response);
+        .catch((error) => {
+          handleError(error);
         });
     },
   },

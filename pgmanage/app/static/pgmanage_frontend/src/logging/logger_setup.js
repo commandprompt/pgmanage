@@ -4,12 +4,6 @@ import remote from "loglevel-plugin-remote";
 import { getCookie } from "../ajax_control";
 import { vueHooks, axiosHooks } from "./service";
 import axios from "axios";
-import {
-  settingsStore,
-  tabsStore,
-  connectionsStore,
-  snippetsStore,
-} from "../stores/stores_initializer";
 
 const DEFAULT_LOGLEVEL = "trace";
 const DEFAULT_LOGLEVEL_REMOTE = "warn";
@@ -36,7 +30,7 @@ const customJSON = (log) => ({
 });
 
 remote.apply(logger, {
-  url: "/log/",
+  url: `${app_base_path}/log/`,
   method: "POST",
   level: DEFAULT_LOGLEVEL_REMOTE,
   headers: { "X-CSRFToken": getCookie(v_csrf_cookie_name) },
@@ -56,9 +50,7 @@ remote.apply(logger, {
   format: customJSON,
 });
 
-const stores = [settingsStore, tabsStore, connectionsStore, snippetsStore];
-
-export function setupLogger(app) {
+export function setupLogger(app, stores) {
   vueHooks(logger, app, stores);
   axiosHooks(logger, axios);
 }

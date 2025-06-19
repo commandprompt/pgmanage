@@ -3,10 +3,15 @@ import axios from "axios";
 import { flushPromises, mount } from "@vue/test-utils";
 import "ace-builds/src-noconflict/ace";
 import "ace-builds/src-noconflict/mode-python";
-import "../../src/ace_themes/theme-omnidb.js";
+import "../../src/ace_extras/themes/theme-omnidb.js";
 
 import MonitoringWidgetEditModal from "../../src/components/MonitoringWidgetEditModal.vue";
 import { useSettingsStore } from "../../src/stores/settings.js";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
 
 vi.mock("axios");
 

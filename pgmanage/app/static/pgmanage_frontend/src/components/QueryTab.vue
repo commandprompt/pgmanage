@@ -9,22 +9,50 @@
         :database-index="databaseIndex"
         :database-name="databaseName"
         tab-mode="query"
-        :dialect="dialect" @editor-change="updateEditorContent" @run-selection="queryRunOrExplain(false)" :autocomplete="autocomplete"/>
+        :dialect="dialect" 
+        :autocomplete="autocomplete"
+        @editor-change="updateEditorContent" 
+        @run-selection="queryRunOrExplain(false)" 
+        @run-selection-explain="runExplain(0)"
+        @run-selection-explain-analyze="runExplain(1)"
+        />
     </pane>
 
     <pane size="70" class="border-top">
       <!-- ACTION BUTTONS-->
       <div class="py-2 pe-1 d-flex align-items-center">
         <div class="tab-actions d-flex w-100 px-2">
-          <button class="btn btn-square btn-primary btn-run" title="Run" @click="queryRunOrExplain()" :disabled="executingState">
-            <i class="fas fa-play fa-light"></i>
-          </button>
-
-          <button class="btn btn-square btn-primary btn-run" title="Run Selection" @click="queryRunOrExplain(false)" :disabled="executingState">
-            [
-            <i class="fas fa-play fa-light"></i>
-            ]
-          </button>
+          <div class="btn-group me-2">
+            <button class="btn btn-square btn-primary btn-run" title="Run" @click="queryRunOrExplain()" :disabled="executingState">
+              <i class="fas fa-play fa-light"></i>
+            </button>
+  
+            <button class="btn btn-square btn-primary btn-run" title="Run Selection" @click="queryRunOrExplain(false)" :disabled="executingState">
+              [
+              <i class="fas fa-play fa-light"></i>
+              ]
+            </button>
+            <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split ps-1" data-bs-toggle="dropdown" aria-expanded="false">
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item">
+                  <input
+                    :id="`check_autocommit_${tabId}`"
+                    class="form-check-input me-1"
+                    type="checkbox"
+                    v-model="autocommit"
+                  />
+                  <label
+                    class="form-check-label"
+                    :for="`check_autocommit_${tabId}`"
+                  >
+                    Autocommit
+                  </label>
+                </a>
+              </li>
+            </ul>
+          </div>
 
           <button class="btn btn-square btn-secondary" title="Indent SQL" @click="indentSQL()">
             <i class="fas fa-indent fa-light"></i>
@@ -59,13 +87,6 @@
                 @click="runExplain(1)" :disabled="!enableExplainButtons">
                 <i class="fas fa-magnifying-glass-chart fa-light"></i>
               </button>
-            </div>
-
-            <!-- AUTOCOMMIT-->
-            <div class="form-check form-check-inline mb-0">
-              <input :id="`check_autocommit_${tabId}`" class="form-check-input" type="checkbox" v-model="autocommit" />
-              <label class="form-check-label custom-checkbox query_info"
-                :for="`check_autocommit_${tabId}`">Autocommit</label>
             </div>
 
             <TabStatusIndicator :tab-status="tabStatus" />
@@ -185,6 +206,7 @@ export default {
         "csv-no_headers": "CSV(no headers)",
         xlsx: "XLSX",
         "xlsx-no_headers": "XLSX(no headers)",
+        json: "JSON"
       },
       exportType: "csv",
       showFetchButtons: false,
@@ -251,14 +273,14 @@ export default {
     }
   },
   methods: {
-    getQueryEditorValue(raw_query) {
-      return this.$refs.editor.getQueryEditorValue(raw_query);
+    getEditorContent(fullContent=false, onlySelected=false) {
+      return this.$refs.editor.getEditorContent(fullContent, onlySelected)
     },
     querySQL(
       mode,
       cmd_type = null,
       all_data = false,
-      query = this.getQueryEditorValue(true),
+      query = this.getEditorContent(true),
       log_query = true,
       save_query = this.editorContent,
       clear_data = false
@@ -275,7 +297,10 @@ export default {
           this.showFetchButtons = false;
           this.longQuery = false;
           this.tempData = [];
-          this.lastQuery = query
+          this.lastQuery = query.trim();
+          if (cmd_type === "explain" && this.getEditorContent(true) !== query) {
+            this.lastQuery = this.getEditorContent(true);
+          } 
 
           let message_data = {
             sql_cmd: query,
@@ -318,7 +343,10 @@ export default {
           this.queryState = requestState.Executing;
 
           setTimeout(() => {
-            this.longQuery = true;
+            if (this.queryState === requestState.Executing) {
+              tab.metaData.isLoading = true;
+              this.longQuery = true;
+            }
           }, 1000);
 
           this.queryInterval = setInterval((function(){
@@ -326,7 +354,6 @@ export default {
             this.queryDuration = moment.utc(diff).format('HH:mm:ss')
           }).bind(this), 1000)
 
-          tab.metaData.isLoading = true;
           tab.metaData.isReady = false;
 
           this.tabStatus = tabStatusMap.RUNNING;
@@ -388,7 +415,7 @@ export default {
       }
     },
     runExplain(explainMode) {
-      let command = this.getQueryEditorValue(true);
+      let command = this.getEditorContent();
 
       if (command.trim() === "") {
         showToast("info", "Please provide a string.");
@@ -416,7 +443,7 @@ export default {
       }
     },
     queryRunOrExplain(use_raw_query=true) {
-      let query = this.getQueryEditorValue(use_raw_query)
+      let query = this.getEditorContent(use_raw_query, true)
       if (this.dialect === "postgresql") {
         let should_explain =
           query.trim().split(" ")[0].toUpperCase() === "EXPLAIN";
@@ -437,7 +464,7 @@ export default {
     },
     exportData() {
       let cmd_type = `export_${this.exportType}`;
-      let command = this.lastQuery || this.getQueryEditorValue(true);
+      let command = this.lastQuery || this.getEditorContent(true);
       let explainRegex =
           /^(EXPLAIN ANALYZE|EXPLAIN)\s*(\([^\)\(]+\))?\s+(.+)/is;
       let queryMatch = command.match(explainRegex);

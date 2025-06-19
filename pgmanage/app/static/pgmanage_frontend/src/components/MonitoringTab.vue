@@ -8,22 +8,83 @@
       >
         <i class="fas fa-sync-alt me-2"></i>Refresh
       </button>
-      <span class="query_info"> Number of records: {{ dataLength }} </span>
+      <button
+        v-if="!isActive"
+        data-testid="monitoring-play-button"
+        class="btn btn-secondary btn-sm me-1"
+        title="Play"
+        @click="playMonitoring"
+      >
+        <i class="fas fa-play-circle fa-light"></i>
+      </button>
+
+      <button
+        v-else
+        data-testid="monitoring-pause-button"
+        class="btn btn-secondary btn-sm me-1"
+        title="Pause"
+        @click="pauseMonitoring"
+      >
+        <i class="fas fa-pause-circle fa-light"></i>
+      </button>
+      <div
+        class="d-inline-flex align-items-center refresh-menu ms-1"
+        data-bs-toggle="dropdown">
+        <a class="refresh-menu__link" href="">{{ humanizeDuration(monitoringInterval) }}</a>
+        <div class="dropdown-menu dropdown-menu-width-auto">
+          <a
+            v-for="(option, index) in refreshIntervalOptions" :key=index
+            @click="monitoringInterval=option"
+            class="dropdown-item"
+            href="#"
+          >
+            {{ humanizeDuration(option) }}
+          </a>
+        </div>
+      </div>
+      <span class="float-end"> Total processes: {{ dataLength }} </span>
     </div>
-    <div ref="tabulator" class="tabulator-custom grid-height pb-3"></div>
+    <div class="card border-0">
+      <Transition :duration="100">
+        <div v-if="showLoading" class="div_loading d-block" style="z-index: 10">
+          <div class="div_loading_cover"></div>
+          <div class="div_loading_content">
+            <div class="spinner-border spinner-size text-primary" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <div ref="tabulator" class="tabulator-custom grid-height pb-3"></div>
+    </div>
   </div>
 </template>
 
 <script>
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import axios from "axios";
-import { showToast } from "../notification_control";
 import { emitter } from "../emitter";
-import { messageModalStore, settingsStore, cellDataModalStore } from "../stores/stores_initializer";
+import {
+  messageModalStore,
+  settingsStore,
+  cellDataModalStore,
+} from "../stores/stores_initializer";
+import { useVuelidate } from "@vuelidate/core";
+import { minValue, required } from "@vuelidate/validators";
+import { handleError } from "../logging/utils";
+import HumanizeDurationMixin from '../mixins/humanize_duration_mixin'
 
 export default {
   name: "MonitoringTab",
+  setup() {
+    return {
+      v$: useVuelidate({ $lazy: true }),
+    };
+  },
+  mixins: [HumanizeDurationMixin],
   props: {
+    tabId: String,
     query: String,
     databaseIndex: Number,
     workspaceId: String,
@@ -34,12 +95,25 @@ export default {
       table: null,
       dataLength: 0,
       heightSubtract: 150,
+      timeoutObject: null,
+      isActive: true,
+      monitoringInterval: 10,
+      showLoading: true,
+      refreshIntervalOptions: [5, 10, 30, 60, 120, 300]
     };
   },
   computed: {
     gridHeight() {
       return `calc(100vh - ${this.heightSubtract}px)`;
     },
+  },
+  validations() {
+    return {
+      monitoringInterval: {
+        required,
+        minValue: minValue(5),
+      },
+    };
   },
   mounted() {
     this.handleResize();
@@ -57,6 +131,19 @@ export default {
         });
       }
     });
+
+    emitter.on(`${this.tabId}_redraw_monitoring_tab`, () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.handleResize();
+          this.table.redraw();
+        });
+      });
+    });
+  },
+  unmounted() {
+    clearTimeout(this.timeoutObject);
+    emitter.all.delete(`${this.tabId}_redraw_monitoring_tab`);
   },
   updated() {
     this.handleResize();
@@ -66,17 +153,15 @@ export default {
     setupTable() {
       let cellContextMenu = [
         {
-          label:
-            '<div style="position: absolute;"><i class="fas fa-copy cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy</div>',
+          label: '<i class="fas fa-copy"></i><span>Copy</span>',
           action: function (e, cell) {
             cell.getTable().copyToClipboard("selected");
           },
         },
         {
-          label:
-            '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
+          label: '<i class="fas fa-edit"></i><span>View Content</span>',
           action: (e, cell) => {
-            cellDataModalStore.showModal(cell.getValue())
+            cellDataModalStore.showModal(cell.getValue(), "sql", true);
           },
         },
       ];
@@ -87,7 +172,8 @@ export default {
         autoResize: false,
         columnDefaults: {
           headerHozAlign: "left",
-          headerSort: false,
+          headerSort: true,
+          maxWidth: "500px",
         },
         autoColumnsDefinitions: (definitions) => {
           //definitions - array of column definition objects
@@ -101,18 +187,13 @@ export default {
           );
 
           updatedDefinitions.unshift({
-            title: "actions",
+            title: "Actions",
             field: "actions",
             formatter: this.actionsFormatter,
             hozAlign: "center",
+            headerSort: false,
             frozen: true,
             clipboard: false,
-          });
-          updatedDefinitions.unshift({
-            formatter: "rownum",
-            hozAlign: "center",
-            width: 40,
-            frozen: true,
           });
 
           return updatedDefinitions;
@@ -131,18 +212,11 @@ export default {
       let actionsWrapper = document.createElement("div");
 
       cell.getValue().forEach((actionItem) => {
-        let iconClassName;
-        if (actionItem.icon.includes("fa-times")) {
-          iconClassName = `${actionItem.icon} text-danger`;
-        } else {
-          iconClassName = `${actionItem.icon} omnidb__theme-icon--primary`;
-        }
-
         const actionWrapper = document.createElement("div");
         actionWrapper.className = "text-center";
         const actionIcon = document.createElement("i");
-        actionIcon.className = `actionable_icon ${iconClassName}`;
-
+        actionIcon.className = actionItem.icon;
+        actionIcon.title = "Terminate";
         actionIcon.onclick = () => {
           actionItem.action(sourceDataRow);
         };
@@ -152,7 +226,9 @@ export default {
       });
       return actionsWrapper;
     },
-    refreshMonitoring() {
+    refreshMonitoring(showLoading = true) {
+      clearTimeout(this.timeoutObject);
+      if (showLoading) this.showLoading = true;
       axios
         .post("/refresh_monitoring/", {
           database_index: this.databaseIndex,
@@ -166,20 +242,23 @@ export default {
           data.forEach((col, idx) => {
             col.actions = [
               {
-                icon: "fas fa-times action-grid action-close",
+                icon: "fas fa-times text-danger",
                 title: "Terminate",
                 action: this.terminateBackend,
               },
             ];
           });
-          this.table
-            .setData(data)
-            .then(() => {
-              this.table.redraw(true);
-            })
-            .catch((error) => {
-              showToast("error", error);
-            });
+          if (this.timeoutObject === null) {
+            this.table.setData(data);
+          } else {
+            this.table.replaceData(data);
+          }
+          if (this.isActive) {
+            this.timeoutObject = setTimeout(() => {
+              this.refreshMonitoring(false);
+            }, this.monitoringInterval * 1000);
+          }
+          this.showLoading = false;
         })
         .catch((error) => {
           if (error.response.data?.password_timeout) {
@@ -191,15 +270,16 @@ export default {
               message: error.response.data.data,
             });
           } else {
-            showToast("error", error.response.data.data);
+            handleError(error);
           }
+          this.showLoading = false;
         });
     },
     terminateBackend(row) {
       let pid;
       switch (this.dialect) {
         case "postgresql":
-          pid = row.pid;
+          pid = row.Pid;
           break;
         case "mysql":
           pid = row.ID;
@@ -242,7 +322,7 @@ export default {
               message: error.response.data.data,
             });
           } else {
-            showToast("error", error.response.data.data);
+            handleError(error);
           }
         });
     },
@@ -251,6 +331,14 @@ export default {
 
       this.heightSubtract =
         this.$refs.topToolbar.getBoundingClientRect().bottom;
+    },
+    pauseMonitoring() {
+      clearTimeout(this.timeoutObject);
+      this.isActive = false;
+    },
+    playMonitoring() {
+      this.isActive = true;
+      this.refreshMonitoring();
     },
   },
 };

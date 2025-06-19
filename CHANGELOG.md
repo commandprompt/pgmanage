@@ -1,3 +1,103 @@
+# PgManage 1.3 Release
+
+## Release Date: June 17 2025
+
+## Release Notes
+
+  - New features:
+    - new visual data filtering UI in data editor (#483)
+    - new monitoring widget management UI with support for reordering of dashboard widgets (#617)
+    - new widget component layout with cleaner and easier to read UI (#618)
+    - new implementation of dashboard widget graphs with improved readability and better handling of large amounts of datapoints (#605)
+    - extend Mysql monitoring widgets to support Mariadb
+    - added support for exporting query results in JSON format
+    - added support for code folding in SQL editor
+    - set backup type based on output file extension, set extension base on output type (#531)
+    - added Postgres documentation links to SQL templates for quicker docs access
+    - added column alias support in autocomplete engine
+    - added advanced clipboard copy for data grids (#217)
+    - added support for running EXPLAIN on a selected part of the query (#533)
+    - added "copy to editor" feature for DDL tab and "Generated SQL" preview box components (#536)
+    - new cell data viewer modal with syntax highlighting and support different data types
+    - added support for Postgres 17
+    
+  - Bugs fixed:
+    - removed unnecessary entries from info.plist on Mac builds which associated Pgmanage with some file extensions (#620)
+    - added logic for handing mutually-exclusive --create and --single-transaction options in Database Restore tab
+    - fixed incorrect colors for disabled inputs in dark theme
+    - don't allow multiple monitoring dashboard within the same DB workspace
+    - fixed Postgresql Alter View template
+    - fixed autocomplete switch colors in dark theme
+    - fixed DB object tree node data not loading in some cases
+    - prevent starting duplicate backup/restore jobs (#572)
+    - fixed empty SSL option appearing in connection form when connection type is changed (#674)
+    
+  - UI/UX Improvements:
+    - improved console tab size change handling
+    - improved readability of Backends tab UI
+    - added data loading/saving indication for data editor tab
+    - added support for keyboard navigation for searchable drop-down lists
+    - improved layout of Server Configuration tab toolbar
+    - show query result messages for all supported databases
+    - improved date-range picker in command history modals
+    - improved command history modal layout
+    - add support for live update of widget font size and colors when theme or font size is changed in app settings
+    - improved data editor grid rendering performance when working with large number of rows
+    - joined Run and Run selection buttons into a single block, moved autocommit option in its drop-down menu (#507)
+    - backup/restore jobs are now ordered by job start time, from newest to oldest
+    - the View Content data grid context menu is now disabled when multiple cells are selected
+    - long backup/restore file paths are now truncated in the middle to improve readability
+    - added "Discard Changes" warning when closing Data Editor
+    - improved data grid cell rendering performance for cells containing large amounts of data
+
+  - Other changes
+    - cleaned up legacy/unused sass styles
+    - Django updated from 4.2.17 to 4.2.19
+    - openpyxl updated from 3.0.10 to 3.1.3
+    - restrictedpython updated from 6.0 to 7.4
+    - psutil updated from 5.9.8 to 6.1.1
+    - oracledb updated from 2.2.1 to 2.5.1
+    - sqlparse update from 0.5.1 to 0.5.3
+    - improved front-end error logging
+    - ace-editor updated from 1.36.2 to 1.39.1
+    - axios updated from 1.7.7 to 1.8.4
+    - pev2 update from 1.12.1 to 1.14.0
+    - splitpanes updated from 3.1.5 to 3.2
+    - vue updated from 3.5.4 to 3.5.13
+    - cleaned up back-end code
+    - randomize start time of monitoring dashboard widgets data polling to reduce DB usage spikes
+    - execute schema editor requests via long polliing
+    - don't add information_schema and pg_catalog data to autocomplete engine
+
+# PgManage 1.2.1 Bugfix Release
+
+## Release Date: Feb 13 2024
+
+## Release Notes
+    
+  - Bugs fixed:
+    - fixed error notification link colors, added minor layout tweaks
+    - fixed DB object tree node data refresh in some edge-cases
+    - fixed erroneous "Discard Changes" warning when closing Query tab
+    - fixed connectivity issues in built-in SSH terminal
+    - fixed bug with multiple tabs highlighted as "active" #570
+    - fixed app crash when schema editor is opened immediately after DB workspace is loaded
+    - fixed bug with DROP database unable to complete in some cases #582
+    - fixed bug with DB object tree context menu disappearing when monitoring dashboard refreshes #607
+    - fixed race condition in Backup/Restore job status modal when running multiple jobs simultaneusly
+    - fixed bug that allowed to register duplicate hotkey actions #611
+    - fixed bug that caused old SQLite3 DB file being used when connection properties updated with a new file #598
+    - fixed SQLite3 tables not ordered by name in DB object tree  # #596
+    
+  - Other changes:
+    - bumped happy-dom version to fix potential security vulnerability in dev environment
+    - silenced SASS deprecation warnings during js bundle build
+    - plus icons are now used for all context menus associated with "create" action #557
+    - improved readability of multiple modal windows shown on-top of each other
+    - improved SQLite3 DB connection "Test"
+    - improved database metadata loading and autocomplete engine initialization
+
+
 # PgManage 1.2 Release
 
 ## Release Date: Nov 07 2024

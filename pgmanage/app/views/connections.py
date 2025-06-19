@@ -3,6 +3,7 @@ from typing import Optional
 
 import paramiko
 from app.include import OmniDatabase
+from app.include.Spartacus.Database import v_supported_rdbms
 from app.models import Connection, Group, GroupConnection, Tab, Technology
 from app.utils.crypto import decrypt, encrypt
 from app.utils.decorators import session_required, user_authenticated
@@ -17,7 +18,12 @@ from sshtunnel import SSHTunnelForwarder
 def get_connections(request, session):
     response_data = {'data': [], 'status': 'success'}
 
-    tech_list = [tech.name for tech in Technology.objects.all()] #convert to values_list
+    tech_list = list(
+        Technology.objects.filter(
+            Q(name__in=[rdbms.lower() for rdbms in v_supported_rdbms])
+            | Q(name="terminal")
+        ).values_list("name", flat=True)
+    )
 
     connection_list = []
     connections = Connection.objects.filter(
@@ -351,6 +357,8 @@ def save_connection(request, session):
             conn.technology = Technology.objects.get(name=conn_object['technology'])
             conn.server = conn_object['server']
             conn.port = conn_object['port']
+            if conn.database != conn_object['service']:
+                conn.last_used_database = conn_object['service']
             conn.database = conn_object['service']
             conn.username = conn_object['user']
 

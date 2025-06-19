@@ -43,9 +43,9 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         input: ["./src/main.js", "./src/login.js"],
         output: {
-          entryFileNames: `assets/[name].js`,
-          chunkFileNames: `assets/[name].js`,
-          assetFileNames: `assets/[name].[ext]`,
+          entryFileNames: `assets/[name].[hash].js`,
+          chunkFileNames: `assets/[name].[hash].js`,
+          assetFileNames: `assets/[name].[hash].[ext]`,
         },
       },
       outDir: outDir,
@@ -56,8 +56,9 @@ export default defineConfig(({ command, mode }) => {
     },
     resolve: {
       alias: {
-        "@": fileURLToPath(new URL("./src", import.meta.url)),
-        "@enterprise": isEnterprise ? fileURLToPath(new URL("./enterprise", import.meta.url)) : fileURLToPath(new URL("./src", import.meta.url)),
+        "@src": path.resolve(__dirname, "src"),
+        "@enterprise": path.resolve(__dirname, "enterprise"),
+        "@conditional": isEnterprise ? path.resolve(__dirname, "enterprise") : path.resolve(__dirname, "src"),
         vue: "vue/dist/vue.esm-bundler.js",
         "~bootstrap": path.resolve(__dirname, "node_modules/bootstrap"),
         moment: path.resolve(__dirname, "node_modules/moment/moment.js"),
@@ -69,6 +70,13 @@ export default defineConfig(({ command, mode }) => {
       coverage: {
         reporter: ["html"],
         enabled: true
+      }
+    },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          silenceDeprecations: ['mixed-decls', 'color-functions', 'legacy-js-api']
+        },
       }
     },
   };

@@ -99,8 +99,7 @@
   </template>
 
     <div class="form-group mb-2">
-        <p class="fw-bold mb-2">Generated SQL</p>
-        <div ref="editor" style="height: 30vh"></div>
+        <PreviewBox :editor-text="generatedSQL" label="Generated SQL" :database-technology="dialect" style="height: 30vh"/>
     </div>
   </div>
 </template>
@@ -116,9 +115,11 @@ import { createRequest } from '../long_polling'
 import { queryRequestCodes, operationModes } from '../constants'
 import axios from 'axios'
 import { showToast } from '../notification_control'
-import { settingsStore, tabsStore } from '../stores/stores_initializer'
+import { tabsStore } from '../stores/stores_initializer'
 import IndexesList from './SchemaEditorIndexesList.vue'
 import isEqual from 'lodash/isEqual';
+import PreviewBox from './PreviewBox.vue'
+import { handleError } from '../logging/utils';
 
 
 function formatDefaultValue(defaultValue, dataType, table) {
@@ -155,7 +156,8 @@ export default {
   },
   components: {
     ColumnList,
-    IndexesList
+    IndexesList,
+    PreviewBox,
   },
   setup(props) {
     // FIXME: add column nam not-null validations
@@ -175,15 +177,7 @@ export default {
         initialTable: {
           tableName: 'new_table',
           schema: '',
-          columns: [{
-            dataType: 'autoincrement',
-            name: 'id',
-            defaultValue: 0,
-            nullable: false,
-            isPK: true,
-            comment: null,
-            editable: true
-          }]
+          columns: []
         },
         localIndexes: [],
         initialIndexes: [],
@@ -203,7 +197,6 @@ export default {
     // the correct SQL dialect with this option
     this.knex = Knex({ client: this.dialect })
     this.loadDialectData(this.dialect)
-    this.setupEditor()
     if(this.$props.mode === operationModes.UPDATE) {
       this.loadTableDefinition().then(() => {
         this.loadIndexes();
@@ -236,7 +229,7 @@ export default {
         this.schemas = response.data.map((schema) => {return schema.name})
       })
       .catch((error) => {
-        console.log(error)
+        handleError(error);
       })
     },
     loadTypes() {
@@ -252,7 +245,7 @@ export default {
         this.customTypes = response.data.map((type) => {return type.type_name})
       })
       .catch((error) => {
-        console.log(error)
+        handleError(error);
       })
     },
     async loadTableDefinition() {
@@ -282,7 +275,7 @@ export default {
           this.initialTable.schema = this.$props.schema
           this.localTable = JSON.parse(JSON.stringify(this.initialTable));
       } catch (error) {
-        console.log(error)
+        handleError(error)
       }
     },
     loadIndexes() {
@@ -302,23 +295,8 @@ export default {
         this.localIndexes = JSON.parse(JSON.stringify(this.initialIndexes));
       })
       .catch((error) => {
-        console.log(error)
+        handleError(error);
       })
-    },
-    setupEditor() {
-      this.editor = ace.edit(this.$refs.editor);
-      this.editor.setTheme("ace/theme/" + settingsStore.editorTheme);
-      this.editor.session.setMode("ace/mode/sql");
-      this.editor.setFontSize(Number(settingsStore.fontSize));
-      this.editor.$blockScrolling = Infinity;
-      this.editor.clearSelection();
-      this.editor.setReadOnly(true);
-      this.editor.setShowPrintMargin(false)
-
-      settingsStore.$subscribe((mutation, state) => {
-        this.editor.setTheme(`ace/theme/${state.editorTheme}`);
-        this.editor.setFontSize(state.fontSize);
-      });
     },
     generateAlterSQL(knexInstance) {
       let columnChanges = {
@@ -506,6 +484,17 @@ export default {
           }
         }).toQuery()
       }
+      if (this.generatedSQL.length > 0) {
+        this.generatedSQL = format(
+          this.generatedSQL,
+            {
+              tabWidth: 2,
+              keywordCase: 'upper',
+              language: this.dialectData.formatterDialect,
+              linesBetweenQueries: 1,
+            }
+        )
+      }
       this.hasChanges = this.generatedSQL.length > 0
     },
     changeColumns(columns) {
@@ -516,34 +505,19 @@ export default {
     },
     applyChanges() {
       let message_data = {
-				sql_cmd : this.editor.getValue(), //use formatted SQL from the editor instead of single-line returned by generatedSQL
-				sql_save : false,
-				cmd_type: null,
+				sql_cmd : this.generatedSQL,
 				db_index: this.databaseIndex,
 				workspace_id: this.workspaceId,
 				tab_id: this.tabId,
-				tab_db_id: this.databaseIndex,
-				mode: 0,
-				all_data: false,
-				log_query: false,
-				tab_title: 'schema editor',
 				autocommit: true,
-				database_name: this.databaseName
+				database_name: this.databaseName,
 			}
 
       let context = {
-				cmd_type: null,
-				database_index: this.databaseIndex,
-				mode: 0,
 				callback: this.handleResponse.bind(this),
-				acked: false,
-				query: this.editor.getValue(),
-				log_query: false,
-				save_query: null,
-        simple: true //a hacky way to prevent long polling handler from running legacy rentering routines
 			}
-      this.queryIsRunning = true
-      createRequest(queryRequestCodes.Query, message_data, context)
+      this.queryIsRunning = true;
+      createRequest(queryRequestCodes.SchemaEditData, message_data, context)
     },
     handleResponse(response) {
       if(response.error == true) {
@@ -605,19 +579,6 @@ export default {
     }
   },
   watch: {
-    generatedSQL() {
-      this.editor.setValue(
-        format(
-          this.generatedSQL,
-          {
-            tabWidth: 2,
-            keywordCase: 'upper',
-            language: this.dialectData.formatterDialect,
-            linesBetweenQueries: 1,
-          }
-      ))
-      this.editor.clearSelection();
-    },
     // watch our local working copy for changes, generate new SQL when the change occcurs
     localTable: {
       handler(newVal, oldVal) {
@@ -637,6 +598,22 @@ export default {
         tab.metaData.hasUnsavedChanges = this.hasChanges;
       }
     },
+    mode: {
+      handler(newValue) {
+        if (newValue === operationModes.CREATE) {
+          this.initialTable.columns = [{
+            dataType: 'autoincrement',
+            name: 'id',
+            defaultValue: 0,
+            nullable: false,
+            isPK: true,
+            comment: null,
+            editable: true
+          }]
+        }
+      },
+      immediate: true,
+    }
   }
 };
 </script>

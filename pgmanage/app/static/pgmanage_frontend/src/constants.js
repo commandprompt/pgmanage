@@ -25,13 +25,13 @@ const consoleModes = {
   FETCH_MORE: 1,
   FETCH_ALL: 2,
   SKIP_FETCH: 3,
-}
+};
 
 const operationModes = {
   CREATE: 0,
   UPDATE: 1,
-  DELETE: 2
-}
+  DELETE: 2,
+};
 
 /// <summary>
 /// Transaction codes of client requests.
@@ -50,6 +50,7 @@ const queryRequestCodes = {
   Console: 10,
   Terminal: 11,
   Ping: 12,
+  SchemaEditData: 13,
 };
 
 /// <summary>
@@ -71,6 +72,7 @@ const queryResponseCodes = {
   TerminalResult: 12,
   Pong: 13,
   OperationCancelled: 14,
+  SchemaEditResult: 15,
 };
 
 const allowedFileTypes = ["application/sql", "text/csv", "text/plain", "Text"];
@@ -82,21 +84,33 @@ const mimeTypeMap = {
 };
 
 const colorLabelMap = {
-  0: { class: '', name: 'neutral' },
-  1: { class: 'color-label--red', name: 'red' },
-  2: { class: 'color-label--orange', name: 'orange' },
-  3: { class: 'color-label--yellow', name: 'yellow' },
-  4: { class: 'color-label--green', name: 'green' },
-  5: { class:'color-label--cyan', name: 'cyan' },
-  6: { class:'color-label--purple', name: 'purple' },
-  7: { class:'color-label--pink', name: 'pink' }
-}
+  0: { class: "", name: "neutral" },
+  1: { class: "color-label--red", name: "red" },
+  2: { class: "color-label--orange", name: "orange" },
+  3: { class: "color-label--yellow", name: "yellow" },
+  4: { class: "color-label--green", name: "green" },
+  5: { class: "color-label--cyan", name: "cyan" },
+  6: { class: "color-label--purple", name: "purple" },
+  7: { class: "color-label--pink", name: "pink" },
+};
 
 const maxFileSizeInMB = 50;
 
 const maxFileSizeInKB = 1024 ** 2 * maxFileSizeInMB;
 
 const maxLinesForIndentSQL = 7 * 1000;
+
+const editorModeMap = {
+  postgresql: "pgsql_extended",
+  mysql: "mysql_extended",
+  mariadb: "mysql_extended",
+  oracle: "plsql",
+};
+
+const dataEditorFilterModes = {
+  MANUAL: "manual",
+  BUILDER: "builder",
+};
 
 export {
   requestState,
@@ -111,5 +125,7 @@ export {
   mimeTypeMap,
   consoleModes,
   colorLabelMap,
-  operationModes
+  operationModes,
+  editorModeMap,
+  dataEditorFilterModes,
 };

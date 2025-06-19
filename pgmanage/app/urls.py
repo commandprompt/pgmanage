@@ -1,7 +1,9 @@
-from django.urls import include, path
-from . import views
+from django.urls import include, path, register_converter
+from . import views, converters
 from django.conf import settings
 from django.conf.urls.static import static
+
+register_converter(converters.SignedIntConverter, 'signedint')
 
 base_urlpatterns = [
 
@@ -287,17 +289,17 @@ base_urlpatterns = [
     path('template_update_sqlite/', views.tree_sqlite.template_update, name='template_update'),
     path('get_table_definition_sqlite/', views.tree_sqlite.get_table_definition, name="get_table_definition_sqlite"),
 
-    #MONITORING SYSTEM
+    # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
     path("monitoring-widgets/list", views.monitoring_dashboard.monitoring_widgets_list, name="monitoring-widgets-list"),
     path("monitoring-widgets/test", views.monitoring_dashboard.test_monitoring_widget, name="test-monitoring-widget"),
     path("monitoring-widgets/create", views.monitoring_dashboard.create_dashboard_monitoring_widget, name="create-dashboard-widget"),
-    path("monitoring-widgets/<int:widget_id>", views.monitoring_dashboard.widget_detail, name="dashboard-widget-detail"),
-    path("monitoring-widgets/<int:widget_id>/template", views.monitoring_dashboard.widget_template, name="widget-template"),
+    path("monitoring-widgets/<signedint:widget_id>", views.monitoring_dashboard.widget_detail, name="dashboard-widget-detail"),
+    path("monitoring-widgets/<signedint:widget_id>/template", views.monitoring_dashboard.widget_template, name="widget-template"),
     path("monitoring-widgets/<int:widget_saved_id>/refresh", views.monitoring_dashboard.refresh_monitoring_widget, name="refresh-monitoring-widget"),
     path("monitoring-widgets/user-created", views.monitoring_dashboard.create_widget, name="create-custom-widget"),
     path("monitoring-widgets/user-created/<int:widget_id>", views.monitoring_dashboard.user_created_widget_detail, name="widget-detail"),
-
+    
     # Configuration
     path('configuration/<int:config_id>/', views.configuration.delete_config, name="delete_configuration"),
     path('configuration/', views.configuration.get_configuration, name='get_configuration'),
@@ -322,6 +324,8 @@ base_urlpatterns = [
     path('file_manager/create/', views.file_manager.create, name="create_file_or_directory"),
     path('file_manager/rename/', views.file_manager.rename, name="rename_file_or_directory"),
     path('file_manager/delete/', views.file_manager.delete, name='delete_file_or_directory'),
+    path('file_manager/download/', views.file_manager.download, name='download_file'),
+    path('file_manager/upload/', views.file_manager.upload, name='upload_file'),
 
     path('validate_binary_path/', views.workspace.validate_binary_path, name='validate_binary_path'),
 

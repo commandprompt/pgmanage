@@ -21,7 +21,7 @@
         <div class="modal-body">
           <div class="mb-3">
             <div class="row">
-              <div class="form-group col-lg-3 col-xl-2 col-sm-4">
+              <div class="form-group col-6 col-lg-3">
                 <p class="fw-bold mb-2">Select a daterange:</p>
                 <input
                   v-model="startedFrom"
@@ -38,15 +38,15 @@
                 <button
                   ref="timeRange"
                   type="button"
-                  class="btn btn-outline-primary"
+                  class="btn btn-outline-primary mw-100 d-flex align-items-center"
                 >
                   <i class="far fa-calendar-alt"></i>
-                  <span class="mx-1">{{ timeRangeLabel }}</span
+                  <span class="mx-1 clipped-text">{{ timeRangeLabel }}</span
                   ><i class="fa fa-caret-down"></i>
                 </button>
               </div>
 
-              <div class="form-group col-lg-3 col-xl-2 col-sm-4">
+              <div class="form-group col-6 col-lg-2">
                 <label class="fw-bold mb-2">Filter by database:</label>
                 <select
                   v-model="databaseFilter"
@@ -66,9 +66,9 @@
               </div>
 
               <div
-                class="form-group col-lg-6 col-md-12 col-xl-8 d-flex justify-content-end align-items-end"
+                class="form-group col-12 col-lg-7 d-flex justify-content-lg-end align-items-end"
               >
-                <div>
+                <div class="flex-grow-1">
                   <label class="fw-bold mb-2">Command contains:</label>
                   <input
                     v-model="commandContains"
@@ -141,12 +141,12 @@ import moment from "moment";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { emitter } from "../emitter";
 import ConfirmableButton from "./ConfirmableButton.vue";
-import { showToast } from "../notification_control";
 import {
   cellDataModalStore,
   commandsHistoryStore,
 } from "../stores/stores_initializer.js";
 import { Modal } from "bootstrap";
+import { handleError } from "../logging/utils.js";
 
 export default {
   name: "CommandsHistoryModal",
@@ -218,7 +218,7 @@ export default {
             },
             contextMenu: [
               {
-                label: "Copy Content To Query Tab",
+                label: '<i class="fas fa-bolt"></i><span>Copy Content To Query Tab</span>',
                 action: (e, cell) => {
                   emitter.emit(`${this.tabId}_copy_to_editor`, cell.getValue());
                   this.modalInstance.hide();
@@ -247,26 +247,23 @@ export default {
           },
           contextMenu: [
             {
-              label:
-                '<div style="position: absolute;"><i class="fas fa-copy cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy</div>',
+              label: '<i class="fas fa-copy"></i><span>Copy</span>',
               action: (e, cell) => {
                 this.table.selectRow(cell.getRow());
                 this.table.copyToClipboard("selected");
               },
             },
             {
-              label:
-                '<div style="position: absolute;"><i class="fas fa-bolt cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">Copy Content To Console Tab</div>',
+              label: '<i class="fas fa-bolt"></i><span>Copy Content To Console Tab</span>',
               action: (e, cell) => {
                 emitter.emit(`${this.tabId}_copy_to_editor`, cell.getValue());
                 this.modalInstance.hide();
               },
             },
             {
-              label:
-                '<div style="position: absolute;"><i class="fas fa-edit cm-all" style="vertical-align: middle;"></i></div><div style="padding-left: 30px;">View Content</div>',
+              label: '<i class="fas fa-edit"></i><span>View Content</span>',
               action: (e, cell) => {
-                cellDataModalStore.showModal(cell.getValue());
+                cellDataModalStore.showModal(cell.getValue(), "sql");
               },
             },
           ],
@@ -349,8 +346,8 @@ export default {
           // Update Button Labels
           if (label === "Custom Range") {
             this.timeRangeLabel = `${start.format(
-              "MMMM D, YYYY hh:mm A"
-            )}-${end.format("MMMM D, YYYY hh:mm A")}`;
+              "MM/DD/YY hh:mm A"
+            )}-${end.format("MM/DD/YY hh:mm A")}`;
           } else {
             this.timeRangeLabel = label;
           }
@@ -416,7 +413,7 @@ export default {
           this.table.redraw();
         })
         .catch((error) => {
-          showToast("error", error.response.data.data);
+          handleError(error);
         });
     },
     clearCommandsHistory() {
@@ -433,7 +430,7 @@ export default {
           this.getCommandsHistory(true);
         })
         .catch((error) => {
-          showToast("error", error.response.data.data);
+          handleError(error);
         });
     },
     getNextPage() {

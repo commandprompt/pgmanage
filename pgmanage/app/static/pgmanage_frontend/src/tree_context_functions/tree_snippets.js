@@ -2,6 +2,7 @@ import axios from "axios";
 import { showConfirm, showToast } from "../notification_control";
 import { emitter } from "../emitter";
 import { tabsStore } from "../stores/stores_initializer";
+import { handleError } from "../logging/utils";
 
 function executeSnippet(id) {
   axios
@@ -15,7 +16,7 @@ function executeSnippet(id) {
       );
     })
     .catch((error) => {
-      showToast("error", error.response?.data?.data ?? error);
+      handleError(error);
     });
 }
 
@@ -43,10 +44,12 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
   if (isSaveMode) {
     elements.push({
       label: "New Snippet",
-      icon: "fas cm-all fa-save",
+      icon: "fas fa-save",
       onClick: function () {
         showConfirm(
-          '<input id="element_name" class="form-control" placeholder="Snippet Name" style="width: 100%;">',
+          `<div class="form-group">
+              <input id="element_name" class="form-control" placeholder="Snippet Name" style="width: 100%;">
+            </div>`,
           function () {
             const snippetName = document.getElementById("element_name").value;
 
@@ -78,7 +81,7 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
   object.files.forEach((file) => {
     elements.push({
       label: isSaveMode ? `Overwrite ${file.name}` : file.name,
-      icon: "fas cm-all fa-align-left",
+      icon: "fas fa-align-left",
       onClick: isSaveMode
         ? () => handleSaveConfirmation(file, object)
         : () => executeSnippet(file.id),
@@ -88,7 +91,7 @@ function buildSnippetContextMenuObjects(mode, object, snippetText, callback) {
   object.folders.forEach((folder) => {
     elements.push({
       label: folder.name,
-      icon: "fas cm-all fa-folder",
+      icon: "fas fa-folder",
       children: buildSnippetContextMenuObjects(
         mode,
         folder,

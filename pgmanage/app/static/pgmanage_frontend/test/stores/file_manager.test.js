@@ -14,7 +14,7 @@ describe("fileManager store", () => {
   it("initializes with default state", () => {
     expect(fileManagerStore.onChange).toBeInstanceOf(Function);
     expect(fileManagerStore.dialogType).toBeNull();
-    expect(fileManagerStore.filePath).toBeNull();
+    expect(fileManagerStore.file).toBeNull();
     expect(fileManagerStore.visible).toBe(false);
     expect(fileManagerStore.desktopMode).toBeNull();
   });
@@ -32,10 +32,10 @@ describe("fileManager store", () => {
     expect(fileManagerStore.dialogType).toBe(dialogType);
   });
 
-  it("changes the file path", () => {
-    const newFilePath = "/new/path/to/file";
-    fileManagerStore.changeFile(newFilePath);
-    expect(fileManagerStore.filePath).toBe(newFilePath);
+  it("changes the file", () => {
+    const newFile = { name: "test file", path: "/new/path/to/file" };
+    fileManagerStore.changeFile(newFile);
+    expect(fileManagerStore.file).toStrictEqual(newFile);
   });
 
   it("hides the modal and resets the state", () => {
@@ -44,7 +44,7 @@ describe("fileManager store", () => {
     fileManagerStore.hideModal();
 
     expect(fileManagerStore.visible).toBe(false);
-    expect(fileManagerStore.filePath).toBeNull();
+    expect(fileManagerStore.file).toBeNull();
     expect(fileManagerStore.dialogType).toBeNull();
     expect(fileManagerStore.desktopMode).toBeNull();
     expect(fileManagerStore.onChange).toBeInstanceOf(Function);
@@ -58,7 +58,7 @@ describe("fileManager store", () => {
 
     expect(fileManagerStore.onChange).toBeInstanceOf(Function);
     expect(fileManagerStore.dialogType).toBeNull();
-    expect(fileManagerStore.filePath).toBeNull();
+    expect(fileManagerStore.file).toBeNull();
     expect(fileManagerStore.desktopMode).toBeNull();
   });
 });

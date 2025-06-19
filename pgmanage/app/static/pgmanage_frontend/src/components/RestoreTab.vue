@@ -9,9 +9,8 @@
               <div class="form-group mb-1">
                 <label :for="`${restoreTabId}_restoreFileName`" class="fw-bold mb-1">File name</label>
                 <div class="input-group">
-                    <div class="input-group-text btn btn-secondary" @click="openFileManagerModal">Select
-                    </div>
-                  <input :id="`${restoreTabId}_restoreFileName`" type="text" class="form-control" :value="restoreOptions.fileName"
+                    <div class="btn btn-secondary" @click="openFileManagerModal">Select</div>
+                  <input :id="`${restoreTabId}_restoreFileName`" type="text" class="form-control" :value="truncateText(restoreOptions.fileName, 20)"
                     placeholder="backup file" disabled>
                 </div>
               </div>
@@ -244,24 +243,26 @@
     </div>  
 
     <div class="d-flex justify-content-between mt-3">
-      <a :class="['btn', 'btn-outline-secondary', 'mb-2', { 'disabled': !isOptionsChanged }]" @click="resetToDefault">Revert settings</a>
+      <a data-testid="revert-settings-button" :class="['btn', 'btn-outline-secondary', 'mb-2', { 'disabled': !isOptionsChanged }]" @click="resetToDefault">Revert settings</a>
       <div class="btn-group" role="group">
-        <a :class="['btn', 'btn-outline-primary', 'mb-2', { 'disabled': !restoreOptions.fileName }]"
+        <a data-testid="preview-button" :class="['btn', 'btn-outline-primary', 'mb-2', { 'disabled': !restoreOptions.fileName }]"
           @click="previewCommand">Preview</a>
-          <a :class="['btn', 'btn-success', 'mb-2', { 'disabled': !restoreOptions.fileName }]"
+          <a data-testid="restore-button" :class="['btn', 'btn-success', 'mb-2', { 'disabled': !restoreOptions.fileName || restoreLocked }]"
           @click.prevent="createRestore">Restore</a>
       </div>
     </div>
   </form>
-  <UtilityJobs ref="jobs" />
+  <UtilityJobs @jobExit="handleJobExit" ref="jobs" />
 </div>
 </template>
 
 <script>
 import UtilityJobs from './UtilityJobs.vue';
 import axios from 'axios'
-import { showAlert, showToast } from '../notification_control';
+import { showAlert } from '../notification_control';
 import { settingsStore, fileManagerStore, tabsStore } from '../stores/stores_initializer';
+import { truncateText } from "../utils";
+import { handleError } from '../logging/utils';
 
 export default {
   name: "RestoreTab",
@@ -312,7 +313,9 @@ export default {
         pigz_number_of_jobs: 'auto',
       },
       restoreOptions: {},
-      restoreTabId: this.tabId
+      restoreTabId: this.tabId,
+      restoreLocked: false,
+      lastJobId: 0
     }
   },
   computed: {
@@ -343,7 +346,24 @@ export default {
       if (newValue === 'directory') {
         this.restoreOptions.pigz = false
       }
-    }
+    },
+    // --create and --single-transaction are mutually exclusive
+    'restoreOptions.single_transaction'(newValue){
+      if (newValue === true) {
+        this.restoreOptions.include_create_database = false
+      }
+    },
+    'restoreOptions.include_create_database'(newValue){
+      if (newValue === true) {
+        this.restoreOptions.single_transaction = false
+      }
+    },
+    restoreOptions: {
+      handler() {
+        this.restoreLocked = false;
+      },
+      deep: true
+    },
   },
   mounted() {
     this.$nextTick(() => {
@@ -363,7 +383,7 @@ export default {
     fileManagerStore.$onAction(({name, store, after}) => {
       if (name === "changeFile" && this.tabId === tabsStore.selectedPrimaryTab.metaData.selectedTab.id) {
         after(() => {
-          this.changeFilePath(store.filePath)
+          this.changeFilePath(store.file.path)
         })
       }
     })
@@ -378,10 +398,11 @@ export default {
           resp.data.data.forEach(element => this.roleNames.push(element.name))
         })
         .catch((error) => {
-          console.log(error)
+          handleError(error);
         })
     },
     createRestore() {
+      this.restoreLocked = true;
       axios.post("/restore/", {
         database_index: this.databaseIndex,
         workspace_id: this.workspaceId,
@@ -389,9 +410,11 @@ export default {
       })
         .then((resp) => {
           this.$refs.jobs.startJob(resp.data.job_id, resp.data.description)
+          this.lastJobId = resp.data.job_id;
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
+          this.restoreLocked = false;
         })
     },
     onFile(e) {
@@ -417,9 +440,14 @@ export default {
           showAlert(resp.data.command.cmd)
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
-    }
+    },
+    handleJobExit(jobId) {
+      if(jobId === this.lastJobId)
+        this.restoreLocked = false;
+    },
+    truncateText
   }
 }
 

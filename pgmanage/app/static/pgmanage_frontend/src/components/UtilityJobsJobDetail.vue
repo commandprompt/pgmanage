@@ -45,6 +45,7 @@ import { utilityJobStore } from "../stores/stores_initializer";
 import axios from "axios";
 import { Modal } from "bootstrap";
 import $ from "jquery";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "JobDetail",
@@ -88,6 +89,7 @@ export default {
       axios
         .get(`/bgprocess/${job_id}/${out}/${err}/`)
         .then((resp) => {
+          if (!Object.keys(this.selectedJob).length) return
           this.out = resp.data.data.out.pos;
           this.err = resp.data.data.err.pos;
           utilityJobStore.setDuration(resp.data.data.duration);
@@ -115,7 +117,7 @@ export default {
           }
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
         });
     },
     setDefault() {
@@ -124,6 +126,8 @@ export default {
       this.detailJobWorkerId = "";
       this.out = 0;
       this.err = 0;
+      clearInterval(this.detailJobWorkerId);
+      this.detailJobWorkerId = "";
     },
     scrollToBottom() {
       this.$nextTick(() => {

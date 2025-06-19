@@ -130,7 +130,7 @@ class MonitoringDashboardTests(TestCase):
         self.assertEqual(
             response.json().get("data")[0],
             {
-                "id": 0,
+                "id": -1,
                 "editable": False,
                 "title": "Transaction Rate",
                 "type": "timeseries",
@@ -282,7 +282,7 @@ class MonitoringDashboardTests(TestCase):
 
     def test_widget_template_with_existing_id_and_plugin_name(self):
         response = self.client.post(
-            reverse("widget-template", args=[self.widget_mock.id]),
+            reverse("widget-template", args=[-1]),
             data={"plugin_name": self.db_type},
         )
 

@@ -119,8 +119,7 @@
                 </div>
 
                 <div class="form-group mb-2">
-                  <p class="fw-bold mb-2">Preview</p>
-                  <div id="role_sql_command" style="height: 20vh"></div>
+                  <PreviewBox label="Preview" :editor-text="generatedSQL" databaseTechnology="postgresql" style="height: 20vh"/>
                 </div>
               </div>
 
@@ -237,22 +236,24 @@
   import { isEmpty, capitalize } from 'lodash';
   import { emitter } from '../emitter'
   import axios from 'axios'
-  import { showToast } from '../notification_control'
   import moment from 'moment'
-  import { settingsStore } from '../stores/stores_initializer'
   import { operationModes } from '../constants';
   import { Modal } from 'bootstrap'
+  import PreviewBox from './PreviewBox.vue';
+  import { handleError } from '../logging/utils';
 
   export default {
     name: 'RoleModal',
     components: {
-        SearchableDropdown
+        SearchableDropdown,
+        PreviewBox,
     },
     props: {
       mode: operationModes,
       treeNode: Object,
       workspaceId: String,
       databaseIndex: Number,
+      version: String
     },
     data() {
       return {
@@ -321,10 +322,6 @@
     },
 
     watch: {
-      generatedSQL() {
-        this.editor.setValue(this.generatedSQL)
-        this.editor.clearSelection();
-      },
       // watch initialRole for changes for cases when it is changed by requesting role from the api
       initialRole: {
         handler(newVal, oldVal) {
@@ -357,13 +354,7 @@
         this.localRole = JSON.parse(JSON.stringify(this.initialRole));
       }
       this.getExistingRoles()
-      this.setupEditor()
       this.setupDatePicker()
-      let tabEl = document.getElementById('role_general-tab')
-      tabEl.addEventListener('shown.bs.tab', () => {
-        this.editor.setValue(this.generatedSQL)
-        this.editor.clearSelection()
-      })
       this.modalInstance = Modal.getOrCreateInstance('#roleModal')
       this.modalInstance.show()
     },
@@ -389,7 +380,7 @@
           this.initialRole.memberOf = resp.data.member_of.map((m) => { return {name: m[0], withAdmin: m[1] == 'true'}})
         })
         .catch((error) => {
-            console.log(error)
+          handleError(error);
         })
       },
       getExistingRoles() {
@@ -402,7 +393,7 @@
           this.existingRoles = resp.data.data
         })
         .catch((error) => {
-            console.log(error)
+          handleError(error);
         })
       },
       addMember(collection) {
@@ -562,7 +553,8 @@
           if(!this.hasChanges)
             ret = '-- No changes --'
         }
-        this.generatedSQL = ret
+        let roleDocLink = `-- https://www.postgresql.org/docs/${this.version}/user-manag.html`
+        this.generatedSQL =`${roleDocLink}\n${ret}`
       },
       setupDatePicker(){
         $(this.$refs.datepicker).daterangepicker({
@@ -593,17 +585,9 @@
             this.modalInstance.hide()
           })
           .catch((error) => {
-            showToast("error", error.response.data.data)
+            handleError(error);
           })
         }
-      },
-      setupEditor() {
-        this.editor = ace.edit('role_sql_command');
-        this.editor.setTheme("ace/theme/" + settingsStore.editorTheme);
-        this.editor.session.setMode("ace/mode/sql");
-        this.editor.setFontSize(Number(settingsStore.fontSize));
-        this.editor.setReadOnly(true);
-        this.editor.$blockScrolling = Infinity;
       },
     },
   }

@@ -18,10 +18,9 @@ from django.urls import path, include
 from pgmanage.settings import ENTERPRISE_EDITION
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', include('app.urls'))
 ]
 
 if ENTERPRISE_EDITION:
     from enterprise.urls_enterprise import urlpatterns as enterprise_urls
-    urlpatterns += enterprise_urls
+    urlpatterns = enterprise_urls + urlpatterns

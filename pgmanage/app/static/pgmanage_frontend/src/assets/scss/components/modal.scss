@@ -11,7 +11,9 @@ $modalPadding: 20px;
 
     &-content {
         border-radius: $borderRadius;
-
+        overflow: hidden;
+        border: 0;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.35);
         @include themify() {
             background: themed($popupBg);
         }
@@ -28,11 +30,6 @@ $modalPadding: 20px;
 
     &-title {
         font-weight: $fontWeightMedium;
-    }
-
-    &-content {
-        overflow: hidden;
-        border: 0;
     }
 
     &-body {
@@ -283,7 +280,7 @@ $modalPadding: 20px;
                 width: 80px;
                 padding: 5px;
                 border-radius: $borderRadius;
-                cursor: pointer;
+                cursor: default;
 
                 @include themify() {
                     color: themed($color);
@@ -294,6 +291,28 @@ $modalPadding: 20px;
                         background-color: themed($fileItemBgActive);
                     }
                 }
+
+                &:hover {
+                    background-color: rgba($primaryMutedColor, 0.15);
+                }
+            }
+        }
+        
+        .list-group-item:not(.file-table-header) {
+            background-color: inherit;
+            cursor: default;
+            @include themify() {
+                color: themed($color);
+            }
+
+            &.active {
+                @include themify() {
+                    background-color: themed($fileItemBgActive);
+                }
+            }
+
+            &:hover {
+                background-color: rgba($primaryMutedColor, 0.15);
             }
         }
     }

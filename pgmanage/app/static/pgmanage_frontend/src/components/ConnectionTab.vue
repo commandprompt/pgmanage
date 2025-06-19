@@ -105,15 +105,15 @@ import { emitter } from "../emitter";
 import { truncateText } from "../utils";
 import { Splitpanes, Pane } from "splitpanes";
 import TreePropertiesDDL from "./TreePropertiesDDL.vue";
-import { showToast } from "../notification_control";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import { Tooltip } from "bootstrap";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "ConnectionTab",
   components: {
     DatabaseTabs,
-    TreePostgresql: defineAsyncComponent(() => import("./TreePostgresql.vue")),
+    TreePostgresql: defineAsyncComponent(() => import("@conditional/components/TreePostgresql.vue")),
     TreeSqlite: defineAsyncComponent(() => import("./TreeSqlite.vue")),
     TreeMariaDB: defineAsyncComponent(() => import("./TreeMariaDB.vue")),
     TreeOracle: defineAsyncComponent(() => import("./TreeOracle.vue")),
@@ -249,8 +249,8 @@ export default {
             });
           })
           .catch((error) => {
-            if (error.response.data.password_timeout) return
-            showToast("error", error?.response?.data?.data);
+            if (error?.response?.data?.password_timeout) return
+            handleError(error);
           });
       }
     },
@@ -277,7 +277,7 @@ export default {
           this.showTreeTabsLoading = false;
         })
         .catch((error) => {
-          if (error.response.data.password_timeout) {
+          if (error?.response?.data?.password_timeout) {
             emitter.emit("show_password_prompt", {
               databaseIndex: this.databaseIndex,
               successCallback: () => {
@@ -286,7 +286,7 @@ export default {
               message: error.response.data.data,
             });
           } else {
-            showToast("error", error.response.data.data);
+            handleError(error);
           }
           this.showTreeTabsLoading = false;
         });

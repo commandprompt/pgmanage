@@ -27,7 +27,8 @@ import csv
 import openpyxl
 from collections import OrderedDict
 import tempfile
-
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 import app.include.Spartacus as Spartacus
 
 class Exception(Exception):
@@ -35,76 +36,103 @@ class Exception(Exception):
 
 
 class DataFileWriter(object):
-    def __init__(self, p_filename, p_fieldnames=None, p_encoding='utf-8', p_delimiter=';', p_lineterminator='\n', skip_headers=False):
-        v_tmp = p_filename.split('.')
-        if len(v_tmp) > 1:
-            self.v_extension = v_tmp[-1].lower()
+    def __init__(self, filename, fieldnames=None, encoding='utf-8', delimiter=';', lineterminator='\n', skip_headers=False):
+        tmp = filename.split('.')
+        if len(tmp) > 1:
+            self.extension = tmp[-1].lower()
         else:
-            self.v_extension = 'csv'
-        if self.v_extension == 'txt' or self.v_extension == 'out':
-            self.v_extension = 'csv'
-        self.v_filename = p_filename
-        self.v_file = None
-        self.v_header = p_fieldnames # Can't be empty for CSV
-        self.v_encoding = p_encoding
-        self.v_delimiter = p_delimiter
-        self.v_lineterminator = p_lineterminator
-        self.v_currentrow = 1
-        self.v_open = False
+            self.extension = 'csv'
+        if self.extension == 'txt' or self.extension == 'out':
+            self.extension = 'csv'
+
+        self.filename = filename
+        self.file_handle = None
+        self.header = []
+        self.currentrow = 1
+        self.opened = False
+        self.writer = None
+        self.encoding = encoding
+        self.delimiter = delimiter
+        self.lineterminator = lineterminator
         self.skip_headers = skip_headers
+        for idx, field in enumerate(fieldnames):
+            if field == '?column?':
+                self.header.append(f'?column-{idx}')
+            else:
+                self.header.append(field)
+
     def Open(self):
         try:
-            if self.v_extension == 'csv':
-                self.v_file = open(self.v_filename, 'w', encoding=self.v_encoding)
-                self.v_object = csv.writer(self.v_file, delimiter=self.v_delimiter, lineterminator=self.v_lineterminator)
+            if self.extension == 'csv':
+                self.file_handle = open(self.filename, 'w', encoding=self.encoding)
+                self.writer = csv.writer(self.file_handle, delimiter=self.delimiter, lineterminator=self.lineterminator)
                 if not self.skip_headers:
-                    self.v_object.writerow(self.v_header)
-                self.v_open = True
-            elif self.v_extension == 'xlsx':
-                self.v_object = openpyxl.Workbook(write_only=True)
-                self.v_open = True
+                    self.writer.writerow(self.header)
+                self.opened = True
+            elif self.extension == 'xlsx':
+                self.writer = openpyxl.Workbook(write_only=True)
+                self.opened = True
+            elif self.extension == 'json':
+                self.file_handle = open(self.filename, 'w+', encoding=self.encoding)
+                print("[", file=self.file_handle, end='')
+                self.opened = True
             else:
-                raise Spartacus.Utils.Exception('File extension "{0}" not supported.'.format(self.v_extension))
+                raise Spartacus.Utils.Exception('File extension "{0}" not supported.'.format(self.extension))
         except Spartacus.Utils.Exception as exc:
             raise exc
         except Exception as exc:
             raise Spartacus.Utils.Exception(str(exc))
-    def Write(self, p_datatable, p_sheetname=None):
+    def Write(self, p_datatable, p_hasmore=False):
         try:
-            if not self.v_open:
+            if not self.opened:
                 raise Spartacus.Utils.Exception('You need to call Open() first.')
-            if self.v_extension == 'csv':
-                for v_row in p_datatable.Rows:
-                    self.v_object.writerow(v_row)
-            else:
-                if self.v_currentrow == 1:
-                    if p_sheetname:
-                        v_worksheet = self.v_object.create_sheet(p_sheetname)
-                    else:
-                        v_worksheet = self.v_object.create_sheet()
+            if self.extension == 'csv':
+                for row in p_datatable.Rows:
+                    self.writer.writerow(row)
+            elif self.extension == 'xlsx':
+                if self.currentrow == 1:
+                    worksheet = self.writer.create_sheet()
                     if not self.skip_headers:
-                        v_worksheet.append(p_datatable.Columns)
-                        self.v_currentrow = self.v_currentrow + 1
+                        worksheet.append(p_datatable.Columns)
+                        self.currentrow = self.currentrow + 1
                 else:
-                    v_worksheet = self.v_object.active
+                    worksheet = self.writer.active
                 for r in range(0, len(p_datatable.Rows)):
-                    v_row = []
+                    row = []
                     for c in range(0, len(p_datatable.Columns)):
-                        v_row.append(p_datatable.Rows[r][c])
-                    v_worksheet.append(v_row)
-                self.v_currentrow = self.v_currentrow + len(p_datatable.Rows)
+                        row.append(p_datatable.Rows[r][c])
+                    worksheet.append(row)
+                self.currentrow = self.currentrow + len(p_datatable.Rows)
+            else:
+                for row in p_datatable.Rows:
+                    print(
+                        json.dumps(
+                            dict(zip (self.header, row)), cls=DjangoJSONEncoder),
+                            end=',\n',
+                            file=self.file_handle
+                    )
+
         except Spartacus.Utils.Exception as exc:
             raise exc
         except Exception as exc:
             raise Spartacus.Utils.Exception(str(exc))
     def Flush(self):
         try:
-            if not self.v_open:
+            if not self.opened:
                 raise Spartacus.Utils.Exception('You need to call Open() first.')
-            if self.v_extension == 'csv':
-                self.v_file.close()
+            if self.extension == 'csv':
+                self.file_handle.close()
+            elif self.extension == 'xlsx':
+                self.writer.save(self.filename)
             else:
-                self.v_object.save(self.v_filename)
+                pos = self.file_handle.tell()
+                # non-empty json file
+                if pos > 2:
+                    # rewind 2 bytes back so the last ',\n' gets truncated
+                    self.file_handle.seek(pos-2)
+                print("]", file=self.file_handle)
+                self.file_handle.close()
+
         except Spartacus.Utils.Exception as exc:
             raise exc
         except Exception as exc:

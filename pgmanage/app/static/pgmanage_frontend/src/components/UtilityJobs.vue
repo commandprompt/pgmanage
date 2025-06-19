@@ -52,6 +52,7 @@
 import { utilityJobStore } from "../stores/stores_initializer";
 import axios from "axios";
 import moment from "moment";
+import { handleError } from "../logging/utils";
 
 const JobState = {
   PROCESS_NOT_STARTED: 0,
@@ -78,6 +79,7 @@ export default {
   unmounted() {
     clearInterval(this.workerId);
   },
+  emits: ['jobExit'],
   methods: {
     getJobList() {
       axios
@@ -98,7 +100,7 @@ export default {
           this.checkPending();
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
         });
     },
     startWorker() {
@@ -125,18 +127,19 @@ export default {
             JobState.PROCESS_TERMINATED;
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
         });
     },
     deleteJob(job_id) {
       axios
         .post(`/bgprocess/delete/${job_id}/`)
         .then((resp) => {
+          this.$emit('jobExit', job_id)
           this.pendingJobId = this.pendingJobId.filter((id) => id != job_id);
           this.getJobList();
         })
         .catch((error) => {
-          console.log(error);
+          handleError(error);
         });
     },
     jobStatus(process_state) {
@@ -183,6 +186,7 @@ export default {
       this.pendingJobId = this.pendingJobId.filter((id) => {
         if (completedJobIds.includes(id)) {
           let j = this.jobList.find((j) => j.id == id);
+          this.$emit('jobExit', id)
           if (j.process_state != JobState.PROCESS_TERMINATED)
             this.sendNotifyJobFinished(j.description, j.process_state, () =>
               this.getJobDetails(j.id, event)

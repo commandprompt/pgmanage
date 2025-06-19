@@ -31,9 +31,6 @@ SOFTWARE.
     background-color: #F8FAFD;
   }
 
-  iframe {
-    border-color: #E2E2E2;
-  }
 
   .omnidb__theme-bg--menu-primary {
     background-color: #1560AD;
@@ -107,15 +104,6 @@ SOFTWARE.
     color: #D72239;
   }
 
-  /* BRANDING ICON */
-  .omnidb-icon__theme--branding {
-  	fill: #FFF;
-
-    path {
-    	fill: #FFF;
-    }
-  }
-
   /* CONSOLE */
   .omnidb__txt-console {
     border-color: #CAD0D8;
@@ -161,10 +149,6 @@ SOFTWARE.
       color: #585858;
       background-color: #FFF;
     }
-  }
-
-  a {
-    color: #4A81D4;
   }
 
   /* SECONDARY TAB */
@@ -217,7 +201,7 @@ SOFTWARE.
         border-bottom-color: transparent !important;
       }
 
-      .omnidb__tab-menu__link {
+      &__link {
         border-radius: 4px 4px 0 0;
         background-color: transparent;
         border-color: #CAD0D8;
@@ -230,10 +214,10 @@ SOFTWARE.
           border-top: 2px solid #1560AD;
           font-weight: 500;
         }
-      }
-
-      .omnidb__tab-menu__link-icon {
-        background-color: #E2E2E2 !important;
+        
+        &-icon {
+          background-color: #E2E2E2 !important;
+        }
       }
     }
   }
@@ -270,32 +254,6 @@ SOFTWARE.
     }
   }
 
-  /* MODAL CONFIG */
-  .omnidb__modal-config {
-    .nav-tabs {
-      border-bottom-color: transparent !important;
-    }
-
-    .nav-link {
-      background-color: transparent;
-      border-color: #e2e2e2;
-      border-bottom-color: #FFFFFF;
-      color: #585858 !important;
-
-      &.active {
-        background-color: transparent;
-        border-color: #DEDEDE;
-        border-bottom-color: #FFFFFF;
-        border-top: 2px solid #68A4FF;
-      }
-
-      &:focus,
-      &:hover {
-        border-bottom-color: #FFFFFF;
-      }
-    }
-  }
-
   /* CARD */
   .card {
     background-color: #FFF;
@@ -314,28 +272,12 @@ SOFTWARE.
     color: #808080;
   }
 
-  .omnidb__form-check {
-    .form-check-label::before {
-      background-color: #F4F4F4 !important;
-      border: 1px solid #DEDEDE !important;
-    }
-
-    input:checked~.form-check-label::after {
-      background-color: #1560AD;
-    }
-  }
-
   .required > label::after {
     color: #EC2424;
   }
 
   .custom-file > input[disabled]+label {
     background-color: #E9ECEF;
-  }
-
-  /* Input-group */
-  span.input-group-text {
-    border-color: #CED4DA;
   }
 
   /* Switch */
@@ -348,108 +290,13 @@ SOFTWARE.
     }
   }
 
-  /* MODAL */
-  .modal-header {
-    border-color: #E2E2E2;
-  }
-  .modal-content {
-    background-color: #FFF;
-  }
-  .modal-footer {
-    border-top-color: #d2d2d2;
-  }
-
-
   /* SCROLLBAR FIREFOX (new versions) */
   * {
     scrollbar-color: #DEDEDE #EFEFEF;
-  }
-
-  /* TOAST */
-  .toast {
-    background-color: #dadada;
-    border-color: rgba(0,0,0,.1);
-   }
-  .toast-header {
-    background-color: rgba(255,255,255,.85);
-  }
-
-  /* JSON BUILDER */
-  .jsonBuilder--template-2 .jsonBuilder__label {
-    background-color: #E2E2E2;
-  }
-
-  /* PAGINATION */
-  .page-item.disabled .page-link {
-    color: #6c757d;
-    background-color: #fff;
-    border-color: #dee2e6;
-  }
-
-  /* HANDSONTABLE */
-  .handsontable th {
-    background-color: #FFFFFF;
-    color: #9a9a9a;
-    font-weight: bold;
-  }
-  .handsontable {
-    .cellEven {
-      background-color: #FFFFFF;
-    }
-  }
-
-  .handsontable.simple {
-    thead th,
-    tr th,
-    td {
-      border: none;
-      border-bottom: 1px solid #e2e2e2 !important;
-    }
-
-    th,
-    thead th {
-        color: #90949A;
-        text-align: left;
-    }
-  }
-
-  .omnidb__ht__first-col-actions td:first-child {
-    color: #4A81D4;
-  }
-
-  /* Query Info */
-  .omnidb__query-info__value {
-    color: #1560AD;
   }
 
   /* Aimara Tree */
   .node-all {
     color: #1560AD;
   }
-
-
-  /* Tree Component */
-  span.node_selected span {
-    color: #284AC6;
-  }
-}
-
-.cellNew {
-	background-color: rgb(216, 236, 218) !important;
-}
-
-.cellEdit {
-	background-color: rgb(255, 251, 215) !important;
-}
-
-.cellRemove {
-	background-color: rgb(255, 213, 213) !important;
-}
-
-#horizontal-resize-line {
-  border-left-color: black;
-}
-
-#vertical-resize-line {
-  border-top-color: black;
 }

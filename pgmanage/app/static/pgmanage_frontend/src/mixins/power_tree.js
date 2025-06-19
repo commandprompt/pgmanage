@@ -1,10 +1,10 @@
 import { emitter } from "../emitter";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import axios from "axios";
-import { showToast } from "../notification_control";
 import { tabsStore, settingsStore, connectionsStore } from "../stores/stores_initializer";
 import { logger } from "../logging/logger_setup";
 import { axiosHooks } from "../logging/service";
+import { handleError } from "../logging/utils";
 
 export default {
   emits: ["treeTabsUpdate", "clearTabs"],
@@ -17,7 +17,7 @@ export default {
     cmRefreshObject() {
       return {
         label: "Refresh",
-        icon: "fas cm-all fa-sync-alt",
+        icon: "fas fa-sync-alt",
         onClick: this.refreshNode,
       };
     },
@@ -72,6 +72,9 @@ export default {
     },
     onToggle(node, e) {
       this.$refs.tree.select(node.path);
+      if (this.getRootNode().title !== "Snippets") {
+        this.getProperties(node);
+      }
       if (node.isExpanded) return;
       this.refreshTree(node);
       if(settingsStore.scrollTree) {
@@ -174,8 +177,8 @@ export default {
     removeNode(node) {
       this.$refs.tree.remove([node.path]);
     },
-    nodeOpenError(error_response, node) {
-      if (error_response.response.data?.password_timeout) {
+    nodeOpenError(error, node) {
+      if (error?.response?.data?.password_timeout) {
         emitter.emit('show_password_prompt', {
           databaseIndex: this.databaseIndex,
           successCallback: () => {
@@ -185,15 +188,13 @@ export default {
               database: this.selectedDatabase,
             });
 
-            // notify queryEditors that we are authenticated and db metadata can be now fetched
-            emitter.emit("refetchMeta", {databaseIndex: this.databaseIndex})
             this.refreshNode()
           },
-          message: error_response.response.data.data,
-          kind: error_response.response.data.kind})
+          message: error.response.data.data,
+          kind: error.response.data.kind})
       } else {
         this.removeChildNodes(node);
-        showToast("error", error_response.response.data.data);
+        handleError(error);
       }
     },
     getRootNode() {
@@ -202,11 +203,11 @@ export default {
     refreshTreeRecursive(node_type) {
       const rootNode = this.getRootNode();
       const getInnerNode = (node, node_type) => {
+        if (node.data.type === node_type) {
+          this.refreshTree(node, true);
+          this.expandNode(node);
+        }
         if (!!node.children.length) {
-          if (node.data.type === node_type) {
-            this.refreshTree(node, true);
-            this.expandNode(node);
-          }
 
           for (let i = 0; i < node.children.length; i++) {
             let childNode = node.children[i];
@@ -249,7 +250,7 @@ export default {
       if (spaceNeededForScroll <= spaceAvailableForScroll) {
         nodeElement.scrollIntoView({
           block: "start",
-          inline: "end",
+          inline: "start",
           behavior: "smooth",
         });
       } 

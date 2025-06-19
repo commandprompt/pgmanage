@@ -1,6 +1,6 @@
 .v-toast {
     &__item {
-        max-width: 400px;
+        max-width: 420px;
         color: $primaryLight;
         border-radius: $borderRadius;
 
@@ -32,6 +32,11 @@
             max-height:100px;
             overflow: auto;
             scrollbar-color: auto;
+        }
+        
+        a {
+            color: $primaryLight;
+            font-weight: bold;
         }
     }
 

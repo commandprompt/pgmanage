@@ -31,7 +31,7 @@ import {
   TemplateUpdateMariadb,
 } from "../tree_context_functions/tree_mariadb";
 import { emitter } from "../emitter";
-import { tabsStore, connectionsStore } from "../stores/stores_initializer";
+import { tabsStore, connectionsStore, dbMetadataStore } from "../stores/stores_initializer";
 import { checkBeforeChangeDatabase } from "../workspace";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { operationModes } from "../constants";
@@ -67,17 +67,18 @@ export default {
         },
       ],
       templates: "",
+      cm_server_extra: [],
     };
   },
   computed: {
     contextMenu() {
       return {
-        cm_server: [this.cmRefreshObject],
+        cm_server: [this.cmRefreshObject, ...this.cm_server_extra],
         cm_databases: [
           this.cmRefreshObject,
           {
             label: "Create Database",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate("Create Database", this.templates.create_database);
             },
@@ -86,14 +87,14 @@ export default {
         cm_database: [
           {
             label: "ER Diagram",
-            icon: "fab cm-all fa-hubspot",
+            icon: "fab fa-hubspot",
             onClick: () => {
               tabsStore.createERDTab(this.selectedNode.data.database)
             },
           },
           {
             label: "Alter Database",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               tabSQLTemplate(
                 "Alter Database",
@@ -106,7 +107,7 @@ export default {
           },
           {
             label: "Drop Database",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Database",
@@ -122,7 +123,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Table",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE, "mysql")
             },
@@ -132,11 +133,11 @@ export default {
           this.cmRefreshObject,
           {
             label: "Data Actions",
-            icon: "fas cm-all fa-list",
+            icon: "fas fa-list",
             children: [
               {
                 label: "Query Data",
-                icon: "fas cm-all fa-search",
+                icon: "fas fa-search",
                 onClick: () => {
                   TemplateSelectMariadb(
                     this.getParentNodeDeep(this.selectedNode, 2).title,
@@ -146,14 +147,14 @@ export default {
               },
               {
                 label: "Edit Data",
-                icon: "fas cm-all fa-table",
+                icon: "fas fa-table",
                 onClick: () => {
                   tabsStore.createDataEditorTab(this.selectedNode.title, null)
                 },
               },
               {
                 label: "Insert Record",
-                icon: "fas cm-all fa-edit",
+                icon: "fas fa-edit",
                 onClick: () => {
                   TemplateInsertMariadb(
                     this.getParentNodeDeep(this.selectedNode, 2).title,
@@ -163,7 +164,7 @@ export default {
               },
               {
                 label: "Update Records",
-                icon: "fas cm-all fa-edit",
+                icon: "fas fa-edit",
                 onClick: () => {
                   TemplateUpdateMariadb(
                     this.getParentNodeDeep(this.selectedNode, 2).title,
@@ -173,7 +174,7 @@ export default {
               },
               {
                 label: "Delete Records",
-                icon: "fas cm-all fa-times",
+                icon: "fas fa-times",
                 onClick: () => {
                   tabSQLTemplate(
                     "Delete Records",
@@ -189,18 +190,18 @@ export default {
           },
           {
             label: "Table Actions",
-            icon: "fas cm-all fa-list",
+            icon: "fas fa-list",
             children: [
               {
                 label: "Alter Table",
-                icon: "fas cm-all fa-edit",
+                icon: "fas fa-edit",
                 onClick: () => {
                   tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "mysql")
                 },
               },
               {
                 label: "Drop Table",
-                icon: "fas cm-all fa-times",
+                icon: "fas fa-times",
                 onClick: () => {
                   tabSQLTemplate(
                     "Drop Table",
@@ -218,7 +219,7 @@ export default {
         cm_columns: [
           {
             label: "Create Column",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Field",
@@ -234,7 +235,7 @@ export default {
         cm_column: [
           {
             label: "Alter Column",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               tabSQLTemplate(
                 "Alter Column",
@@ -250,7 +251,7 @@ export default {
           },
           {
             label: "Drop Column",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Column",
@@ -269,7 +270,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Primary Key",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Primary Key",
@@ -286,7 +287,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Drop Primary Key",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Primary Key",
@@ -305,7 +306,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Foreign Key",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Foreign Key",
@@ -322,7 +323,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Drop Foreign Key",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Foreign Key",
@@ -341,7 +342,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Unique",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Unique",
@@ -358,7 +359,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Drop Unique",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Unique",
@@ -377,7 +378,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Index",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Index",
@@ -394,7 +395,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Drop Index",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Index",
@@ -411,7 +412,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Sequence",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Sequence",
@@ -426,7 +427,7 @@ export default {
         cm_sequence: [
           {
             label: "Alter Sequence",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               tabSQLTemplate(
                 "Alter Sequence",
@@ -440,7 +441,7 @@ export default {
           },
           {
             label: "Drop Sequence",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Sequence",
@@ -457,7 +458,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create View",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create View",
@@ -473,7 +474,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Query Data",
-            icon: "fas cm-all fa-search",
+            icon: "fas fa-search",
             onClick: () => {
               // FIX this to use TemplateSelectMariadb
               let table_name = `${this.getParentNodeDeep(this.selectedNode, 2).title
@@ -488,14 +489,14 @@ export default {
           },
           {
             label: "Edit View",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               this.getViewDefinitionMariadb(this.selectedNode);
             },
           },
           {
             label: "Drop View",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop View",
@@ -512,7 +513,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Function",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Function",
@@ -528,14 +529,14 @@ export default {
           this.cmRefreshObject,
           {
             label: "Edit Function",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               this.getFunctionDefinitionMariadb(this.selectedNode);
             },
           },
           {
             label: "Drop Function",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Function",
@@ -551,7 +552,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Procedure",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Procedure",
@@ -567,14 +568,14 @@ export default {
           this.cmRefreshObject,
           {
             label: "Edit Procedure",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               this.getProcedureDefinitionMariadb(this.selectedNode);
             },
           },
           {
             label: "Drop Procedure",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Procedure",
@@ -590,7 +591,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Role",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate("Create Role", this.templates.create_role);
             },
@@ -599,7 +600,7 @@ export default {
         cm_role: [
           {
             label: "Alter Role",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               tabSQLTemplate(
                 "Alter Role",
@@ -612,7 +613,7 @@ export default {
           },
           {
             label: "Drop Role",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Role",
@@ -707,6 +708,7 @@ export default {
               database: node.data.database,
             })
             .then((resp) => {
+              dbMetadataStore.fetchDbMeta(this.databaseIndex, this.workspaceId, node.data.database)
               connectionsStore.updateConnection(this.databaseIndex, {"last_used_database" : node.data.database})
               const database_nodes = this.$refs.tree.getNode([0, 0]).children;
 
@@ -834,20 +836,19 @@ export default {
             type: "database_list",
             contextMenu: "cm_databases",
           });
-          this.contextMenu.cm_server = [this.cmRefreshObject];
-          this.contextMenu.cm_server.push({
+          this.cm_server_extra = [{
             label: "Monitoring",
-            icon: "fas cm-all fa-chart-line",
+            icon: "fas fa-chart-line",
             children: [
               {
                 label: "Process List",
-                icon: "fas cm-all fa-chart-line",
+                icon: "fas fa-chart-line",
                 onClick: () => {
                   tabsStore.createMonitoringTab("Process List", "select * from information_schema.processlist")
                 },
               },
             ],
-          });
+          }];
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

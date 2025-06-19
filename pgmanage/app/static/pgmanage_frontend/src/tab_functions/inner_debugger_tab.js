@@ -244,7 +244,7 @@ let createDebuggerTabFunction = function(p_function) {
   //   var v_option_list = [
   //     {
   //       text: 'Copy',
-  //       icon: 'fas cm-all fa-terminal',
+  //       icon: 'fas fa-terminal',
   //       action: function() {
   //         // Getting the value
   //         var copy_text = v_editor.getValue();
@@ -254,7 +254,7 @@ let createDebuggerTabFunction = function(p_function) {
   //     },
   //     {
   //       text: 'Save as snippet',
-  //       icon: 'fas cm-all fa-save',
+  //       icon: 'fas fa-save',
   //       submenu: {
   //         elements: buildSnippetContextMenuObjects('save', v_connTabControl.tag.globalSnippets, v_editor)
   //       }
@@ -265,7 +265,7 @@ let createDebuggerTabFunction = function(p_function) {
   //     v_option_list.push(
   //       {
   //         text: 'Use snippet',
-  //         icon: 'fas cm-all fa-book',
+  //         icon: 'fas fa-book',
   //         submenu: {
   //           elements: buildSnippetContextMenuObjects('load', v_connTabControl.tag.globalSnippets, v_editor)
   //         }

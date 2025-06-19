@@ -10,6 +10,7 @@ DEBUG = custom_settings.DEV_MODE
 DESKTOP_MODE = custom_settings.DESKTOP_MODE
 BASE_DIR = custom_settings.BASE_DIR
 HOME_DIR = custom_settings.HOME_DIR
+MAX_UPLOAD_SIZE = custom_settings.MAX_UPLOAD_SIZE
 
 TEMP_DIR = os.path.join(BASE_DIR,'app','static','temp')
 PLUGINS_DIR = os.path.join(BASE_DIR,'app','plugins')
@@ -41,7 +42,6 @@ else:
 
 INSTALLED_APPS = [
     'app',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -219,7 +219,7 @@ DJANGO_VITE_DEV_MODE = DEBUG
 DJANGO_VITE_DEV_SERVER_PORT = 3000
 
 if not DEBUG:
-    DJANGO_VITE_MANIFEST_PATH = os.path.join(STATIC_ROOT, "dist", 'manifest.json')
+    DJANGO_VITE_MANIFEST_PATH = os.path.join(STATIC_ROOT, "dist", '.vite', 'manifest.json')
     DJANGO_VITE_STATIC_URL_PREFIX = "dist"
     DJANGO_VITE_ASSETS_PATH = os.path.join(STATIC_ROOT, "dist")
 else:

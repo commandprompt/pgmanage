@@ -16,6 +16,7 @@ import psutil
 from app.models.main import Connection, Job
 from app.views.polling import get_duration
 from django.utils.timezone import make_aware
+from pgmanage.settings import HOME_DIR
 
 PROCESS_NOT_STARTED = 0
 PROCESS_STARTED = 1
@@ -81,10 +82,7 @@ class BatchJob:
 
     def _create_job(self, description, command, args):
         current_time = datetime.now().strftime("%Y%m%d%H%M%S%f")
-
-        log_dir = os.path.join(
-            os.path.realpath(os.path.expanduser("~/.pgmanage/")), "process_logs"
-        )
+        log_dir = os.path.join(HOME_DIR, "process_logs", self.user.username)
 
         def random_number(size):
             return "".join(
@@ -387,7 +385,7 @@ class BatchJob:
 
     @staticmethod
     def list(user):
-        jobs = Job.objects.filter(user=user).select_related("connection")
+        jobs = Job.objects.filter(user=user).select_related("connection").order_by('-start_time')
         changed = False
 
         res = []

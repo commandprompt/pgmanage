@@ -7,8 +7,8 @@
         </div>
         <div class="modal-body form-group">
           <p v-if="action === 'rename'">
-            <i :class="['fas', 'fa-2xl', { 'fa-folder': file.file_type === 'dir', 'fa-file': file.file_type === 'file' }]"
-              :style="{ 'color': file.file_type === 'dir' ? '#0ea5e9' : 'rgb(105 114 118)', }"></i>
+            <i :class="['fas', 'fa-2xl', { 'fa-folder': file.is_directory, 'fa-file': !file.is_directory }]"
+              :style="{ 'color': file.is_directory ? '#0ea5e9' : 'rgb(105 114 118)', }"></i>
             <span class="ms-1">{{ file.file_name }}</span>
           </p>
           <input v-if="action !== 'delete'" type="text" class="form-control" v-model="name">
@@ -19,8 +19,8 @@
               </div>
               <div class="pt-3 text-break text-center col">
                 <div class="position-relative">
-                  <i :class="['fas', 'fa-2xl', { 'fa-folder': file.file_type === 'dir', 'fa-file': file.file_type === 'file' }]"
-                    :style="{ 'color': file.file_type === 'dir' ? '#0ea5e9' : 'rgb(105 114 118)', }"></i>
+                  <i :class="['fas', 'fa-2xl', { 'fa-folder': file.is_directory, 'fa-file': !file.is_directory }]"
+                    :style="{ 'color': file.is_directory ? '#0ea5e9' : 'rgb(105 114 118)', }"></i>
                 </div>
                 <span class="text-dark">{{ file.file_name }}</span>
               </div>
@@ -44,7 +44,7 @@
 
 <script>
 import axios from 'axios'
-import { showToast } from '../notification_control'
+import { handleError } from '../logging/utils';
 
 export default {
   name: 'ActionsModal',
@@ -88,7 +88,7 @@ export default {
       }
     },
     deleteFileType() {
-      if (this.file.file_type === 'dir') {
+      if (this.file.is_directory) {
         return 'Directory'
       } else {
         return 'File'
@@ -103,14 +103,14 @@ export default {
   methods: {
     rename(event) {
       axios.post('/file_manager/rename/', {
-        path: this.file?.file_path,
+        path: this.file?.path,
         name: this.name
       })
         .then((resp) => {
           this.$emit('actionDone', event, this.name)
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     create(event, type) {
@@ -123,18 +123,18 @@ export default {
           this.$emit('actionDone', event, this.name)
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     deleteFile() {
       axios.post('/file_manager/delete/', {
-        path: this.file?.file_path
+        path: this.file?.path
       })
         .then((resp) => {
           this.$emit('actionDone')
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
 

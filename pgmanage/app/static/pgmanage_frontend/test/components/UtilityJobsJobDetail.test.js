@@ -6,6 +6,11 @@ import { Modal } from "bootstrap";
 import { vi, describe, beforeEach, it, expect, afterEach } from "vitest";
 import { nextTick } from "vue";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 vi.mock("axios");
 vi.mock("bootstrap", () => ({
   Modal: {
@@ -93,6 +98,10 @@ describe("UtilityJobsJobDetail.vue", () => {
   });
 
   it("adds logs and scrolls to the bottom on receiving job details", async () => {
+    utilityJobStore.setJob({
+      id: 1,
+      type_desc: "Test Job",
+    });
     axios.get.mockResolvedValueOnce(response);
 
     wrapper.vm.getJobDetails(1, 0, 0);

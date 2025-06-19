@@ -72,14 +72,14 @@ export default {
           this.cmRefreshObject,
           {
             label: "ER Diagram",
-            icon: "fab cm-all fa-hubspot",
+            icon: "fab fa-hubspot",
             onClick: () => {
               tabsStore.createERDTab()
             },
           },
           {
             label: "Create Table",
-            icon: "fas cm-all fa-plus",
+            icon: "fas fa-plus",
             onClick: () => {
               tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE, "sqlite3")
             },
@@ -89,39 +89,39 @@ export default {
           this.cmRefreshObject,
           {
             label: "Data Actions",
-            icon: "fas cm-all fa-list",
+            icon: "fas fa-list",
             children: [
               {
                 label: "Query Data",
-                icon: "fas cm-all fa-search",
+                icon: "fas fa-search",
                 onClick: () => {
                   TemplateSelectSqlite(this.selectedNode.title, "t");
                 },
               },
               {
                 label: "Edit Data",
-                icon: "fas cm-all fa-table",
+                icon: "fas fa-table",
                 onClick: () => {
                   tabsStore.createDataEditorTab(this.selectedNode.title, null)
                 },
               },
               {
                 label: "Insert Record",
-                icon: "fas cm-all fa-edit",
+                icon: "fas fa-edit",
                 onClick: () => {
                   TemplateInsertSqlite(this.selectedNode.title);
                 },
               },
               {
                 label: "Update Records",
-                icon: "fas cm-all fa-edit",
+                icon: "fas fa-edit",
                 onClick: () => {
                   TemplateUpdateSqlite(this.selectedNode.title);
                 },
               },
               {
                 label: "Delete Records",
-                icon: "fas cm-all fa-times",
+                icon: "fas fa-times",
                 onClick: () => {
                   tabSQLTemplate(
                     "Delete Records",
@@ -136,18 +136,18 @@ export default {
           },
           {
             label: "Table Actions",
-            icon: "fas cm-all fa-list",
+            icon: "fas fa-list",
             children: [
               {
                 label: "Alter Table",
-                icon: "fas cm-all fa-edit",
+                icon: "fas fa-edit",
                 onClick: () => {
                   tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "sqlite3")
                 },
               },
               {
                 label: "Drop Table",
-                icon: "fas cm-all fa-times",
+                icon: "fas fa-times",
                 onClick: () => {
                   tabSQLTemplate(
                     "Drop Table",
@@ -165,7 +165,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Column",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Column",
@@ -187,7 +187,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Index",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Index",
@@ -203,7 +203,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Reindex",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               tabSQLTemplate(
                 "Reindex",
@@ -216,7 +216,7 @@ export default {
           },
           {
             label: "Drop Index",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Index",
@@ -232,7 +232,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create Trigger",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate(
                 "Create Trigger",
@@ -247,7 +247,7 @@ export default {
         cm_trigger: [
           {
             label: "Alter Trigger",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               tabSQLTemplate(
                 "Alter Trigger",
@@ -262,7 +262,7 @@ export default {
           },
           {
             label: "Drop Trigger",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Trigger",
@@ -278,7 +278,7 @@ export default {
           this.cmRefreshObject,
           {
             label: "Create View",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-plus",
             onClick: () => {
               tabSQLTemplate("Create View", this.templates.create_view);
             },
@@ -288,21 +288,21 @@ export default {
           this.cmRefreshObject,
           {
             label: "Query Data",
-            icon: "fas cm-all fa-search",
+            icon: "fas fa-search",
             onClick: () => {
               TemplateSelectSqlite(this.selectedNode.title, "v");
             },
           },
           {
             label: "Edit View",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               this.getViewDefinition(this.selectedNode);
             },
           },
           {
             label: "Drop View",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               tabSQLTemplate(
                 "Drop View",
@@ -439,14 +439,14 @@ export default {
             title: `Tables (${resp.data.length})`,
           });
 
-          resp.data.forEach((el) => {
+          resp.data.reduceRight((_, el) => {
             this.insertNode(node, el.name, {
               icon: "fas node-all fa-table node-table",
               type: "table",
               contextMenu: "cm_table",
               raw_value: el.name_raw,
             });
-          });
+          }, null);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);
@@ -757,14 +757,15 @@ export default {
           this.$refs.tree.updateNode(node.path, {
             title: `Views (${resp.data.length})`,
           });
-          resp.data.forEach((element) => {
-            this.insertNode(node, element.name, {
+
+          resp.data.reduceRight((_, el) => {
+            this.insertNode(node, el.name, {
               icon: "fas node-all fa-eye node-view",
               type: "view",
               contextMenu: "cm_view",
-              raw_value: element.name_raw
+              raw_value: el.name_raw
             });
-          });
+          }, null);
         })
         .catch((error) => {
           this.nodeOpenError(error, node);

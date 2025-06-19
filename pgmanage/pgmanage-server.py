@@ -15,8 +15,6 @@ import threading
 
 import psutil
 import pgmanage.custom_settings
-import app.include.OmniDatabase as OmniDatabase
-import app.include.Spartacus.Utils as Utils
 
 pgmanage.custom_settings.DEV_MODE = False
 pgmanage.custom_settings.DESKTOP_MODE = False
@@ -201,7 +199,14 @@ import pgmanage.logging_filter
 for attribute, value in pgmanage_settings.__dict__.items():
     setattr(pgmanage.settings,attribute,value)
 
+# OmniDatabase import looks unused, this is a trick to force pyinstaller to include it into bundle
+# TODO: implement custom hooks and move any such imports there
 
+import app.include.OmniDatabase as OmniDatabase
+import app.include.Spartacus as Spartacus
+
+if 'SQLite' in Spartacus.Database.v_supported_rdbms and not pgmanage.custom_settings.DESKTOP_MODE:
+    Spartacus.Database.v_supported_rdbms.remove('SQLite')
 
 import logging
 import logging.config
@@ -381,7 +386,6 @@ import django.template.defaulttags
 import django.template.loader_tags
 import django.contrib.staticfiles
 import django.contrib.staticfiles.apps
-import django.contrib.admin.apps
 import django.contrib.auth.apps
 import django.contrib.contenttypes.apps
 import django.contrib.sessions.apps

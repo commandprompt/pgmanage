@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import {
   beforeAll,
   afterEach,
@@ -11,13 +11,19 @@ import {
 import "ace-builds";
 import "ace-builds/esm-resolver";
 import SnippetTab from "../../src/components/SnippetTab.vue";
-import "../../src/ace_themes/theme-omnidb.js";
+import "../../src/ace_extras/themes/theme-omnidb.js";
 import { emitter } from "../../src/emitter.js";
 
 import { useSettingsStore } from "../../src/stores/settings.js";
 import { useMessageModalStore } from "../../src/stores/message_modal.js";
+import { useTabsStore } from "../../src/stores/tabs";
 import * as notificatonModule from "../../src/notification_control";
 import { maxFileSizeInKB, maxFileSizeInMB } from "../../src/constants.js";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
 
 describe("SnippetTab", () => {
   let wrapper, fileMock, showToastSpy, eventMock;
@@ -25,8 +31,10 @@ describe("SnippetTab", () => {
   const tabId = "uniqueTabID";
 
   beforeAll(() => {
+    const tabsStore = useTabsStore();
     messageModalStore = useMessageModalStore();
     settingsStore = useSettingsStore();
+    tabsStore.createSnippetPanel();
     settingsStore.setEditorTheme("omnidb");
   });
 
@@ -76,6 +84,32 @@ describe("SnippetTab", () => {
     expect(editorInstance.getValue()).toContain("SELECT\n  *");
   });
 
+  test("should call openFileManagerModal when 'Open file' button is clicked", async () => {
+    const openFileManagerModalSpy = vi.spyOn(
+      wrapper.vm,
+      "openFileManagerModal"
+    );
+    await wrapper
+      .find("[data-testid='snippet-tab-open-file-button']")
+      .trigger("click");
+
+    expect(openFileManagerModalSpy).toHaveBeenCalledOnce();
+  });
+
+  test("should call saveFile when 'Save to File' button is clicked", async () => {
+    const saveFileSpy = vi.spyOn(wrapper.vm, "saveFile");
+    const editorInstance = wrapper.vm.editor;
+    editorInstance.setValue("SELECT * FROM table");
+
+    await flushPromises();
+
+    await wrapper
+      .find("[data-testid='snippet-tab-save-file-button']")
+      .trigger("click");
+
+    expect(saveFileSpy).toHaveBeenCalledOnce();
+  });
+
   test("should call saveSnippetText method when 'Save' button is clicked", async () => {
     const saveSnippetTextMock = vi.spyOn(wrapper.vm, "saveSnippetText");
 
@@ -84,6 +118,24 @@ describe("SnippetTab", () => {
       .trigger("click");
 
     expect(saveSnippetTextMock).toHaveBeenCalled();
+  });
+
+  test("should set 'fileSaveDisabled' to false if snippet.id exists", async () => {
+    expect(wrapper.vm.fileSaveDisabled).toBeTruthy();
+    wrapper.unmount();
+
+    wrapper = mount(SnippetTab, {
+      props: {
+        tabId: tabId,
+        snippet: {
+          id: 1,
+        },
+      },
+      attachTo: document.body,
+      shallow: true,
+    });
+
+    expect(wrapper.vm.fileSaveDisabled).toBeFalsy();
   });
 
   describe("Events", () => {

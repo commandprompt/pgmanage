@@ -2,9 +2,14 @@ import { describe, test, expect, vi, beforeAll } from "vitest";
 import { mount } from "@vue/test-utils";
 import "ace-builds";
 import "ace-builds/esm-resolver";
-import "../../src/ace_themes/theme-omnidb.js";
+import "../../src/ace_extras/themes/theme-omnidb.js";
 import TreePropertiesDDL from "@/components/TreePropertiesDDL.vue";
 import { useSettingsStore } from "../../src/stores/settings.js";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
 
 vi.mock("tabulator-tables", () => {
   const TabulatorFull = vi.fn();

@@ -39,6 +39,32 @@
                     &-content {
                         padding: 0 0.75rem!important;
                     }
+
+                    &.tabulator-range-highlight {
+                        color: $primaryMutedColor;
+                    }
+
+                    &.tabulator-sortable{
+                        // background-color: blue !important;
+                        &[aria-sort="ascending"]{
+                            .tabulator-col-content .tabulator-col-sorter{
+                                color: $primaryBlue;
+                                .tabulator-arrow{
+                                    border-top: none;
+                                    border-bottom: 6px solid $primaryBlue;
+                                }
+                            }
+                        }
+                        &[aria-sort="descending"]{
+                            .tabulator-col-content .tabulator-col-sorter{
+                                color: $primaryBlue;
+                                .tabulator-arrow{
+                                    border-bottom: none;
+                                    border-top: 6px solid $primaryBlue;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 &-popup-button {
@@ -122,12 +148,24 @@
                         &.tabulator-selected {
                             background-color: rgba($primaryBlue, 0.25) !important;
                         }
+
+                        &.tabulator-range-highlight {
+                            .tabulator-range-row-header{
+                                @include themify() {
+                                    background-color: themed($surfaceBg);
+                                    color: themed($color);
+                                }
+                            }
+                        }
                     }
 
                     &-cell {
                         border: 0;
                         padding: 0.45rem 0.75rem;
                         height: 100%;
+                        &.tabulator-range-selected:not(.tabulator-range-only-cell-selected):not(.tabulator-range-row-header) {
+                            background-color: rgba($primaryBlue, .15);   
+                        }
                     }
                 }
             }
@@ -217,7 +255,7 @@
     }
 
     &-popup-container {
-        font-size: $fontSize;
+        font-size: $fontSize !important;
         border-radius: $borderRadius;
         border-width: 1px;
         box-shadow: $dropdownBoxShadow !important;
@@ -229,6 +267,18 @@
         }
 
         .tabulator-menu-item {
+            padding:5px 15px !important;
+
+            i {
+                width: 24px;
+                height: 16px;
+                vertical-align: middle;
+                font-size: var(--mx-menu-icon-size);
+                @include themify() {
+                    color: themed($primaryBlueWhiteSwitching);
+                }
+            }
+            
             @include themify() {
                 color: themed($color);
             }

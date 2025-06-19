@@ -37,7 +37,7 @@
           </div>
         </div>
 
-        <form>
+        <form autocomplete="off">
           <div class="row mt-3">
             <div class="form-group col-6 position-relative">
               <label for="connectionName" class="fw-bold mb-2">Name</label>
@@ -272,6 +272,7 @@ import isEqual from 'lodash/isEqual';
 import isEmpty from 'lodash/isEmpty';
 import { showToast } from '../notification_control';
 import { Modal } from 'bootstrap';
+import { handleError } from '../logging/utils';
 
   export default {
     name: 'ConnectionsModalConnectionForm',
@@ -580,7 +581,7 @@ import { Modal } from 'bootstrap';
           })
           .catch((error) => {
             this.testIsRunning = false;
-            showToast("error", error.response.data.data);
+            handleError(error);
           })
         }
       },
@@ -626,14 +627,14 @@ import { Modal } from 'bootstrap';
     watch: {
       initialConnection: {
         handler(newVal, oldVal) {
-          this.connectionLocal = {...newVal};
+          this.connectionLocal = JSON.parse(JSON.stringify(newVal));
           this.connectionLocal.tunnel = {...newVal.tunnel};
           this.v$.connectionLocal.$reset();
         },
         deep: true
       },
       'connectionLocal.technology': function (newVal, oldVal) {
-        if (oldVal === undefined || this.connectionLocal.id) {
+        if (oldVal === undefined) {
           this.tempMode  = Object.keys(this.connectionLocal.connection_params)[0]
           return
         }

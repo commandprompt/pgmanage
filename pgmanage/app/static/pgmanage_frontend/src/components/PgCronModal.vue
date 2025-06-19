@@ -15,7 +15,7 @@
                 role="tab" aria-controls="job_schedule" aria-selected="true">Schedule</a>
             </li>
             <li v-if="mode===operationModes.UPDATE" class="nav-item">
-              <a class="nav-link" id="job_statistics-tab" data-bs-toggle="tab" href="#job_statistics" role="tab"
+              <a ref="jobStatistics" class="nav-link" id="job_statistics-tab" data-bs-toggle="tab" href="#job_statistics" role="tab"
                 aria-controls="job_statistics" aria-selected="false">Job Statistics</a>
             </li>
           </ul>
@@ -80,7 +80,7 @@
 
               <div class="form-group mb-2">
                 <p class="fw-bold mb-2">Command to Run</p>
-                <div id="job_command" style="height: 20vh">
+                <div ref="editor" id="job_command" style="height: 20vh">
                 </div>
                 <div :class="[{ 'is-invalid': v$.command.$invalid }]"></div>
                 <div :class="[{ 'is-invalid': v$.command.$invalid }]" class="invalid-feedback">
@@ -143,17 +143,19 @@ import { required, maxLength } from '@vuelidate/validators'
 import { useVuelidate } from '@vuelidate/core'
 import { emitter } from '../emitter'
 import axios from 'axios'
-import { showToast } from '../notification_control'
 import moment from 'moment'
 import { settingsStore } from '../stores/stores_initializer'
 import { TabulatorFull as Tabulator } from 'tabulator-tables'
 import { operationModes } from '../constants'
 import { Modal } from 'bootstrap'
+import { CronLight } from '@vue-js-cron/light'
+import { handleError } from '../logging/utils';
 
 export default {
   name: 'PgCronModal',
   components: {
-      ConfirmableButton
+      ConfirmableButton,
+      CronLight,
   },
   props: {
     mode: operationModes,
@@ -246,8 +248,7 @@ export default {
     this.getDatabases()
     if (this.mode === operationModes.UPDATE) {
         this.getJobDetails()
-        let tabEl = document.getElementById('job_statistics-tab')
-        tabEl.addEventListener('shown.bs.tab', this.setupJobStatisticsTab)
+        this.$refs.jobStatistics.addEventListener('shown.bs.tab', this.setupJobStatisticsTab)
     }
     this.setupEditor()
     Modal.getOrCreateInstance('#pgCronModal').show()
@@ -270,7 +271,7 @@ export default {
           this.databases = resp.data.map((x) => x.name)
         })
         .catch((error) => {
-            console.log(error)
+          handleError(error);
         })
     },
 
@@ -288,7 +289,7 @@ export default {
           this.inDatabase = resp.data.database
         })
         .catch((error) => {
-            console.log(error)
+          handleError(error);
         })
     },
 
@@ -339,7 +340,7 @@ export default {
           })
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
 
@@ -353,7 +354,7 @@ export default {
           this.setupJobStatisticsTab()
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
 
@@ -374,13 +375,13 @@ export default {
               Modal.getOrCreateInstance('#pgCronModal').hide()
             })
             .catch((error) => {
-              showToast("error", error.response.data.data)
+              handleError(error);
             })
         }
     },
 
     setupEditor() {
-      this.editor = ace.edit('job_command');
+      this.editor = ace.edit(this.$refs.editor);
       this.editor.setTheme("ace/theme/" + settingsStore.editorTheme);
       this.editor.session.setMode("ace/mode/sql");
       this.editor.setFontSize(Number(settingsStore.fontSize));
@@ -404,7 +405,7 @@ export default {
           Modal.getOrCreateInstance('#pgCronModal').hide()
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     }
   },

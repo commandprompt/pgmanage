@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 import moment from "moment";
-import { tabsStore } from "./stores_initializer";
+import { tabsStore, dbMetadataStore } from "./stores_initializer";
+import { handleError } from "../logging/utils";
 
 const useConnectionsStore = defineStore({
   id: "connections",
@@ -47,15 +48,23 @@ const useConnectionsStore = defineStore({
       axios
         .post("/change_active_database/", data)
         .then((resp) => {
-          this.changeActiveDatabaseCallRunning = false;
-          if (this.changeActiveDatabaseCallList.length > 0)
-            this.changeActiveDatabaseThreadSafe(
-              this.changeActiveDatabaseCallList.pop()
-            );
+          dbMetadataStore
+            .fetchDbMeta(data.database_index, data.workspace_id, data.database)
+            .then(() => {
+              this.changeActiveDatabaseCallRunning = false;
+              if (this.changeActiveDatabaseCallList.length > 0)
+                this.changeActiveDatabaseThreadSafe(
+                  this.changeActiveDatabaseCallList.pop()
+                );
+            })
+            .catch((error) => {
+              this.changeActiveDatabaseCallRunning = false;
+              handleError(error);
+            });
         })
         .catch((error) => {
           this.changeActiveDatabaseCallRunning = false;
-          console.log(error);
+          handleError(error);
         });
     },
     async testConnection(connection) {

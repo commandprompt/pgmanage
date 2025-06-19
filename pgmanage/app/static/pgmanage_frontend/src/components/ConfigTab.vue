@@ -1,7 +1,7 @@
 <template>
 <div class="p-2">
   <div class="row">
-    <div class="form-group col-2">
+    <div class="form-group col">
       <form class="form" role="search" @submit.prevent>
         <label class="fw-bold mb-2" :for="`${tabId}_inputSearchSettings`">Search</label>
         <input v-model.trim="query_filter" class="form-control" :id="`${tabId}_inputSearchSettings`" name="filter"
@@ -18,29 +18,33 @@
       </select>
     </div>
 
-    <div class="form-group col-3">
-      <label class="fw-bold mb-2" :for="`${tabId}_selectConf`">Config History</label>
-      <select class="form-select text-truncate" :id="`${tabId}_selectConf`" v-model="selectedConf">
-        <option disabled value="">Please select one</option>
-        <option v-for="(config, index) in configHistory" :value="config" :key="index"
-          :title="config.commit_comment">
-         {{ truncateText(config, 50) }}
-        </option>
-      </select>
-    </div>
+    <div  class="col-4 d-flex">
+      <div class="form-group">
+        <label class="fw-bold mb-2" :for="`${tabId}_selectConf`">Config History</label>
+        <select class="form-select text-truncate" :id="`${tabId}_selectConf`" v-model="selectedConf">
+          <option disabled value="">Please select one</option>
+          <option v-for="(config, index) in configHistory" :value="config" :key="index"
+            :title="config.commit_comment">
+          {{ truncateText(config, 50) }}
+          </option>
+        </select>
+      </div>
 
-    <div class="form-group col-4 d-flex align-items-end ps-0">
-      <button class="btn btn-square btn-success me-2" :disabled="!selectedConf" @click="confirmConfig(e, true)">
+      <div class="form-group d-flex align-items-end ps-1">
+      <button class="btn btn-square btn-success me-1" :disabled="!selectedConf" @click="confirmConfig(e, true)">
         <i class="fa-solid fa-arrow-rotate-left"></i>
       </button>
-      <ConfirmableButton class="btn btn-danger me-2" :disabled="!selectedConf" :callbackFunc="() => deleteOldConfig(selectedConf.id)"> 
+      <ConfirmableButton class="btn btn-danger me-1" :disabled="!selectedConf" :callbackFunc="() => deleteOldConfig(selectedConf.id)">
         <i class="fa-solid fa-xmark"></i>
       </ConfirmableButton>
-      <button type="submit" class="btn btn-success ml-auto" :disabled="!hasUpdateValues || v$.$invalid"
+      <button type="submit" class="btn btn-success ms-3" :disabled="!hasUpdateValues || v$.$invalid"
         @click.prevent="confirmConfig">
         Apply
       </button>
     </div>
+    </div>
+
+
   </div>
 
   <div v-if="!hasResult" class="row">
@@ -160,12 +164,12 @@
 import ConfigTabGroup from "./ConfigTabGroup.vue";
 import { useVuelidate } from '@vuelidate/core'
 import axios from 'axios'
-import { showToast } from "../notification_control";
 import distance from 'jaro-winkler'
 import moment from 'moment'
 import { Modal } from "bootstrap";
 import { tabsStore } from "../stores/stores_initializer";
 import ConfirmableButton from "./ConfirmableButton.vue";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "Config",
@@ -270,7 +274,7 @@ export default {
         })
         .catch((error) => {
           this.data = "";
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     getCategories() {
@@ -284,7 +288,7 @@ export default {
           this.selected = this.categories[0];
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     changeData(e) {
@@ -314,7 +318,7 @@ export default {
           this.getConfigStatus();
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     getConfigHistory() {
@@ -332,7 +336,7 @@ export default {
           });
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     confirmConfig(event, revert = false) {
@@ -376,10 +380,10 @@ export default {
           }
         })
         .catch((error) => {
-          if (error.response.data.data.includes("SSL connection has been closed unexpectedly"))
+          if (error?.response?.data?.data.includes("SSL connection has been closed unexpectedly"))
             this.getConfigStatus()
           else
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     deleteOldConfig(config_id) {
@@ -390,7 +394,7 @@ export default {
           this.getConfigHistory();
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     },
     getConfigurationDiffs() {
@@ -412,7 +416,7 @@ export default {
           this.configDiffData = diff
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         });
     }
   },

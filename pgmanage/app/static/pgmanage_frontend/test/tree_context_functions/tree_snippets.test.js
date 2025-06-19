@@ -5,9 +5,17 @@ import {
 } from "../../src/tree_context_functions/tree_snippets";
 import axios from "axios";
 import { flushPromises } from "@vue/test-utils";
-import * as notificatonModule from "../../src/notification_control";
 import { emitter } from "../../src/emitter";
 import { useTabsStore } from "../../src/stores/tabs";
+import { handleError } from "@/logging/utils";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+vi.mock("@/logging/utils", () => ({
+  handleError: vi.fn(),
+}));
 
 vi.mock("axios");
 
@@ -34,7 +42,7 @@ describe("buildSnippetContextMenuObjects", () => {
     expect(result).toContainEqual(
       expect.objectContaining({
         label: "New Snippet",
-        icon: "fas cm-all fa-save",
+        icon: "fas fa-save",
         onClick: expect.any(Function),
       })
     );
@@ -69,17 +77,17 @@ describe("buildSnippetContextMenuObjects", () => {
     expect(result).toContainEqual(
       expect.objectContaining({
         label: "snippet1",
-        icon: "fas cm-all fa-align-left",
+        icon: "fas fa-align-left",
         onClick: expect.any(Function),
       })
     );
     expect(result).toContainEqual(
       expect.objectContaining({
         label: "folder1",
-        icon: "fas cm-all fa-folder",
+        icon: "fas fa-folder",
         children: expect.arrayContaining([
           {
-            icon: "fas cm-all fa-align-left",
+            icon: "fas fa-align-left",
             label: "snippet3",
             onClick: expect.any(Function),
           },
@@ -126,7 +134,6 @@ describe("executeSnippet", () => {
 
   test("should show toast message on error response", async () => {
     const snippetId = 1;
-    const showToastSpy = vi.spyOn(notificatonModule, "showToast");
 
     axios.post.mockRejectedValue(new Error("Bad request"));
 
@@ -137,10 +144,7 @@ describe("executeSnippet", () => {
     expect(axios.post).toHaveBeenCalledWith("/get_snippet_text/", {
       snippet_id: snippetId,
     });
-    expect(showToastSpy).toHaveBeenCalledOnce();
-    expect(showToastSpy).toHaveBeenCalledWith(
-      "error",
-      new Error("Bad request")
-    );
+    expect(handleError).toHaveBeenCalledOnce();
+    expect(handleError).toHaveBeenCalledWith(new Error("Bad request"));
   });
 });

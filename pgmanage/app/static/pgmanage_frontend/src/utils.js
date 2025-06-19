@@ -1,4 +1,5 @@
 function truncateText(text, maxLength) {
+  if (!text) return "";
   if (text.length <= maxLength) {
     return text;
   } else if (text.indexOf("/") !== -1) {
@@ -27,4 +28,14 @@ function truncateText(text, maxLength) {
   }
 }
 
-export { truncateText };
+function extractOrderByClause(queryFilter) {
+  const orderByRegex = /\bORDER\s+BY\s+([\w\s",.]+)$/i;
+  const match = queryFilter.match(orderByRegex);
+
+  if (!match) return { queryFilterCleaned: queryFilter, orderByClause: "" };
+
+  const queryFilterCleaned = queryFilter.replace(orderByRegex, "").trim();
+  return { queryFilterCleaned, orderByClause: `ORDER BY ${match[1]}` };
+}
+
+export { truncateText, extractOrderByClause };

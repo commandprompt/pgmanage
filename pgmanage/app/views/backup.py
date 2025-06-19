@@ -315,8 +315,11 @@ def create_backup(request, database):
 
     backup_file = data.get("fileName")
 
+    file_manager = FileManager(request.user)
+
     try:
-        FileManager(request.user).check_access_permission(backup_file)
+        resolved_path = file_manager.resolve_path(backup_file)
+        file_manager.check_access_permission(resolved_path)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=403)
 
@@ -341,7 +344,7 @@ def create_backup(request, database):
                 status=400,
             )
 
-    args = get_args_params_values(data, database, backup_type_str, backup_file)
+    args = get_args_params_values(data, database, backup_type_str, resolved_path)
 
     escaped_args = [escape_dquotes_process_arg(arg) for arg in args]
 
@@ -353,7 +356,7 @@ def create_backup(request, database):
                 description=BackupMessage(
                     Backup.create(backup_type),
                     database.v_conn_id,
-                    backup_file,
+                    resolved_path,
                     *args,
                     database=data["database"],
                 ),
@@ -366,7 +369,7 @@ def create_backup(request, database):
                 description=BackupMessage(
                     Backup.create(backup_type),
                     database.v_conn_id,
-                    backup_file,
+                    resolved_path,
                     *args,
                 ),
                 cmd=utility_path,
@@ -394,8 +397,11 @@ def preview_command(request, database):
 
     backup_file = data.get("fileName")
 
+    file_manager = FileManager(request.user)
+
     try:
-        FileManager(request.user).check_access_permission(backup_file)
+        resolved_path = file_manager.resolve_path(backup_file)
+        file_manager.check_access_permission(resolved_path)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=403)
 
@@ -416,14 +422,14 @@ def preview_command(request, database):
             data["pigz_path"] = pigz_path
         except FileNotFoundError as exc:
             return JsonResponse(data={"data": str(exc)}, status=400)
-    args = get_args_params_values(data, database, backup_type_str, backup_file)
+    args = get_args_params_values(data, database, backup_type_str, resolved_path)
 
     backup_type = Backup.get_backup_type(backup_type_str)
 
     backup_message = BackupMessage(
         Backup.create(backup_type),
         database.v_conn_id,
-        backup_file,
+        resolved_path,
         *args,
         database=data.get(database),
     )

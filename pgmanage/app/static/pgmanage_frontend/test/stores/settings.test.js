@@ -1,10 +1,20 @@
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useSettingsStore } from "@/stores/settings";
+import { settingsStore } from "@/stores/stores_initializer";
 import axios from "axios";
 import { showToast } from "@/notification_control";
 import moment from "moment";
 import { Modal } from "bootstrap";
+import { handleError } from "@/logging/utils";
+
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
+vi.mock("@/logging/utils", () => ({
+  handleError: vi.fn(),
+}));
 
 vi.mock("axios");
 vi.mock("@/notification_control", () => ({
@@ -25,7 +35,7 @@ describe("settings store", () => {
   });
 
   it("initializes with default state", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     expect(store.desktopMode).toBe(window.gv_desktopMode);
     expect(store.fontSize).toBe("");
     expect(store.theme).toBe("");
@@ -43,7 +53,7 @@ describe("settings store", () => {
   });
 
   it("fetches settings and updates state", async () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     axios.get.mockResolvedValue({
       data: {
         settings: {
@@ -95,7 +105,7 @@ describe("settings store", () => {
   });
 
   it("uses default date format during fetch settings", async () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     axios.get.mockResolvedValue({
       data: {
         settings: {
@@ -120,20 +130,21 @@ describe("settings store", () => {
   });
 
   it("handles error in getSettings", async () => {
-    const store = useSettingsStore();
-    axios.get.mockRejectedValue({
+    const errorResponse = {
       response: {
         data: { data: "Error message" },
       },
-    });
+    };
+    const store = settingsStore;
+    axios.get.mockRejectedValue(errorResponse);
 
     const response = await store.getSettings();
     expect(response.response.data.data).toBe("Error message");
-    expect(showToast).toHaveBeenCalledWith("error", "Error message");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("saves settings and shows success toast", async () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.fontSize = "16";
     store.theme = "dark";
     store.csvEncoding = "UTF-8";
@@ -157,92 +168,93 @@ describe("settings store", () => {
   });
 
   it("handles error in saveSettings", async () => {
-    const store = useSettingsStore();
-    axios.post.mockRejectedValue({
+    const errorResponse = {
       response: {
         data: { data: "Error message" },
       },
-    });
+    };
+    const store = settingsStore;
+    axios.post.mockRejectedValue(errorResponse);
 
     const response = await store.saveSettings();
     expect(response.response.data.data).toBe("Error message");
-    expect(showToast).toHaveBeenCalledWith("error", "Error message");
+    expect(handleError).toHaveBeenCalledWith(errorResponse);
   });
 
   it("sets fontSize", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setFontSize("16");
     expect(store.fontSize).toBe("16");
   });
 
   it("sets theme", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setTheme("dark");
     expect(store.theme).toBe("dark");
   });
 
   it("sets editorTheme", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setEditorTheme("monokai");
     expect(store.editorTheme).toBe("monokai");
   });
 
   it("sets terminalTheme", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setTerminalTheme("monokai");
     expect(store.terminalTheme).toBe("monokai");
   });
 
   it("sets shortcuts", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setShortcuts({ copy: "Ctrl+C" });
     expect(store.shortcuts).toEqual({ copy: "Ctrl+C" });
   });
 
   it("sets csvEncoding", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setCSVEncoding("UTF-8");
     expect(store.csvEncoding).toBe("UTF-8");
   });
 
   it("sets csvDelimiter", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setCSVDelimiter(",");
     expect(store.csvDelimiter).toBe(",");
   });
 
   it("sets binaryPath", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setBinaryPath("/usr/bin");
     expect(store.binaryPath).toBe("/usr/bin");
   });
 
   it("sets pigzPath", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setPigzPath("/usr/local/bin");
     expect(store.pigzPath).toBe("/usr/local/bin");
   });
 
   it("sets dateFormat", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setDateFormat("YYYY-MM-DD");
     expect(store.dateFormat).toBe("YYYY-MM-DD");
   });
 
   it("sets restoreTabs", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setRestoreTabs(true);
     expect(store.restoreTabs).toBe(true);
   });
 
   it("sets scrollTree", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.setScrollTree(false);
     expect(store.scrollTree).toBe(false);
   });
 
   it("shows modal", () => {
-    const store = useSettingsStore();
+    const store = settingsStore;
     store.showModal();
     expect(Modal.getOrCreateInstance).toHaveBeenCalledWith("#modal_settings", {
       backdrop: "static",

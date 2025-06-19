@@ -69,14 +69,14 @@ export default {
           this.cmRefreshObject,
           {
             label: "New Folder",
-            icon: "fas cm-all fa-folder-plus",
+            icon: "fas fa-folder-plus",
             onClick: () => {
               this.newNodeSnippet(this.selectedNode, "folder");
             },
           },
           {
             label: "New Snippet",
-            icon: "fas cm-all fa-file-circle-plus",
+            icon: "fas fa-file-circle-plus",
             onClick: () => {
               this.newNodeSnippet(this.selectedNode, "snippet");
             },
@@ -86,28 +86,28 @@ export default {
           this.cmRefreshObject,
           {
             label: "New Folder",
-            icon: "fas cm-all fa-folder-plus",
+            icon: "fas fa-folder-plus",
             onClick: () => {
               this.newNodeSnippet(this.selectedNode, "folder");
             },
           },
           {
             label: "New Snippet",
-            icon: "fas cm-all fa-file-circle-plus",
+            icon: "fas fa-file-circle-plus",
             onClick: () => {
               this.newNodeSnippet(this.selectedNode, "snippet");
             },
           },
           {
             label: "Rename Folder",
-            icon: "fas cm-all fa-i-cursor",
+            icon: "fas fa-i-cursor",
             onClick: () => {
               this.renameNodeSnippet(this.selectedNode);
             },
           },
           {
             label: "Delete Folder",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               this.deleteNodeSnippet(this.selectedNode);
             },
@@ -116,21 +116,21 @@ export default {
         cm_snippet: [
           {
             label: "Edit",
-            icon: "fas cm-all fa-edit",
+            icon: "fas fa-edit",
             onClick: () => {
               this.startEditSnippetText(this.selectedNode);
             },
           },
           {
             label: "Rename",
-            icon: "fas cm-all fa-i-cursor",
+            icon: "fas fa-i-cursor",
             onClick: () => {
               this.renameNodeSnippet(this.selectedNode);
             },
           },
           {
             label: "Delete",
-            icon: "fas cm-all fa-times",
+            icon: "fas fa-times",
             onClick: () => {
               this.deleteNodeSnippet(this.selectedNode);
             },
@@ -206,7 +206,10 @@ export default {
       if (mode === "folder") placeholder = "Folder Name";
 
       showConfirm(
-        `<input id="element_name" required class="form-control" placeholder="${placeholder}" style="width: 100%;">`,
+        `<div class="form-group">
+          <input id="element_name" required class="form-control" placeholder="${placeholder}" style="width: 100%;">
+        </div>
+        `,
         () => {
           let value = document.getElementById("element_name").value.trim();
           if (!value) {

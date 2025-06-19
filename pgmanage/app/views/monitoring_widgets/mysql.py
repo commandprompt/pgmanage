@@ -1,13 +1,12 @@
 monitoring_widgets = [{
 'dbms': 'mysql',
 'plugin_name': 'mysql',
-'id': 0,
+'id': -1,
 'title': 'Thread Count',
 'type': 'timeseries',
 'interval': 10,
 'default': True,
 'script_chart': """
-
 max_connections = connection.Query('show variables like "max_connections"').Rows[0]['Value']
 
 result = {
@@ -38,6 +37,17 @@ result = {
                 "title": {
                     "display": False,
                     "text": "Time"
+                },
+                "type": "time",
+                "time": {
+                    "unit": "minute",
+                    "stepSize": 15,
+                    "displayFormats": {
+                        "minute": "HH:mm:ss"
+                    }
+                },
+                "ticks": {
+                    "stepSize": 0.25
                 }
             },
             "y": {
@@ -64,16 +74,18 @@ show status where `variable_name` = 'Threads_connected';
 datasets = []
 datasets.append({
         "label": 'Backends',
-        "backgroundColor": 'rgba(129,223,129,0.4)',
-        "borderColor": 'rgba(129,223,129,1)',
-        "lineTension": 0,
+        "fill": True,
+        "tension": 0.2,
+        "cubicInterpolationMode": "monotone",
         "pointRadius": 0,
-        "borderWidth": 1,
-        "data": [backends.Rows[0]["Value"]]
+        "borderWidth": 1.2,
+        "data": [{
+            "x": datetime.now().isoformat(),
+            "y":int(backends.Rows[0]["Value"])
+        }]
     })
 
 result = {
-    "labels": [datetime.now().strftime('%H:%M:%S')],
     "datasets": datasets
 }
 """

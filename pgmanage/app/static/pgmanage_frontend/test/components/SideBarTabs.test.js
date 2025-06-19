@@ -24,7 +24,9 @@ const connectionMock = {
   alias: "TestConnection",
   technology: "postgresql",
 };
-vi.stubGlobal("app_base_path", "test_folder");
+vi.hoisted(() => {
+  vi.stubGlobal("app_base_path", "test_folder");
+});
 
 describe("SideBarTabs.vue", () => {
   enableAutoUnmount(afterEach);

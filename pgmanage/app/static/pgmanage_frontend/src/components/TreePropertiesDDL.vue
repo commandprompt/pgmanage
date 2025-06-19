@@ -74,7 +74,13 @@
           role="tabpanel"
           :aria-labelledby="`${workspaceId}_tree_ddl_nav`"
         >
-          <div ref="editor" class="pb-3" style="height: 90%"></div>
+          <PreviewBox
+            :database-technology="databaseTechnology"
+            class="pb-3"
+            style="height: 90%"
+            :editor-text="ddlData"
+            :show-label="false"
+          />
         </div>
       </div>
     </div>
@@ -83,9 +89,12 @@
 
 <script>
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-import { settingsStore } from "../stores/stores_initializer";
+import PreviewBox from "./PreviewBox.vue";
 
 export default {
+  components: {
+    PreviewBox,
+  },
   props: {
     workspaceId: String,
     databaseTechnology: String,
@@ -101,26 +110,16 @@ export default {
     return {
       table: null,
       editor: null,
+      tableBuilt: false,
     };
   },
   watch: {
-    ddlData(newValue, oldValue) {
-      this.editor.setValue(this.ddlData);
-      this.editor.clearSelection();
-      this.editor.gotoLine(0, 0, true);
-    },
     propertiesData(newValue, oldValue) {
-      this.table.setData(newValue);
+      if (this.tableBuilt) this.table.setData(newValue);
     },
   },
   mounted() {
-    this.setupEditor();
     this.setupTable();
-
-    settingsStore.$subscribe((mutation, state) => {
-      this.editor.setTheme(`ace/theme/${state.editorTheme}`);
-      this.editor.setFontSize(state.fontSize);
-    });
 
     this.$refs.treePropertiesNav.addEventListener("shown.bs.tab", () => {
       this.table.redraw(true);
@@ -151,36 +150,10 @@ export default {
         layout: "fitColumns",
         selectableRows: false,
       });
-    },
-    setupEditor() {
-      // TODO: DRY editor initialization. possibly move common setup stuff into a mixin
-      const EDITOR_MODEMAP = {
-        postgresql: "pgsql",
-        mysql: "mysql",
-        mariadb: "mysql",
-        oracle: "plsql",
-      };
 
-      let editor_mode = EDITOR_MODEMAP[this.databaseTechnology] || "sql";
-
-      this.editor = ace.edit(this.$refs.editor);
-      this.editor.$blockScrolling = Infinity;
-      this.editor.setTheme("ace/theme/" + settingsStore.editorTheme);
-      this.editor.session.setMode(`ace/mode/${editor_mode}`);
-
-      this.editor.setFontSize(Number(settingsStore.fontSize));
-
-      this.editor.commands.bindKey("ctrl-space", null);
-
-      //Remove shortcuts from ace in order to avoid conflict with omnidb shortcuts
-      this.editor.commands.bindKey("Cmd-,", null);
-      this.editor.commands.bindKey("Ctrl-,", null);
-      this.editor.commands.bindKey("Cmd-Delete", null);
-      this.editor.commands.bindKey("Ctrl-Delete", null);
-      this.editor.commands.bindKey("Ctrl-Up", null);
-      this.editor.commands.bindKey("Ctrl-Down", null);
-      this.editor.setReadOnly(true);
-      this.editor.resize();
+      this.table.on("tableBuilt", () => {
+        this.tableBuilt = true;
+      });
     },
   },
 };

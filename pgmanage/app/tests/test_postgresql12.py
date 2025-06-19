@@ -27,6 +27,8 @@ class PostgreSQL(TestCase):
             'Pgmanage Tests'
         )
         self.database.v_connection.v_password = self.password
+        self.database.GetVersion()
+        self.major_version = self.database.major_version
 
         self.client_nosession = Client()
         self.client_session = Client()
@@ -71,14 +73,15 @@ class PostgreSQL(TestCase):
         data = json.loads(response.content.decode())
         keys = list(data.keys())
         keys.sort()
-        keys_l = ['add_pubtable', 'alter_aggregate', 'alter_column', 'alter_database', 'alter_domain', 'alter_eventtrigger', 'alter_eventtriggerfunction', 'alter_fdw', 'alter_foreign_column', 'alter_foreign_server', 'alter_foreign_table', 'alter_function', 'alter_index', 'alter_mview', 'alter_procedure', 'alter_publication', 'alter_role', 'alter_rule', 'alter_schema', 'alter_sequence', 'alter_statistics', 'alter_subscription', 'alter_tablespace', 'alter_trigger', 'alter_triggerfunction', 'alter_type', 'alter_user_mapping', 'alter_view', 'analyze', 'analyze_table', 'cluster_index', 'create_aggregate', 'create_check', 'create_column', 'create_database', 'create_domain', 'create_eventtrigger', 'create_eventtriggerfunction', 'create_exclude', 'create_fdw', 'create_foreign_column', 'create_foreign_server', 'create_foreign_table', 'create_foreignkey', 'create_function', 'create_index', 'create_inherited', 'create_logicalreplicationslot', 'create_mview', 'create_partition', 'create_physicalreplicationslot', 'create_primarykey', 'create_procedure', 'create_publication', 'create_role', 'create_rule', 'create_schema', 'create_sequence', 'create_statistics', 'create_subscription', 'create_tablespace', 'create_trigger', 'create_triggerfunction', 'create_type', 'create_unique', 'create_user_mapping', 'create_view', 'create_view_trigger', 'database', 'delete', 'detach_partition', 'disable_eventtrigger', 'disable_trigger', 'drop_aggregate', 'drop_check', 'drop_column', 'drop_database', 'drop_domain', 'drop_eventtrigger', 'drop_eventtriggerfunction', 'drop_exclude', 'drop_fdw', 'drop_foreign_column', 'drop_foreign_server', 'drop_foreign_table', 'drop_foreignkey', 'drop_function', 'drop_index', 'drop_logicalreplicationslot', 'drop_mview', 'drop_partition', 'drop_physicalreplicationslot', 'drop_primarykey', 'drop_procedure', 'drop_publication', 'drop_pubtable', 'drop_role', 'drop_rule', 'drop_schema', 'drop_sequence', 'drop_statistics', 'drop_subscription', 'drop_table', 'drop_tablespace', 'drop_trigger', 'drop_triggerfunction', 'drop_type', 'drop_unique', 'drop_user_mapping', 'drop_view', 'enable_eventtrigger', 'enable_trigger', 'import_foreign_schema', 'noinherit_partition', 'refresh_mview', 'reindex', 'truncate', 'vacuum', 'vacuum_table', 'version']
+        keys_l = ['add_pubtable', 'alter_aggregate', 'alter_column', 'alter_database', 'alter_domain', 'alter_eventtrigger', 'alter_eventtriggerfunction', 'alter_fdw', 'alter_foreign_column', 'alter_foreign_server', 'alter_foreign_table', 'alter_function', 'alter_index', 'alter_mview', 'alter_procedure', 'alter_publication', 'alter_rule', 'alter_schema', 'alter_sequence', 'alter_statistics', 'alter_subscription', 'alter_tablespace', 'alter_trigger', 'alter_triggerfunction', 'alter_type', 'alter_user_mapping', 'alter_view', 'analyze', 'analyze_table', 'cluster_index', 'create_aggregate', 'create_check', 'create_column', 'create_database', 'create_domain', 'create_eventtrigger', 'create_eventtriggerfunction', 'create_exclude', 'create_fdw', 'create_foreign_column', 'create_foreign_server', 'create_foreign_table', 'create_foreignkey', 'create_function', 'create_index', 'create_inherited', 'create_logicalreplicationslot', 'create_mview', 'create_partition', 'create_physicalreplicationslot', 'create_primarykey', 'create_procedure', 'create_publication', 'create_rule', 'create_schema', 'create_sequence', 'create_statistics', 'create_subscription', 'create_tablespace', 'create_trigger', 'create_triggerfunction', 'create_type', 'create_unique', 'create_user_mapping', 'create_view', 'create_view_trigger', 'database', 'delete', 'detach_partition', 'disable_eventtrigger', 'disable_trigger', 'drop_aggregate', 'drop_check', 'drop_column', 'drop_database', 'drop_domain', 'drop_eventtrigger', 'drop_eventtriggerfunction', 'drop_exclude', 'drop_fdw', 'drop_foreign_column', 'drop_foreign_server', 'drop_foreign_table', 'drop_foreignkey', 'drop_function', 'drop_index', 'drop_logicalreplicationslot', 'drop_mview', 'drop_partition', 'drop_physicalreplicationslot', 'drop_primarykey', 'drop_procedure', 'drop_publication', 'drop_pubtable', 'drop_role', 'drop_rule', 'drop_schema', 'drop_sequence', 'drop_statistics', 'drop_subscription', 'drop_table', 'drop_tablespace', 'drop_trigger', 'drop_triggerfunction', 'drop_type', 'drop_unique', 'drop_user_mapping', 'drop_view', 'enable_eventtrigger', 'enable_trigger', 'import_foreign_schema', 'noinherit_partition', 'refresh_mview', 'reindex', 'truncate', 'vacuum', 'vacuum_table', 'version']
         assert keys == keys_l
 
     def test_template_create_tablespace(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE TABLESPACE name
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createtablespace.html
+CREATE TABLESPACE name
 LOCATION 'directory'
 --OWNER new_owner | CURRENT_USER | SESSION_USER
 --WITH ( tablespace_option = value [, ... ] )
@@ -88,9 +91,10 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLESPACE #tablespace_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertablespace.html
+ALTER TABLESPACE #tablespace_name#
 --RENAME TO new_name
---OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
+--OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
 --SET seq_page_cost = value
 --RESET seq_page_cost
 --SET random_page_cost = value
@@ -103,52 +107,8 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert 'DROP TABLESPACE #tablespace_name#' == data['drop_tablespace']
+        assert f'-- https://www.postgresql.org/docs/{self.major_version}/sql-droptablespace.html\nDROP TABLESPACE #tablespace_name#' == data['drop_tablespace']
 
-    def test_template_create_role(self):
-        response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert '''CREATE ROLE name
---[ ENCRYPTED | UNENCRYPTED ] PASSWORD 'password'
---SUPERUSER | NOSUPERUSER
---CREATEDB | NOCREATEDB
---CREATEROLE | NOCREATEROLE
---INHERIT | NOINHERIT
---LOGIN | NOLOGIN
---REPLICATION | NOREPLICATION
---BYPASSRLS | NOBYPASSRLS
---CONNECTION LIMIT connlimit
---VALID UNTIL 'timestamp'
---IN ROLE role_name [, ...]
---IN GROUP role_name [, ...]
---ROLE role_name [, ...]
---ADMIN role_name [, ...]
---USER role_name [, ...]
---SYSID uid
-''' == data['create_role']
-
-    def test_template_alter_role(self):
-        response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
-        assert 200 == response.status_code
-        data = json.loads(response.content.decode())
-        assert '''ALTER ROLE #role_name#
---SUPERUSER | NOSUPERUSER
---CREATEDB | NOCREATEDB
---CREATEROLE | NOCREATEROLE
---INHERIT | NOINHERIT
---LOGIN | NOLOGIN
---REPLICATION | NOREPLICATION
---BYPASSRLS | NOBYPASSRLS
---CONNECTION LIMIT connlimit
---[ ENCRYPTED | UNENCRYPTED ] PASSWORD 'password'
---VALID UNTIL 'timestamp'
---RENAME TO new_name
---[ IN DATABASE database_name ] SET configuration_parameter TO { value | DEFAULT }
---[ IN DATABASE database_name ] SET configuration_parameter FROM CURRENT
---[ IN DATABASE database_name ] RESET configuration_parameter
---[ IN DATABASE database_name ] RESET ALL
-''' == data['alter_role']
 
     def test_template_drop_role(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
@@ -160,7 +120,8 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE DATABASE name
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createdatabase.html
+CREATE DATABASE name
 --OWNER user_name
 --TEMPLATE template
 --ENCODING encoding
@@ -182,14 +143,15 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER DATABASE #database_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterdatabase.html
+ALTER DATABASE #database_name#
 --ALLOW_CONNECTIONS allowconn
 --CONNECTION LIMIT connlimit
 --IS_TEMPLATE istemplate
 --RENAME TO new_name
---OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
+--OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
 --SET TABLESPACE new_tablespace
---SET configuration_parameter TO { value | DEFAULT }
+--SET configuration_parameter TO {{ value | DEFAULT }}
 --SET configuration_parameter FROM CURRENT
 --RESET configuration_parameter
 --RESET ALL
@@ -199,7 +161,8 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP DATABASE #database_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropdatabase.html
+DROP DATABASE #database_name#
 --WITH ( FORCE )
 ''' == data['drop_database']
 
@@ -207,7 +170,8 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE SCHEMA schema_name
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createschema.html
+CREATE SCHEMA schema_name
 --AUTHORIZATION [ GROUP ] user_name | CURRENT_USER | SESSION_USER
 ''' == data['create_schema']
 
@@ -215,16 +179,18 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER SCHEMA #schema_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterschema.html
+ALTER SCHEMA #schema_name#
 --RENAME TO new_name
---OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
+--OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
 ''' == data['alter_schema']
 
     def test_template_drop_schema(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP SCHEMA #schema_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropschema.html
+DROP SCHEMA #schema_name#
 --CASCADE
 ''' == data['drop_schema']
 
@@ -232,7 +198,8 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-droptable.html
+DROP TABLE #table_name#
 --CASCADE
 ''' == data['drop_table']
 
@@ -240,21 +207,23 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE SEQUENCE #schema_name#.name
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createsequence.html
+CREATE SEQUENCE #schema_name#.name
 --INCREMENT BY increment
 --MINVALUE minvalue | NO MINVALUE
 --MAXVALUE maxvalue | NO MAXVALUE
 --START WITH start
 --CACHE cache
 --CYCLE
---OWNED BY { table_name.column_name | NONE }
+--OWNED BY {{ table_name.column_name | NONE }}
 ''' == data['create_sequence']
 
     def test_template_alter_sequence(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER SEQUENCE #sequence_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altersequence.html
+ALTER SEQUENCE #sequence_name#
 --INCREMENT BY increment
 --MINVALUE minvalue | NO MINVALUE
 --MAXVALUE maxvalue | NO MAXVALUE
@@ -264,8 +233,8 @@ LOCATION 'directory'
 --CACHE cache
 --CYCLE
 --NO CYCLE
---OWNED BY { table_name.column_name | NONE }
---OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
+--OWNED BY {{ table_name.column_name | NONE }}
+--OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
 --RENAME TO new_name
 --SET SCHEMA new_schema
 ''' == data['alter_sequence']
@@ -274,7 +243,8 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP SEQUENCE #sequence_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropsequence.html
+DROP SEQUENCE #sequence_name#
 --CASCADE
 ''' == data['drop_sequence']
 
@@ -282,9 +252,10 @@ LOCATION 'directory'
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE OR REPLACE FUNCTION #schema_name#.name
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createfunction.html
+CREATE OR REPLACE FUNCTION #schema_name#.name
 --(
---    [ argmode ] [ argname ] argtype [ { DEFAULT | = } default_expr ]
+--    [ argmode ] [ argname ] argtype [ {{ DEFAULT | = }} default_expr ]
 --)
 --RETURNS rettype
 --RETURNS TABLE ( column_name column_type )
@@ -308,7 +279,8 @@ $function$
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP FUNCTION #function_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropfunction.html
+DROP FUNCTION #function_name#
 --CASCADE
 ''' == data['drop_function']
 
@@ -316,7 +288,8 @@ $function$
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE OR REPLACE FUNCTION #schema_name#.name()
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createfunction.html
+CREATE OR REPLACE FUNCTION #schema_name#.name()
 RETURNS trigger
 LANGUAGE plpgsql
 --IMMUTABLE | STABLE | VOLATILE
@@ -335,7 +308,8 @@ $function$
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP FUNCTION #function_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropfunction.html
+DROP FUNCTION #function_name#
 --CASCADE
 ''' == data['drop_triggerfunction']
 
@@ -343,7 +317,8 @@ $function$
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] [ RECURSIVE ] VIEW #schema_name#.name
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createview.html
+CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] [ RECURSIVE ] VIEW #schema_name#.name
 --WITH ( check_option = local | cascaded )
 --WITH ( security_barrier = true | false )
 AS
@@ -354,7 +329,8 @@ SELECT ...
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP VIEW #view_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropview.html
+DROP VIEW #view_name#
 --CASCADE
 ''' == data['drop_view']
 
@@ -362,7 +338,8 @@ SELECT ...
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE MATERIALIZED VIEW #schema_name#.name AS
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-creatematerializedview.html
+CREATE MATERIALIZED VIEW #schema_name#.name AS
 SELECT ...
 --WITH NO DATA
 ''' == data['create_mview']
@@ -371,7 +348,8 @@ SELECT ...
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''REFRESH MATERIALIZED VIEW
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-refreshmaterializedview.html
+REFRESH MATERIALIZED VIEW
 --CONCURRENTLY
 #view_name#
 --WITH NO DATA
@@ -381,7 +359,8 @@ SELECT ...
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP MATERIALIZED VIEW #view_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropmaterializedview.html
+DROP MATERIALIZED VIEW #view_name#
 --CASCADE
 ''' == data['drop_mview']
 
@@ -389,7 +368,8 @@ SELECT ...
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 ADD COLUMN name data_type
 --COLLATE collation
 --column_constraint [ ... ] ]
@@ -399,7 +379,8 @@ ADD COLUMN name data_type
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 --ALTER COLUMN #column_name#
 --RENAME COLUMN #column_name# TO new_column
 --TYPE data_type [ COLLATE collation ] [ USING expression ]
@@ -410,14 +391,15 @@ ADD COLUMN name data_type
 --SET STATISTICS integer
 --SET ( attribute_option = value [, ... ] )
 --RESET ( attribute_option [, ... ] )
---SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
+--SET STORAGE {{ PLAIN | EXTERNAL | EXTENDED | MAIN }}
 ''' == data['alter_column']
 
     def test_template_drop_column(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 DROP COLUMN #column_name#
 --CASCADE
 ''' == data['drop_column']
@@ -426,7 +408,8 @@ DROP COLUMN #column_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 ADD CONSTRAINT name
 PRIMARY KEY ( column_name [, ... ] )
 --WITH ( storage_parameter [= value] [, ... ] )
@@ -439,7 +422,8 @@ PRIMARY KEY ( column_name [, ... ] )
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 DROP CONSTRAINT #constraint_name#
 --CASCADE
 ''' == data['drop_primarykey']
@@ -448,7 +432,8 @@ DROP CONSTRAINT #constraint_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 ADD CONSTRAINT name
 UNIQUE ( column_name [, ... ] )
 --WITH ( storage_parameter [= value] [, ... ] )
@@ -461,7 +446,8 @@ UNIQUE ( column_name [, ... ] )
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 DROP CONSTRAINT #constraint_name#
 --CASCADE
 ''' == data['drop_unique']
@@ -470,13 +456,14 @@ DROP CONSTRAINT #constraint_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 ADD CONSTRAINT name
 FOREIGN KEY ( column_name [, ... ] )
 REFERENCES reftable [ ( refcolumn [, ... ] ) ]
---MATCH { FULL | PARTIAL | SIMPLE }
---ON DELETE { NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT }
---ON UPDATE { NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT }
+--MATCH {{ FULL | PARTIAL | SIMPLE }}
+--ON DELETE {{ NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT }}
+--ON UPDATE {{ NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT }}
 --NOT VALID
 ''' == data['create_foreignkey']
 
@@ -484,7 +471,8 @@ REFERENCES reftable [ ( refcolumn [, ... ] ) ]
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 DROP CONSTRAINT #constraint_name#
 --CASCADE
 ''' == data['drop_foreignkey']
@@ -493,10 +481,11 @@ DROP CONSTRAINT #constraint_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] name
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createindex.html
+CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] name
 ON [ ONLY ] #table_name#
 --USING method
-( { column_name | ( expression ) } [ COLLATE collation ] [ opclass [ ( opclass_parameter = value [, ... ] ) ] ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, ...] )
+( {{ column_name | ( expression ) }} [ COLLATE collation ] [ opclass [ ( opclass_parameter = value [, ... ] ) ] ] [ ASC | DESC ] [ NULLS {{ FIRST | LAST }} ] [, ...] )
 --INCLUDE ( column_name [, ...] )
 --WITH ( storage_parameter = value [, ... ] )
 --WHERE predicate
@@ -506,7 +495,8 @@ ON [ ONLY ] #table_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER INDEX #index_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterindex.html
+ALTER INDEX #index_name#
 --RENAME to new_name
 --SET TABLESPACE tablespace_name
 --ATTACH PARTITION index_name
@@ -520,7 +510,10 @@ ON [ ONLY ] #table_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP INDEX [ CONCURRENTLY ] #index_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropindex.html
+DROP INDEX
+--CONCURRENTLY
+#index_name#
 --CASCADE
 ''' == data['drop_index']
 
@@ -528,7 +521,8 @@ ON [ ONLY ] #table_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 ADD CONSTRAINT name
 CHECK ( expression )
 ''' == data['create_check']
@@ -537,7 +531,8 @@ CHECK ( expression )
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 DROP CONSTRAINT #constraint_name#
 --CASCADE
 ''' == data['drop_check']
@@ -546,7 +541,8 @@ DROP CONSTRAINT #constraint_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/ddl-constraints.html#DDL-CONSTRAINTS-EXCLUSION
+ALTER TABLE #table_name#
 ADD CONSTRAINT name
 --USING index_method
 EXCLUDE ( exclude_element WITH operator [, ... ] )
@@ -558,7 +554,8 @@ EXCLUDE ( exclude_element WITH operator [, ... ] )
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TABLE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertable.html
+ALTER TABLE #table_name#
 DROP CONSTRAINT #constraint_name#
 --CASCADE
 ''' == data['drop_exclude']
@@ -567,25 +564,28 @@ DROP CONSTRAINT #constraint_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE RULE name
-AS ON { SELECT | INSERT | UPDATE | DELETE }
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createrule.html
+CREATE RULE name
+AS ON {{ SELECT | INSERT | UPDATE | DELETE }}
 TO #table_name#
 --WHERE condition
---DO ALSO { NOTHING | command | ( command ; command ... ) }
---DO INSTEAD { NOTHING | command | ( command ; command ... ) }
+--DO ALSO {{ NOTHING | command | ( command ; command ... ) }}
+--DO INSTEAD {{ NOTHING | command | ( command ; command ... ) }}
 ''' == data['create_rule']
 
     def test_template_alter_rule(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert 'ALTER RULE #rule_name# ON #table_name# RENAME TO new_name' == data['alter_rule']
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterrule.html 
+ALTER RULE #rule_name# ON #table_name# RENAME TO new_name''' == data['alter_rule']
 
     def test_template_drop_rule(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP RULE #rule_name# ON #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-droprule.html 
+DROP RULE #rule_name# ON #table_name#
 --CASCADE
 ''' == data['drop_rule']
 
@@ -593,12 +593,13 @@ TO #table_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE TRIGGER name
---BEFORE { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE [ OR ] | TRUNCATE }
---AFTER { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE [ OR ] | TRUNCATE }
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createtrigger.html
+CREATE TRIGGER name
+--BEFORE {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE [ OR ] | TRUNCATE }}
+--AFTER {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE [ OR ] | TRUNCATE }}
 ON #table_name#
 --FROM referenced_table_name
---NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED }
+--NOT DEFERRABLE | [ DEFERRABLE ] {{ INITIALLY IMMEDIATE | INITIALLY DEFERRED }}
 --FOR EACH ROW
 --FOR EACH STATEMENT
 --WHEN ( condition )
@@ -609,13 +610,14 @@ ON #table_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE TRIGGER name
---BEFORE { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }
---AFTER { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }
---INSTEAD OF { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createtrigger.html
+CREATE TRIGGER name
+--BEFORE {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }}
+--AFTER {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }}
+--INSTEAD OF {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }}
 ON #table_name#
 --FROM referenced_table_name
---NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED }
+--NOT DEFERRABLE | [ DEFERRABLE ] {{ INITIALLY IMMEDIATE | INITIALLY DEFERRED }}
 --FOR EACH ROW
 --FOR EACH STATEMENT
 --WHEN ( condition )
@@ -626,7 +628,8 @@ ON #table_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER TRIGGER #trigger_name# ON #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altertrigger.html
+ALTER TRIGGER #trigger_name# ON #table_name#
 --RENAME TO new_name
 --DEPENDS ON EXTENSION extension_name
 --NO DEPENDS ON EXTENSION extension_name
@@ -652,7 +655,8 @@ TRIGGER #trigger_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP TRIGGER #trigger_name# ON #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-droptrigger.html 
+DROP TRIGGER #trigger_name# ON #table_name#
 --CASCADE
 ''' == data['drop_trigger']
 
@@ -681,7 +685,8 @@ TRIGGER #trigger_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''VACUUM
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-vacuum.html
+VACUUM
 --FULL
 --FREEZE
 --ANALYZE
@@ -697,7 +702,8 @@ TRIGGER #trigger_name#
         data = json.loads(response.content.decode())
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''VACUUM
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-vacuum.html
+VACUUM
 --FULL
 --FREEZE
 --ANALYZE
@@ -714,13 +720,14 @@ TRIGGER #trigger_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert 'ANALYZE' == data['analyze']
+        assert f'-- https://www.postgresql.org/docs/{self.major_version}/sql-analyze.html \nANALYZE' == data['analyze']
 
     def test_template_analyze_table(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ANALYZE #table_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-analyze.html
+ANALYZE #table_name#
 --(column_name, [, ...])
 ''' == data['analyze_table']
 
@@ -728,7 +735,8 @@ TRIGGER #trigger_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''TRUNCATE
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-truncate.html
+TRUNCATE
 --ONLY
 #table_name#
 --RESTART IDENTITY
@@ -739,31 +747,36 @@ TRIGGER #trigger_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''SELECT * FROM pg_create_physical_replication_slot('slot_name')''' == data['create_physicalreplicationslot']
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE 
+SELECT * FROM pg_create_physical_replication_slot('slot_name')''' == data['create_physicalreplicationslot']
 
     def test_template_drop_physicalreplicationslot(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''SELECT pg_drop_replication_slot('#slot_name#')''' == data['drop_physicalreplicationslot']
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE 
+SELECT pg_drop_replication_slot('#slot_name#')''' == data['drop_physicalreplicationslot']
 
     def test_template_create_logicalreplicationslot(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''SELECT * FROM pg_create_logical_replication_slot('slot_name', 'pgoutput')''' == data['create_logicalreplicationslot']
+        assert f''' -- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE 
+SELECT * FROM pg_create_logical_replication_slot('slot_name', 'pgoutput')''' == data['create_logicalreplicationslot']
 
     def test_template_drop_logicalreplicationslot(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''SELECT pg_drop_replication_slot('#slot_name#')''' == data['drop_logicalreplicationslot']
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE 
+SELECT pg_drop_replication_slot('#slot_name#')''' == data['drop_logicalreplicationslot']
 
     def test_template_create_publication(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE PUBLICATION name
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createpublication.html
+CREATE PUBLICATION name
 --FOR TABLE [ ONLY ] table_name [ * ] [, ...]
 --FOR ALL TABLES
 --WITH ( publish = 'insert, update, delete, truncate' )
@@ -774,13 +787,14 @@ TRIGGER #trigger_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER PUBLICATION #pub_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterpublication.html
+ALTER PUBLICATION #pub_name#
 --ADD TABLE [ ONLY ] table_name [ * ] [, ...]
 --SET TABLE [ ONLY ] table_name [ * ] [, ...]
 --DROP TABLE [ ONLY ] table_name [ * ] [, ...]
 --SET ( publish = 'insert, update, delete, truncate' )
 --SET ( publish_via_partition_root = true | false )
---OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
+--OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
 --RENAME TO new_name
 ''' == data['alter_publication']
 
@@ -788,7 +802,8 @@ TRIGGER #trigger_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP PUBLICATION #pub_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-droppublication.html 
+DROP PUBLICATION #pub_name#
 --CASCADE
 ''' == data['drop_publication']
 
@@ -796,28 +811,30 @@ TRIGGER #trigger_name#
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert 'ALTER PUBLICATION #pub_name# ADD TABLE table_name' == data['add_pubtable']
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-alterpublication.html 
+ALTER PUBLICATION #pub_name# ADD TABLE table_name''' == data['add_pubtable']
 
     def test_template_drop_pubtable(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert 'ALTER PUBLICATION #pub_name# DROP TABLE #table_name#' == data['drop_pubtable']
+        assert f'-- https://www.postgresql.org/docs/{self.major_version}/sql-alterpublication.html \nALTER PUBLICATION #pub_name# DROP TABLE #table_name#' == data['drop_pubtable']
 
     def test_template_create_subscription(self):
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''CREATE SUBSCRIPTION name
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-createsubscription.html
+CREATE SUBSCRIPTION name
 CONNECTION 'conninfo'
 PUBLICATION pub_name [, ...]
 --WITH (
---copy_data = { true | false }
---, create_slot = { true | false }
---, enabled = { true | false }
+--copy_data = {{ true | false }}
+--, create_slot = {{ true | false }}
+--, enabled = {{ true | false }}
 --, slot_name = 'name'
---, synchronous_commit = { on | remote_apply | remote_write | local | off }
---, connect = { true | false }
+--, synchronous_commit = {{ on | remote_apply | remote_write | local | off }}
+--, connect = {{ true | false }}
 --)
 ''' == data['create_subscription']
 
@@ -825,17 +842,18 @@ PUBLICATION pub_name [, ...]
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''ALTER SUBSCRIPTION #sub_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-altersubscription.html
+ALTER SUBSCRIPTION #sub_name#
 --CONNECTION 'conninfo'
---SET PUBLICATION pub_name [, ...] [ WITH ( refresh = { true | false } ) ]
---REFRESH PUBLICATION [ WITH ( copy_data = { true | false } ) ]
+--SET PUBLICATION pub_name [, ...] [ WITH ( refresh = {{ true | false }} ) ]
+--REFRESH PUBLICATION [ WITH ( copy_data = {{ true | false }} ) ]
 --ENABLE
 --DISABLE
 --SET (
 --slot_name = 'name'
---, synchronous_commit = { on | remote_apply | remote_write | local | off }
+--, synchronous_commit = {{ on | remote_apply | remote_write | local | off }}
 --)
---OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
+--OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
 --RENAME TO new_name
 ''' == data['alter_subscription']
 
@@ -843,7 +861,8 @@ PUBLICATION pub_name [, ...]
         response = self.client_session.post('/get_tree_info_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
-        assert '''DROP SUBSCRIPTION #sub_name#
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/sql-dropsubscription.html 
+DROP SUBSCRIPTION #sub_name#
 --CASCADE
 ''' == data['drop_subscription']
 

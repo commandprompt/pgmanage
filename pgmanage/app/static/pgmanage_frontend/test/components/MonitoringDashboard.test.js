@@ -5,12 +5,18 @@ import MonitoringWidget from "../../src/components/MonitoringWidget.vue";
 
 import axios from "axios";
 
+vi.hoisted(() => {
+  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
+  vi.stubGlobal("app_base_path", "test_folder");
+});
+
 vi.mock("axios");
 
 vi.mock("tabulator-tables", () => {
   const TabulatorFull = vi.fn();
   TabulatorFull.prototype.redraw = vi.fn();
   TabulatorFull.prototype.setData = vi.fn();
+  TabulatorFull.prototype.replaceData = vi.fn();
   return { TabulatorFull };
 });
 
@@ -30,6 +36,8 @@ describe("MonitoringDashboard", () => {
   let dashboardWrapper;
 
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.restoreAllMocks();
     axios.delete.mockResolvedValue("Deleted");
     axios.post
       .mockResolvedValue({ data: { data: "1234" } })

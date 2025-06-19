@@ -16,7 +16,6 @@
           >
             <a
               :id="tab.id"
-              data-bs-toggle="tab"
               :class="[
                 'omnidb__tab-menu__link',
                 'nav-item',
@@ -121,6 +120,7 @@ import ContextMenu from "@imengyu/vue3-context-menu";
 import SnippetTab from "./SnippetTab.vue";
 import TabsUtils from "../mixins/tabs_utils_mixin";
 import QueryTab from "./QueryTab.vue";
+import SchemaEditorTab from "./SchemaEditorTab.vue";
 
 export default {
   name: "DatabaseTabs",
@@ -135,10 +135,8 @@ export default {
     RestoreTab: defineAsyncComponent(() => import("./RestoreTab.vue")),
     ERDTab: defineAsyncComponent(() => import("./ERDTab.vue")),
     DataEditorTab: defineAsyncComponent(() => import("./DataEditorTab.vue")),
-    SchemaEditorTab: defineAsyncComponent(() =>
-      import("./SchemaEditorTab.vue")
-    ),
     MonitoringTab: defineAsyncComponent(() => import("./MonitoringTab.vue")),
+    SchemaEditorTab,
     QueryTab,
     SnippetTab,
   },
@@ -167,7 +165,7 @@ export default {
     },
     tabColorLabelClass() {
       let primaryTab = tabsStore.getPrimaryTabById(this.workspaceId);
-      let connection = connectionsStore.getConnection(primaryTab.metaData?.selectedDatabaseIndex);
+      let connection = connectionsStore.getConnection(primaryTab?.metaData?.selectedDatabaseIndex);
       if(connection) {
         return colorLabelMap[connection.color_label].class || ''
       }
@@ -278,6 +276,7 @@ export default {
           dialect: tab.metaData.dialect,
         },
         MonitoringTab: {
+          tabId: tab.id,
           workspaceId: tab.parentId,
           databaseIndex: tab?.metaData?.databaseIndex,
           dialect: tab?.metaData?.dialect,
@@ -302,7 +301,7 @@ export default {
       let optionList = [
         {
           label: "Query Tab",
-          icon: "fas cm-all fa-search",
+          icon: "fas fa-search",
           onClick: () => {
             let name = tabsStore.selectedPrimaryTab.metaData.selectedDatabase
               .replace("\\", "/")
@@ -313,7 +312,7 @@ export default {
         },
         {
           label: "Console Tab",
-          icon: "fas cm-all fa-terminal",
+          icon: "fas fa-terminal",
           onClick: () => {
             tabsStore.createConsoleTab();
           },
@@ -327,7 +326,7 @@ export default {
       ) {
         optionList.push({
           label: "Monitoring Dashboard",
-          icon: "fas cm-all fa-chart-line",
+          icon: "fas fa-chart-line",
           onClick: () => {
             tabsStore.createMonitoringDashboardTab();
           },
@@ -337,11 +336,21 @@ export default {
       if (tabsStore.selectedPrimaryTab.metaData.selectedDBMS === "postgresql") {
         optionList.push({
           label: "Backends",
-          icon: "fas cm-all fa-tasks",
+          icon: "fas fa-tasks",
           onClick: () => {
             tabsStore.createMonitoringTab(
               "Backends",
-              "select * from pg_stat_activity"
+              'select pid as "Pid",\
+              datname as "Database",\
+              usename as "User",\
+              application_name as "Application",\
+              client_addr as "Client Addr",\
+              backend_start as "Backend Start",\
+              xact_start as "Transaction Start",\
+              state as "State",\
+              wait_event as "Wait Event",\
+              backend_type as "Backend Type",\
+              query as "Query" from pg_stat_activity'
             );
           },
         });
@@ -352,7 +361,7 @@ export default {
       ) {
         optionList.push({
           label: "Process List",
-          icon: "fas cm-all fa-tasks",
+          icon: "fas fa-tasks",
           onClick: () => {
             tabsStore.createMonitoringTab(
               "Process List",

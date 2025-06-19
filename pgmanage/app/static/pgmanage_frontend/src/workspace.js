@@ -14,8 +14,8 @@ import { Modal } from 'bootstrap'
 function checkBeforeChangeDatabase(p_cancel_function, p_ok_function) {
 
   for (const tab of tabsStore.selectedPrimaryTab.metaData.secondaryTabs) {
-    if(["edit", "alter", "debug", "monitoring_dashboard", "data_mining"].includes(tab.metaData.mode)) {
-      showAlert('Before changing connection please close any tab that belongs to the following types: <br/><br/><b>Edit Data<br/><br/>Alter Table<br/><br/>Function Debugging<br/><br/>Monitoring Dashboard<br/><br/>Advanced Object Search');
+    if(["edit", "alter", "monitoring_dashboard"].includes(tab.metaData.mode)) {
+      showAlert('Before changing connection please close any tab that belongs to the following types: <br/><br/><b>Edit Data<br/><br/>Alter Table<br/><br/>Monitoring Dashboard');
       if (p_cancel_function!=null) {
         p_cancel_function();
       }
@@ -93,7 +93,7 @@ function refreshHeights(p_all) {
       }
       else if (v_omnis.div) {
         v_omnis.div.style.top = v_omnis.root.getBoundingClientRect().height - 45 + 'px';
-        v_omnis.div.style.left = v_omnis.root.getBoundingClientRect().width - 45 + 'px';
+        v_omnis.div.style.left = v_omnis.root.getBoundingClientRect().width - 60 + 'px';
       }
     }
 
@@ -151,14 +151,14 @@ function showMenuNewTabOuter(e) {
         }
         return {
           label: conn_name,
-          icon: `fas cm-all ${icon}`,
+          icon: `fas ${icon}`,
           onClick: onClick,
         };
       });
 
     return {
       label: group.name,
-      icon: "fas cm-all fa-plug",
+      icon: "fas fa-plug",
       children: group_connections,
     };
   }
@@ -194,7 +194,7 @@ function showMenuNewTabOuter(e) {
 
         items.push({
           label: "Connections",
-          icon: "fas cm-all fa-plug",
+          icon: "fas fa-plug",
           children: group_list,
         });
       }
@@ -210,7 +210,7 @@ function showMenuNewTabOuter(e) {
           }
           return {
             label: term_name,
-            icon: "fas cm-all fa-terminal",
+            icon: "fas fa-terminal",
             onClick: () => {
               tabsStore.createTerminalTab(id, alias, details1)
             },
@@ -220,7 +220,7 @@ function showMenuNewTabOuter(e) {
 
       items.push({
         label: "SSH Consoles",
-        icon: "fas cm-all fa-terminal",
+        icon: "fas fa-terminal",
         children: submenu_terminal_list,
       });
     }
@@ -228,7 +228,7 @@ function showMenuNewTabOuter(e) {
     if (items.length > 0) {
       items.unshift({
         label: "Manage Connections",
-        icon: "fas cm-all fa-gears",
+        icon: "fas fa-gears",
         onClick: () => {
           Modal.getOrCreateInstance("#connections-modal").show()
         },

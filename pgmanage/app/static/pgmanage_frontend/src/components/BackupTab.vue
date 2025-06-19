@@ -10,7 +10,7 @@
                 <label :for="`${backupTabId}_backupFileName`" class="fw-bold mb-1">File name</label>
                   <div class="input-group">
                       <button class="btn btn-secondary" @click="openFileManagerModal">Select</button>
-                        <input :id="`${backupTabId}_backupFileName`" type="text" class="form-control" :value="backupOptions.fileName"
+                        <input :id="`${backupTabId}_backupFileName`" type="text" class="form-control" :value="truncateText(backupOptions.fileName, 20)"
                           placeholder="backup file" disabled>
                     </div>
                   </div>
@@ -296,25 +296,27 @@
       </div>
 
       <div class="d-flex justify-content-between mt-3">
-        <a :class="['btn', 'btn-outline-secondary', 'mb-2', { 'disabled': !isOptionsChanged }]" 
+        <a data-testid="revert-settings-button" :class="['btn', 'btn-outline-secondary', 'mb-2', { 'disabled': !isOptionsChanged }]" 
             @click="resetToDefault">Revert settings</a>
           <div class="btn-group">
-            <a :class="['btn', 'btn-outline-primary', 'mb-2', { 'disabled': !backupOptions.fileName}]"
+            <a data-testid="preview-button" :class="['btn', 'btn-outline-primary', 'mb-2', { 'disabled': !backupOptions.fileName}]"
                 @click="previewCommand">Preview</a>
-            <a :class="['btn', 'btn-success', 'mb-2', 'ms-0', { 'disabled': !backupOptions.fileName }]"
+            <a data-testid="backup-button" :class="['btn', 'btn-success', 'mb-2', 'ms-0', { 'disabled': !backupOptions.fileName || backupLocked }]"
                 @click.prevent="saveBackup">Backup</a>
           </div>
       </div>
   </form>
-  <UtilityJobs ref="jobs" />
+  <UtilityJobs @jobExit="handleJobExit" ref="jobs" />
 
 </div>
 </template>
 <script>
 import UtilityJobs from "./UtilityJobs.vue";
 import axios from 'axios'
-import { showAlert, showToast } from "../notification_control";
+import { showAlert } from "../notification_control";
 import { fileManagerStore, tabsStore, settingsStore } from "../stores/stores_initializer";
+import { truncateText } from "../utils";
+import { handleError } from "../logging/utils";
 
 export default {
   name: "BackupTab",
@@ -384,7 +386,9 @@ export default {
         pigz_compression_ratio: "6"
       },
       backupOptions: {},
-      backupTabId: this.tabId
+      backupTabId: this.tabId,
+      backupLocked: false,
+      lastJobId: 0
     }
   },
   computed: {
@@ -436,20 +440,63 @@ export default {
       this.getRoleNames()
     })
 
-    fileManagerStore.$onAction(({name, store, after}) => {
-      if (name === "changeFile" && this.tabId === tabsStore.selectedPrimaryTab.metaData.selectedTab.id) {
+    fileManagerStore.$onAction(({ name, store, after }) => {
+      if (
+        name === "changeFile" &&
+        this.tabId === tabsStore.selectedPrimaryTab.metaData.selectedTab.id
+      ) {
         after(() => {
-          this.changeFilePath(store.filePath)
-        })
+          this.changeFilePath(store.file.path);
+          if (store.file.is_directory) {
+            this.backupOptions.format = "directory";
+            return;
+          }
+
+          switch (store.file?.type) {
+            case "sql":
+              this.backupOptions.format = "plain";
+              break;
+            case "tar":
+              this.backupOptions.format = "tar";
+              break;
+            default:
+              this.backupOptions.format = "custom";
+          }
+        });
       }
-    })
+    });
   },
   watch: {
     'backupOptions.format'(newValue){
       if (['directory', 'tar'].includes(newValue)) {
         this.backupOptions.pigz = false
       }
-    }
+      if (!this.backupOptions.fileName) return;
+
+
+      // Remove the current extension, if any
+      this.backupOptions.fileName = this.backupOptions.fileName.replace(/\.[^/.]+$/, ""); 
+
+      switch (newValue) {
+        case 'directory':
+          break;
+        case 'plain':
+          this.backupOptions.fileName += '.sql';
+          break;
+        case 'custom':
+          this.backupOptions.fileName += '.dump';
+          break;
+        case 'tar':
+          this.backupOptions.fileName += '.tar';
+          break;
+      }
+    },
+    backupOptions: {
+      handler() {
+        this.backupLocked = false;
+      },
+      deep: true
+    },
   },
   methods: {
     getRoleNames() {
@@ -461,10 +508,11 @@ export default {
           resp.data.data.forEach(element => this.roleNames.push(element.name))
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
     },
     saveBackup() {
+      this.backupLocked = true;
       axios.post("/backup/", {
         database_index: this.databaseIndex,
         workspaceId: this.workspaceId,
@@ -472,15 +520,30 @@ export default {
         backup_type: this.type
       })
         .then((resp) => {
-          this.$refs.jobs.startJob(resp.data.job_id, resp.data.description)
+          this.$refs.jobs.startJob(resp.data.job_id, resp.data.description);
+          this.lastJobId = resp.data.job_id;
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
+          this.backupLocked = false;
         })
     },
     onFile(e) {
       const [file] = e.target.files
       this.backupOptions.fileName = file?.path
+
+      if (e.target.hasAttribute('nwdirectory')) return;
+
+      switch (file?.type) {
+        case 'application/sql':
+          this.backupOptions.format = 'plain';
+          break;
+        case 'application/x-tar':
+          this.backupOptions.format = 'tar';
+          break;
+        default:
+          this.backupOptions.format = 'custom';
+      }
     },
     changeFilePath(filePath) {
       this.backupOptions.fileName = filePath;
@@ -502,9 +565,14 @@ export default {
           showAlert(resp.data.command.cmd)
         })
         .catch((error) => {
-          showToast("error", error.response.data.data)
+          handleError(error);
         })
-    }
+    },
+    handleJobExit(jobId) {
+      if(jobId === this.lastJobId)
+        this.backupLocked = false;
+    },
+    truncateText
   }
 }
 
