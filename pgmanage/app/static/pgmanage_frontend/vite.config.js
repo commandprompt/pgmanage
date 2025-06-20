@@ -75,7 +75,8 @@ export default defineConfig(({ command, mode }) => {
     css: {
       preprocessorOptions: {
         scss: {
-          silenceDeprecations: ['mixed-decls', 'color-functions', 'legacy-js-api']
+          silenceDeprecations: ['mixed-decls', 'color-functions', 'legacy-js-api'],
+          additionalData: `@import '@src/assets/scss/common/variables';`,
         },
       }
     },

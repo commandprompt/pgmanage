@@ -509,6 +509,11 @@ export default {
               emitter.emit(`${tabsStore.selectedPrimaryTab.metaData.selectedTab.id}_show_autocomplete_results`, e)
             }
         }
+      },
+      shortcut_quick_search: function(e) {
+        if (tabsStore.selectedPrimaryTab.metaData.mode === 'connection') {
+          emitter.emit(`${tabsStore.selectedPrimaryTab.id}_show_quick_search`, e)
+        }
       }
     }
     // Go over default shortcuts
@@ -569,7 +574,8 @@ export default {
         'shortcut_right_inner_tab': 'Switch Tab Right',
         'shortcut_autocomplete': 'Autocomplete',
         'shortcut_explain': 'Explain Query',
-        'shortcut_explain_analyze': 'Analyze Query'
+        'shortcut_explain_analyze': 'Analyze Query',
+        'shortcut_quick_search': 'Quick Search'
       };
       return LABEL_MAP[shortcut.shortcut_code] || 'unknown'
     },
