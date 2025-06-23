@@ -1,5 +1,8 @@
 <template>
-  <div ref="editor" @contextmenu.stop.prevent="contextMenu">
+  <div>
+    <div class="h-100" ref="editor" @contextmenu.stop.prevent="contextMenu">
+    </div>
+    <SearchButton :editor="editor" :editor-initialized="initialized" />
   </div>
 </template>
 <script>
@@ -12,8 +15,12 @@ import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_extras/plug
 import { editorModeMap, maxLinesForIndentSQL } from "../constants";
 import { showToast } from "../notification_control";
 import { SQLAutocomplete, SQLDialect } from 'sql-autocomplete';
+import QueryEditorSearchButton from "./QueryEditorSearchButton.vue";
 
 export default {
+  components: {
+    SearchButton: QueryEditorSearchButton,
+  },
   props: {
     readOnly: {
       type: Boolean,
@@ -30,7 +37,7 @@ export default {
     databaseIndex: Number,
     databaseName: String,
   },
-  emits: ["editorChange"],
+  emits: ["editorChange", "runSelection", "runSelectionExplain", "runSelectionExplainAnalyze"],
   data() {
     return {
       editor: "",
@@ -42,7 +49,8 @@ export default {
         language: this.dialect === "oracle" ? "plsql" : this.dialect,
         linesBetweenQueries: 1,
       },
-      completer: null
+      completer: null,
+      initialized: false,
     };
   },
   computed: {
@@ -164,6 +172,7 @@ export default {
 
       setupAceDragDrop(this.editor);
       setupAceSelectionHighlight(this.editor);
+      this.initialized = true;
     },
     setupCompleter() {
       // TODO:
