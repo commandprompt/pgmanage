@@ -28,6 +28,13 @@
       <div class="col">
         <span class="text-muted">Current log file: {{ currentLogFile }}</span>
       </div>
+      <button
+        class="btn btn-square btn-secondary"
+        title="Find"
+        @click="showFind()"
+      >
+        <i class="fas fa-magnifying-glass fa-light"></i>
+      </button>
       <div class="col-1">
         <div class="form-check form-switch pt-1">
           <input
@@ -242,6 +249,9 @@ export default {
           this.editor.renderer.scrollToLine(Number.POSITIVE_INFINITY);
         }
       });
+    },
+    showFind() {
+      this.editor.execCommand("find");
     },
   },
 };
