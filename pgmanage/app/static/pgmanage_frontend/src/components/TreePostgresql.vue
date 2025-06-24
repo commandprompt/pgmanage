@@ -89,6 +89,7 @@ export default {
       ],
       currentSchema: "public",
       cm_server_extra: [],
+      serverVersion: null,
     };
   },
   computed: {
@@ -117,9 +118,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/managing-databases.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/managing-databases.html`
               );
             },
           },
@@ -192,9 +191,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-schemas.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-schemas.html`
               );
             },
           },
@@ -263,9 +260,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-basics.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-basics.html`
               );
             },
           },
@@ -274,9 +269,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-constraints.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-constraints.html`
               );
             },
           },
@@ -285,9 +278,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-alter.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-alter.html`
               );
             },
           },
@@ -710,9 +701,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/indexes.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/indexes.html`
               );
             },
           },
@@ -781,9 +770,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/rules.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/rules.html`
               );
             },
           },
@@ -853,9 +840,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/trigger-definition.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/trigger-definition.html`
               );
             },
           },
@@ -996,9 +981,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-partitioning.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-partitioning.html`
               );
             },
           },
@@ -1055,9 +1038,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-partitioning.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-partitioning.html`
               );
             },
           },
@@ -1117,9 +1098,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/planner-stats.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/planner-stats.html`
               );
             },
           },
@@ -1161,9 +1140,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-partitioning.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-partitioning.html`
               );
             },
           },
@@ -1176,9 +1153,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/tutorial-inheritance.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/tutorial-inheritance.html`
               );
             },
           },
@@ -1378,9 +1353,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createsequence.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createsequence.html`
               );
             },
           },
@@ -1434,9 +1407,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createview.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createview.html`
               );
             },
           },
@@ -1510,9 +1481,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/trigger-definition.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/trigger-definition.html`
               );
             },
           },
@@ -1537,9 +1506,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-creatematerializedview.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-creatematerializedview.html`
               );
             },
           },
@@ -1638,9 +1605,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createfunction.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createfunction.html`
               );
             },
           },
@@ -1720,9 +1685,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/plpgsql-trigger.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/plpgsql-trigger.html`
               );
             },
           },
@@ -1783,9 +1746,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/functions-event-triggers.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/functions-event-triggers.html`
               );
             },
           },
@@ -1848,9 +1809,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createprocedure.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createprocedure.html`
               );
             },
           },
@@ -1923,9 +1882,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createaggregate.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createaggregate.html`
               );
             },
           },
@@ -1980,9 +1937,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createtype.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createtype.html`
               );
             },
           },
@@ -2036,9 +1991,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createdomain.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createdomain.html`
               );
             },
           },
@@ -2086,9 +2039,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/extend-extensions.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/extend-extensions.html`
               );
             },
           },
@@ -2127,9 +2078,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/postgres-fdw.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/postgres-fdw.html`
               );
             },
           },
@@ -2286,9 +2235,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/event-triggers.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/event-triggers.html`
               );
             },
           },
@@ -2403,9 +2350,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/logical-replication-publication.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/logical-replication-publication.html`
               );
             },
           },
@@ -2489,9 +2434,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/logical-replication-subscription.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/logical-replication-subscription.html`
               );
             },
           },
@@ -2542,9 +2485,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/manage-ag-tablespaces.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/manage-ag-tablespaces.html`
               );
             },
           },
@@ -2584,7 +2525,7 @@ export default {
             label: "Create Role",
             icon: "fas fa-plus",
             onClick: () => {
-              createRoleModal(this.selectedNode, operationModes.CREATE, this.getMajorVersion(this.templates.version));
+              createRoleModal(this.selectedNode, operationModes.CREATE, this.serverVersion);
             },
           },
           {
@@ -2592,9 +2533,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/user-manag.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/user-manag.html`
               );
             },
           },
@@ -2604,7 +2543,7 @@ export default {
             label: "Alter Role",
             icon: "fas fa-edit",
             onClick: () => {
-              createRoleModal(this.selectedNode, operationModes.UPDATE, this.getMajorVersion(this.templates.version));
+              createRoleModal(this.selectedNode, operationModes.UPDATE, this.serverVersion);
             },
           },
           COMMENT_MENUITEM,
@@ -2639,9 +2578,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/warm-standby.html#streaming-replication-slots`
+                `https://www.postgresql.org/docs/${this.serverVersion}/warm-standby.html#streaming-replication-slots`
               );
             },
           },
@@ -2678,9 +2615,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/logicaldecoding-explanation.html#logicaldecoding-replication-slots`
+                `https://www.postgresql.org/docs/${this.serverVersion}/logicaldecoding-explanation.html#logicaldecoding-replication-slots`
               );
             },
           },
@@ -3176,9 +3111,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/`
+                `https://www.postgresql.org/docs/${this.serverVersion}/`
               );
             },
           },
@@ -3187,9 +3120,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql.html`
               );
             },
           },
@@ -3198,15 +3129,14 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-commands.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-commands.html`
               );
             },
           }];
   
         this.templates = response.data;
-  
+        this.serverVersion = response.data.major_version;
+
         this.$refs.tree.updateNode(node.path, {
           title: response.data.version,
         });
@@ -5656,17 +5586,6 @@ export default {
     },
     openWebSite(site) {
       window.open(site, "_blank");
-    },
-    getMajorVersion(version) {
-      // FIXME
-      let v_version = version.split(" (")[0];
-      let tmp = v_version
-        .replace("PostgreSQL ", "")
-        .replace("beta", ".")
-        .replace("rc", ".")
-        .split(".");
-      tmp.pop();
-      return tmp.join(".");
     },
   },
 };

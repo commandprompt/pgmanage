@@ -13,6 +13,7 @@ def get_tree_info(request, database):
         data = {
             "database": database.GetName(),
             "version": database.GetVersion(),
+            "major_version": database.major_version,
             #'superuser': database.GetUserSuper(),
             "drop_role": database.TemplateDropRole().v_text,
             "create_tablespace": database.TemplateCreateTablespace().v_text,
