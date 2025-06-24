@@ -12,7 +12,7 @@
         >More information:
         <a
           target="_blank"
-          href="https://www.postgresql.org/docs/17/runtime-config-logging.html"
+          :href="`https://www.postgresql.org/docs/${serverVersion}/runtime-config-logging.html`"
         >
           Error Reporting and Logging
         </a></span
@@ -74,8 +74,6 @@
 import { settingsStore, tabsStore } from "../stores/stores_initializer";
 import { handleError } from "../logging/utils";
 
-// TODO: change hard code postgres link to dynamic one
-
 import axios from "axios";
 export default {
   name: "MonitoringTabLogs",
@@ -95,6 +93,7 @@ export default {
       loggingDisabled: false,
       autoScroll: true,
       currentLogFile: "",
+      serverVersion: null,
     };
   },
   computed: {
@@ -113,6 +112,7 @@ export default {
   mounted() {
     this.setupEditor();
     this.getLogFormat();
+    this.getServerVersion();
 
     window.addEventListener("resize", () => {
       if (
@@ -212,6 +212,19 @@ export default {
               available: !!resp.data.formats?.includes("jsonlog"),
             },
           };
+        })
+        .catch((error) => {
+          handleError(error);
+        });
+    },
+    getServerVersion() {
+      axios
+        .post("/get_postgresql_version/", {
+          database_index: this.databaseIndex,
+          workspace_id: this.workspaceId,
+        })
+        .then((response) => {
+          this.serverVersion = response.data.version;
         })
         .catch((error) => {
           handleError(error);

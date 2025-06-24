@@ -1687,7 +1687,7 @@ def template_call_procedure(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_version(request, database):
     try:
-        response_data = {"version": database.GetVersion()}
+        response_data = {"version": database.major_version}
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
