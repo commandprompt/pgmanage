@@ -435,7 +435,7 @@ export default {
             action: () => this.copyTableData("csv"),
           },
           {
-            label: '<i class="fas fa-copy"></i><span>Copy as Mardown</span>',
+            label: '<i class="fas fa-copy"></i><span>Copy as Markdown</span>',
             action: () => this.copyTableData("markdown"),
           },
           {
