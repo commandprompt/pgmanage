@@ -1732,17 +1732,33 @@ def get_object_description(request, database):
 def get_server_log(request, database):
     data = request.data
     log_format = data.get("log_format")
-    try:
-        data = database.Query(
-            f"SELECT pg_read_file(pg_current_logfile('{log_format}'))"
-        )
-        logs = data.Rows[0]["pg_read_file"]
+    log_offset = data.get("log_offset")
 
-        data = database.Query(f"SELECT pg_current_logfile('{log_format}')")
-        current_logfile = data.Rows[0]["pg_current_logfile"]
+    try:
+        log_formats = database.ExecuteScalar("show log_destination")
+
+        if log_format not in log_formats:
+            log_format = ''
+
+        current_file_size = database.ExecuteScalar(
+            f"SELECT size from pg_stat_file(pg_current_logfile('{log_format}'))"
+        )
+
+        if log_offset and log_offset < current_file_size:
+            logs_data = database.Query(
+                f"SELECT pg_read_file(pg_current_logfile('{log_format}'), {log_offset}, 10000)"
+            )
+        else:
+            logs_data = database.Query(
+                f"SELECT pg_read_file(pg_current_logfile('{log_format}'))"
+            )
+        logs = logs_data.Rows[0]["pg_read_file"]
+
+        current_logfile_data = database.Query(f"SELECT pg_current_logfile('{log_format}')")
+        current_logfile = current_logfile_data.Rows[0]["pg_current_logfile"]
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
-    return JsonResponse(data={"logs": logs, "current_logfile": current_logfile})
+    return JsonResponse(data={"logs": logs, "current_logfile": current_logfile, "log_offset": current_file_size})
 
 
 @user_authenticated

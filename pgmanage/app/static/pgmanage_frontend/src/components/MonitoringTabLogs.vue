@@ -101,6 +101,8 @@ export default {
       autoScroll: true,
       currentLogFile: "",
       serverVersion: null,
+      logOffset: null,
+      intervalObject: null,
     };
   },
   computed: {
@@ -113,6 +115,9 @@ export default {
       const aceMode =
         this.formatModes[newValue]?.ace_mode ?? "ace/mode/pgsql_extended";
       this.editor.session.setMode(aceMode);
+      clearInterval(this.intervalObject);
+      this.logOffset = null;
+      this.intervalObject = null;
       this.getLog();
     },
   },
@@ -153,8 +158,14 @@ export default {
     const tabEl = document.getElementById(`${this.tabId}-logs-tab`);
     tabEl.addEventListener("shown.bs.tab", (event) => {
       this.handleResize();
-      this.getLog();
+      if (this.intervalObject === null) {
+        this.getLog();
+      }
     });
+  },
+  unmounted() {
+    clearInterval(this.intervalObject);
+    window.removeEventListener("resize", this.resizeBrowserHandler);
   },
   methods: {
     setupEditor() {
@@ -171,24 +182,42 @@ export default {
       this.editor.commands.bindKey("Cmd-Delete", null);
       this.editor.commands.bindKey("Ctrl-Delete", null);
     },
-    getLog() {
-      this.showLoading = true;
+    getLog(showLoading = true) {
+      if (showLoading) {
+        clearInterval(this.intervalObject);
+        this.intervalObject = null;
+        this.showLoading = true;
+      }
       axios
         .post("/get_postgres_server_log/", {
           database_index: this.databaseIndex,
           workspace_id: this.workspaceId,
           log_format: this.formatMode,
+          log_offset: this.logOffset,
         })
         .then((response) => {
           this.loggingDisabled = response.data.logs === null;
 
           this.currentLogFile = response.data.current_logfile;
-
-          this.editor.setValue(response.data.logs);
+          if (this.logOffset !== null) {
+            const currentLength = this.editor.session.getLength();
+            this.editor.session.insert(
+              { row: currentLength, column: 0 },
+              response.data.logs
+            );
+          } else {
+            this.editor.setValue(response.data.logs);
+          }
           this.editor.clearSelection();
           this.showLoading = false;
+          this.logOffset = response.data.log_offset;
 
           this.scrollToBottom();
+          if (this.intervalObject === null) {
+            this.intervalObject = setInterval(() => {
+              this.getLog(false);
+            }, 5000);
+          }
         })
         .catch((error) => {
           handleError(error);
