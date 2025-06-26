@@ -118,6 +118,7 @@ export default {
       clearInterval(this.intervalObject);
       this.logOffset = null;
       this.intervalObject = null;
+      this.currentLogFile = "";
       this.getLog();
     },
   },
@@ -197,6 +198,13 @@ export default {
         })
         .then((response) => {
           this.loggingDisabled = response.data.logs === null;
+
+          if (
+            !!this.currentLogFile &&
+            this.currentLogFile !== response.data.current_logfile
+          ) {
+            this.logOffset = null;
+          }
 
           this.currentLogFile = response.data.current_logfile;
           if (this.logOffset !== null) {
