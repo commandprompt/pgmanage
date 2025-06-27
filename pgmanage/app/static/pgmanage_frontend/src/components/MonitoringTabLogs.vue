@@ -23,13 +23,13 @@
   <div v-show="!loggingDisabled">
     <div
       ref="topToolbar"
-      class="row align-items-center justify-content-end p-1"
+      class="d-flex flex-row align-items-center justify-content-end p-1"
     >
       <div class="col">
-        <span class="text-muted">Current log file: {{ currentLogFile }}</span>
+        <p><span class="fw-bold">Current log:</span> {{ currentLogFile }}</p>
       </div>
       <button
-        class="btn btn-square btn-secondary"
+        class="btn btn-ghost btn-ghost-secondary btn-w-fixed me-2"
         title="Find"
         @click="showFind()"
       >
@@ -72,7 +72,7 @@
           </div>
         </div>
       </Transition>
-      <div ref="editor" class="ace-editor"></div>
+      <div ref="editor" class="ace-editor ace-editor-logs"></div>
     </div>
   </div>
 </template>
@@ -297,5 +297,9 @@ export default {
 <style scoped>
 .ace-editor {
   height: v-bind(editorHeight);
+}
+
+.btn-w-fixed {
+  min-width: 2.5rem;
 }
 </style>
