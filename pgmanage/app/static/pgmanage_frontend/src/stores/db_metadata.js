@@ -46,6 +46,11 @@ const useDbMetadataStore = defineStore("dbMetadata", {
 
       return meta_response;
     },
+    deleteDbMeta(conn_id) {
+      if (this.dbMeta[conn_id]) {
+        delete this.dbMeta[conn_id];
+      }
+    },
   },
 });
 

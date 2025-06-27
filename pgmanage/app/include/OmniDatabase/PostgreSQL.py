@@ -157,8 +157,6 @@ class PostgreSQL:
         self._major_version = None
         self.v_use_server_cursor = True
         self.set_default_feature_flags()
-        if self.version_num: # self.version_num indicates that the connection is active and we can now fetch db capabilities
-            self.update_feature_flags()
 
 
     @property
@@ -262,6 +260,8 @@ class PostgreSQL:
 
     @lock_required
     def GetVersion(self):
+        if self.version_num: # self.version_num indicates that the connection is active and we can now fetch db capabilities
+            self.update_feature_flags()
         return f"PostgreSQL {self.version.split(' ')[0]}" if self.version else "Unknown"
 
     @lock_required
@@ -291,6 +291,7 @@ class PostgreSQL:
         if self.v_conn_string and self.v_conn_string_error!='':
             return self.v_conn_string_error
         try:
+            self.v_connection.connection_params["connect_timeout"] = 5
             self.v_connection.Open()
             v_schema = self.QuerySchemas()
             if len(v_schema.Rows) > 0:
@@ -298,6 +299,7 @@ class PostgreSQL:
             self.v_connection.Close()
         except Exception as exc:
             v_return = str(exc)
+        self.v_connection.connection_params.pop("connect_timeout")
         return v_return
 
     def GetErrorPosition(self, p_error_message, sql_cmd):
@@ -5187,8 +5189,9 @@ ANALYZE #table_name#
 
     def TemplateInsert(self, p_schema, p_table):
         v_fields = self.QueryTablesFields(p_table, False, p_schema)
+        v_sql = f'-- https://www.postgresql.org/docs/{self.major_version}/sql-insert.html \n'
         if len(v_fields.Rows) > 0:
-            v_sql = 'INSERT INTO {0}.{1} (\n'.format(p_schema, p_table)
+            v_sql += 'INSERT INTO {0}.{1} (\n'.format(p_schema, p_table)
             v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
             if len(v_pk.Rows) > 0:
                 v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
@@ -5234,14 +5237,13 @@ ANALYZE #table_name#
             for v in v_values:
                 v_sql += v
             v_sql += '\n)'
-        else:
-            v_sql = ''
         return Template(v_sql)
 
     def TemplateUpdate(self, p_schema, p_table):
         v_fields = self.QueryTablesFields(p_table, False, p_schema)
+        v_sql = f'-- https://www.postgresql.org/docs/{self.major_version}/sql-update.html \n'
         if len(v_fields.Rows) > 0:
-            v_sql = 'UPDATE {0}.{1}\nSET '.format(p_schema, p_table)
+            v_sql += 'UPDATE {0}.{1}\nSET '.format(p_schema, p_table)
             v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
             if len(v_pk.Rows) > 0:
                 v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
@@ -5278,8 +5280,6 @@ ANALYZE #table_name#
                         else:
                             v_sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
             v_sql += '\nWHERE condition'
-        else:
-            v_sql = ''
         return Template(v_sql)
 
     def TemplateDelete(self):

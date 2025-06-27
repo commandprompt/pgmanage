@@ -256,7 +256,7 @@ export default {
           {
             label: '<i class="fas fa-edit"></i><span>View Content</span>',
             action: (e, cell) => {
-              cellDataModalStore.showModal(cell.getValue())
+              cellDataModalStore.showModal(String(cell.getValue()))
             },
           },
         ];
@@ -273,19 +273,11 @@ export default {
           },
           clipboardCopyRowRange: "selected",
           columnDefaults: {
-            headerHozAlign: "center",
+            headerHozAlign: "left",
             headerSort: false,
           },
           autoColumns: true,
           autoColumnsDefinitions: function (definitions) {
-            //definitions - array of column definition objects
-            definitions.unshift({
-              formatter: "rownum",
-              hozAlign: "center",
-              width: 40,
-              frozen: true,
-            });
-
             definitions.forEach((column) => {
               column.contextMenu = cellContextMenu;
             });

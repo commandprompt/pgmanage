@@ -232,7 +232,7 @@ export default {
         },
         {
           label: "Copy",
-          icon: "fas fa-terminal",
+          icon: "fas fa-copy",
           disabled: !hasSelectedContent,
           onClick: () => {
             document.execCommand("copy");

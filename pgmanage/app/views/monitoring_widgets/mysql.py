@@ -1,7 +1,7 @@
 monitoring_widgets = [{
 'dbms': 'mysql',
 'plugin_name': 'mysql',
-'id': 0,
+'id': -1,
 'title': 'Thread Count',
 'type': 'timeseries',
 'interval': 10,

@@ -386,7 +386,6 @@ import django.template.defaulttags
 import django.template.loader_tags
 import django.contrib.staticfiles
 import django.contrib.staticfiles.apps
-import django.contrib.admin.apps
 import django.contrib.auth.apps
 import django.contrib.contenttypes.apps
 import django.contrib.sessions.apps

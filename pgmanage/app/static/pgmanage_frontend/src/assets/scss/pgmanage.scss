@@ -1,5 +1,7 @@
 $theme-map: null; //important! do not delete this
 
+@import './omnidb.scss';
+
 // external libs
 @import 'vue-toast-notification/dist/theme-sugar.css';
 @import '@xterm/xterm/css/xterm.css';

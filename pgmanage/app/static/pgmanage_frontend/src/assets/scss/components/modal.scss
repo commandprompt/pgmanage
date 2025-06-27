@@ -11,7 +11,9 @@ $modalPadding: 20px;
 
     &-content {
         border-radius: $borderRadius;
-
+        overflow: hidden;
+        border: 0;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.35);
         @include themify() {
             background: themed($popupBg);
         }
@@ -28,11 +30,6 @@ $modalPadding: 20px;
 
     &-title {
         font-weight: $fontWeightMedium;
-    }
-
-    &-content {
-        overflow: hidden;
-        border: 0;
     }
 
     &-body {

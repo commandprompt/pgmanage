@@ -158,8 +158,8 @@ export default {
   },
   watch: {
     contentMode(newValue) {
+      if (!this.store.visible || !this.editor) return;
       this.editor.session.setMode(newValue);
-      if (!this.store.visible) return;
       if (this.autoFormat) {
         this.formatContent();
       }

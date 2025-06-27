@@ -93,7 +93,7 @@ function refreshHeights(p_all) {
       }
       else if (v_omnis.div) {
         v_omnis.div.style.top = v_omnis.root.getBoundingClientRect().height - 45 + 'px';
-        v_omnis.div.style.left = v_omnis.root.getBoundingClientRect().width - 45 + 'px';
+        v_omnis.div.style.left = v_omnis.root.getBoundingClientRect().width - 60 + 'px';
       }
     }
 
