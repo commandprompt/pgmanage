@@ -3,30 +3,32 @@
     <div
       v-if="isOpen"
       id="searchPalette"
-      class="position-absolute top-0 start-50 translate-middle-x w-100"
+      class="search-modal position-absolute top-0 start-50 translate-middle-x w-100"
       style="max-width: 700px; z-index: 1050"
     >
-      <div class="bg-dark text-white rounded p-2">
-        <input
-          :id="`${workspaceId}_search_input`"
-          ref="searchInput"
-          type="text"
-          class="form-control bg-secondary text-white border-0 form-control-sm"
-          placeholder="Search..."
-          @keydown.up.prevent="keyMonitor"
-          @keydown.down.prevent="keyMonitor"
-          @keyup.enter="onEnter"
-          @keyup.esc="close"
-          @blur="close"
-          v-model="query"
-          autocomplete="off"
-        />
-        <ul class="list-group overflow-y-auto" style="max-height: 300px">
+      <div class="search-modal__container p-3">
+        <div class="form-group mb-0">
+          <input
+            :id="`${workspaceId}_search_input`"
+            ref="searchInput"
+            type="text"
+            class="form-control border-0 form-control-sm"
+            placeholder="Search..."
+            @keydown.up.prevent="keyMonitor"
+            @keydown.down.prevent="keyMonitor"
+            @keyup.enter="onEnter"
+            @keyup.esc="close"
+            @blur=""
+            v-model="query"
+            autocomplete="off"
+          />
+        </div>
+        <ul class="search-modal__results list-group overflow-y-auto" style="max-height: 300px">
           <li
             ref="searchItems"
             v-for="(item, idx) in results"
-            class="list-group-item d-flex justify-content-between search-item p-1"
-            :class="{ 'mt-2': idx == 0, selected: idx === selectedIndex }"
+            class="search-modal__results_item list-group-item d-flex justify-content-between p-2"
+            :class="{ selected: idx === selectedIndex }"
             @mousedown="selectItem(item)"
             role="button"
           >
@@ -256,13 +258,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-.search-item.selected {
-  background-color: rgba($primaryBlue, 0.15);
-}
-
-.search-item:hover {
-  background-color: rgba($primaryMutedColor, 0.15);
-}
-</style>
