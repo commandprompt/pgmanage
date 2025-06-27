@@ -71,6 +71,7 @@ export default {
       this.editor.commands.bindKey("Ctrl-Delete", null);
       this.editor.commands.bindKey("Ctrl-Up", null);
       this.editor.commands.bindKey("Ctrl-Down", null);
+      this.editor.commands.bindKey("ctrl-p", null);
 
       settingsStore.$subscribe((mutation, state) => {
         this.editor.setTheme(`ace/theme/${state.editorTheme}`);

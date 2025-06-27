@@ -272,8 +272,8 @@ class MariaDB:
             else:
                 v_filter = "and table_schema = '{0}' ".format(self.v_schema)
         return self.Query('''
-            select table_name,
-                   table_schema
+            select table_name as "table_name",
+                   table_schema as "table_schema"
             from information_schema.tables
             where table_type in ('BASE TABLE', 'SYSTEM VIEW')
             {0}
@@ -295,9 +295,9 @@ class MariaDB:
             if p_table:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct c.table_name as table_name,
-                   c.column_name,
-                   c.data_type,
+            select distinct c.table_name as "table_name",
+                   c.column_name as "column_name",
+                   c.data_type as "data_type",
                    c.is_nullable as nullable,
                    c.character_maximum_length as data_length,
                    c.numeric_precision as data_precision,
@@ -703,8 +703,8 @@ class MariaDB:
             else:
                 v_filter = "and table_schema = '{0}' ".format(self.v_schema)
         return self.Query('''
-            select table_name,
-                   table_schema
+            select table_name as "table_name",
+                   table_schema as "table_schema"
             from information_schema.views
             where 1=1
             {0}
@@ -726,8 +726,8 @@ class MariaDB:
             if p_table:
                 v_filter = "and c.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct c.table_name as table_name,
-                   c.column_name,
+            select distinct c.table_name as "table_name",
+                   c.column_name as "column_name",
                    c.data_type,
                    c.is_nullable as nullable,
                    c.character_maximum_length as data_length,
