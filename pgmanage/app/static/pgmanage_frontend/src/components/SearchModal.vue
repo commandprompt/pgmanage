@@ -18,7 +18,7 @@
             @keydown.down.prevent="keyMonitor"
             @keyup.enter="onEnter"
             @keyup.esc="close"
-            @blur=""
+            @blur="close"
             v-model="query"
             autocomplete="off"
           />
