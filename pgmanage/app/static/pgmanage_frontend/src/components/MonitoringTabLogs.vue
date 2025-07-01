@@ -72,7 +72,7 @@
           </div>
         </div>
       </Transition>
-      <div ref="editor" class="ace-editor ace-editor-logs"></div>
+      <div ref="editor" class="ace-editor"></div>
     </div>
   </div>
 </template>
