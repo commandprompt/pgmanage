@@ -32,7 +32,8 @@ export default Object.freeze({
             schemas_url: "/get_schemas_postgresql/",
             types_url: "/get_types_postgresql/",
             indexes_url: "/get_indexes_postgresql/",
-            table_definition_url: "/get_table_definition_postgresql/"
+            table_definition_url: "/get_table_definition_postgresql/",
+            constraints_url: "/get_fks_postgresql/",
         },
         overrides: [
             () => {

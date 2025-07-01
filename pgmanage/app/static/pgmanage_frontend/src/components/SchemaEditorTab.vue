@@ -30,6 +30,14 @@
             Indexes
           </button>
         </li>
+        <li ref="constraintsTab" class="nav-item" role="presentation">
+          <button class="nav-item nav-link" :id="`${tabId}-constraints-tab`"
+            data-bs-toggle="tab"
+            :data-bs-target="`#${tabId}-constraints-tab-pane`"
+            type="button" role="tab" aria-selected="false">
+            Constraints
+          </button>
+        </li>
       </ul>
       <div class="tab-content">
         <div class="tab-pane fade show active" :id="`${tabId}-columns-tab-pane`" role="tabpanel">
@@ -49,6 +57,14 @@
           :index-methods="indexMethods"
           :disabled-features="disabledFeatures"
           @indexes:changed="changeIndexes"
+          />
+        </div>
+        <div class="tab-pane fade" :id="`${tabId}-constraints-tab-pane`" role="tabpanel"  >
+          <ConstraintsList
+          :initialConstraints="initialConstraints"
+          :columns="columnNames"
+          :disabled-features="disabledFeatures"
+          @constraints:changed="changeConstraints"
           />
         </div>
       </div>
@@ -117,6 +133,7 @@ import axios from 'axios'
 import { showToast } from '../notification_control'
 import { tabsStore } from '../stores/stores_initializer'
 import IndexesList from './SchemaEditorIndexesList.vue'
+import ConstraintsList from './SchemaEditorConstraintsList.vue'
 import isEqual from 'lodash/isEqual';
 import PreviewBox from './PreviewBox.vue'
 import { handleError } from '../logging/utils';
@@ -158,6 +175,7 @@ export default {
     ColumnList,
     IndexesList,
     PreviewBox,
+    ConstraintsList,
   },
   setup(props) {
     // FIXME: add column nam not-null validations
@@ -181,6 +199,8 @@ export default {
         },
         localIndexes: [],
         initialIndexes: [],
+        localConstraints: [],
+        initialConstraints: [],
         generatedSQL: '',
         hasChanges: false,
         queryIsRunning: false,
@@ -200,6 +220,7 @@ export default {
     if(this.$props.mode === operationModes.UPDATE) {
       this.loadTableDefinition().then(() => {
         this.loadIndexes();
+        this.loadConstraints();
       });
       // localTable for ALTER case is being set via watcher
     } else {
@@ -298,6 +319,26 @@ export default {
         handleError(error);
       })
     },
+    loadConstraints() {
+      const constraintsUrl = this.dialectData?.api_endpoints?.constraints_url ?? null;
+      if (!constraintsUrl) return;
+
+      axios.post(constraintsUrl, {
+        database_index: this.databaseIndex,
+        workspace_id: this.workspaceId,
+        schema: this.schema,
+        table: this.localTable.tableName || this.table
+      })
+      .then((resp) => {
+        this.initialConstraints = resp.data.map((index) => {
+          return {...index, is_dirty: false}
+        });
+        this.localConstraints = JSON.parse(JSON.stringify(this.initialConstraints));
+      })
+      .catch((error) => {
+        handleError(error);
+      })
+    },
     generateAlterSQL(knexInstance) {
       let columnChanges = {
           'adds': [],
@@ -314,6 +355,10 @@ export default {
           'drops': [],
           'typeChanges': [],
           'renames': [],
+        }
+
+        let constraintChanges = {
+          'drops': [],
         }
 
         // TODO: add support for altering Primary Keys
@@ -355,6 +400,22 @@ export default {
             originalIndexes[idx].is_dirty = false;
           }
           if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
+        })
+
+        let originalConstraints = this.initialConstraints
+        this.localConstraints.forEach((constraint, idx) => {
+          if(constraint.deleted) constraintChanges.drops.push(originalConstraints[idx].constraint_name)
+          // if(index.new) indexChanges.adds.push(index)
+          // if(index.deleted || index.new) return
+
+          // if (!isEqual(index, originalIndexes[idx])) {
+          //   index.is_dirty = true;
+          //   originalIndexes[idx].is_dirty = true;
+          // } else {
+          //   index.is_dirty = false;
+          //   originalIndexes[idx].is_dirty = false;
+          // }
+          // if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
         })
 
         // we use initial table name here since localTable.tableName may be changed
@@ -442,6 +503,10 @@ export default {
           indexChanges.renames.forEach((rename) => {
             table.renameIndex(rename.oldName, rename.newName)
           })
+
+          constraintChanges.drops.forEach((constraintName) => {
+            table.dropForeign([], constraintName)
+          })
         })
         // handle table rename last
         if(this.initialTable.tableName !== this.localTable.tableName) {
@@ -502,6 +567,9 @@ export default {
     },
     changeIndexes(indexes) {
       this.localIndexes = [...indexes]
+    },
+    changeConstraints(constraints) {
+      this.localConstraints = [...constraints]
     },
     applyChanges() {
       let message_data = {
@@ -597,6 +665,12 @@ export default {
     localIndexes: {
       handler(newVal, oldVal) {
         this.generateSQL()
+      },
+      deep: true
+    },
+    localConstraints: {
+      handler(newVal, oldVal) {
+        this.generateSQL();
       },
       deep: true
     },
