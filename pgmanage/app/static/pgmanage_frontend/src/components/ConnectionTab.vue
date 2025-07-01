@@ -14,30 +14,35 @@
                     <span class="text-nowrap">Selected DB:&nbsp;</span>
                     <span class="text-info">{{ databaseName }}</span>
                   </p>
-
-                  <div
-                    :id="`${workspaceId}_switch`"
-                    class="omnidb__switch omnidb__switch--sm"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-html="true"
-                    data-bs-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>"
-                  >
-                    <input
-                      type="checkbox"
-                      :id="`${workspaceId}_autocomplete`"
-                      class="omnidb__switch--input"
-                      v-model="autocompleteStatus"
-                      @change="emitConnectionSave"
-                    />
-                    <label
-                      :for="`${workspaceId}_autocomplete`"
-                      class="omnidb__switch--label"
+                  
+                  <div class="d-flex align-items-center">
+                    <button class="btn btn-icon btn-icon-primary me-2" title="Quick Search" @click="showQuickSearch">
+                      <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    <div
+                      :id="`${workspaceId}_switch`"
+                      class="omnidb__switch omnidb__switch--sm"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-html="true"
+                      data-bs-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>"
                     >
-                      <span>
-                        <i class="fas fa-spell-check"></i>
-                      </span>
-                    </label>
+                      <input
+                        type="checkbox"
+                        :id="`${workspaceId}_autocomplete`"
+                        class="omnidb__switch--input"
+                        v-model="autocompleteStatus"
+                        @change="emitConnectionSave"
+                      />
+                      <label
+                        :for="`${workspaceId}_autocomplete`"
+                        class="omnidb__switch--label"
+                      >
+                        <span>
+                          <i class="fas fa-spell-check"></i>
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </div>
                 <splitpanes
@@ -93,6 +98,7 @@
         </pane>
       </splitpanes>
     </div>
+    <SearchModal :workspace-id="workspaceId" :database-index="databaseIndex" :database-technology="databaseTechnology" />
   </div>
 </template>
 
@@ -108,6 +114,7 @@ import TreePropertiesDDL from "./TreePropertiesDDL.vue";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import { Tooltip } from "bootstrap";
 import { handleError } from "../logging/utils";
+import SearchModal from "./SearchModal.vue";
 
 export default {
   name: "ConnectionTab",
@@ -121,6 +128,7 @@ export default {
     Splitpanes,
     Pane,
     TreePropertiesDDL,
+    SearchModal,
   },
   mixins: [TabTitleUpdateMixin],
   props: {
@@ -307,6 +315,9 @@ export default {
     clearTreeTabsData() {
       this.ddlData='';
       this.propertiesData=[];
+    },
+    showQuickSearch(event) {
+      emitter.emit(`${this.workspaceId}_show_quick_search`, event);
     },
   },
 };
