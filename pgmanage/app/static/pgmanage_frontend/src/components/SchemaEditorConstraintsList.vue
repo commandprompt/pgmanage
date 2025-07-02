@@ -1,16 +1,16 @@
 <template>
   <div class="mb-2">
     <div class="d-flex row fw-bold text-muted schema-editor__header g-0">
-      <div class="col">
+      <div class="col-2">
         <p class="h6">Name</p>
       </div>
       <div class="col-1">
         <p class="h6">Column Name</p>
       </div>
-      <div class="col-1">
+      <div class="col-2">
         <p class="h6">FK Schema</p>
       </div>
-      <div class="col-1">
+      <div class="col-2">
         <p class="h6">FK Table</p>
       </div>
       <div class="col-2">
@@ -36,7 +36,7 @@
         { 'schema-editor__column-dirty': constraint.is_dirty },
       ]"
     >
-      <div class="col d-flex align-items-center">
+      <div class="col-2 d-flex align-items-center">
         <input
           type="text"
           v-model="constraint.constraint_name"
@@ -47,37 +47,40 @@
       </div>
 
       <div class="col-1 d-flex align-items-center">
-        <input
-          type="text"
-          v-model="constraint.column_name"
-          class="form-control mb-0 ps-2"
+        <SearchableDropdown
           placeholder="column name..."
-          :disabled="!constraint.new"
-        />
-      </div>
-
-      <div class="col-1 d-flex align-items-center">
-        <SearchableDropdown
-          placeholder="foreign key table schema.."
-          :options="tables"
-          v-model="constraint.r_table_schema"
-          :disabled="!constraint.new"
-        />
-      </div>
-
-      <div class="col-1 d-flex align-items-center">
-        <SearchableDropdown
-          placeholder="foreign key table.."
-          :options="tables"
-          v-model="constraint.r_table_name"
+          :options="columns"
+          v-model="constraint.column_name"
           :disabled="!constraint.new"
         />
       </div>
 
       <div class="col-2 d-flex align-items-center">
         <SearchableDropdown
+          placeholder="foreign key table schema.."
+          :options="schemas"
+          v-model="constraint.r_table_schema"
+          :disabled="!constraint.new"
+          @change="onSchemaChange(constraint)"
+        />
+      </div>
+
+      <div class="col-2 d-flex align-items-center">
+        <SearchableDropdown
+          placeholder="foreign key table.."
+          :options="getTables(constraint.r_table_schema)"
+          v-model="constraint.r_table_name"
+          :disabled="!constraint.new"
+          @change="onTableChange(constraint)"
+        />
+      </div>
+
+      <div class="col-2 d-flex align-items-center">
+        <SearchableDropdown
           placeholder="foreign key column.."
-          :options="columns"
+          :options="
+            getColumns(constraint.r_table_schema, constraint.r_table_name)
+          "
           v-model="constraint.r_column_name"
           :disabled="!constraint.new"
         />
@@ -85,7 +88,7 @@
 
       <div class="col-1">
         <SearchableDropdown
-          placeholder="foreign key table.."
+          placeholder="on update ..."
           :options="constraintActions"
           v-model="constraint.on_update"
           :disabled="!constraint.new"
@@ -94,7 +97,7 @@
 
       <div class="col-1 d-flex align-items-center">
         <SearchableDropdown
-          placeholder="foreign key table.."
+          placeholder="on delete ..."
           :options="constraintActions"
           v-model="constraint.on_delete"
           :disabled="!constraint.new"
@@ -149,6 +152,7 @@ export default {
       default: {},
     },
     columns: Array,
+    dbMetaData: Array,
   },
   emits: ["constraints:changed"],
   data() {
@@ -168,12 +172,15 @@ export default {
     addConstraint() {
       let constraintName = `fk_${this.constraints.length}`;
       const defaultConstraint = {
-        name: constraintName,
-        fk_column: null,
-        new: true,
-        editable: true,
+        constraint_name: constraintName,
+        column_name: null,
+        r_table_schema: null,
+        r_table_name: null,
+        r_column_name: null,
         on_update: "NO ACTION",
         on_delete: "NO ACTION",
+        new: true,
+        editable: true,
         is_dirty: false,
       };
       this.constraints.push(defaultConstraint);
@@ -190,6 +197,32 @@ export default {
         JSON.stringify(this.initialConstraints[index])
       );
     },
+    getTables(r_table_schema) {
+      let schema = this.dbMetaData.find(
+        (schema) => schema.name === r_table_schema
+      );
+      if (!schema) return;
+      return schema?.tables.map((table) => table.name) ?? [];
+    },
+    getColumns(r_table_schema, r_table_name) {
+      let schema = this.dbMetaData.find(
+        (schema) => schema.name === r_table_schema
+      );
+      if (!schema) return;
+
+      let table = schema?.tables.find((table) => table.name === r_table_name);
+
+      if (!table) return;
+
+      return table.columns ?? [];
+    },
+    onSchemaChange(constraint) {
+      constraint.r_table_name = null;
+      constraint.r_column_name = null;
+    },
+    onTableChange(constraint) {
+      constraint.r_column_name = null;
+    },
   },
   watch: {
     initialConstraints: {
@@ -203,6 +236,11 @@ export default {
         this.$emit("constraints:changed", newVal);
       },
       deep: true,
+    },
+  },
+  computed: {
+    schemas() {
+      return this.dbMetaData.map((schema) => schema.name);
     },
   },
 };

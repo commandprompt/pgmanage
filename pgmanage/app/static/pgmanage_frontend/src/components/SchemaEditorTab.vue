@@ -63,6 +63,7 @@
           <ConstraintsList
           :initialConstraints="initialConstraints"
           :columns="columnNames"
+          :db-meta-data="dbMetadata"
           :disabled-features="disabledFeatures"
           @constraints:changed="changeConstraints"
           />
@@ -131,7 +132,7 @@ import { createRequest } from '../long_polling'
 import { queryRequestCodes, operationModes } from '../constants'
 import axios from 'axios'
 import { showToast } from '../notification_control'
-import { tabsStore } from '../stores/stores_initializer'
+import { dbMetadataStore, tabsStore } from '../stores/stores_initializer'
 import IndexesList from './SchemaEditorIndexesList.vue'
 import ConstraintsList from './SchemaEditorConstraintsList.vue'
 import isEqual from 'lodash/isEqual';
@@ -652,6 +653,9 @@ export default {
     },
     disabledFeatures() {
       return this.dialectData?.disabledFeatures
+    },
+    dbMetadata() {
+      return dbMetadataStore.getDbMeta(this.databaseIndex, this.databaseName)
     }
   },
   watch: {
