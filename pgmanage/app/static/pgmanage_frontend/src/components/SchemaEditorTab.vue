@@ -136,6 +136,7 @@ import { dbMetadataStore, tabsStore } from '../stores/stores_initializer'
 import IndexesList from './SchemaEditorIndexesList.vue'
 import ConstraintsList from './SchemaEditorConstraintsList.vue'
 import isEqual from 'lodash/isEqual';
+import every from 'lodash/every';
 import PreviewBox from './PreviewBox.vue'
 import { handleError } from '../logging/utils';
 
@@ -360,6 +361,7 @@ export default {
 
         let constraintChanges = {
           'drops': [],
+          'adds': [],
         }
 
         // TODO: add support for altering Primary Keys
@@ -406,8 +408,8 @@ export default {
         let originalConstraints = this.initialConstraints
         this.localConstraints.forEach((constraint, idx) => {
           if(constraint.deleted) constraintChanges.drops.push(originalConstraints[idx].constraint_name)
-          // if(index.new) indexChanges.adds.push(index)
-          // if(index.deleted || index.new) return
+          if(constraint.new) constraintChanges.adds.push(constraint)
+          if(constraint.deleted || constraint.new) return
 
           // if (!isEqual(index, originalIndexes[idx])) {
           //   index.is_dirty = true;
@@ -507,6 +509,32 @@ export default {
 
           constraintChanges.drops.forEach((constraintName) => {
             table.dropForeign([], constraintName)
+          })
+
+          constraintChanges.adds.forEach((constraintDef) => {
+            const localColumn = constraintDef.column_name;
+            const foreignColumn = constraintDef.r_column_name;
+            const foreignTable = constraintDef.r_table_name;
+            const foreignSchema = constraintDef.r_table_schema;
+            const constraintName = constraintDef.constraint_name;
+
+            if (!every([localColumn, foreignColumn, foreignTable, foreignSchema, constraintName])) return
+            const qualifiedForeignTable = foreignSchema
+              ? `${foreignSchema}.${foreignTable}`
+              : foreignTable;
+
+            let fk = table
+              .foreign(localColumn, constraintName)
+              .references(foreignColumn)
+              .inTable(qualifiedForeignTable);
+
+            if (constraintDef.on_delete) {
+              fk = fk.onDelete(constraintDef.on_delete);
+            }
+
+            if (constraintDef.on_update) {
+              fk = fk.onUpdate(constraintDef.on_update);
+            }
           })
         })
         // handle table rename last
@@ -608,6 +636,7 @@ export default {
         if(this.mode === operationModes.UPDATE) {
           this.loadTableDefinition().then(() => {
             this.loadIndexes();
+            this.loadConstraints();
           });
         } else {
           // CREATE:reset the editor
