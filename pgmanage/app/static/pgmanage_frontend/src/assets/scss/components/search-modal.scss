@@ -1,0 +1,32 @@
+.search-modal  {
+    &__container {
+        box-shadow: $dropdownBoxShadow;
+        border-bottom-left-radius: $borderRadius;
+        border-bottom-right-radius: $borderRadius;
+        
+        @include themify() {
+            background: themed($tabsSurfaceBg);
+        }
+    }
+    
+    &__results {
+        border-radius: 0;
+        
+        &:has(li) {
+            margin-top: 1rem;
+        }
+        
+        &_item.list-group-item {
+            border: none;
+            border-radius: $borderRadius;
+            
+            &.selected {
+                background-color: rgba($primaryBlue, 0.15);
+            }
+            
+            &:hover:not(.selected) {
+                background-color: rgba($secondaryGrey, 0.15);
+            }
+        }
+    }
+}

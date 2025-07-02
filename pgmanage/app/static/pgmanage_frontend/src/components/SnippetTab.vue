@@ -142,6 +142,7 @@ export default {
       this.editor.commands.bindKey("Ctrl-Delete", null);
       this.editor.commands.bindKey("Ctrl-Up", null);
       this.editor.commands.bindKey("Ctrl-Down", null);
+      this.editor.commands.bindKey("ctrl-p", null);
 
       this.editor.on("change", () => {
         const editorValue = this.editor.getValue();

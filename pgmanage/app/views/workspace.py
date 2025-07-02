@@ -354,12 +354,18 @@ def get_table_columns(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_database_meta(request, database):
     response_data = {
-        'schemas': None
+        'schemas': None,
+        'databases': []
     }
 
     schema_list = []
 
     try:
+        if hasattr(database, "QueryDatabases"):
+            databases = database.QueryDatabases()
+            for database_object in databases.Rows:
+                response_data["databases"].append(database_object[0])
+
         if database.v_db_type in ["mysql", "mariadb"]:
             schemas = [{"schema_name": database.v_service}]
         elif database.has_schema:

@@ -38,4 +38,17 @@ function extractOrderByClause(queryFilter) {
   return { queryFilterCleaned, orderByClause: `ORDER BY ${match[1]}` };
 }
 
-export { truncateText, extractOrderByClause };
+function findNode(node, predicate) {
+  if (predicate(node)) return node;
+  for (let child of node.children || []) {
+    const found = findNode(child, predicate);
+    if (found) return found;
+  }
+  return null;
+}
+
+function findChild(node, type) {
+  return (node.children || []).find((child) => child.data?.type === type);
+}
+
+export { truncateText, extractOrderByClause, findChild, findNode };

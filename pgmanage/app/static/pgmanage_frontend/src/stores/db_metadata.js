@@ -4,13 +4,17 @@ import axios from "axios";
 const useDbMetadataStore = defineStore("dbMetadata", {
   state: () => ({
     initialized: 'false',
-    dbMeta: {}
+    dbMeta: {},
+    databases: {},
   }),
   actions: {
     getDbMeta(conn_id, db_name) {
       if(this.dbMeta[conn_id])
         if(this.dbMeta[conn_id][db_name])
           return this.dbMeta[conn_id][db_name]
+    },
+    getDatabases(conn_id) {
+      return this.databases[conn_id] ?? [];
     },
     async fetchDbMeta(conn_id, workspace_id, db_name) {
       if(this.dbMeta[conn_id])
@@ -25,6 +29,7 @@ const useDbMetadataStore = defineStore("dbMetadata", {
       if(!this.dbMeta[conn_id])
         this.dbMeta[conn_id] = {}
       this.dbMeta[conn_id][db_name] = meta_response.data.schemas
+      this.databases[conn_id] = meta_response.data.databases
       return meta_response
     },
     async refreshDBMeta(conn_id, workspace_id, db_name) {
@@ -37,6 +42,7 @@ const useDbMetadataStore = defineStore("dbMetadata", {
       if (!this.dbMeta[conn_id]) this.dbMeta[conn_id] = {};
 
       this.dbMeta[conn_id][db_name] = meta_response.data.schemas;
+      this.databases[conn_id] = meta_response.data.databases;
 
       return meta_response;
     },
