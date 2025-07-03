@@ -6,6 +6,7 @@ import identity from 'lodash/identity';
 import flatten from 'lodash/flatten';
 
 // TODO: Mysql - add PrimaryKey and Comment handling in alter table
+// add constraints support for Mysql/Mariadb
 
 knex.TableBuilder.extend(
   "renameIndex",
@@ -58,13 +59,16 @@ export default Object.freeze({
         api_endpoints: {
             table_definition_url: "/get_table_definition_sqlite/",
             indexes_url: "/get_indexes_sqlite/",
+            constraints_url: "/get_fks_sqlite/",
         },
         disabledFeatures: {
             alterColumn: true,
             multiStatement: true,
             multiPrimaryKeys: true,
             renameIndex: true,
-            indexMethod: true
+            indexMethod: true,
+            addConstraint: true,
+            dropConstraint: true,
         },
         overrides: [
             () => {
@@ -100,7 +104,8 @@ export default Object.freeze({
         disabledFeatures: {
           indexPredicate: true,
           indexMethod: true,
-          renameIndex: true
+          renameIndex: true,
+          constraints: true
       },
         overrides: [
           () => {

@@ -1,13 +1,13 @@
 <template>
   <div class="mb-2">
     <div class="d-flex row fw-bold text-muted schema-editor__header g-0">
-      <div class="col-2">
+      <div class="col">
         <p class="h6">Name</p>
       </div>
-      <div class="col-1">
+      <div class="col-2">
         <p class="h6">Column Name</p>
       </div>
-      <div class="col-2">
+      <div v-if="hasSchema" class="col-1">
         <p class="h6">FK Schema</p>
       </div>
       <div class="col-2">
@@ -22,7 +22,7 @@
       <div class="col-1">
         <p class="h6">On Delete</p>
       </div>
-      <div class="col-1">
+      <div v-if="!disabledFeatures.dropConstraint" class="col-1">
         <p class="h6">Actions</p>
       </div>
     </div>
@@ -36,7 +36,7 @@
         { 'schema-editor__column-dirty': constraint.is_dirty },
       ]"
     >
-      <div class="col-2 d-flex align-items-center">
+      <div class="col d-flex align-items-center">
         <input
           type="text"
           v-model="constraint.constraint_name"
@@ -46,7 +46,7 @@
         />
       </div>
 
-      <div class="col-1 d-flex align-items-center">
+      <div class="col-2 d-flex align-items-center">
         <SearchableDropdown
           placeholder="column name..."
           :options="columns"
@@ -55,7 +55,7 @@
         />
       </div>
 
-      <div class="col-2 d-flex align-items-center">
+      <div v-if="hasSchema" class="col-1 d-flex align-items-center">
         <SearchableDropdown
           placeholder="foreign key table schema.."
           :options="schemas"
@@ -104,7 +104,10 @@
         />
       </div>
 
-      <div class="col-1 d-flex me-2 justify-content-end">
+      <div
+        v-if="!disabledFeatures.dropConstraint"
+        class="col-1 d-flex me-2 justify-content-end"
+      >
         <button
           v-if="(constraint.deleted && !constraint.new) || constraint.is_dirty"
           @click="revertConstraint(idx)"
@@ -126,7 +129,7 @@
         </button>
       </div>
     </div>
-    <div class="d-flex g-0 fw-bold mt-2">
+    <div v-if="!disabledFeatures.addConstraint" class="d-flex g-0 fw-bold mt-2">
       <button @click="addConstraint" class="btn btn-outline-success ms-auto">
         Add Constraint
       </button>
@@ -153,6 +156,10 @@ export default {
     },
     columns: Array,
     dbMetaData: Array,
+    hasSchema: {
+      type: Boolean,
+      default: true,
+    },
   },
   emits: ["constraints:changed"],
   data() {
@@ -245,10 +252,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-input[type="checkbox"].custom-checkbox:disabled {
-  background-color: initial;
-  border-color: rgba(118, 118, 118, 0.3);
-}
-</style>

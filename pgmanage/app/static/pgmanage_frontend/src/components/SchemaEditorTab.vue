@@ -30,7 +30,7 @@
             Indexes
           </button>
         </li>
-        <li ref="constraintsTab" class="nav-item" role="presentation">
+        <li v-if="!disabledFeatures?.constraints" ref="constraintsTab" class="nav-item" role="presentation">
           <button class="nav-item nav-link" :id="`${tabId}-constraints-tab`"
             data-bs-toggle="tab"
             :data-bs-target="`#${tabId}-constraints-tab-pane`"
@@ -65,6 +65,7 @@
           :columns="columnNames"
           :db-meta-data="dbMetadata"
           :disabled-features="disabledFeatures"
+          :has-schema="dialect === 'postgres'"
           @constraints:changed="changeConstraints"
           />
         </div>
