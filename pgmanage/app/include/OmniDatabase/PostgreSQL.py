@@ -787,14 +787,14 @@ class PostgreSQL:
             INNER JOIN pg_namespace rtn
                     ON rt.relnamespace = rtn.oid
                     
-            -- Local column names (composite key support)
+            -- Local column names
             LEFT JOIN LATERAL (
                 SELECT string_agg(quote_ident(att.attname), ', ') AS local_columns
                 FROM unnest(c.conkey) WITH ORDINALITY AS cols(attnum, ord)
                 JOIN pg_attribute att ON att.attrelid = c.conrelid AND att.attnum = cols.attnum
             ) AS lc ON true
 
-            -- Foreign column names (composite key support)
+            -- Foreign column names
             LEFT JOIN LATERAL (
                 SELECT string_agg(quote_ident(att.attname), ', ') AS foreign_columns
                 FROM unnest(c.confkey) WITH ORDINALITY AS cols(attnum, ord)

@@ -411,15 +411,6 @@ export default {
           if(constraint.deleted) constraintChanges.drops.push(originalConstraints[idx].constraint_name)
           if(constraint.new) constraintChanges.adds.push(constraint)
           if(constraint.deleted || constraint.new) return
-
-          // if (!isEqual(index, originalIndexes[idx])) {
-          //   index.is_dirty = true;
-          //   originalIndexes[idx].is_dirty = true;
-          // } else {
-          //   index.is_dirty = false;
-          //   originalIndexes[idx].is_dirty = false;
-          // }
-          // if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
         })
 
         // we use initial table name here since localTable.tableName may be changed
