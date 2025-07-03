@@ -22,27 +22,27 @@
       <div class="col-1">
         <p class="h6">On Delete</p>
       </div>
-      <div v-if="!disabledFeatures.dropConstraint" class="col-1">
+      <div v-if="!disabledFeatures.dropForeignKey" class="col-1">
         <p class="h6">Actions</p>
       </div>
     </div>
     <div
-      v-for="(constraint, idx) in constraints"
+      v-for="(fk, idx) in foreignKeys"
       :key="idx"
       :class="[
         'schema-editor__column d-flex row flex-nowrap form-group g-0',
-        { 'schema-editor__column-deleted': constraint.deleted },
-        { 'schema-editor__column-new': constraint.new },
-        { 'schema-editor__column-dirty': constraint.is_dirty },
+        { 'schema-editor__column-deleted': fk.deleted },
+        { 'schema-editor__column-new': fk.new },
+        { 'schema-editor__column-dirty': fk.is_dirty },
       ]"
     >
       <div class="col d-flex align-items-center">
         <input
           type="text"
-          v-model="constraint.constraint_name"
+          v-model="fk.constraint_name"
           class="form-control mb-0 ps-2"
-          placeholder="constraint name..."
-          :disabled="!constraint.new"
+          placeholder="foreign key name..."
+          :disabled="!fk.new"
         />
       </div>
 
@@ -50,8 +50,8 @@
         <SearchableDropdown
           placeholder="column name..."
           :options="columns"
-          v-model="constraint.column_name"
-          :disabled="!constraint.new"
+          v-model="fk.column_name"
+          :disabled="!fk.new"
         />
       </div>
 
@@ -59,58 +59,56 @@
         <SearchableDropdown
           placeholder="foreign key table schema.."
           :options="schemas"
-          v-model="constraint.r_table_schema"
-          :disabled="!constraint.new"
-          @change="onSchemaChange(constraint)"
+          v-model="fk.r_table_schema"
+          :disabled="!fk.new"
+          @change="onSchemaChange(fk)"
         />
       </div>
 
       <div class="col-2 d-flex align-items-center">
         <SearchableDropdown
           placeholder="foreign key table.."
-          :options="getTables(constraint.r_table_schema)"
-          v-model="constraint.r_table_name"
-          :disabled="!constraint.new"
-          @change="onTableChange(constraint)"
+          :options="getTables(fk.r_table_schema)"
+          v-model="fk.r_table_name"
+          :disabled="!fk.new"
+          @change="onTableChange(fk)"
         />
       </div>
 
       <div class="col-2 d-flex align-items-center">
         <SearchableDropdown
           placeholder="foreign key column.."
-          :options="
-            getColumns(constraint.r_table_schema, constraint.r_table_name)
-          "
-          v-model="constraint.r_column_name"
-          :disabled="!constraint.new"
+          :options="getColumns(fk.r_table_schema, fk.r_table_name)"
+          v-model="fk.r_column_name"
+          :disabled="!fk.new"
         />
       </div>
 
       <div class="col-1">
         <SearchableDropdown
           placeholder="on update ..."
-          :options="constraintActions"
-          v-model="constraint.on_update"
-          :disabled="!constraint.new"
+          :options="foreignKeyActions"
+          v-model="fk.on_update"
+          :disabled="!fk.new"
         />
       </div>
 
       <div class="col-1 d-flex align-items-center">
         <SearchableDropdown
           placeholder="on delete ..."
-          :options="constraintActions"
-          v-model="constraint.on_delete"
-          :disabled="!constraint.new"
+          :options="foreignKeyActions"
+          v-model="fk.on_delete"
+          :disabled="!fk.new"
         />
       </div>
 
       <div
-        v-if="!disabledFeatures.dropConstraint"
+        v-if="!disabledFeatures.dropForeignKey"
         class="col-1 d-flex me-2 justify-content-end"
       >
         <button
-          v-if="(constraint.deleted && !constraint.new) || constraint.is_dirty"
-          @click="revertConstraint(idx)"
+          v-if="(fk.deleted && !fk.new) || fk.is_dirty"
+          @click="revertForeignKey(idx)"
           type="button"
           class="btn btn-icon btn-icon-success"
           title="Revert"
@@ -119,19 +117,19 @@
         </button>
 
         <button
-          v-if="!constraint.deleted && !constraint.is_dirty"
-          @click="removeConstraint(idx)"
+          v-if="!fk.deleted && !fk.is_dirty"
+          @click="removeForeignKey(idx)"
           type="button"
           class="btn btn-icon btn-icon-danger"
-          title="Remove constraint"
+          title="Remove foreign key"
         >
           <i class="fas fa-circle-xmark"></i>
         </button>
       </div>
     </div>
-    <div v-if="!disabledFeatures.addConstraint" class="d-flex g-0 fw-bold mt-2">
-      <button @click="addConstraint" class="btn btn-outline-success ms-auto">
-        Add Constraint
+    <div v-if="!disabledFeatures.addForeignKey" class="d-flex g-0 fw-bold mt-2">
+      <button @click="addForeignKey" class="btn btn-outline-success ms-auto">
+        Add Foreign Key
       </button>
     </div>
   </div>
@@ -141,12 +139,12 @@
 import SearchableDropdown from "./SearchableDropdown.vue";
 
 export default {
-  name: "SchemaEditorConstraintsList",
+  name: "SchemaEditorFksList",
   components: {
     SearchableDropdown,
   },
   props: {
-    initialConstraints: {
+    initialForeignKeys: {
       type: Array,
       default: [],
     },
@@ -161,11 +159,11 @@ export default {
       default: true,
     },
   },
-  emits: ["constraints:changed"],
+  emits: ["foreign-keys:changed"],
   data() {
     return {
-      constraints: [],
-      constraintActions: [
+      foreignKeys: [],
+      foreignKeyActions: [
         "NO ACTION",
         "SET NULL",
         "SET DEFAULT",
@@ -176,12 +174,13 @@ export default {
     };
   },
   methods: {
-    addConstraint() {
-      let constraintName = `fk_${this.constraints.length}`;
-      const defaultConstraint = {
-        constraint_name: constraintName,
+    addForeignKey() {
+      let foreignKeyName = `fk_${this.foreignKeys.length}`;
+      let defaultSchema = this.schemas.length === 1 ? this.schemas[0] : null;
+      const defaultForeignKey = {
+        constraint_name: foreignKeyName,
         column_name: null,
-        r_table_schema: null,
+        r_table_schema: defaultSchema,
         r_table_name: null,
         r_column_name: null,
         on_update: "NO ACTION",
@@ -190,18 +189,18 @@ export default {
         editable: true,
         is_dirty: false,
       };
-      this.constraints.push(defaultConstraint);
+      this.foreignKeys.push(defaultForeignKey);
     },
-    removeConstraint(index) {
-      if (!this.constraints[index].new) {
-        this.constraints[index].deleted = true;
+    removeForeignKey(index) {
+      if (!this.foreignKeys[index].new) {
+        this.foreignKeys[index].deleted = true;
       } else {
-        this.constraints.splice(index, 1);
+        this.foreignKeys.splice(index, 1);
       }
     },
-    revertConstraint(index) {
-      this.constraints[index] = JSON.parse(
-        JSON.stringify(this.initialConstraints[index])
+    revertForeignKey(index) {
+      this.foreignKeys[index] = JSON.parse(
+        JSON.stringify(this.initialForeignKeys[index])
       );
     },
     getTables(r_table_schema) {
@@ -232,24 +231,24 @@ export default {
 
       return table.columns ?? [];
     },
-    onSchemaChange(constraint) {
-      constraint.r_table_name = null;
-      constraint.r_column_name = null;
+    onSchemaChange(foreignKey) {
+      foreignKey.r_table_name = null;
+      foreignKey.r_column_name = null;
     },
-    onTableChange(constraint) {
-      constraint.r_column_name = null;
+    onTableChange(foreignKey) {
+      foreignKey.r_column_name = null;
     },
   },
   watch: {
-    initialConstraints: {
+    initialForeignKeys: {
       handler(newVal, oldVal) {
-        this.constraints = JSON.parse(JSON.stringify(newVal));
+        this.foreignKeys = JSON.parse(JSON.stringify(newVal));
       },
       immediate: true,
     },
-    constraints: {
+    foreignKeys: {
       handler(newVal, oldVal) {
-        this.$emit("constraints:changed", newVal);
+        this.$emit("foreign-keys:changed", newVal);
       },
       deep: true,
     },

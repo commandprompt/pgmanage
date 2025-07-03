@@ -33,7 +33,7 @@ export default Object.freeze({
             types_url: "/get_types_postgresql/",
             indexes_url: "/get_indexes_postgresql/",
             table_definition_url: "/get_table_definition_postgresql/",
-            constraints_url: "/get_fks_postgresql/",
+            foreign_keys_url: "/get_fks_postgresql/",
         },
         overrides: [
             () => {
@@ -58,7 +58,7 @@ export default Object.freeze({
         api_endpoints: {
             table_definition_url: "/get_table_definition_sqlite/",
             indexes_url: "/get_indexes_sqlite/",
-            constraints_url: "/get_fks_sqlite/",
+            foreign_keys_url: "/get_fks_sqlite/",
         },
         disabledFeatures: {
             alterColumn: true,
@@ -66,8 +66,8 @@ export default Object.freeze({
             multiPrimaryKeys: true,
             renameIndex: true,
             indexMethod: true,
-            addConstraint: true,
-            dropConstraint: true,
+            addForeignKey: true,
+            dropForeignKey: true,
         },
         overrides: [
             () => {
@@ -99,7 +99,7 @@ export default Object.freeze({
         api_endpoints: {
           table_definition_url: "/get_table_definition_mysql/",
           indexes_url: "/get_indexes_mysql/",
-          constraints_url: "/get_fks_mysql/",
+          foreign_keys_url: "/get_fks_mysql/",
         },
         disabledFeatures: {
           indexPredicate: true,

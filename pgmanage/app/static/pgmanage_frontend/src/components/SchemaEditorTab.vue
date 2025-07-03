@@ -30,12 +30,12 @@
             Indexes
           </button>
         </li>
-        <li v-if="!disabledFeatures?.constraints" ref="constraintsTab" class="nav-item" role="presentation">
-          <button class="nav-item nav-link" :id="`${tabId}-constraints-tab`"
+        <li ref="foreignKeysTab" class="nav-item" role="presentation">
+          <button class="nav-item nav-link" :id="`${tabId}-foreign-keys-tab`"
             data-bs-toggle="tab"
-            :data-bs-target="`#${tabId}-constraints-tab-pane`"
+            :data-bs-target="`#${tabId}-foreign-keys-tab-pane`"
             type="button" role="tab" aria-selected="false">
-            Constraints
+            Foreign Keys
           </button>
         </li>
       </ul>
@@ -59,14 +59,14 @@
           @indexes:changed="changeIndexes"
           />
         </div>
-        <div class="tab-pane fade" :id="`${tabId}-constraints-tab-pane`" role="tabpanel"  >
-          <ConstraintsList
-          :initialConstraints="initialConstraints"
+        <div class="tab-pane fade" :id="`${tabId}-foreign-keys-tab-pane`" role="tabpanel"  >
+          <ForeignKeysList
+          :initial-foreign-keys="initialForeignKeys"
           :columns="columnNames"
           :db-meta-data="dbMetadata"
           :disabled-features="disabledFeatures"
           :has-schema="dialect === 'postgres'"
-          @constraints:changed="changeConstraints"
+          @foreign-keys:changed="changeForeignKeys"
           />
         </div>
       </div>
@@ -135,7 +135,7 @@ import axios from 'axios'
 import { showToast } from '../notification_control'
 import { dbMetadataStore, tabsStore } from '../stores/stores_initializer'
 import IndexesList from './SchemaEditorIndexesList.vue'
-import ConstraintsList from './SchemaEditorConstraintsList.vue'
+import ForeignKeysList from './SchemaEditorFksList.vue'
 import isEqual from 'lodash/isEqual';
 import every from 'lodash/every';
 import PreviewBox from './PreviewBox.vue'
@@ -178,7 +178,7 @@ export default {
     ColumnList,
     IndexesList,
     PreviewBox,
-    ConstraintsList,
+    ForeignKeysList,
   },
   setup(props) {
     // FIXME: add column nam not-null validations
@@ -202,8 +202,8 @@ export default {
         },
         localIndexes: [],
         initialIndexes: [],
-        localConstraints: [],
-        initialConstraints: [],
+        localForeignKeys: [],
+        initialForeignKeys: [],
         generatedSQL: '',
         hasChanges: false,
         queryIsRunning: false,
@@ -223,7 +223,7 @@ export default {
     if(this.$props.mode === operationModes.UPDATE) {
       this.loadTableDefinition().then(() => {
         this.loadIndexes();
-        this.loadConstraints();
+        this.loadForeignKeys();
       });
       // localTable for ALTER case is being set via watcher
     } else {
@@ -322,21 +322,21 @@ export default {
         handleError(error);
       })
     },
-    loadConstraints() {
-      const constraintsUrl = this.dialectData?.api_endpoints?.constraints_url ?? null;
-      if (!constraintsUrl) return;
+    loadForeignKeys() {
+      const foreignKeysUrl = this.dialectData?.api_endpoints?.foreign_keys_url ?? null;
+      if (!foreignKeysUrl) return;
 
-      axios.post(constraintsUrl, {
+      axios.post(foreignKeysUrl, {
         database_index: this.databaseIndex,
         workspace_id: this.workspaceId,
         schema: this.schema,
         table: this.localTable.tableName || this.table
       })
       .then((resp) => {
-        this.initialConstraints = resp.data.map((index) => {
+        this.initialForeignKeys = resp.data.map((index) => {
           return {...index, is_dirty: false}
         });
-        this.localConstraints = JSON.parse(JSON.stringify(this.initialConstraints));
+        this.localForeignKeys = JSON.parse(JSON.stringify(this.initialForeignKeys));
       })
       .catch((error) => {
         handleError(error);
@@ -360,7 +360,7 @@ export default {
           'renames': [],
         }
 
-        let constraintChanges = {
+        let foreignKeyChanges = {
           'drops': [],
           'adds': [],
         }
@@ -406,11 +406,11 @@ export default {
           if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
         })
 
-        let originalConstraints = this.initialConstraints
-        this.localConstraints.forEach((constraint, idx) => {
-          if(constraint.deleted) constraintChanges.drops.push(originalConstraints[idx].constraint_name)
-          if(constraint.new) constraintChanges.adds.push(constraint)
-          if(constraint.deleted || constraint.new) return
+        let originalForeignKeys = this.initialForeignKeys
+        this.localForeignKeys.forEach((foreignKey, idx) => {
+          if(foreignKey.deleted) foreignKeyChanges.drops.push(originalForeignKeys[idx].constraint_name)
+          if(foreignKey.new) foreignKeyChanges.adds.push(foreignKey)
+          if(foreignKey.deleted || foreignKey.new) return
         })
 
         // we use initial table name here since localTable.tableName may be changed
@@ -499,16 +499,16 @@ export default {
             table.renameIndex(rename.oldName, rename.newName)
           })
 
-          constraintChanges.drops.forEach((constraintName) => {
+          foreignKeyChanges.drops.forEach((constraintName) => {
             table.dropForeign([], constraintName)
           })
 
-          constraintChanges.adds.forEach((constraintDef) => {
-            const localColumn = constraintDef.column_name;
-            const foreignColumn = constraintDef.r_column_name;
-            const foreignTable = constraintDef.r_table_name;
-            const foreignSchema = constraintDef.r_table_schema;
-            const constraintName = constraintDef.constraint_name;
+          foreignKeyChanges.adds.forEach((foreignKeyDef) => {
+            const localColumn = foreignKeyDef.column_name;
+            const foreignColumn = foreignKeyDef.r_column_name;
+            const foreignTable = foreignKeyDef.r_table_name;
+            const foreignSchema = foreignKeyDef.r_table_schema;
+            const constraintName = foreignKeyDef.constraint_name;
 
             if (!every([localColumn, foreignColumn, foreignTable, constraintName])) return
             const qualifiedForeignTable = foreignSchema
@@ -520,12 +520,12 @@ export default {
               .references(foreignColumn)
               .inTable(qualifiedForeignTable);
 
-            if (constraintDef.on_delete) {
-              fk = fk.onDelete(constraintDef.on_delete);
+            if (foreignKeyDef.on_delete) {
+              fk = fk.onDelete(foreignKeyDef.on_delete);
             }
 
-            if (constraintDef.on_update) {
-              fk = fk.onUpdate(constraintDef.on_update);
+            if (foreignKeyDef.on_update) {
+              fk = fk.onUpdate(foreignKeyDef.on_update);
             }
           })
         })
@@ -589,8 +589,8 @@ export default {
     changeIndexes(indexes) {
       this.localIndexes = [...indexes]
     },
-    changeConstraints(constraints) {
-      this.localConstraints = [...constraints]
+    changeForeignKeys(foreignKeys) {
+      this.localForeignKeys = [...foreignKeys]
     },
     applyChanges() {
       let message_data = {
@@ -628,7 +628,7 @@ export default {
         if(this.mode === operationModes.UPDATE) {
           this.loadTableDefinition().then(() => {
             this.loadIndexes();
-            this.loadConstraints();
+            this.loadForeignKeys();
           });
         } else {
           // CREATE:reset the editor
@@ -693,7 +693,7 @@ export default {
       },
       deep: true
     },
-    localConstraints: {
+    localForeignKeys: {
       handler(newVal, oldVal) {
         this.generateSQL();
       },
