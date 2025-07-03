@@ -510,7 +510,7 @@ export default {
             const foreignSchema = constraintDef.r_table_schema;
             const constraintName = constraintDef.constraint_name;
 
-            if (!every([localColumn, foreignColumn, foreignTable, foreignSchema, constraintName])) return
+            if (!every([localColumn, foreignColumn, foreignTable, constraintName])) return
             const qualifiedForeignTable = foreignSchema
               ? `${foreignSchema}.${foreignTable}`
               : foreignTable;

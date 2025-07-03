@@ -205,20 +205,29 @@ export default {
       );
     },
     getTables(r_table_schema) {
-      let schema = this.dbMetaData.find(
-        (schema) => schema.name === r_table_schema
-      );
-      if (!schema) return;
+      let schema;
+      if (this.hasSchema) {
+        schema = this.dbMetaData.find(
+          (schema) => schema.name === r_table_schema
+        );
+        if (!schema) return;
+      } else {
+        schema = this.dbMetaData[0] ?? null;
+      }
       return schema?.tables.map((table) => table.name) ?? [];
     },
     getColumns(r_table_schema, r_table_name) {
-      let schema = this.dbMetaData.find(
-        (schema) => schema.name === r_table_schema
-      );
-      if (!schema) return;
+      let schema;
+      if (this.hasSchema) {
+        schema = this.dbMetaData.find(
+          (schema) => schema.name === r_table_schema
+        );
+        if (!schema) return;
+      } else {
+        schema = this.dbMetaData[0] ?? null;
+      }
 
       let table = schema?.tables.find((table) => table.name === r_table_name);
-
       if (!table) return;
 
       return table.columns ?? [];
