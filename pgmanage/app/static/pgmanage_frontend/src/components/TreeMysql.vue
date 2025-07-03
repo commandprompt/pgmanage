@@ -1115,7 +1115,7 @@ export default {
           });
 
           resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.constraint_name , {
               icon: "fas node-all fa-key node-fkey",
               type: "foreign_key",
               contextMenu: "cm_fk",

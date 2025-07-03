@@ -169,9 +169,23 @@ def get_fks(request, database):
     table = data["table"]
     schema = data["schema"]
 
+    list_fk = []
+
     try:
         fks = database.QueryTablesForeignKeys(table, False, schema)
-        list_fk = [fk["constraint_name"] for fk in fks.Rows]
+        for fk in fks.Rows:
+            fk_data = {
+                "constraint_name": fk["constraint_name"],
+                "column_name": fk["column_name"],
+                "table_name": fk["table_name"],
+                "table_schema": fk["table_schema"],
+                "r_table_name": fk["r_table_name"],
+                "r_table_schema": fk["r_table_schema"],
+                "r_column_name": fk["r_column_name"],
+                "on_update": fk["update_rule"],
+                "on_delete": fk["delete_rule"],
+            }
+            list_fk.append(fk_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

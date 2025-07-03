@@ -609,7 +609,7 @@ export default {
             title: `Foreign Keys (${resp.data.length})`,
           });
           resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.constraint_name, {
               icon: "fas node-all fa-key node-fkey",
               type: "foreign_key",
               contextMenu: "cm_fk",

@@ -77,7 +77,7 @@
         default: false
       }
     },
-    emits: ['update:modelValue'],
+    emits: ['update:modelValue', 'change'],
     data() {
       return {
         selected: this.multiSelect ? [] : null,
@@ -123,6 +123,7 @@
           this.optionsShown = false;
           this.searchFilter = this.selected;
         }
+        this.$emit('change', this.selected);
         this.highlightedIndex = -1;
       },
       showOptions(){
