@@ -4,6 +4,8 @@
     <ul v-if="postgresqlDialect" class="nav nav-tabs" role="tablist">
       <li class="nav-item">
         <button
+          ref="BackendsTabButton"
+          data-testid="backends-tab-button"
           class="nav-item nav-link active omnidb__tab-menu__link"
           :id="`${tabId}-backends-tab`"
           data-bs-toggle="tab"
@@ -19,6 +21,7 @@
         <button
           class="nav-item nav-link omnidb__tab-menu__link"
           :id="`${tabId}-logs-tab`"
+          data-testid="logs-tab-button"
           data-bs-toggle="tab"
           :data-bs-target="`#${tabId}-logs-tab-pane`"
           type="button"
@@ -209,10 +212,11 @@ export default {
       });
     });
 
-    const tabEl = document.getElementById(`${this.tabId}-backends-tab`);
-    tabEl.addEventListener("shown.bs.tab", (event) => {
-      this.refreshInterface();
-    });
+    if (this.postgresqlDialect) {
+      this.$refs.BackendsTabButton.addEventListener("shown.bs.tab", (event) => {
+        this.refreshInterface();
+      });
+    }
   },
   unmounted() {
     clearTimeout(this.timeoutObject);

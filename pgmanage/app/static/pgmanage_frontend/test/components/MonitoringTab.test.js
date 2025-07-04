@@ -33,6 +33,7 @@ describe("MonitoringTab", () => {
       props: {
         workspaceId: "workspaceId",
       },
+      shallow: true,
     });
   });
 
@@ -110,5 +111,31 @@ describe("MonitoringTab", () => {
     monTabWrapper.vm.isActive = true;
     await monTabWrapper.vm.pauseMonitoring();
     expect(monTabWrapper.vm.isActive).toBe(false);
+  });
+
+  test("should show Processes and Logs subtabs only for postgresql dialect", () => {
+    expect(
+      monTabWrapper.find('button[data-testid="backends-tab-button"]').exists()
+    ).toBeFalsy();
+    expect(
+      monTabWrapper.find('button[data-testid="logs-tab-button"]').exists()
+    ).toBeFalsy();
+
+    monTabWrapper.unmount();
+
+    let postgresMonTab = mount(MonitoringTab, {
+      props: {
+        workspaceId: "workspaceId",
+        dialect: "postgresql",
+      },
+      shallow: true,
+    });
+
+    expect(
+      postgresMonTab.find('button[data-testid="logs-tab-button"]').exists()
+    ).toBeTruthy();
+    expect(
+      postgresMonTab.find('button[data-testid="logs-tab-button"]').exists()
+    ).toBeTruthy();
   });
 });

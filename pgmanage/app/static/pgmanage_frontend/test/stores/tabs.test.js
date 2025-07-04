@@ -362,12 +362,14 @@ describe("useTabsStore", () => {
     expect(store.selectedPrimaryTab).toBe(tab);
   });
 
-  it("should create a Monitoring tab", () => {
+  it("should create a Monitoring tab", async () => {
     const store = useTabsStore();
+    await store.createConnectionTab(0);
     store.createMonitoringTab("Backends", "SELECT * FROM backends");
-    const tab = store.tabs.find((tab) => tab.name === "Backends");
+    const tab = store.selectedPrimaryTab.metaData.secondaryTabs.find(
+      (tab) => tab.name === "Backends"
+    );
     expect(tab).toBeTruthy();
     expect(tab.component).toBe("MonitoringTab");
-    expect(store.selectedPrimaryTab).toBe(tab);
   });
 });
