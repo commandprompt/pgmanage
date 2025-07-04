@@ -757,30 +757,7 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    async getTriggersSqlite(node) {
-      try {
-        const response = await this.api.post("/get_triggers_sqlite/")
-
-        this.removeChildNodes(node);
-          this.$refs.tree.updateNode(node.path, {
-            title: `Triggers (${response.data.length})`,
-        });
-
-        response.data.forEach((el) => {
-          this.insertNode(
-            node,
-            el,
-            {
-              icon: "fas node-all fa-bolt node-trigger",
-              type: "trigger",
-              contextMenu: "cm_trigger",
-            },
-            true
-          );
-        });
-      } catch(error) {
-        this.nodeOpenError(error, node);
-      }
+    getTriggersSqlite(node) {
       this.api
         .post("/get_triggers_sqlite/", {
           table: this.getParentNode(node).title,
