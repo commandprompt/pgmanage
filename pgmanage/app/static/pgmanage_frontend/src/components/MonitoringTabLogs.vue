@@ -88,7 +88,6 @@ export default {
     databaseIndex: Number,
     workspaceId: String,
     tabId: String,
-    height: String,
   },
   data() {
     return {
