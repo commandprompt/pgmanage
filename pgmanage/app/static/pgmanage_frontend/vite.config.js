@@ -70,7 +70,8 @@ export default defineConfig(({ command, mode }) => {
       coverage: {
         reporter: ["html"],
         enabled: true
-      }
+      },
+      setupFiles: ["./test/global_setup.js"],
     },
     css: {
       preprocessorOptions: {

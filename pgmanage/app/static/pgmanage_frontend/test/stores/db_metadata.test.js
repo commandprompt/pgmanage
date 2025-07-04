@@ -3,8 +3,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import axios from "axios";
 import { useDbMetadataStore } from "@src/stores/db_metadata";
 
-vi.mock("axios");
-
 describe("dbMetadata store", () => {
   let dbMetadataStore;
 

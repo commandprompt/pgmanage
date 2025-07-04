@@ -4,11 +4,6 @@ import { describe, test, beforeEach, vi, expect, afterEach } from "vitest";
 import CellDataModal from "@src/components/CellDataModal.vue";
 import { useCellDataModalStore } from "@src/stores/celldata_modal";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
 vi.mock("bootstrap", () => ({
   Modal: {
     getOrCreateInstance: vi.fn(() => ({

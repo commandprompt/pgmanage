@@ -4,11 +4,6 @@ import { useTabsStore } from "@src/stores/tabs";
 import { emitter } from "@src/emitter";
 import * as worspaceModule from "@src/workspace";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
 vi.mock("@src/workspace");
 
 vi.mock("@src/stores/stores_initializer", () => {
@@ -22,8 +17,6 @@ vi.mock("@src/stores/stores_initializer", () => {
   const messageModalStore = vi.fn();
   return { connectionsStore, messageModalStore };
 });
-
-vi.stubGlobal("app_base_path", "test_folder");
 
 describe("useTabsStore", () => {
   beforeEach(() => {

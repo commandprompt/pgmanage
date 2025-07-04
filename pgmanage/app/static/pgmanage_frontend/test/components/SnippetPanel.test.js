@@ -4,13 +4,6 @@ import SnippetPanel from "@src/components/SnippetPanel.vue";
 import axios from "axios";
 import { emitter } from "@src/emitter";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
-
 describe("SnippetPanel.vue", () => {
   it("renders the component correctly", () => {
     axios.get.mockResolvedValue({

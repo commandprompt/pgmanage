@@ -11,12 +11,6 @@ import {
 } from "@src/tree_context_functions/tree_sqlite";
 import { tabSQLTemplate } from "@src/tree_context_functions/tree_postgresql";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));

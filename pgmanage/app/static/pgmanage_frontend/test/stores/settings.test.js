@@ -7,16 +7,10 @@ import moment from "moment";
 import { Modal } from "bootstrap";
 import { handleError } from "@src/logging/utils";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
 
-vi.mock("axios");
 vi.mock("@src/notification_control", () => ({
   showToast: vi.fn(),
 }));

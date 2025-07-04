@@ -6,12 +6,6 @@ import { Modal } from "bootstrap";
 import { vi, describe, beforeEach, it, expect, afterEach } from "vitest";
 import { nextTick } from "vue";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
 vi.mock("bootstrap", () => ({
   Modal: {
     getOrCreateInstance: vi.fn(() => ({

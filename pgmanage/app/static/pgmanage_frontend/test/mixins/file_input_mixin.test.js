@@ -5,11 +5,6 @@ import * as notificatonModule from "../../src/notification_control";
 import { maxFileSizeInKB, maxFileSizeInMB } from "../../src/constants";
 import { useTabsStore } from "../../src/stores/tabs";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
 describe("File Input Mixin", () => {
   let wrapper, tabsStore, snippetTab;
 

@@ -3,12 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import FileManager from "@src/components/FileManager.vue";
 import axios from "axios";
 
-vi.mock("axios");
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
 const mockFiles = [
   {
     file_name: "test_file.txt",

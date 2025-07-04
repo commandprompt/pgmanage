@@ -8,13 +8,6 @@ import "../../src/ace_extras/themes/theme-omnidb.js";
 import MonitoringWidgetEditModal from "../../src/components/MonitoringWidgetEditModal.vue";
 import { useSettingsStore } from "../../src/stores/settings.js";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
-
 describe("MonitoringWidgetEditModal", () => {
   let wrapper, settingsStore;
 
@@ -55,16 +48,19 @@ describe("MonitoringWidgetEditModal", () => {
     );
 
     await wrapper.setProps({ widgetId: 123 });
-    await wrapper.setData({ widgetName: "Test Widget", selectedWidget: 'testWidget' });
+    await wrapper.setData({
+      widgetName: "Test Widget",
+      selectedWidget: "testWidget",
+    });
 
     await wrapper
       .get("[data-testid='widget-edit-name']")
       .setValue("Test Widget");
     await wrapper
       .get("[data-testid='widget-edit-refresh-interval']")
-      .findAll('option')
+      .findAll("option")
       .at(2)
-      .setSelected()
+      .setSelected();
 
     await wrapper
       .get("[data-testid='widget-edit-save-button']")
@@ -77,15 +73,15 @@ describe("MonitoringWidgetEditModal", () => {
       "createMonitoringWidget"
     );
 
-    await wrapper.setData({selectedWidget: 'testWidget'})
+    await wrapper.setData({ selectedWidget: "testWidget" });
     await wrapper
       .get("[data-testid='widget-edit-name']")
       .setValue("Test Widget");
     await wrapper
       .get("[data-testid='widget-edit-refresh-interval']")
-      .findAll('option')
+      .findAll("option")
       .at(2)
-      .setSelected()
+      .setSelected();
 
     await wrapper
       .get("[data-testid='widget-edit-save-button']")
@@ -98,9 +94,9 @@ describe("MonitoringWidgetEditModal", () => {
       .setValue("Test Widget");
     await wrapper
       .get("[data-testid='widget-edit-refresh-interval']")
-      .findAll('option')
+      .findAll("option")
       .at(2)
-      .setSelected()
+      .setSelected();
 
     wrapper.vm.v$.$validate();
     expect(wrapper.vm.v$.widgetName.$invalid).toBeFalsy();

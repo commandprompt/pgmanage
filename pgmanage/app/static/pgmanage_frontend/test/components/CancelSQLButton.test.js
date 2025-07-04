@@ -6,8 +6,6 @@ import { createRequest, removeContext } from "../../src/long_polling";
 import { queryRequestCodes } from "@src/constants";
 import { describe, vi, beforeEach, afterEach, it, expect } from "vitest";
 
-vi.stubGlobal("app_base_path", "test_folder");
-
 vi.mock("@src/stores/stores_initializer", () => ({
   tabsStore: {
     getSelectedSecondaryTab: vi.fn(),

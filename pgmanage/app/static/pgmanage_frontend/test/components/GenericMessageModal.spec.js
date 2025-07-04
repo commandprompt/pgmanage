@@ -4,11 +4,6 @@ import GenericMessageModal from "@src/components/GenericMessageModal.vue";
 import { useMessageModalStore } from "@src/stores/message_modal";
 import { Modal } from "bootstrap";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
 vi.mock("bootstrap", () => ({
   Modal: {
     getOrCreateInstance: vi.fn(() => ({

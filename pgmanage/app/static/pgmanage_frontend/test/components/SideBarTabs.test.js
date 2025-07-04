@@ -1,17 +1,12 @@
 import {
   describe,
   test,
-  vi,
   expect,
   beforeEach,
   afterEach,
   beforeAll,
 } from "vitest";
 import { mount, enableAutoUnmount } from "@vue/test-utils";
-
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-});
 
 import SideBarTabs from "../../src/components/SideBarTabs.vue";
 import "bootstrap";
@@ -24,9 +19,6 @@ const connectionMock = {
   alias: "TestConnection",
   technology: "postgresql",
 };
-vi.hoisted(() => {
-  vi.stubGlobal("app_base_path", "test_folder");
-});
 
 describe("SideBarTabs.vue", () => {
   enableAutoUnmount(afterEach);

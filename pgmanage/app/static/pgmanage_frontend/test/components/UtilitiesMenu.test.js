@@ -7,10 +7,6 @@ import {
 } from "@src/stores/stores_initializer";
 import { vi, describe, afterEach, expect, beforeEach, it } from "vitest";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
 
 vi.mock("@src/stores/stores_initializer");
 vi.stubGlobal("short_version", "1.0.0");

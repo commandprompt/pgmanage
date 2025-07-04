@@ -1,13 +1,7 @@
 import { mount, flushPromises } from "@vue/test-utils";
 import FileManagerActionsModal from "@src/components/FileManagerActionsModal.vue";
 import axios from "axios";
-import { vi, describe, beforeEach, it, expect } from "vitest";
-
-vi.mock("axios");
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
+import { describe, beforeEach, it, expect } from "vitest";
 
 describe("FileManagerActionsModal.vue", () => {
   let wrapper;

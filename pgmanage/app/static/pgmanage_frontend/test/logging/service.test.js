@@ -3,11 +3,8 @@ import axios from "axios";
 import * as logging_service from "@src/logging/service";
 import { requestHistory } from "@src/logging/service";
 import { showAlert } from "@src/notification_control";
-import { flushPromises } from "@vue/test-utils";
 
 Date.now = vi.fn(() => new Date("2024-08-05T12:33:37.000Z"));
-
-vi.mock("axios");
 
 vi.mock("@src/notification_control", () => ({
   showAlert: vi.fn(),

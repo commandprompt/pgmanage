@@ -7,11 +7,6 @@ import { vi, describe, it, expect, afterEach, beforeEach } from "vitest";
 import { operationModes } from "@src/constants";
 import { handleError } from "@src/logging/utils";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
 vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
@@ -22,8 +17,6 @@ vi.mock("bootstrap", () => ({
     hide: vi.fn(),
   })),
 }));
-
-vi.mock("axios");
 
 const mountComponent = (props = {}) => {
   return mount(ExtensionModal, {

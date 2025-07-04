@@ -5,22 +5,15 @@ import { useConnectionsStore } from "@src/stores/connections";
 import { tabsStore } from "@src/stores/stores_initializer";
 import { flushPromises } from "@vue/test-utils";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
 vi.mock("@src/stores/stores_initializer", () => {
   const tabsStore = vi.fn();
   return {
     tabsStore,
     dbMetadataStore: {
-      fetchDbMeta: vi.fn().mockResolvedValue([])
-    }
+      fetchDbMeta: vi.fn().mockResolvedValue([]),
+    },
   };
 });
-
-vi.mock("axios");
 
 describe("connections store", () => {
   beforeEach(() => {
