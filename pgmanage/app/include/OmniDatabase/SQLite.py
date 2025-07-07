@@ -303,9 +303,9 @@ class SQLite:
         return v_fks_all
 
     @lock_required
-    def QueryTablesForeignKeysColumns(self, p_fkey, p_table=None, *kwargs):
-        v_fk = Spartacus.Database.DataTable()
-        v_fk.Columns = [
+    def QueryTablesForeignKeysColumns(self, fkey, table=None, *args):
+        fk = Spartacus.Database.DataTable()
+        fk.Columns = [
             'r_table_name',
             'table_name',
             'r_column_name',
@@ -317,8 +317,8 @@ class SQLite:
             'r_table_schema'
         ]
 
-        if p_table:
-            q = "select {0} as name, select * from pragma_foreign_key_list('{0}')".format(p_table)
+        if table:
+            q = "select * from pragma_foreign_key_list('{0}')".format(table)
         else:
             q = '''SELECT
                     m.name,
@@ -330,28 +330,27 @@ class SQLite:
                     ORDER BY m.name
                 '''
 
-        if type(p_fkey) == list:
-            fkeys = p_fkey
-        else:
-            fkeys = [p_fkey]
+        fkeys = fkey if isinstance(fkey, list) else [fkey]
 
-        v_fks_tmp = self.v_connection.Query(q, True)
-        for v_row_tmp in v_fks_tmp.Rows:
-            constraint_name = v_row_tmp['name'] + '_fk_' + str(v_row_tmp['id'])
+        fks_tmp = self.v_connection.Query(q, True)
+        for row in fks_tmp.Rows:
+            constraint_name = row.get('name', table) + '_fk_' + str(row['id'])
             if constraint_name in fkeys:
-                v_row = []
-                v_row.append(v_row_tmp['table'])
-                v_row.append(v_row_tmp['name'])
-                v_row.append(v_row_tmp['to'])
-                v_row.append(v_row_tmp['from'])
-                v_row.append(constraint_name)
-                v_row.append(v_row_tmp['on_update'])
-                v_row.append(v_row_tmp['on_delete'])
-                v_row.append('')
-                v_row.append('')
-                v_fk.Rows.append(OrderedDict(zip(v_fk.Columns, v_row)))
+                result_row = OrderedDict(zip(fk.Columns, [
+                    row['table'],
+                    row.get('name', table),
+                    row['to'],
+                    row['from'],
+                    constraint_name,
+                    row['on_update'],
+                    row['on_delete'],
+                    '',
+                    ''
+                ]))
 
-        return v_fk
+                fk.Rows.append(result_row)
+
+        return fk
 
     @lock_required
     def QueryTablesPrimaryKeys(self, p_table=None):
