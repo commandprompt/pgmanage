@@ -302,7 +302,7 @@ class SQLite:
         return fks_all
 
     @lock_required
-    def QueryTablesForeignKeysColumns(self, fkey, table=None, *args):
+    def QueryTablesForeignKeysColumns(self, fkey, table_name=None, *args):
         fk = Spartacus.Database.DataTable()
         fk.Columns = [
             'r_table_name',
@@ -316,8 +316,8 @@ class SQLite:
             'r_table_schema'
         ]
 
-        if table:
-            q = "select * from pragma_foreign_key_list('{0}')".format(table)
+        if table_name:
+            q = "select * from pragma_foreign_key_list('{0}')".format(table_name)
         else:
             q = '''SELECT
                     m.name,
@@ -331,13 +331,13 @@ class SQLite:
 
         fkeys = fkey if isinstance(fkey, list) else [fkey]
 
-        fks_tmp = self.v_connection.Query(q, True)
+        fks_tmp = self.connection.Query(q, True)
         for row in fks_tmp.Rows:
-            constraint_name = row.get('name', table) + '_fk_' + str(row['id'])
+            constraint_name = row.get('name', table_name) + '_fk_' + str(row['id'])
             if constraint_name in fkeys:
                 result_row = OrderedDict(zip(fk.Columns, [
                     row['table'],
-                    row.get('name', table),
+                    row.get('name', table_name),
                     row['to'],
                     row['from'],
                     constraint_name,

@@ -274,7 +274,7 @@ def template_select(request, database):
     kind = data["kind"]
 
     try:
-        template = database.TemplateSelect(table, kind).v_text
+        template = database.TemplateSelect(table, kind).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -287,7 +287,7 @@ def template_insert(request, database):
     table = request.data["table"]
 
     try:
-        template = database.TemplateInsert(table).v_text
+        template = database.TemplateInsert(table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -300,7 +300,7 @@ def template_update(request, database):
     table = request.data["table"]
 
     try:
-        template = database.TemplateUpdate(table).v_text
+        template = database.TemplateUpdate(table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
