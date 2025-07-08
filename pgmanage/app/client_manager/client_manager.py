@@ -259,14 +259,14 @@ class Client:
             bool: True if the database should be updated, False otherwise.
         """
         omni_database = tab["omnidatabase"]
-        connection = main_tab_database.v_connection
+        connection = main_tab_database.connection
         return (
             omni_database is None
-            or main_tab_database.v_db_type != omni_database.v_db_type
-            or connection.v_host != omni_database.v_connection.v_host
-            or str(connection.v_port) != str(omni_database.v_connection.v_port)
-            or current_tab_database != omni_database.v_active_service
-            or connection.v_password != omni_database.v_connection.v_password
+            or main_tab_database.db_type != omni_database.db_type
+            or connection.v_host != omni_database.connection.v_host
+            or str(connection.v_port) != str(omni_database.connection.v_port)
+            or current_tab_database != omni_database.active_service
+            or connection.v_password != omni_database.connection.v_password
         )
 
     def _replace_database(
@@ -295,15 +295,15 @@ class Client:
         )
 
         database_new = OmniDatabase.Generic.InstantiateDatabase(
-            p_db_type=main_tab_database.v_db_type,
-            p_server=main_tab_database.v_connection.v_host,
-            p_port=str(main_tab_database.v_connection.v_port),
+            p_db_type=main_tab_database.db_type,
+            p_server=main_tab_database.connection.v_host,
+            p_port=str(main_tab_database.connection.v_port),
             p_service=current_tab_database,
-            p_user=main_tab_database.v_active_user,
-            p_password=main_tab_database.v_connection.v_password,
-            p_conn_id=main_tab_database.v_conn_id,
-            p_alias=main_tab_database.v_alias,
-            p_conn_string=main_tab_database.v_conn_string,
+            p_user=main_tab_database.active_user,
+            p_password=main_tab_database.connection.v_password,
+            p_conn_id=main_tab_database.conn_id,
+            p_alias=main_tab_database.alias,
+            p_conn_string=main_tab_database.conn_string,
             p_parse_conn_string=False,
             connection_params=connection_params,
         )
@@ -316,7 +316,7 @@ class Client:
             database_new = main_tab_database
 
         if use_lock:
-            database_new.v_lock = threading.Lock()
+            database_new.lock = threading.Lock()
 
         if tab["omnidatabase"]:
             self.to_be_removed.append(tab["omnidatabase"])
@@ -372,10 +372,10 @@ class Client:
 
         # Try to open connection if not opened yet
         if attempt_to_open_connection and (
-            not tab["omnidatabase"].v_connection.v_con
-            or tab["omnidatabase"].v_connection.GetConStatus() == 0
+            not tab["omnidatabase"].connection.v_con
+            or tab["omnidatabase"].connection.GetConStatus() == 0
         ):
-            tab["omnidatabase"].v_connection.Open()
+            tab["omnidatabase"].connection.Open()
 
         return tab["omnidatabase"]
 

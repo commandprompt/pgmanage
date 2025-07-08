@@ -55,7 +55,7 @@ class PostgreSQL:
         self.connection_params = connection_params if connection_params else {}
         self.v_alias = p_alias
         self.v_db_type = 'postgresql'
-        self.v_conn_id = p_conn_id
+        self.conn_id = p_conn_id
         self.v_conn_string = p_conn_string
         self.v_conn_string_error = ''
         self.v_password = p_password
@@ -151,7 +151,7 @@ class PostgreSQL:
         self.v_create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
         self.v_drop_index_command = "drop index #p_schema_name#.#p_index_name#"
 
-        self.v_console_help = "Console tab. Type the commands in the editor below this box. \\? to view command list."
+        self.console_help = "Console tab. Type the commands in the editor below this box. \\? to view command list."
         self._version = None
         self._version_num = None
         self._major_version = None

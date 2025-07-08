@@ -58,7 +58,7 @@ class MariaDB:
         self.v_conn_string = p_conn_string
         self.v_conn_string_error = ''
         self.v_password = p_password
-        self.v_conn_id = p_conn_id
+        self.conn_id = p_conn_id
 
         self.v_server = p_server
         self.v_active_server = p_server
@@ -142,7 +142,7 @@ class MariaDB:
         self.v_create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
         self.v_drop_index_command = "drop index #p_schema_name#.#p_index_name#"
 
-        self.v_console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
+        self.console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
         self.v_use_server_cursor = False
 
     # Decorator to acquire lock before performing action

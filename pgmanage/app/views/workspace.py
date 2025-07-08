@@ -366,7 +366,7 @@ def get_database_meta(request, database):
             for database_object in databases.Rows:
                 response_data["databases"].append(database_object[0])
 
-        if database.v_db_type in ["mysql", "mariadb"]:
+        if database.db_type in ["mysql", "mariadb"]:
             schemas = [{"schema_name": database.v_service}]
         elif database.has_schema:
             schemas = database.QuerySchemas().Rows if hasattr(database, 'QuerySchemas') else [{"schema_name": database.v_schema}]
@@ -412,7 +412,7 @@ def get_database_meta(request, database):
                 if database.has_schema:
                     view_columns = database.QueryViewFields(p_table=view_name, p_all_schemas=False, p_schema=schema["schema_name"])
                 else:
-                    view_columns = database.QueryViewFields(p_table=view_name)
+                    view_columns = database.QueryViewFields(table_name=view_name)
 
                 view_data['columns'] = list((c['column_name'] for c in view_columns.Rows))
                 schema_data['views'].append(view_data)

@@ -555,7 +555,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                         v_conn_tab_connection.v_active_service,
                         v_conn_tab_connection.v_active_user,
                         v_conn_tab_connection.v_connection.v_password,
-                        v_conn_tab_connection.v_conn_id,
+                        v_conn_tab_connection.conn_id,
                         v_conn_tab_connection.v_alias,
                         p_conn_string=v_conn_tab_connection.v_conn_string,
                         p_parse_conn_string=False,
@@ -567,7 +567,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                         v_conn_tab_connection.v_active_service,
                         v_conn_tab_connection.v_active_user,
                         v_conn_tab_connection.v_connection.v_password,
-                        v_conn_tab_connection.v_conn_id,
+                        v_conn_tab_connection.conn_id,
                         v_conn_tab_connection.v_alias,
                         p_conn_string=v_conn_tab_connection.v_conn_string,
                         p_parse_conn_string=False,
@@ -1005,7 +1005,7 @@ def thread_query(self, args) -> None:
         ):
             db_tab = Tab(
                 user=User.objects.get(id=session.v_user_id),
-                connection=Connection.objects.get(id=database.v_conn_id),
+                connection=Connection.objects.get(id=database.conn_id),
                 title=tab_title,
                 snippet=workspace_context.get("sql_save"),
                 database=database.v_active_service,
@@ -1206,7 +1206,7 @@ def thread_query(self, args) -> None:
             end=log_end_time,
             duration=duration,
             status=log_status,
-            conn_id=database.v_conn_id,
+            conn_id=database.conn_id,
             database=database.v_active_service,
         )
 
@@ -1433,7 +1433,7 @@ def thread_console(self, args) -> None:
             # logging to console history
             query_object = ConsoleHistory(
                 user=User.objects.get(id=session.v_user_id),
-                connection=Connection.objects.get(id=database.v_conn_id),
+                connection=Connection.objects.get(id=database.conn_id),
                 start_time=datetime.now(timezone.utc),
                 snippet=sql_cmd.replace("'", "''"),
                 database=database.v_active_service,

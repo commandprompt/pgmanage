@@ -190,7 +190,7 @@ def create_restore(request, database):
     args = get_args_param_values(data, database, resolved_path)
 
     restore_message = RestoreMessage(
-        database.v_conn_id, resolved_path, *args, database=data.get("database")
+        database.conn_id, resolved_path, *args, database=data.get("database")
     )
     try:
         job = BatchJob(
@@ -244,7 +244,7 @@ def preview_command(request, database):
     args = get_args_param_values(data, database, resolved_path)
 
     restore_message = RestoreMessage(
-        database.v_conn_id, resolved_path, *args, database=data.get("database")
+        database.conn_id, resolved_path, *args, database=data.get("database")
     )
 
     return JsonResponse(data={"command": restore_message.details(utility_path)})

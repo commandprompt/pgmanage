@@ -440,7 +440,7 @@ def refresh_monitoring_widget(request, database, widget_saved_id):
 def create_dashboard_monitoring_widget(request, database):
     widget_data = request.data.get("widget_data")
 
-    conn_object = Connection.objects.get(id=database.v_conn_id)
+    conn_object = Connection.objects.get(id=database.conn_id)
 
     try:
         user_widget = MonWidgetsConnections(

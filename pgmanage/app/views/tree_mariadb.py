@@ -263,7 +263,7 @@ def get_indexes_columns(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_databases(request, database):
     try:
-        conn_object = Connection.objects.get(id=database.v_conn_id)
+        conn_object = Connection.objects.get(id=database.conn_id)
 
         databases = database.QueryDatabases()
         list_databases = [

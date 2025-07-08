@@ -825,7 +825,7 @@ def get_databases(request, database):
     list_databases = []
 
     try:
-        conn_object = Connection.objects.get(id=database.v_conn_id)
+        conn_object = Connection.objects.get(id=database.conn_id)
         databases = database.QueryDatabases()
         for database_object in databases.Rows:
             database_data = {
