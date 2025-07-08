@@ -329,6 +329,15 @@ def get_fks(request, database):
                 "constraint_name": fk["constraint_name"],
                 "oid": fk["oid"],
                 "name_raw": fk["name_raw"],
+                "column_name": fk["column_name"],
+                "table_name": fk["table_name"],
+                "table_schema": fk["table_schema"],
+                "r_constraint_name": fk["r_constraint_name"],
+                "r_table_name": fk["r_table_name"],
+                "r_table_schema": fk["r_table_schema"],
+                "r_column_name": fk["r_column_name"],
+                "on_update": fk["update_rule"],
+                "on_delete": fk["delete_rule"],
             }
             list_fk.append(fk_data)
     except Exception as exc:
