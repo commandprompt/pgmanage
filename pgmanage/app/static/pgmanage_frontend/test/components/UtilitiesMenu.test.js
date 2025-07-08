@@ -1,18 +1,14 @@
 import { mount } from "@vue/test-utils";
-import UtilitiesMenu from "@/components/UtilitiesMenu.vue";
+import UtilitiesMenu from "@src/components/UtilitiesMenu.vue";
 import {
   settingsStore,
   messageModalStore,
   utilitiesMenuStore,
-} from "@/stores/stores_initializer";
+} from "@src/stores/stores_initializer";
 import { vi, describe, afterEach, expect, beforeEach, it } from "vitest";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
 
-vi.mock("@/stores/stores_initializer");
+vi.mock("@src/stores/stores_initializer");
 vi.stubGlobal("short_version", "1.0.0");
 vi.stubGlobal("user_name", "admin");
 

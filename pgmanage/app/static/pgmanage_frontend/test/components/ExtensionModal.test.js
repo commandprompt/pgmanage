@@ -1,18 +1,13 @@
 import { mount, flushPromises } from "@vue/test-utils";
-import ExtensionModal from "@/components/ExtensionModal.vue";
-import PreviewBox from "@/components/PreviewBox.vue";
+import ExtensionModal from "@src/components/ExtensionModal.vue";
+import PreviewBox from "@src/components/PreviewBox.vue";
 import { Modal } from "bootstrap";
 import axios from "axios";
 import { vi, describe, it, expect, afterEach, beforeEach } from "vitest";
-import { operationModes } from "@/constants";
-import { handleError } from "@/logging/utils";
+import { operationModes } from "@src/constants";
+import { handleError } from "@src/logging/utils";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("@/logging/utils", () => ({
+vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
 
@@ -22,8 +17,6 @@ vi.mock("bootstrap", () => ({
     hide: vi.fn(),
   })),
 }));
-
-vi.mock("axios");
 
 const mountComponent = (props = {}) => {
   return mount(ExtensionModal, {

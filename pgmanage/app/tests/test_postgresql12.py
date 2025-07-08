@@ -2,9 +2,15 @@ import json
 from datetime import datetime, timedelta
 
 import app.include.OmniDatabase as OmniDatabase
+from app.models.main import Connection, Technology
+from app.utils.crypto import encrypt
+from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 
-from .utils_testing import execute_client_login, get_client_omnidb_session
+from .utils_testing import (USERS, execute_client_login,
+                            get_client_omnidb_session)
+
+User = get_user_model()
 
 
 class PostgreSQL(TestCase):
@@ -17,14 +23,26 @@ class PostgreSQL(TestCase):
         self.service = 'dellstore'
         self.role = 'postgres'
         self.password = 'postgres'
+        self.encrypted_password = encrypt(self.password, key=USERS["ADMIN"]["PASSWORD"])
+        self.db_type = "postgresql"
+        self.test_connection = Connection.objects.create(
+            user=User.objects.get(username="admin"),
+            technology=Technology.objects.filter(name=self.db_type).first(),
+            server=self.host,
+            port=self.port,
+            database=self.service,
+            username=self.role,
+            password=self.encrypted_password,
+            alias="Pgmanage Tests",
+        )
         self.database = OmniDatabase.Generic.InstantiateDatabase(
-            'postgresql',
+            self.db_type,
             self.host,
             self.port,
             self.service,
             self.role,
             0,
-            'Pgmanage Tests'
+            self.test_connection.id
         )
         self.database.v_connection.v_password = self.password
         self.database.GetVersion()
@@ -73,7 +91,7 @@ class PostgreSQL(TestCase):
         data = json.loads(response.content.decode())
         keys = list(data.keys())
         keys.sort()
-        keys_l = ['add_pubtable', 'alter_aggregate', 'alter_column', 'alter_database', 'alter_domain', 'alter_eventtrigger', 'alter_eventtriggerfunction', 'alter_fdw', 'alter_foreign_column', 'alter_foreign_server', 'alter_foreign_table', 'alter_function', 'alter_index', 'alter_mview', 'alter_procedure', 'alter_publication', 'alter_rule', 'alter_schema', 'alter_sequence', 'alter_statistics', 'alter_subscription', 'alter_tablespace', 'alter_trigger', 'alter_triggerfunction', 'alter_type', 'alter_user_mapping', 'alter_view', 'analyze', 'analyze_table', 'cluster_index', 'create_aggregate', 'create_check', 'create_column', 'create_database', 'create_domain', 'create_eventtrigger', 'create_eventtriggerfunction', 'create_exclude', 'create_fdw', 'create_foreign_column', 'create_foreign_server', 'create_foreign_table', 'create_foreignkey', 'create_function', 'create_index', 'create_inherited', 'create_logicalreplicationslot', 'create_mview', 'create_partition', 'create_physicalreplicationslot', 'create_primarykey', 'create_procedure', 'create_publication', 'create_rule', 'create_schema', 'create_sequence', 'create_statistics', 'create_subscription', 'create_tablespace', 'create_trigger', 'create_triggerfunction', 'create_type', 'create_unique', 'create_user_mapping', 'create_view', 'create_view_trigger', 'database', 'delete', 'detach_partition', 'disable_eventtrigger', 'disable_trigger', 'drop_aggregate', 'drop_check', 'drop_column', 'drop_database', 'drop_domain', 'drop_eventtrigger', 'drop_eventtriggerfunction', 'drop_exclude', 'drop_fdw', 'drop_foreign_column', 'drop_foreign_server', 'drop_foreign_table', 'drop_foreignkey', 'drop_function', 'drop_index', 'drop_logicalreplicationslot', 'drop_mview', 'drop_partition', 'drop_physicalreplicationslot', 'drop_primarykey', 'drop_procedure', 'drop_publication', 'drop_pubtable', 'drop_role', 'drop_rule', 'drop_schema', 'drop_sequence', 'drop_statistics', 'drop_subscription', 'drop_table', 'drop_tablespace', 'drop_trigger', 'drop_triggerfunction', 'drop_type', 'drop_unique', 'drop_user_mapping', 'drop_view', 'enable_eventtrigger', 'enable_trigger', 'import_foreign_schema', 'noinherit_partition', 'refresh_mview', 'reindex', 'truncate', 'vacuum', 'vacuum_table', 'version']
+        keys_l = ['add_pubtable', 'alter_aggregate', 'alter_column', 'alter_database', 'alter_domain', 'alter_eventtrigger', 'alter_eventtriggerfunction', 'alter_fdw', 'alter_foreign_column', 'alter_foreign_server', 'alter_foreign_table', 'alter_function', 'alter_index', 'alter_mview', 'alter_procedure', 'alter_publication', 'alter_rule', 'alter_schema', 'alter_sequence', 'alter_statistics', 'alter_subscription', 'alter_tablespace', 'alter_trigger', 'alter_triggerfunction', 'alter_type', 'alter_user_mapping', 'alter_view', 'analyze', 'analyze_table', 'cluster_index', 'create_aggregate', 'create_check', 'create_column', 'create_database', 'create_domain', 'create_eventtrigger', 'create_eventtriggerfunction', 'create_exclude', 'create_fdw', 'create_foreign_column', 'create_foreign_server', 'create_foreign_table', 'create_foreignkey', 'create_function', 'create_index', 'create_inherited', 'create_logicalreplicationslot', 'create_mview', 'create_partition', 'create_physicalreplicationslot', 'create_primarykey', 'create_procedure', 'create_publication', 'create_rule', 'create_schema', 'create_sequence', 'create_statistics', 'create_subscription', 'create_tablespace', 'create_trigger', 'create_triggerfunction', 'create_type', 'create_unique', 'create_user_mapping', 'create_view', 'create_view_trigger', 'database', 'delete', 'detach_partition', 'disable_eventtrigger', 'disable_trigger', 'drop_aggregate', 'drop_check', 'drop_column', 'drop_database', 'drop_domain', 'drop_eventtrigger', 'drop_eventtriggerfunction', 'drop_exclude', 'drop_fdw', 'drop_foreign_column', 'drop_foreign_server', 'drop_foreign_table', 'drop_foreignkey', 'drop_function', 'drop_index', 'drop_logicalreplicationslot', 'drop_mview', 'drop_partition', 'drop_physicalreplicationslot', 'drop_primarykey', 'drop_procedure', 'drop_publication', 'drop_pubtable', 'drop_role', 'drop_rule', 'drop_schema', 'drop_sequence', 'drop_statistics', 'drop_subscription', 'drop_table', 'drop_tablespace', 'drop_trigger', 'drop_triggerfunction', 'drop_type', 'drop_unique', 'drop_user_mapping', 'drop_view', 'enable_eventtrigger', 'enable_trigger', 'has_replication_slots', 'import_foreign_schema', 'major_version', 'noinherit_partition', 'refresh_mview', 'reindex', 'truncate', 'vacuum', 'vacuum_table', 'version']
         assert keys == keys_l
 
     def test_template_create_tablespace(self):

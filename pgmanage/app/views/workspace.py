@@ -57,6 +57,7 @@ def index(request):
         "master_key": "new"
         if not bool(user_details.masterpass_check)
         else bool(key_manager.get(request.user)),
+        'user_name': request.user.username,
     }
 
     # wiping saved tabs databases list
@@ -421,13 +422,21 @@ def get_table_columns(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_database_meta(request, database):
     response_data = {
-        'schemas': None
+        'schemas': None,
+        'databases': []
     }
 
     schema_list = []
 
     try:
-        if database.has_schema:
+        if hasattr(database, "QueryDatabases"):
+            databases = database.QueryDatabases()
+            for database_object in databases.Rows:
+                response_data["databases"].append(database_object[0])
+
+        if database.v_db_type in ["mysql", "mariadb"]:
+            schemas = [{"schema_name": database.v_service}]
+        elif database.has_schema:
             schemas = database.QuerySchemas().Rows if hasattr(database, 'QuerySchemas') else [{"schema_name": database.v_schema}]
         else:
             schemas = [{'schema_name': '-noschema-'}]
@@ -540,6 +549,32 @@ def master_password(request, session):
     # saving new pgmanage_session
     request.session["pgmanage_session"] = session
 
+    return HttpResponse(status=200)
+
+@user_authenticated
+def toggle_pin_database(request):
+    data = request.data
+
+    database_index: int = data.get("database_index")
+    database_name: str = data.get("database_name")
+    pinned: bool = data.get("pinned")
+
+    if not database_index or not database_name:
+        return JsonResponse(data={"data": "database_index and database_name cannot be empty."}, status=400)
+
+    connection = Connection.objects.filter(id=database_index).first()
+
+    if pinned:
+        if database_name not in connection.pinned_databases:
+            connection.pinned_databases.append(database_name)
+    else:
+        connection.pinned_databases = [
+            db_name
+            for db_name in connection.pinned_databases
+            if database_name != db_name
+        ]
+
+    connection.save()
     return HttpResponse(status=200)
 
 

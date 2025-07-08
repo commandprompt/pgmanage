@@ -1,8 +1,10 @@
 import ast
 
+from app.models.main import Connection
 from app.utils.crypto import pg_scram_sha256
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
+
 
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True, prefer_database='postgres')
@@ -11,6 +13,7 @@ def get_tree_info(request, database):
         data = {
             "database": database.GetName(),
             "version": database.GetVersion(),
+            "major_version": database.major_version,
             #'superuser': database.GetUserSuper(),
             "drop_role": database.TemplateDropRole().v_text,
             "create_tablespace": database.TemplateCreateTablespace().v_text,
@@ -159,8 +162,8 @@ def get_database_objects(request, database):
             "has_event_triggers": database.has_event_triggers,
             "has_logical_replication": database.has_logical_replication,
             "has_pg_cron": has_pg_cron,
-            "current_schema": current_schema
-            }
+            "current_schema": current_schema,
+        }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -326,6 +329,15 @@ def get_fks(request, database):
                 "constraint_name": fk["constraint_name"],
                 "oid": fk["oid"],
                 "name_raw": fk["name_raw"],
+                "column_name": fk["column_name"],
+                "table_name": fk["table_name"],
+                "table_schema": fk["table_schema"],
+                "r_constraint_name": fk["r_constraint_name"],
+                "r_table_name": fk["r_table_name"],
+                "r_table_schema": fk["r_table_schema"],
+                "r_column_name": fk["r_column_name"],
+                "on_update": fk["update_rule"],
+                "on_delete": fk["delete_rule"],
             }
             list_fk.append(fk_data)
     except Exception as exc:
@@ -822,12 +834,15 @@ def get_databases(request, database):
     list_databases = []
 
     try:
+        conn_object = Connection.objects.get(id=database.v_conn_id)
         databases = database.QueryDatabases()
         for database_object in databases.Rows:
             database_data = {
                 "name": database_object["database_name"],
                 "name_raw": database_object["name_raw"],
                 "oid": database_object["oid"],
+                "pinned": database_object["database_name"]
+                in conn_object.pinned_databases,
             }
             list_databases.append(database_data)
     except Exception as exc:
@@ -871,6 +886,7 @@ def get_roles(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data={"data": list_roles})
 
+
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def get_role_details(request, database):
@@ -904,7 +920,6 @@ def get_role_details(request, database):
 
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
-
 
     return JsonResponse(data=role_details)
 
@@ -1682,7 +1697,7 @@ def template_call_procedure(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_version(request, database):
     try:
-        response_data = {"version": database.GetVersion()}
+        response_data = {"version": database.major_version}
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1720,3 +1735,65 @@ def get_object_description(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data={"data": object_description})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_server_log(request, database):
+    data = request.data
+    log_format = data.get("log_format")
+    log_offset = data.get("log_offset")
+    log_offset_step = 10000
+
+    try:
+        log_formats = database.ExecuteScalar("show log_destination")
+
+        if log_format not in log_formats:
+            log_format = ""
+
+        current_file_size = database.ExecuteScalar(
+            f"SELECT size from pg_stat_file(pg_current_logfile('{log_format}'))"
+        )
+
+        if log_offset and log_offset < current_file_size:
+            try:
+                logs_data = database.Query(
+                    f"SELECT pg_read_file(pg_current_logfile('{log_format}'), {log_offset}, {log_offset_step})"
+                )
+            except Exception:
+                log_offset_step += 1
+                logs_data = database.Query(
+                    f"SELECT pg_read_file(pg_current_logfile('{log_format}'), {log_offset}, {log_offset_step})"
+                )
+            next_offset = min(log_offset + log_offset_step, current_file_size)
+        else:
+            log_offset = current_file_size
+            logs_data = database.Query(
+                f"SELECT pg_read_file(pg_current_logfile('{log_format}'))"
+            )
+            next_offset = current_file_size
+
+        logs = logs_data.Rows[0]["pg_read_file"]
+        current_logfile_data = database.Query(
+            f"SELECT pg_current_logfile('{log_format}')"
+        )
+        current_logfile = current_logfile_data.Rows[0]["pg_current_logfile"]
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(
+        data={
+            "logs": logs,
+            "current_logfile": current_logfile,
+            "log_offset": next_offset,
+        }
+    )
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_log_formats(request, database):
+    try:
+        data = database.ExecuteScalar("show log_destination")
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data={"formats": data})

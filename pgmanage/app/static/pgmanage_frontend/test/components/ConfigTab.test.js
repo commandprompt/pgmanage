@@ -1,22 +1,15 @@
 import { flushPromises, mount, enableAutoUnmount } from "@vue/test-utils";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import ConfigTab from "@/components/ConfigTab.vue";
+import ConfigTab from "@src/components/ConfigTab.vue";
 import axios from "axios";
-import { tabsStore } from "@/stores/stores_initializer";
-import { handleError } from "@/logging/utils";
+import { tabsStore } from "@src/stores/stores_initializer";
+import { handleError } from "@src/logging/utils";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("@/logging/utils", () => ({
+vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
 
-vi.mock("axios");
-
-vi.mock("@/stores/stores_initializer", () => ({
+vi.mock("@src/stores/stores_initializer", () => ({
   tabsStore: {
     getSecondaryTabById: vi.fn(),
   },
@@ -39,8 +32,14 @@ describe("ConfigTab.vue", () => {
   const settingsResponse = {
     data: {
       settings: [
-        { category: "Category 1", rows: [] },
-        { category: "Category 2", rows: [] },
+        {
+          category: "Category 1",
+          rows: [{ name: "autovacuum", desc: "Starts the autovacuum" }],
+        },
+        {
+          category: "Category 2",
+          rows: [{ name: "temp_file_limit", desc: "Limits the total" }],
+        },
       ],
     },
   };
@@ -167,5 +166,34 @@ describe("ConfigTab.vue", () => {
         setting1: { name: "setting1", setting: "value1" },
       })
     );
+  });
+
+  it("returns correct suggestions according to query_filter", () => {
+    wrapper.vm.query_filter = "autovacuum";
+
+    expect(wrapper.vm.currentResult[0]["rows"]).toContainEqual({
+      name: "autovacuum",
+      desc: "Starts the autovacuum",
+    });
+    expect(wrapper.vm.currentResult[0]["rows"]).not.toContainEqual({
+      name: "temp_file_limit",
+      desc: "Limits the total",
+    });
+  });
+
+  it("hasRevertValues returns false if no config differs", () => {
+    wrapper.setData({
+      configDiffData: "",
+    });
+
+    expect(wrapper.vm.hasRevertValues).toBe(false);
+  });
+
+  it("hasRevertValues returns true if config differs", () => {
+    wrapper.setData({
+      configDiffData: [{ name: "max_connections", value: "100" }],
+    });
+
+    expect(wrapper.vm.hasRevertValues).toBe(true);
   });
 });

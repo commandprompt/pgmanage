@@ -14,8 +14,7 @@
   <AboutModal />
   <CommandsHistoryModal />
   <template v-for="extraComp in enterpriseComps">
-    <component :is="extraComp">
-    </component>
+    <component :is="extraComp"> </component>
   </template>
 </template>
 
@@ -30,11 +29,12 @@ import GenericMessageModal from "./components/GenericMessageModal.vue";
 import CellDataModal from "./components/CellDataModal.vue";
 import FileManager from "./components/FileManager.vue";
 import UtilitiesMenu from "./components/UtilitiesMenu.vue";
-import AboutModal from './components/AboutModal.vue';
+import AboutModal from "./components/AboutModal.vue";
 import CommandsHistoryModal from "./components/CommandsHistoryModal.vue";
 import { emitter } from "./emitter";
 import { startTutorial } from "./tutorial";
 import { createOmnis } from "./omnis-control";
+import { dbMetadataStore } from "./stores/stores_initializer";
 
 export default {
   name: "PgManage",
@@ -55,7 +55,7 @@ export default {
   data() {
     return {
       initialized: false,
-      enterpriseComps: []
+      enterpriseComps: [],
     };
   },
   mounted() {
@@ -68,13 +68,24 @@ export default {
     } else {
       this.initialSetup();
     }
+
+    emitter.on(
+      "dbMetaRefresh",
+      ({ workspace_id, database_name, database_index }) => {
+        dbMetadataStore.refreshDBMeta(
+          database_index,
+          workspace_id,
+          database_name
+        );
+      }
+    );
   },
   methods: {
     initialSetup() {
       this.initialized = true;
       v_omnis.div.style.opacity = 1;
 
-      this.enterpriseComps = this?.enterpriseComponents ?? []
+      this.enterpriseComps = this?.enterpriseComponents ?? [];
     },
     createOmnisAssistant() {
       v_omnis = createOmnis();
@@ -85,7 +96,7 @@ export default {
       v_omnis.div.style.top =
         v_omnis.root.getBoundingClientRect().height - 45 + "px";
       v_omnis.div.style.left =
-        v_omnis.root.getBoundingClientRect().width - 45 + "px";
+        v_omnis.root.getBoundingClientRect().width - 60 + "px";
       v_omnis.div.style["z-index"] = "99999999";
       v_omnis.div.style.opacity = 0;
       v_omnis.div.innerHTML = v_omnis.template;
@@ -93,7 +104,7 @@ export default {
       v_omnis.div.addEventListener("click", function () {
         startTutorial("getting_started");
       });
-    }
-  }
+    },
+  },
 };
 </script>

@@ -72,6 +72,9 @@ export default {
     },
     onToggle(node, e) {
       this.$refs.tree.select(node.path);
+      if (this.getRootNode().title !== "Snippets") {
+        this.getProperties(node);
+      }
       if (node.isExpanded) return;
       this.refreshTree(node);
       if(settingsStore.scrollTree) {
@@ -247,7 +250,7 @@ export default {
       if (spaceNeededForScroll <= spaceAvailableForScroll) {
         nodeElement.scrollIntoView({
           block: "start",
-          inline: "end",
+          inline: "start",
           behavior: "smooth",
         });
       } 
@@ -264,6 +267,14 @@ export default {
         data: { ...node.data, last_update: now.toISOString() },
       });
       return true;
+    },
+    async expandAndRefreshIfNeeded(node) {
+      if (!node.children || node.children.length === 0) {
+        await this.refreshTree(node, true);
+        this.expandNode(node);
+      } else {
+        this.expandNode(node);
+      }
     },
   },
 };

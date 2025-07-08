@@ -624,16 +624,16 @@ export default {
             }
           })
 
-          updates.push(this.knex(this.talbleUnquoted).where(pkColName, rowMeta.initial_id).update(updateArgs))
+          updates.push(this.knex(this.talbleUnquoted).withSchema(this.schema).where(pkColName, rowMeta.initial_id).update(updateArgs))
         }
       }, this)
       let deletableIds = changes.filter((c) => c["rowMeta"].is_deleted).map((c) => {return c["rowMeta"].initial_id})
       if(deletableIds.length > 0)
-        deletes.push(this.knex(this.talbleUnquoted).whereIn(pkColName, deletableIds).del())
+        deletes.push(this.knex(this.talbleUnquoted).withSchema(this.schema).whereIn(pkColName, deletableIds).del())
 
       let insQ = []
       if(inserts.length)
-        insQ = this.knex(this.talbleUnquoted).insert(inserts)
+        insQ = this.knex(this.talbleUnquoted).withSchema(this.schema).insert(inserts)
 
       return [].concat(updates, insQ, deletes).join(';\n')
     },

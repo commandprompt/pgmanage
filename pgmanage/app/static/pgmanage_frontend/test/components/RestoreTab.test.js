@@ -1,26 +1,21 @@
-import RestoreTab from "@/components/RestoreTab.vue";
-import UtilityJobs from "@/components/UtilityJobs.vue";
-import { showAlert } from "@/notification_control";
-import { fileManagerStore } from "@/stores/stores_initializer";
+import RestoreTab from "@src/components/RestoreTab.vue";
+import UtilityJobs from "@src/components/UtilityJobs.vue";
+import { showAlert } from "@src/notification_control";
+import { fileManagerStore } from "@src/stores/stores_initializer";
 import { flushPromises, mount } from "@vue/test-utils";
 import axios from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { handleError } from "@/logging/utils";
+import { handleError } from "@src/logging/utils";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("@/logging/utils", () => ({
+vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
 
-vi.mock("@/notification_control", () => ({
+vi.mock("@src/notification_control", () => ({
   showAlert: vi.fn(),
 }));
 
-vi.mock("@/stores/stores_initializer", async (importOriginal) => {
+vi.mock("@src/stores/stores_initializer", async (importOriginal) => {
   const orig = await importOriginal();
   return {
     ...orig,
@@ -35,8 +30,6 @@ vi.mock("@/stores/stores_initializer", async (importOriginal) => {
     },
   };
 });
-
-vi.mock("axios");
 
 describe("RestoreTab.vue", () => {
   let wrapper;

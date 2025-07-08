@@ -30,6 +30,14 @@
             Indexes
           </button>
         </li>
+        <li ref="foreignKeysTab" class="nav-item" role="presentation">
+          <button class="nav-item nav-link" :id="`${tabId}-foreign-keys-tab`"
+            data-bs-toggle="tab"
+            :data-bs-target="`#${tabId}-foreign-keys-tab-pane`"
+            type="button" role="tab" aria-selected="false">
+            Foreign Keys
+          </button>
+        </li>
       </ul>
       <div class="tab-content">
         <div class="tab-pane fade show active" :id="`${tabId}-columns-tab-pane`" role="tabpanel">
@@ -49,6 +57,16 @@
           :index-methods="indexMethods"
           :disabled-features="disabledFeatures"
           @indexes:changed="changeIndexes"
+          />
+        </div>
+        <div class="tab-pane fade" :id="`${tabId}-foreign-keys-tab-pane`" role="tabpanel"  >
+          <ForeignKeysList
+          :initial-foreign-keys="initialForeignKeys"
+          :columns="columnNames"
+          :db-meta-data="dbMetadata"
+          :disabled-features="disabledFeatures"
+          :has-schema="dialect === 'postgres'"
+          @foreign-keys:changed="changeForeignKeys"
           />
         </div>
       </div>
@@ -115,9 +133,11 @@ import { createRequest } from '../long_polling'
 import { queryRequestCodes, operationModes } from '../constants'
 import axios from 'axios'
 import { showToast } from '../notification_control'
-import { tabsStore } from '../stores/stores_initializer'
+import { dbMetadataStore, tabsStore } from '../stores/stores_initializer'
 import IndexesList from './SchemaEditorIndexesList.vue'
+import ForeignKeysList from './SchemaEditorFksList.vue'
 import isEqual from 'lodash/isEqual';
+import every from 'lodash/every';
 import PreviewBox from './PreviewBox.vue'
 import { handleError } from '../logging/utils';
 
@@ -158,6 +178,7 @@ export default {
     ColumnList,
     IndexesList,
     PreviewBox,
+    ForeignKeysList,
   },
   setup(props) {
     // FIXME: add column nam not-null validations
@@ -181,6 +202,8 @@ export default {
         },
         localIndexes: [],
         initialIndexes: [],
+        localForeignKeys: [],
+        initialForeignKeys: [],
         generatedSQL: '',
         hasChanges: false,
         queryIsRunning: false,
@@ -200,6 +223,7 @@ export default {
     if(this.$props.mode === operationModes.UPDATE) {
       this.loadTableDefinition().then(() => {
         this.loadIndexes();
+        this.loadForeignKeys();
       });
       // localTable for ALTER case is being set via watcher
     } else {
@@ -298,6 +322,26 @@ export default {
         handleError(error);
       })
     },
+    loadForeignKeys() {
+      const foreignKeysUrl = this.dialectData?.api_endpoints?.foreign_keys_url ?? null;
+      if (!foreignKeysUrl) return;
+
+      axios.post(foreignKeysUrl, {
+        database_index: this.databaseIndex,
+        workspace_id: this.workspaceId,
+        schema: this.schema,
+        table: this.localTable.tableName || this.table
+      })
+      .then((resp) => {
+        this.initialForeignKeys = resp.data.map((index) => {
+          return {...index, is_dirty: false}
+        });
+        this.localForeignKeys = JSON.parse(JSON.stringify(this.initialForeignKeys));
+      })
+      .catch((error) => {
+        handleError(error);
+      })
+    },
     generateAlterSQL(knexInstance) {
       let columnChanges = {
           'adds': [],
@@ -314,6 +358,11 @@ export default {
           'drops': [],
           'typeChanges': [],
           'renames': [],
+        }
+
+        let foreignKeyChanges = {
+          'drops': [],
+          'adds': [],
         }
 
         // TODO: add support for altering Primary Keys
@@ -355,6 +404,13 @@ export default {
             originalIndexes[idx].is_dirty = false;
           }
           if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
+        })
+
+        let originalForeignKeys = this.initialForeignKeys
+        this.localForeignKeys.forEach((foreignKey, idx) => {
+          if(foreignKey.deleted) foreignKeyChanges.drops.push(originalForeignKeys[idx].constraint_name)
+          if(foreignKey.new) foreignKeyChanges.adds.push(foreignKey)
+          if(foreignKey.deleted || foreignKey.new) return
         })
 
         // we use initial table name here since localTable.tableName may be changed
@@ -442,6 +498,36 @@ export default {
           indexChanges.renames.forEach((rename) => {
             table.renameIndex(rename.oldName, rename.newName)
           })
+
+          foreignKeyChanges.drops.forEach((constraintName) => {
+            table.dropForeign([], constraintName)
+          })
+
+          foreignKeyChanges.adds.forEach((foreignKeyDef) => {
+            const localColumn = foreignKeyDef.column_name;
+            const foreignColumn = foreignKeyDef.r_column_name;
+            const foreignTable = foreignKeyDef.r_table_name;
+            const foreignSchema = foreignKeyDef.r_table_schema;
+            const constraintName = foreignKeyDef.constraint_name;
+
+            if (!every([localColumn, foreignColumn, foreignTable, constraintName])) return
+            const qualifiedForeignTable = foreignSchema
+              ? `${foreignSchema}.${foreignTable}`
+              : foreignTable;
+
+            let fk = table
+              .foreign(localColumn, constraintName)
+              .references(foreignColumn)
+              .inTable(qualifiedForeignTable);
+
+            if (foreignKeyDef.on_delete) {
+              fk = fk.onDelete(foreignKeyDef.on_delete);
+            }
+
+            if (foreignKeyDef.on_update) {
+              fk = fk.onUpdate(foreignKeyDef.on_update);
+            }
+          })
         })
         // handle table rename last
         if(this.initialTable.tableName !== this.localTable.tableName) {
@@ -503,6 +589,9 @@ export default {
     changeIndexes(indexes) {
       this.localIndexes = [...indexes]
     },
+    changeForeignKeys(foreignKeys) {
+      this.localForeignKeys = [...foreignKeys]
+    },
     applyChanges() {
       let message_data = {
 				sql_cmd : this.generatedSQL,
@@ -526,11 +615,20 @@ export default {
         let msg = response.data.status === "CREATE TABLE" ? `Table "${this.localTable.tableName}" created` : `Table "${this.localTable.tableName}" updated`
         showToast("success", msg)
 
-        emitter.emit(`schemaChanged_${this.workspaceId}`, { database_name: this.databaseName, schema_name: this.localTable.schema })
+        emitter.emit(`schemaChanged_${this.workspaceId}`, {
+          database_name: this.databaseName,
+          schema_name: this.localTable.schema,
+        });
+        emitter.emit("dbMetaRefresh", {
+          workspace_id: this.workspaceId,
+          database_name: this.databaseName,
+          database_index: this.databaseIndex,
+        });
         // ALTER: load table changes into UI
         if(this.mode === operationModes.UPDATE) {
           this.loadTableDefinition().then(() => {
             this.loadIndexes();
+            this.loadForeignKeys();
           });
         } else {
           // CREATE:reset the editor
@@ -576,6 +674,9 @@ export default {
     },
     disabledFeatures() {
       return this.dialectData?.disabledFeatures
+    },
+    dbMetadata() {
+      return dbMetadataStore.getDbMeta(this.databaseIndex, this.databaseName)
     }
   },
   watch: {
@@ -589,6 +690,12 @@ export default {
     localIndexes: {
       handler(newVal, oldVal) {
         this.generateSQL()
+      },
+      deep: true
+    },
+    localForeignKeys: {
+      handler(newVal, oldVal) {
+        this.generateSQL();
       },
       deep: true
     },

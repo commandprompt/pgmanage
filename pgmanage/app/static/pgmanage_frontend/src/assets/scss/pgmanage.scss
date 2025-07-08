@@ -1,5 +1,7 @@
 $theme-map: null; //important! do not delete this
 
+@import './omnidb.scss';
+
 // external libs
 @import 'vue-toast-notification/dist/theme-sugar.css';
 @import '@xterm/xterm/css/xterm.css';
@@ -16,6 +18,7 @@ $theme-map: null; //important! do not delete this
 @import './components/accordion';
 @import './components/input';
 @import './components/modal';
+@import './components/search-modal';
 @import './components/tabs';
 @import './components/pagination';
 @import './components/card';

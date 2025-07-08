@@ -24,6 +24,7 @@
           <template v-for="menuItem in extraItems">
             <a
               v-if="menuItem.show"
+              :id="menuItem.id"
               class="omnidb__menu__btn nav-item nav-link"
               @click="menuItem.clickFunction"
               href="#"

@@ -7,17 +7,33 @@
     </template>
 
     <template v-slot:title="{ node }">
-      <span class="item-icon">
-        <i :class="['icon_tree', node.data.icon]"></i>
-      </span>
-      <span v-if="node.data.raw_html" v-html="node.title"> </span>
-      <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
-        ">
-        <b>{{ node.title }}</b>
-      </span>
-      <span v-else>
-        {{ formatTitle(node) }}
-      </span>
+      <div class="d-flex flex-grow-1 justify-content-between">
+        <div>
+          <span class="item-icon">
+            <i :class="['icon_tree', node.data.icon]"></i>
+          </span>
+          
+          <span v-if="node.data.raw_html" v-html="node.title"> </span>
+          <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
+            ">
+            <b>{{ node.title }}</b>
+          </span>
+          <span v-else>
+            {{ formatTitle(node) }}
+          </span>
+        </div>
+  
+        <!-- Pin icon for database nodes -->
+         <span>
+           <i
+             v-if="node.data.type === 'database'"
+             class="fas fa-thumbtack database-pin-icon me-2"
+             :class="node.data.pinned ? 'text-primary pinned' : 'text-muted'"
+             @click.stop="pinDatabase(node)"
+             title="Pin this database"
+           ></i>
+         </span>
+      </div>
     </template>
   </PowerTree>
 </template>
@@ -25,6 +41,7 @@
 <script>
 import { emitter } from "../emitter";
 import TreeMixin from "../mixins/power_tree.js";
+import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import { checkBeforeChangeDatabase } from "../workspace";
 import {
@@ -38,6 +55,7 @@ import { createExtensionModal, createPgCronModal, createRoleModal } from "./post
 import { operationModes } from "../constants";
 import { connectionsStore, messageModalStore, tabsStore, dbMetadataStore } from "../stores/stores_initializer";
 import ContextMenu from "@imengyu/vue3-context-menu";
+import { findNode, findChild } from "../utils.js";
 
 
 export default {
@@ -45,7 +63,7 @@ export default {
   components: {
     PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, PinDatabaseMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -72,6 +90,7 @@ export default {
       ],
       currentSchema: "public",
       cm_server_extra: [],
+      serverVersion: null,
     };
   },
   computed: {
@@ -100,9 +119,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/managing-databases.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/managing-databases.html`
               );
             },
           },
@@ -175,9 +192,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-schemas.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-schemas.html`
               );
             },
           },
@@ -246,9 +261,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-basics.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-basics.html`
               );
             },
           },
@@ -257,9 +270,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-constraints.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-constraints.html`
               );
             },
           },
@@ -268,9 +279,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-alter.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-alter.html`
               );
             },
           },
@@ -693,9 +702,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/indexes.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/indexes.html`
               );
             },
           },
@@ -764,9 +771,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/rules.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/rules.html`
               );
             },
           },
@@ -836,9 +841,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/trigger-definition.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/trigger-definition.html`
               );
             },
           },
@@ -979,9 +982,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-partitioning.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-partitioning.html`
               );
             },
           },
@@ -1038,9 +1039,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-partitioning.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-partitioning.html`
               );
             },
           },
@@ -1100,9 +1099,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/planner-stats.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/planner-stats.html`
               );
             },
           },
@@ -1144,9 +1141,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-partitioning.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-partitioning.html`
               );
             },
           },
@@ -1159,9 +1154,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/tutorial-inheritance.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/tutorial-inheritance.html`
               );
             },
           },
@@ -1361,9 +1354,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createsequence.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createsequence.html`
               );
             },
           },
@@ -1417,9 +1408,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createview.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createview.html`
               );
             },
           },
@@ -1493,9 +1482,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/trigger-definition.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/trigger-definition.html`
               );
             },
           },
@@ -1520,9 +1507,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-creatematerializedview.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-creatematerializedview.html`
               );
             },
           },
@@ -1621,9 +1606,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createfunction.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createfunction.html`
               );
             },
           },
@@ -1703,9 +1686,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/plpgsql-trigger.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/plpgsql-trigger.html`
               );
             },
           },
@@ -1766,9 +1747,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/functions-event-triggers.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/functions-event-triggers.html`
               );
             },
           },
@@ -1831,9 +1810,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createprocedure.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createprocedure.html`
               );
             },
           },
@@ -1906,9 +1883,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createaggregate.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createaggregate.html`
               );
             },
           },
@@ -1963,9 +1938,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createtype.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createtype.html`
               );
             },
           },
@@ -2019,9 +1992,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createdomain.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createdomain.html`
               );
             },
           },
@@ -2069,9 +2040,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/extend-extensions.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/extend-extensions.html`
               );
             },
           },
@@ -2110,9 +2079,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/postgres-fdw.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/postgres-fdw.html`
               );
             },
           },
@@ -2269,9 +2236,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/event-triggers.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/event-triggers.html`
               );
             },
           },
@@ -2386,9 +2351,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/logical-replication-publication.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/logical-replication-publication.html`
               );
             },
           },
@@ -2472,9 +2435,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/logical-replication-subscription.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/logical-replication-subscription.html`
               );
             },
           },
@@ -2525,9 +2486,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/manage-ag-tablespaces.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/manage-ag-tablespaces.html`
               );
             },
           },
@@ -2567,7 +2526,7 @@ export default {
             label: "Create Role",
             icon: "fas fa-plus",
             onClick: () => {
-              createRoleModal(this.selectedNode, operationModes.CREATE, this.getMajorVersion(this.templates.version));
+              createRoleModal(this.selectedNode, operationModes.CREATE, this.serverVersion);
             },
           },
           {
@@ -2575,9 +2534,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/user-manag.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/user-manag.html`
               );
             },
           },
@@ -2587,7 +2544,7 @@ export default {
             label: "Alter Role",
             icon: "fas fa-edit",
             onClick: () => {
-              createRoleModal(this.selectedNode, operationModes.UPDATE, this.getMajorVersion(this.templates.version));
+              createRoleModal(this.selectedNode, operationModes.UPDATE, this.serverVersion);
             },
           },
           COMMENT_MENUITEM,
@@ -2622,9 +2579,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/warm-standby.html#streaming-replication-slots`
+                `https://www.postgresql.org/docs/${this.serverVersion}/warm-standby.html#streaming-replication-slots`
               );
             },
           },
@@ -2661,9 +2616,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/logicaldecoding-explanation.html#logicaldecoding-replication-slots`
+                `https://www.postgresql.org/docs/${this.serverVersion}/logicaldecoding-explanation.html#logicaldecoding-replication-slots`
               );
             },
           },
@@ -2771,9 +2724,83 @@ export default {
       // this is to handle cases when tables_node is absent because schema_node is not expanded and therefore empty
       this.refreshTree(tables_node || schema_node, true);
     });
+
+    emitter.on(`goToNode_${this.workspaceId}`, async ({ name, type, schema, database }) => {
+      const rootNode = this.getRootNode();
+       // Step 1: Find "Databases" node
+      const databasesRoot = rootNode.children.find(child => child.data.type === "database_list");
+      if (!databasesRoot) return;
+
+      await this.expandAndRefreshIfNeeded(databasesRoot);
+      const updatedDatabasesRoot = this.$refs.tree.getNode(databasesRoot.path)
+      
+      // Step 2: Find the specific database node
+      const databaseNode = findNode(updatedDatabasesRoot, node => node.data?.database === database && node.data.type === 'database');
+      if (!databaseNode) return;
+
+      await this.expandAndRefreshIfNeeded(databaseNode);
+      const updatedDatabaseNode = this.$refs.tree.getNode(databaseNode.path)
+
+      // If target is a database, stop here
+      if (type === 'database') {
+        this.$refs.tree.select(updatedDatabaseNode.path);
+        this.getNodeEl(updatedDatabaseNode.path).scrollIntoView({
+          block: "start",
+          inline: "end",
+        });
+        return;
+      }
+
+      // Step 3: Find "schemas_node"
+      const schemasNode = findChild(updatedDatabaseNode, 'schema_list');
+      if (!schemasNode) return;
+      await this.expandAndRefreshIfNeeded(schemasNode);
+
+      const updatedSchemasNode = this.$refs.tree.getNode(schemasNode.path)
+
+      const schemaNode = findNode(updatedSchemasNode, node => node.title === schema && node.data.type === 'schema');
+      if (!schemaNode) return;
+      await this.expandAndRefreshIfNeeded(schemaNode);
+
+      const updatedSchemaNode = this.$refs.tree.getNode(schemaNode.path)
+
+      // If target is a schema, stop here
+      if (type === 'schema') {
+        this.$refs.tree.select(updatedSchemaNode.path);
+        this.getNodeEl(updatedSchemaNode.path).scrollIntoView({
+          block: "start",
+          inline: "end",
+        });
+        return;
+      }
+
+      // Step 3: Find '_list' that we need
+      const containerType = `${type}_list`;
+      const containerNode = findChild(updatedSchemaNode, containerType);
+      if (!containerNode) return;
+      await this.expandAndRefreshIfNeeded(containerNode);
+
+      const updatedContainerNode = this.$refs.tree.getNode(containerNode.path)
+
+      // Step 4: Find the target node
+      const targetNode = findNode(updatedContainerNode, node => node.title === name && node.data.type === type);
+      if (!targetNode) return;
+
+      // Step 5: Select and scroll to it
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.$refs.tree.select(targetNode.path);
+          this.getNodeEl(targetNode.path).scrollIntoView({
+            block: "start",
+            inline: "end",
+          });
+        })
+      })
+    });
   },
   unmounted() {
     emitter.all.delete(`schemaChanged_${this.workspaceId}`);
+    emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
     onContextMenu(node, e) {
@@ -2911,28 +2938,39 @@ export default {
         return Promise.resolve('success');
       }
     },
-    refreshTree(node, force) {
-      this.checkCurrentDatabase(
-        node,
-        true,
-        () => {
-          setTimeout(() => {
-            if (!this.shouldUpdateNode(node, force)) return
-            if (node.children.length == 0) this.insertSpinnerNode(node);
-            this.refreshTreePostgresqlConfirm(node).then(() => {
-              this.$hooks?.add_tree_node_item?.forEach((hook) => {
-                hook(node);
-              });
-            })
-            .catch((error) => {
-              this.nodeOpenError(error, node);
-            });
-          }, 100);
-        },
-        () => {
-          this.toggleNode(node);
-        }
-      );
+    refreshTree(node, force = false) {
+      return new Promise((resolve, reject) => {
+        this.checkCurrentDatabase(
+          node,
+          true,
+          () => {
+            setTimeout(() => {
+              if (!this.shouldUpdateNode(node, force)) {
+                resolve();
+                return;
+              }
+
+              if (node.children.length === 0) this.insertSpinnerNode(node);
+
+              this.refreshTreePostgresqlConfirm(node)
+                .then(() => {
+                  this.$hooks?.add_tree_node_item?.forEach((hook) => {
+                    hook(node);
+                  });
+                  resolve();
+                })
+                .catch((error) => {
+                  this.nodeOpenError(error, node);
+                  reject(error);
+                });
+            }, 100);
+          },
+          () => {
+            this.toggleNode(node);
+            resolve();
+          }
+        );
+      });
     },
     checkCurrentDatabase(
       node,
@@ -3137,7 +3175,8 @@ export default {
                 onClick: () => {
                   tabsStore.createMonitoringTab(
                     "Backends",
-                    'select pid as "Pid",\
+                    '/*pgmanage-dash*/ \
+                    select pid as "Pid",\
                     datname as "Database",\
                     usename as "User",\
                     application_name as "Application",\
@@ -3158,9 +3197,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/`
+                `https://www.postgresql.org/docs/${this.serverVersion}/`
               );
             },
           },
@@ -3169,9 +3206,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql.html`
               );
             },
           },
@@ -3180,15 +3215,14 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-commands.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-commands.html`
               );
             },
           }];
   
         this.templates = response.data;
-  
+        this.serverVersion = response.data.major_version;
+
         this.$refs.tree.updateNode(node.path, {
           title: response.data.version,
         });
@@ -3259,8 +3293,11 @@ export default {
             database: el.name,
             oid: el.oid,
             raw_value: el.name_raw,
+            pinned: el.pinned,
           });
         }, null);
+        const databasesNode = this.$refs.tree.getNode(node.path)
+        this.sortPinnedNodes(databasesNode)
       } catch(error) {
         throw error;
       }
@@ -5635,17 +5672,6 @@ export default {
     },
     openWebSite(site) {
       window.open(site, "_blank");
-    },
-    getMajorVersion(version) {
-      // FIXME
-      let v_version = version.split(" (")[0];
-      let tmp = v_version
-        .replace("PostgreSQL ", "")
-        .replace("beta", ".")
-        .replace("rc", ".")
-        .split(".");
-      tmp.pop();
-      return tmp.join(".");
     },
   },
 };

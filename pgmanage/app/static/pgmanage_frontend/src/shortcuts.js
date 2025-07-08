@@ -302,7 +302,30 @@ let default_shortcuts = {
         'meta_pressed': false,
         'shortcut_key': 'E',
     }
-  }
+  },
+  'shortcut_quick_search': {
+    'windows': {
+        'ctrl_pressed': true,
+        'shift_pressed': false,
+        'alt_pressed': false,
+        'meta_pressed': false,
+        'shortcut_key': 'P',
+    },
+    'linux': {
+        'ctrl_pressed': true,
+        'shift_pressed': false,
+        'alt_pressed': false,
+        'meta_pressed': false,
+        'shortcut_key': 'P',
+    },
+    'macos': {
+        'ctrl_pressed': true,
+        'shift_pressed': false,
+        'alt_pressed': false,
+        'meta_pressed': false,
+        'shortcut_key': 'P',
+    }
+  },
 }
 
 export { default_shortcuts }

@@ -1,9 +1,9 @@
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useUtilitiesMenuStore } from "@/stores/utilities_menu";
-import { settingsStore } from "@/stores/stores_initializer";
+import { useUtilitiesMenuStore } from "@src/stores/utilities_menu";
+import { settingsStore } from "@src/stores/stores_initializer";
 
-vi.mock("@/stores/stores_initializer", () => ({
+vi.mock("@src/stores/stores_initializer", () => ({
   settingsStore: {
     desktopMode: false,
   },

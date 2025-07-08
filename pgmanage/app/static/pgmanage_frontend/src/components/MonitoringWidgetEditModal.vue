@@ -78,6 +78,7 @@
                   >Refresh Interval</label
                 >
                 <select
+                  data-testid="widget-edit-refresh-interval"
                   id="widgetInterval"
                   class="form-select"
                   v-model="widgetInterval"
@@ -102,7 +103,6 @@
                   data-testid="widget-edit-template-select"
                   :class="[
                     'form-select',
-                    { 'is-invalid': v$.selectedWidget.$invalid },
                   ]"
                   v-model="selectedWidget"
                   @change="changeTemplate"
@@ -117,12 +117,6 @@
                     ({{ widget.type }}) {{ widget.title }}
                   </option>
                 </select>
-                <div class="invalid-feedback">
-                  <a v-for="error of v$.selectedWidget.$errors" :key="error.$uid">
-                    {{ error.$message }}
-                    <br />
-                  </a>
-                </div>
               </div>
             </div>
 
@@ -248,9 +242,6 @@ export default {
         required,
         minValue: minValue(5),
       },
-      selectedWidget: {
-        required
-      }
     };
   },
   watch: {

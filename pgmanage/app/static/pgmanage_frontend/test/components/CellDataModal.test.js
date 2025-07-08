@@ -1,13 +1,8 @@
 import "ace-builds/src-noconflict/ace";
 import { flushPromises, mount } from "@vue/test-utils";
 import { describe, test, beforeEach, vi, expect, afterEach } from "vitest";
-import CellDataModal from "@/components/CellDataModal.vue";
-import { useCellDataModalStore } from "@/stores/celldata_modal";
-
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
+import CellDataModal from "@src/components/CellDataModal.vue";
+import { useCellDataModalStore } from "@src/stores/celldata_modal";
 
 vi.mock("bootstrap", () => ({
   Modal: {
@@ -38,6 +33,7 @@ describe("CellDataModal.vue", () => {
             session: {
               setMode: vi.fn(),
             },
+            destroy: vi.fn(),
           },
         };
       },
@@ -145,6 +141,7 @@ describe("CellDataModal.vue", () => {
   });
 
   test("closes modal on close button click", async () => {
+    wrapper.vm.setupEditor();
     const spy = vi.spyOn(cellDataModalStore, "hideModal");
     await wrapper.find('[data-testid="close-modal-button"]').trigger("click");
     expect(spy).toHaveBeenCalled();

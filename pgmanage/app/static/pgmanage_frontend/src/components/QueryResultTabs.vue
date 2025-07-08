@@ -133,6 +133,7 @@ export default {
       colWidthArray: [],
       columns: [],
       colTypes: [],
+      defaultColWidthArray: [],
     };
   },
   computed: {
@@ -342,8 +343,17 @@ export default {
                 ? `${status[1].toLowerCase()}_list`
                 : null;
 
-              if (!!node_type)
-                emitter.emit(`refreshTreeRecursive_${this.workspaceId}`, node_type);
+              if (!!node_type) {
+                emitter.emit(
+                  `refreshTreeRecursive_${this.workspaceId}`,
+                  node_type
+                );
+                emitter.emit("dbMetaRefresh", {
+                  workspace_id: this.workspaceId,
+                  database_name: context.tab.metaData.databaseName,
+                  database_index: context.tab.metaData.databaseIndex,
+                });
+              }
             }
           }
         }
@@ -434,7 +444,7 @@ export default {
             action: () => this.copyTableData("csv"),
           },
           {
-            label: '<i class="fas fa-copy"></i><span>Copy as Mardown</span>',
+            label: '<i class="fas fa-copy"></i><span>Copy as Markdown</span>',
             action: () => this.copyTableData("markdown"),
           },
           {
@@ -499,10 +509,8 @@ export default {
         },{
           label:"Reset Layout",
           action:() => {
-            this.customLayout = undefined
-            this.table.blockRedraw();
-            this.table.setColumns(columns);
-            this.table.restoreRedraw();
+            this.customLayout = undefined;
+            this.applyLayout();
           }
         },
       ]
@@ -534,6 +542,9 @@ export default {
       })
       table.on("tableBuilt", () => {
         this.table = table;
+        if (this.defaultColWidthArray.length !== this.table.getColumns().length) {
+          this.defaultColWidthArray = this.table.getColumns().map(col => col.getWidth());
+        }
         if (this.customLayout !== undefined && this.colWidthArray.length !== 0) {
           
           this.table.getColumns().forEach((col, idx) => {
@@ -557,8 +568,6 @@ export default {
     },
      applyLayout() {
       this.colWidthArray = []
-      if(this.customLayout === undefined)
-        return
 
       this.table.blockRedraw();
 
@@ -578,6 +587,10 @@ export default {
           if(this.customLayout == 'fitcontent') {
             col.setWidth(true);
             this.colWidthArray.push(true)
+          }
+
+          if(this.customLayout === undefined) {
+            col.setWidth(this.defaultColWidthArray[idx]);
           }
         }
       });

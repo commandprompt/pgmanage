@@ -4,6 +4,7 @@ from functools import partial
 from app.include import OmniDatabase
 from app.models.main import Connection, MonWidgets, MonWidgetsConnections, Technology
 from app.tests.utils_testing import USERS, execute_client_login
+from app.utils.crypto import encrypt
 from app.views.monitoring_dashboard import (
     create_dashboard_monitoring_widget,
     create_widget,
@@ -34,6 +35,7 @@ class MonitoringDashboardTests(TestCase):
         cls.service = "dellstore"
         cls.role = "postgres"
         cls.password = "postgres"
+        cls.encrypted_password = encrypt(cls.password, key=USERS["ADMIN"]["PASSWORD"])
         cls.db_type = "postgresql"
         cls.test_connection = Connection.objects.create(
             user=User.objects.get(username="admin"),
@@ -42,7 +44,7 @@ class MonitoringDashboardTests(TestCase):
             port=cls.port,
             database=cls.service,
             username=cls.role,
-            password=cls.password,
+            password=cls.encrypted_password,
             alias="Pgmanage Tests",
         )
         cls.database = OmniDatabase.Generic.InstantiateDatabase(
@@ -262,7 +264,9 @@ class MonitoringDashboardTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(len(response.json().get("widgets")), 1)
+        self.assertEqual(
+            len(response.json().get("widgets")), len(postgresql_widgets) + 1
+        )
 
     def test_monitoring_widgets_resolves_monitoring_widgets_view(self):
         view = resolve("/monitoring-widgets")
@@ -394,18 +398,6 @@ class MonitoringDashboardTests(TestCase):
             id=self.dashboard_widget_mock.id
         ).first()
         self.assertEqual(dashboard_widget_db.interval, 13)
-
-    def test_patch_dashboard_widget_detail_with_existing_id_and_empty_interval(self):
-        response = self.client.patch(
-            reverse("dashboard-widget-detail", args=[self.dashboard_widget_mock.id]),
-            data={"interval": ""},
-        )
-
-        self.assertEqual(response.status_code, 204)
-        dashboard_widget_db = MonWidgetsConnections.objects.filter(
-            id=self.dashboard_widget_mock.id
-        ).first()
-        self.assertEqual(dashboard_widget_db.interval, 5)
 
     def test_patch_dashboard_widget_detail_with_non_existing_id(self):
         response = self.client.patch(

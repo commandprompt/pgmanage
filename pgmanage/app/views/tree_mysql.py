@@ -1,5 +1,6 @@
 import ast
 
+from app.models.main import Connection
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
 
@@ -168,9 +169,23 @@ def get_fks(request, database):
     table = data["table"]
     schema = data["schema"]
 
+    list_fk = []
+
     try:
         fks = database.QueryTablesForeignKeys(table, False, schema)
-        list_fk = [fk["constraint_name"] for fk in fks.Rows]
+        for fk in fks.Rows:
+            fk_data = {
+                "constraint_name": fk["constraint_name"],
+                "column_name": fk["column_name"],
+                "table_name": fk["table_name"],
+                "table_schema": fk["table_schema"],
+                "r_table_name": fk["r_table_name"],
+                "r_table_schema": fk["r_table_schema"],
+                "r_column_name": fk["r_column_name"],
+                "on_update": fk["update_rule"],
+                "on_delete": fk["delete_rule"],
+            }
+            list_fk.append(fk_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -245,7 +260,9 @@ def get_indexes(request, database):
             ]:
                 index_type = index["index_type"].lower()
             else:
-                index_type = "unique" if index["uniqueness"] == "Unique" else "non-unique"
+                index_type = (
+                    "unique" if index["uniqueness"] == "Unique" else "non-unique"
+                )
             index_data = {
                 "index_name": index["index_name"],
                 "unique": index["uniqueness"] == "Unique",
@@ -281,8 +298,16 @@ def get_indexes_columns(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_databases(request, database):
     try:
+        conn_object = Connection.objects.get(id=database.v_conn_id)
+
         databases = database.QueryDatabases()
-        list_databases = [{"name": db[0]} for db in databases.Rows]
+        list_databases = [
+            {
+                "name": db[0],
+                "pinned": db[0] in conn_object.pinned_databases,
+            }
+            for db in databases.Rows
+        ]
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data=list_databases, safe=False)

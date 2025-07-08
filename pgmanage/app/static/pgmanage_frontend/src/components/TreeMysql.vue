@@ -7,23 +7,40 @@
     </template>
 
     <template v-slot:title="{ node }">
-      <span class="item-icon">
-        <i :class="['icon_tree', node.data.icon]"></i>
-      </span>
-      <span v-if="node.data.raw_html" v-html="node.title"> </span>
-      <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
-        ">
-        <b>{{ node.title }}</b>
-      </span>
-      <span v-else>
-        {{ formatTitle(node) }}
-      </span>
+      <div class="d-flex flex-grow-1 justify-content-between">
+        <div>
+          <span class="item-icon">
+            <i :class="['icon_tree', node.data.icon]"></i>
+          </span>
+          <span v-if="node.data.raw_html" v-html="node.title"> </span>
+          <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
+            ">
+            <b>{{ node.title }}</b>
+          </span>
+          <span v-else>
+            {{ formatTitle(node) }}
+          </span>
+
+        </div>
+        
+        <!-- Pin icon for database nodes -->
+        <span>
+         <i
+           v-if="node.data.type === 'database'"
+           class="fas fa-thumbtack database-pin-icon me-2"
+           :class="node.data.pinned ? 'text-primary pinned' : 'text-muted'"
+           @click.stop="pinDatabase(node)"
+           title="Pin this database"
+         ></i>
+       </span>
+      </div>
     </template>
   </PowerTree>
 </template>
 
 <script>
 import TreeMixin from "../mixins/power_tree.js";
+import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import {
@@ -36,13 +53,14 @@ import { tabsStore, connectionsStore, dbMetadataStore } from "../stores/stores_i
 import { checkBeforeChangeDatabase } from "../workspace";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { operationModes } from "../constants";
+import { findNode, findChild } from "../utils.js";
 
 export default {
   name: "TreeMySQL",
   components: {
     PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, PinDatabaseMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -626,9 +644,60 @@ export default {
       });
       this.refreshTree(tables_node, true);
     });
+
+    emitter.on(`goToNode_${this.workspaceId}`, async ({ name, type, schema, database }) => {
+      const rootNode = this.getRootNode();
+       // Step 1: Find "Databases" node
+      const databasesRoot = rootNode.children.find(child => child.data.type === "database_list");
+      if (!databasesRoot) return;
+
+      await this.expandAndRefreshIfNeeded(databasesRoot);
+      const updatedDatabasesRoot = this.$refs.tree.getNode(databasesRoot.path)
+      
+      // Step 2: Find the specific database node
+      const databaseNode = findNode(updatedDatabasesRoot, node => node.data?.database === database && node.data.type === 'database');
+      if (!databaseNode) return;
+
+      await this.expandAndRefreshIfNeeded(databaseNode);
+      const updatedDatabaseNode = this.$refs.tree.getNode(databaseNode.path)
+
+      // If target is a database, stop here
+      if (type === 'database') {
+        this.$refs.tree.select(updatedDatabaseNode.path);
+        this.getNodeEl(updatedDatabaseNode.path).scrollIntoView({
+          block: "start",
+          inline: "end",
+        });
+        return;
+      }
+
+      // Step 3: Find '_list' that we need
+      const containerType = `${type}_list`;
+      const containerNode = findChild(updatedDatabaseNode, containerType);
+      if (!containerNode) return;
+      await this.expandAndRefreshIfNeeded(containerNode);
+
+      const updatedContainerNode = this.$refs.tree.getNode(containerNode.path)
+
+      // Step 4: Find the target node
+      const targetNode = findNode(updatedContainerNode, node => node.title === name && node.data.type === type);
+      if (!targetNode) return;
+
+      // Step 5: Select and scroll to it
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.$refs.tree.select(targetNode.path);
+          this.getNodeEl(targetNode.path).scrollIntoView({
+            block: "start",
+            inline: "start",
+          });
+        })
+      })
+    });
   },
   unmounted() {
     emitter.all.delete(`schemaChanged_${this.workspaceId}`);
+    emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
     onContextMenu(node, e) {
@@ -686,30 +755,44 @@ export default {
       }
     },
     refreshTree(node, force) {
-      this.checkCurrentDatabase(
-        node,
-        true,
-        () => {
-          setTimeout(() => {
-            if (!this.shouldUpdateNode(node, force)) return
-            this.refreshTreeConfirm(node)
-          }, 100);
-        },
-        () => {
-          this.toggleNode(node);
-        }
-      );
+      return new Promise((resolve, reject) => {
+        this.checkCurrentDatabase(
+          node,
+          true,
+          () => {
+            setTimeout(() => {
+              if (!this.shouldUpdateNode(node, force)) {
+                resolve();
+                return;
+              }
+              if (node.children.length == 0) this.insertSpinnerNode(node);
+
+              this.refreshTreeConfirm(node)
+                .then(() => {
+                  resolve();
+                })
+                .catch((error) => {
+                  this.nodeOpenError(error, node);
+                  reject(error);
+                });
+            }, 100);
+          },
+          () => {
+            this.toggleNode(node);
+            resolve();
+          }
+        );
+      });
     },
-    refreshTreeConfirm(node) {
-      if (node.children.length == 0) this.insertSpinnerNode(node);
+    async refreshTreeConfirm(node) {
       if (node.data.type == "server") {
-        this.getTreeDetailsMysql(node);
+        return this.getTreeDetailsMysql(node);
       } else if (node.data.type == "database_list") {
-        this.getDatabasesMysql(node);
+        return this.getDatabasesMysql(node);
       } else if (node.data.type == "database") {
-        this.getDatabaseObjectsMysql(node);
+        return this.getDatabaseObjectsMysql(node);
       } else if (node.data.type == "table_list") {
-        this.getTablesMysql(node);
+        return this.getTablesMysql(node);
       } else if (node.data.type == "table") {
         this.getColumnsMysql(node);
       } else if (node.data.type == "primary_key") {
@@ -729,7 +812,7 @@ export default {
       } else if (node.data.type == "index") {
         this.getIndexesColumnsMysql(node);
       } else if (node.data.type == "view_list") {
-        this.getViewsMysql(node);
+        return this.getViewsMysql(node);
       } else if (node.data.type == "view") {
         this.getViewsColumnsMysql(node);
       } else if (node.data.type == "function_list") {
@@ -760,31 +843,32 @@ export default {
         this.$emit("clearTabs");
       }
     },
-    getTreeDetailsMysql(node) {
-      this.api
-        .post("/get_tree_info_mysql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getTreeDetailsMysql(node) {
+      try {
+        const response = await this.api.post("/get_tree_info_mysql/");
 
-          this.$refs.tree.updateNode(node.path, {
-            title: resp.data.version,
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: response.data.version,
+        });
+
+        this.templates = response.data;
+
+        if (response.data.superuser) {
+          this.insertNode(node, "Roles", {
+            icon: "fas node-all fa-users node-user-list",
+            type: "role_list",
+            contextMenu: "cm_roles",
           });
-
-          this.templates = resp.data;
-
-          if (resp.data.superuser) {
-            this.insertNode(node, "Roles", {
-              icon: "fas node-all fa-users node-user-list",
-              type: "role_list",
-              contextMenu: "cm_roles",
-            });
-          }
-          this.insertNode(node, "Databases", {
-            icon: "fas node-all fa-database node-database-list",
-            type: "database_list",
-            contextMenu: "cm_databases",
-          });
-          this.cm_server_extra = [{
+        }
+        this.insertNode(node, "Databases", {
+          icon: "fas node-all fa-database node-database-list",
+          type: "database_list",
+          contextMenu: "cm_databases",
+        });
+        this.cm_server_extra = [
+          {
             label: "Monitoring",
             icon: "fas fa-chart-line",
             children: [
@@ -792,94 +876,103 @@ export default {
                 label: "Process List",
                 icon: "fas fa-chart-line",
                 onClick: () => {
-                  tabsStore.createMonitoringTab("Process List", "select * from information_schema.processlist")
+                  tabsStore.createMonitoringTab(
+                    "Process List",
+                    "/*pgmanage-dash*/ select * from information_schema.processlist"
+                  );
                 },
               },
             ],
-          }];
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+          },
+        ];
+      } catch (error) {
+        throw error;
+      }
     },
-    getDatabasesMysql(node) {
-      this.api
-        .post("/get_databases_mysql/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getDatabasesMysql(node) {
+      try {
+        const response = await this.api.post("/get_databases_mysql/");
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `Databases (${resp.data.length})`,
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Databases (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-database node-database",
+            type: "database",
+            contextMenu: "cm_database",
+            database: el.name,
+            pinned: el.pinned,
           });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-database node-database",
-              type: "database",
-              contextMenu: "cm_database",
-              database: el.name,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+        }, null);
+        const databasesNode = this.$refs.tree.getNode(node.path);
+        this.sortPinnedNodes(databasesNode);
+      } catch (error) {
+        throw error;
+      }
     },
-    getDatabaseObjectsMysql(node) {
+    async getDatabaseObjectsMysql(node) {
       this.removeChildNodes(node);
-
-      this.insertNode(node, "Procedures", {
-        icon: "fas node-all fa-cog node-procedure-list",
-        type: "procedure_list",
-        contextMenu: "cm_procedures",
-        database: node.data.database
-      });
-
-      this.insertNode(node, "Functions", {
-        icon: "fas node-all fa-cog node-function-list",
-        type: "function_list",
-        contextMenu: "cm_functions",
-        database: node.data.database
-      });
-
-      this.insertNode(node, "Views", {
-        icon: "fas node-all fa-eye node-view-list",
-        type: "view_list",
-        contextMenu: "cm_views",
-        database: node.data.database
-      });
-
-      this.insertNode(node, "Tables", {
-        icon: "fas node-all fa-th node-table-list",
-        type: "table_list",
-        contextMenu: "cm_tables",
-        database: node.data.database
-      });
-    },
-    getTablesMysql(node) {
-      this.api
-        .post("/get_tables_mysql/", {
-          schema: this.getParentNode(node).title,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Tables (${resp.data.length})`,
+      return new Promise((resolve, reject) => {
+        try {
+          this.insertNode(node, "Procedures", {
+            icon: "fas node-all fa-cog node-procedure-list",
+            type: "procedure_list",
+            contextMenu: "cm_procedures",
+            database: node.data.database,
           });
 
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
-              icon: "fas node-all fa-table node-table",
-              type: "table",
-              contextMenu: "cm_table",
-              database: node.data.database
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+          this.insertNode(node, "Functions", {
+            icon: "fas node-all fa-cog node-function-list",
+            type: "function_list",
+            contextMenu: "cm_functions",
+            database: node.data.database,
+          });
+
+          this.insertNode(node, "Views", {
+            icon: "fas node-all fa-eye node-view-list",
+            type: "view_list",
+            contextMenu: "cm_views",
+            database: node.data.database,
+          });
+
+          this.insertNode(node, "Tables", {
+            icon: "fas node-all fa-th node-table-list",
+            type: "table_list",
+            contextMenu: "cm_tables",
+            database: node.data.database,
+          });
+          resolve("success");
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+    async getTablesMysql(node) {
+      try {
+        const response = await this.api.post("/get_tables_mysql/", {
+          schema: this.getParentNode(node).title,
         });
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Tables (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el, {
+            icon: "fas node-all fa-table node-table",
+            type: "table",
+            contextMenu: "cm_table",
+            database: node.data.database,
+          });
+        }, null);
+      } catch (error) {
+        throw error;
+      }
     },
     getColumnsMysql(node) {
       this.api
@@ -1022,7 +1115,7 @@ export default {
           });
 
           resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.constraint_name , {
               icon: "fas node-all fa-key node-fkey",
               type: "foreign_key",
               contextMenu: "cm_fk",
@@ -1185,30 +1278,29 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getViewsMysql(node) {
-      this.api
-        .post("/get_views_mysql/", {
+    async getViewsMysql(node) {
+      try {
+        const response = await this.api.post("/get_views_mysql/", {
           schema: this.getParentNode(node).title,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Views (${resp.data.length})`,
-          });
-
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-eye node-view",
-              type: "view",
-              contextMenu: "cm_view",
-              database: node.data.database
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
         });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Views (${response.data.length})`,
+        });
+
+        response.data.forEach((el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-eye node-view",
+            type: "view",
+            contextMenu: "cm_view",
+            database: node.data.database,
+          });
+        });
+      } catch (error) {
+        throw error;
+      }
     },
     getViewsColumnsMysql(node) {
       this.api

@@ -149,7 +149,9 @@ base_urlpatterns = [
     path('change_active_database/', views.workspace.change_active_database, name='change_active_database'),
     path('get_postgresql_version/', views.tree_postgresql.get_version, name='get_version'),
     path('change_role_password_postgresql/', views.tree_postgresql.change_role_password, name='change_role_password'),
-    path('get_object_description_postgresql/', views.tree_postgresql.get_object_description, name='get_object_description'),\
+    path('get_object_description_postgresql/', views.tree_postgresql.get_object_description, name='get_object_description'),
+    path('get_postgres_server_log/', views.tree_postgresql.get_server_log, name="get_postgres_server_log"),
+    path('get_postgres_server_log_formats/', views.tree_postgresql.get_log_formats, name="get_postgres_server_log_formats"),
 
     #PG_CRON
     path('get_pgcron_jobs/', views.pgextras.get_pgcron_jobs, name='get_pgcron_jobs'),
@@ -330,7 +332,9 @@ base_urlpatterns = [
 
     path('validate_binary_path/', views.workspace.validate_binary_path, name='validate_binary_path'),
 
-    path('log/', views.logging.log_message, name="log_message")
+    path('log/', views.logging.log_message, name="log_message"),
+
+    path('pin_database/', views.workspace.toggle_pin_database, name="toggle_pin_database"),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

@@ -70,12 +70,14 @@ export default defineConfig(({ command, mode }) => {
       coverage: {
         reporter: ["html"],
         enabled: true
-      }
+      },
+      setupFiles: ["./test/global_setup.js"],
     },
     css: {
       preprocessorOptions: {
         scss: {
-          silenceDeprecations: ['mixed-decls', 'color-functions', 'legacy-js-api']
+          silenceDeprecations: ['mixed-decls', 'color-functions', 'legacy-js-api'],
+          additionalData: `@import '@src/assets/scss/common/variables';`,
         },
       }
     },

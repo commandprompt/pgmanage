@@ -1,13 +1,13 @@
 monitoring_widgets = [{
 'dbms': 'mysql',
 'plugin_name': 'mysql',
-'id': 0,
+'id': -1,
 'title': 'Thread Count',
 'type': 'timeseries',
 'interval': 10,
 'default': True,
 'script_chart': """
-max_connections = connection.Query('show variables like "max_connections"').Rows[0]['Value']
+max_connections = connection.Query('/*pgmanage-dash*/ show variables like "max_connections"').Rows[0]['Value']
 
 result = {
     "type": "line",
@@ -68,6 +68,7 @@ from datetime import datetime
 from random import randint
 
 backends = connection.Query('''
+/*pgmanage-dash*/
 show status where `variable_name` = 'Threads_connected';
 ''')
 

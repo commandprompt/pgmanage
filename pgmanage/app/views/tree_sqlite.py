@@ -103,10 +103,20 @@ def get_pk_columns(request, database):
 @database_required(check_timeout=False, open_connection=True)
 def get_fks(request, database):
     table = request.data["table"]
-
+    list_fk = []
     try:
         fks = database.QueryTablesForeignKeys(table)
-        list_fk = [fk["constraint_name"] for fk in fks.Rows]
+        for fk in fks.Rows:
+            fk_data = {
+                "constraint_name": fk["constraint_name"],
+                "column_name": fk["column_name"],
+                "table_name": fk["table_name"],
+                "r_table_name": fk["r_table_name"],
+                "r_column_name": fk["r_column_name"],
+                "on_update": fk["update_rule"],
+                "on_delete": fk["delete_rule"],
+            }
+            list_fk.append(fk_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

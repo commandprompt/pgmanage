@@ -2,22 +2,16 @@ import { beforeAll, describe, expect, test, vi } from "vitest";
 import {
   buildSnippetContextMenuObjects,
   executeSnippet,
-} from "../../src/tree_context_functions/tree_snippets";
+} from "@src/tree_context_functions/tree_snippets";
 import axios from "axios";
 import { flushPromises } from "@vue/test-utils";
-import { emitter } from "../../src/emitter";
-import { useTabsStore } from "../../src/stores/tabs";
-import { handleError } from "@/logging/utils";
+import { emitter } from "@src/emitter";
+import { useTabsStore } from "@src/stores/tabs";
+import { handleError } from "@src/logging/utils";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-vi.mock("@/logging/utils", () => ({
+vi.mock("@src/logging/utils", () => ({
   handleError: vi.fn(),
 }));
-
-vi.mock("axios");
 
 describe("buildSnippetContextMenuObjects", () => {
   const snippetText = "Some snippet text";

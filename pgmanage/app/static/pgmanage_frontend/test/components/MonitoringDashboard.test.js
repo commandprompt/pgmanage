@@ -1,16 +1,9 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { test, describe, beforeEach, vi, expect } from "vitest";
-import MonitoringDashboard from "../../src/components/MonitoringDashboard.vue";
-import MonitoringWidget from "../../src/components/MonitoringWidget.vue";
+import MonitoringDashboard from "@src/components/MonitoringDashboard.vue";
+import MonitoringWidget from "@src/components/MonitoringWidget.vue";
 
 import axios from "axios";
-
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
 
 vi.mock("tabulator-tables", () => {
   const TabulatorFull = vi.fn();
@@ -20,28 +13,31 @@ vi.mock("tabulator-tables", () => {
   return { TabulatorFull };
 });
 
-const mockWidgetsData = [
-  {
-    saved_id: 1,
-    id: 0,
-    title: "Backends",
-    plugin_name: "postgresql",
-    interval: 5,
-    type: "grid",
-    widget_data: null,
-  },
-];
-
 describe("MonitoringDashboard", () => {
   let dashboardWrapper;
 
   beforeEach(() => {
     vi.useFakeTimers();
     vi.restoreAllMocks();
-    axios.delete.mockResolvedValue("Deleted");
+
     axios.post
       .mockResolvedValue({ data: { data: "1234" } })
-      .mockResolvedValueOnce({ data: { widgets: [...mockWidgetsData] } })
+      .mockResolvedValueOnce({
+        data: {
+          widgets: [
+            {
+              saved_id: 1,
+              id: 0,
+              title: "Backends",
+              plugin_name: "postgresql",
+              interval: 5,
+              type: "grid",
+              widget_data: null,
+              visible: true,
+            },
+          ],
+        },
+      })
       .mockResolvedValueOnce({ data: { data: "1234" } });
     dashboardWrapper = mount(MonitoringDashboard, {
       props: {
@@ -71,7 +67,11 @@ describe("MonitoringDashboard", () => {
   });
 
   test("should not refresh widgets when none exist", async () => {
-    await dashboardWrapper.vm.closeWidget(1);
+    axios.patch.mockResolvedValueOnce();
+    await dashboardWrapper.vm.toggleWidget(
+      dashboardWrapper.vm.widgets[0],
+      false
+    );
     await flushPromises();
 
     const refreshWidgetsSpy = vi.spyOn(dashboardWrapper.vm, "refreshWidgets");
@@ -83,13 +83,25 @@ describe("MonitoringDashboard", () => {
     expect(dashboardWrapper.vm.refreshWidget).toBe(false);
   });
 
-  test("should remove widget from dashboard on 'close' button click", async () => {
-    expect(dashboardWrapper.vm.widgets).toStrictEqual(mockWidgetsData);
+  test("should toggle widget in dashboard on 'close' button click", async () => {
+    axios.patch.mockResolvedValueOnce();
+    expect(dashboardWrapper.vm.widgets).toStrictEqual([
+      {
+        saved_id: 1,
+        id: 0,
+        title: "Backends",
+        plugin_name: "postgresql",
+        interval: 5,
+        type: "grid",
+        widget_data: null,
+        visible: true,
+      },
+    ]);
 
     await dashboardWrapper
       .get("[data-testid='widget-close-button']")
       .trigger("click");
 
-    expect(dashboardWrapper.vm.widgets).toStrictEqual([]);
+    expect(dashboardWrapper.vm.visibleSortedWidgets).toStrictEqual([]);
   });
 });

@@ -20,11 +20,6 @@ import { useTabsStore } from "../../src/stores/tabs";
 import * as notificatonModule from "../../src/notification_control";
 import { maxFileSizeInKB, maxFileSizeInMB } from "../../src/constants.js";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
 describe("SnippetTab", () => {
   let wrapper, fileMock, showToastSpy, eventMock;
   let settingsStore, messageModalStore;

@@ -1,17 +1,11 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import UtilityJobDetail from "@/components/UtilityJobsJobDetail.vue";
-import { utilityJobStore } from "@/stores/stores_initializer";
+import UtilityJobDetail from "@src/components/UtilityJobsJobDetail.vue";
+import { utilityJobStore } from "@src/stores/stores_initializer";
 import axios from "axios";
 import { Modal } from "bootstrap";
 import { vi, describe, beforeEach, it, expect, afterEach } from "vitest";
 import { nextTick } from "vue";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
 vi.mock("bootstrap", () => ({
   Modal: {
     getOrCreateInstance: vi.fn(() => ({

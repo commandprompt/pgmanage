@@ -1,17 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import { useTabsStore } from "@/stores/tabs";
-import { emitter } from "../../src/emitter";
-import * as worspaceModule from "@/workspace";
+import { useTabsStore } from "@src/stores/tabs";
+import { emitter } from "@src/emitter";
+import * as worspaceModule from "@src/workspace";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
+vi.mock("@src/workspace");
 
-vi.mock("@/workspace");
-
-vi.mock("@/stores/stores_initializer", () => {
+vi.mock("@src/stores/stores_initializer", () => {
   const connectionsStore = {
     connections: [{ id: 1, technology: "terminal" }],
     getConnection: vi.fn(() => {
@@ -22,8 +17,6 @@ vi.mock("@/stores/stores_initializer", () => {
   const messageModalStore = vi.fn();
   return { connectionsStore, messageModalStore };
 });
-
-vi.stubGlobal("app_base_path", "test_folder");
 
 describe("useTabsStore", () => {
   beforeEach(() => {
@@ -286,13 +279,15 @@ describe("useTabsStore", () => {
     );
   });
 
-  it("should create a Monitoring Dashboard tab", () => {
+  it("should create a Monitoring Dashboard tab", async () => {
     const store = useTabsStore();
+    await store.createConnectionTab(0);
     store.createMonitoringDashboardTab();
-    const tab = store.tabs.find((tab) => tab.name === "Monitoring");
+    const tab = store.selectedPrimaryTab.metaData.secondaryTabs.find(
+      (tab) => tab.name === "Monitoring"
+    );
     expect(tab).toBeTruthy();
     expect(tab.component).toBe("MonitoringDashboard");
-    expect(store.selectedPrimaryTab).toBe(tab);
   });
 
   it("should create a Configuration tab", () => {
@@ -360,12 +355,14 @@ describe("useTabsStore", () => {
     expect(store.selectedPrimaryTab).toBe(tab);
   });
 
-  it("should create a Monitoring tab", () => {
+  it("should create a Monitoring tab", async () => {
     const store = useTabsStore();
+    await store.createConnectionTab(0);
     store.createMonitoringTab("Backends", "SELECT * FROM backends");
-    const tab = store.tabs.find((tab) => tab.name === "Backends");
+    const tab = store.selectedPrimaryTab.metaData.secondaryTabs.find(
+      (tab) => tab.name === "Backends"
+    );
     expect(tab).toBeTruthy();
     expect(tab.component).toBe("MonitoringTab");
-    expect(store.selectedPrimaryTab).toBe(tab);
   });
 });

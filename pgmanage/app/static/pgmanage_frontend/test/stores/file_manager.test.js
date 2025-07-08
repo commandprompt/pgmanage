@@ -1,6 +1,6 @@
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useFileManagerStore } from "@/stores/file_manager";
+import { useFileManagerStore } from "@src/stores/file_manager";
 
 describe("fileManager store", () => {
   let fileManagerStore;
