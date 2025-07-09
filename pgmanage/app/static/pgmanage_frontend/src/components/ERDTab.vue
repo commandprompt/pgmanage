@@ -15,7 +15,6 @@
         <button class="btn btn-outline-secondary btn-sm" @click="zoomOut" title="Zoom Out">
           <i class="fas fa-search-minus"></i>
         </button>
-
       </div>
     </div>
   <div class="pt-3" style="width: 100%; height: calc(100vh - 70px); visibility: hidden" ref="cyContainer"></div>
@@ -24,13 +23,11 @@
 </template>
 
 <script>
-import axios from 'axios'
-import ShortUniqueId from 'short-unique-id'
-import cytoscape from 'cytoscape';
-import nodeHtmlLabel from 'cytoscape-node-html-label'
-import { handleError } from '../logging/utils';
-import debounce from 'lodash/debounce'
-
+import axios from "axios";
+import ShortUniqueId from "short-unique-id";
+import cytoscape from "cytoscape";
+import { handleError } from "../logging/utils";
+import debounce from "lodash/debounce";
 
 export default {
   name: "ERDTab",
@@ -40,10 +37,6 @@ export default {
     tabId: String,
     databaseIndex: Number,
     databaseName: String,
-  },
-  setup(props) {
-    if (typeof cytoscape("core", "nodeHtmlLabel") === "undefined")
-      nodeHtmlLabel(cytoscape);
   },
   data() {
     return {
@@ -57,36 +50,78 @@ export default {
         wheelSensitivity: 0.4,
         style: [
           {
-            selector: 'node',
+            selector: "node",
             style: {
-              "shape": "round-rectangle",
+              shape: "round-rectangle",
               "background-color": "#F8FAFC",
               "background-opacity": 1,
-              "height": 40,
-              "width": 140,
-              shape: "round-rectangle",
-            }
+            },
           },
           {
-            selector: 'edge',
+            selector: "node.table",
             style: {
-              'curve-style': 'straight',
-              'target-arrow-shape': 'triangle',
-              'width': 2,
-              'line-style': 'solid'
-            }
+              label: "data(label)",
+              "text-margin-y": 20,
+              padding: 25,
+              width: 40,
+            },
           },
           {
-            selector: 'edge:selected',
+            selector: "edge",
             style: {
-              'width': 4,
-              'line-color': '#F76707',
-              'target-arrow-color': '#F76707',
-              'source-arrow-color': '#F76707',
-            }
+              "curve-style": "straight",
+              "target-arrow-shape": "triangle",
+              width: 2,
+              "line-style": "solid",
+            },
+          },
+          {
+            selector: "edge:selected",
+            style: {
+              width: 4,
+              "line-color": "#F76707",
+              "target-arrow-color": "#F76707",
+              "source-arrow-color": "#F76707",
+            },
+          },
+          {
+            selector: "node.column-node",
+            style: {
+              label: (ele) => {
+                const icon =
+                  ele.data("is_pk") || ele.data("is_fk") ? "\u{1F511}" : "";
+                return (
+                  icon + ele.data("name") + "               " + ele.data("type")
+                );
+              },
+              "text-valign": "center",
+              "text-halign": "center",
+              "background-color": "#F8FAFC",
+              height: 10,
+              shape: "rectangle",
+              "font-size": 10,
+              padding: 2,
+              width: 140,
+            },
+          },
+          {
+            selector: "node.pk-column",
+            style: {
+              "background-color": "#D1FAE5",
+              "border-color": "#10B981",
+              "border-width": 2,
+            },
+          },
+          {
+            selector: "node.fk-column",
+            style: {
+              "background-color": "#FEF3C7",
+              "border-color": "#F59E0B",
+              "border-width": 2,
+            },
           },
         ],
-      }
+      },
     };
   },
   mounted() {
@@ -107,61 +142,80 @@ export default {
         setTimeout(() => {
         this.adjustSizes()
         this.saveGraphState();
-      }, 100)
+      }, 100);
     },
     loadSchemaGraph() {
-      axios.post('/draw_graph/', {
-        database_index: this.databaseIndex,
-        workspace_id: this.workspaceId,
-        schema: this.schema,
-      })
-      .then((response) => {
-        if (response.data.layout) {
-          this.jsonLayout = response.data.layout
-          this.new_nodes = response.data.new_nodes
-          this.new_edges = response.data.new_edges
-        } else {
-          this.nodes = response.data.nodes.map((node) => (
-            {
-              data: {
-                id: node.id,
-                html_id: node.id.replace(/[^a-zA-Z_.-:]+/, '_'),
-                label: node.label,
-                columns: node.columns.map((column) => (
-                  {
-                    name: column.name,
-                    type: this.shortDataType(column.type),
-                    cgid: column.cgid,
-                    is_pk: column.is_pk,
-                    is_fk: column.is_fk,
-                    is_highlighted: false
-                  }
-                )),
-                type: 'table'
-              },
-              position: node?.position ?? {},
-              classes: 'group' + node.group
-            }
-          ))
-  
-          this.edges = response.data.edges.map((edge) => (
-            {
-              data: {
-                source: edge.from,
-                target: edge.to,
-                source_col: edge.from_col,
-                target_col: edge.to_col,
-                label: edge.label,
-                cgid: edge.cgid
-              }
-            }
-          ))
-        }
-      })
-      .then(() => { this.initGraph() })
-      .catch((error) => {
-        handleError(error);
-      })
+      axios
+        .post("/draw_graph/", {
+          database_index: this.databaseIndex,
+          workspace_id: this.workspaceId,
+          schema: this.schema,
+        })
+        .then((response) => {
+          if (response.data.layout) {
+            this.jsonLayout = response.data.layout;
+            this.new_nodes = response.data.new_nodes;
+            this.new_edges = response.data.new_edges;
+          } else {
+            response.data.nodes.forEach((table) => {
+              this.nodes.push({
+                data: {
+                  id: table.id,
+                  label: table.label,
+                  type: "table",
+                },
+                position: table?.position ?? {},
+                classes: "table",
+              });
+
+              table.columns.forEach((col, idx) => {
+                const colId = `${table.id}_${col.name}`;
+                this.nodes.push({
+                  data: {
+                    id: colId,
+                    name: col.name,
+                    parent: table.id,
+                    is_pk: col.is_pk,
+                    is_fk: col.is_fk,
+                    cgid: col.cgid,
+                    type: this.shortDataType(col.type),
+                  },
+                  classes: `column-node${col.is_pk ? " pk-column" : ""}${
+                    col.is_fk ? " fk-column" : ""
+                  }`,
+                  position: {
+                    x: 0,
+                    y: 22 * idx,
+                  },
+                });
+              });
+            });
+
+            this.edges = response.data.edges.map((edge) => {
+              let source = !!edge.from_col
+                ? `${edge.from}_${edge.from_col}`
+                : edge.from;
+              let target = !!edge.to_col
+                ? `${edge.to}_${edge.to_col}`
+                : edge.to;
+              return {
+                data: {
+                  id: edge.cgid,
+                  source: source,
+                  target: target,
+                  label: edge.label,
+                  cgid: edge.cgid,
+                },
+              };
+            });
+          }
+        })
+        .then(() => {
+          this.initGraph();
+        })
+        .catch((error) => {
+          handleError(error);
+        });
     },
     shortDataType(typename) {
       const TYPEMAP = {
@@ -176,14 +230,11 @@ export default {
       return TYPEMAP[typename] || typename
     },
     columnClass(column) {
-      let classes = []
-      if(column.is_pk)
-        classes.push('pk-column')
-      if(column.is_fk)
-        classes.push('fk-column')
-      if(column.is_highlighted)
-        classes.push('highlighted')
-      return classes.join(' ')
+      let classes = [];
+      if (column.is_pk) classes.push("pk-column");
+      if (column.is_fk) classes.push("fk-column");
+      if (column.is_highlighted) classes.push("highlighted");
+      return classes.join(" ");
     },
     initGraph() {
       if (this.jsonLayout) {
@@ -254,48 +305,40 @@ export default {
           this.adjustSizes()
         }, 100)
       }
-    
+
       this.setupEvents();
 
-      this.cy.nodeHtmlLabel(
-        [{
-          query: 'node',
-          cssClass: 'erd-card',
-          tpl: (function(data) {
-            let coldivs = ''
-            if (data.columns)
-              coldivs = data.columns.map((c) => {
-                let dataAttr = c.cgid ? `data-cgid="${c.cgid}"` : ''
-                let colName = c.is_fk ?
-                `<a ${dataAttr} href="#" class="erd-card__column_name">${c.name}</a>` :
-                `<span class="erd-card__column_name">${c.name}</span>`
-                return `<div ${dataAttr} class="erd-card__column ${this.columnClass(c)}">
-                      ${colName}
-                  <span class="erd-card__column_type">${c.type}</span>
-                </div>`
-              }).join('')
-
-            return `<div class="erd-card__wrap"><div id="${this.instance_uid}-${data.html_id}">
-                <h3 class="erd-card__title clipped-text" title="${data.label}">${data.label}</h3>
-                ${coldivs}
-            </div></div>`;
-          }).bind(this)
-        }],
-      )
-
-      this.$refs.cyContainer.style.visibility = 'visible';
+      this.$refs.cyContainer.style.visibility = "visible";
     },
     adjustSizes() {
-      const padding = 2;
-      this.cy.nodes().forEach((node) => {
-        let el = document.querySelector(`#${this.instance_uid}-${node.data().html_id}`)
-        if (el) {
-          node.style('width', el.parentElement.clientWidth + padding)
-          node.style('height', el.parentElement.clientHeight + padding)
-        }
-      })
-      this.layout.run()
-      this.cy.fit()
+      const columnHeight = 16;
+      const columnSpacing = 6;
+      const minTableHeight = 40;
+      const tablePadding = 20;
+
+      const tables = this.cy.nodes().filter((n) => n.isParent());
+
+      tables.forEach((table) => {
+        const columns = table.children();
+        const totalHeight = Math.max(
+          columns.length * (columnHeight + columnSpacing) + tablePadding,
+          minTableHeight
+        );
+
+        table.style({
+          width: 100,
+          height: totalHeight,
+        });
+
+        columns.forEach((colNode, idx) => {
+          const yOffset = (columnHeight + columnSpacing) * idx;
+          colNode.position({
+            x: table.position("x"),
+            y: table.position("y") + tablePadding + yOffset + 20,
+          });
+        });
+      });
+      this.cy.fit();
     },
     saveGraphState() {
       const layoutData = this.cy.json(); 
@@ -333,13 +376,13 @@ export default {
         }
       });
 
-      this.cy.on("dragfree", () => {
-        this.saveGraphState();
-      });
+      // this.cy.on("dragfree", () => {
+      //   this.saveGraphState();
+      // });
 
-      this.cy.on('viewport', debounce(() => {
-        this.saveGraphState();
-      }, 500));
+      // this.cy.on('viewport', debounce(() => {
+      //   this.saveGraphState();
+      // }, 500));
     },
     zoomIn() {
       if (this.cy) {
@@ -362,7 +405,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-
-</style>

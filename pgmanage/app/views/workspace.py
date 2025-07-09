@@ -303,7 +303,7 @@ def draw_graph(request, database):
 
         layout_obj = ERDLayout.objects.filter(name=layout_name, connection=Connection.objects.get(id=data.get("database_index"))).first()
 
-        if layout_obj:
+        if False: # change to 'if layout_obj' after development
             layout_data = layout_obj.layout
 
             layout_nodes = {node["data"]["id"]: node for node in layout_data.get('elements', {}).get('nodes', [])}
