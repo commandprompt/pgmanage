@@ -187,6 +187,7 @@ export default {
                     x: 0,
                     y: 22 * idx,
                   },
+                  grabbable: false
                 });
               });
             });
