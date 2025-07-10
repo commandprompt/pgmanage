@@ -3187,13 +3187,15 @@ export default {
             },
           }];
   
-        this.templates = response.data;
-  
+        this.templates = response.data.templates;
+        this.templates['version'] = response.data.version
+        this.featureFlags = response.data.feature_flags
+
         this.$refs.tree.updateNode(node.path, {
           title: response.data.version,
         });
         
-        if (response.data.has_replication_slots) {
+        if (this.featureFlags.has_replication_slots) {
           this.insertNode(node, "Replication Slots", {
             icon: "fas node-all fa-sitemap node-repslot-list",
             type: "replication",
@@ -3281,7 +3283,7 @@ export default {
           });
         }
 
-        if (response.data.has_logical_replication) {
+        if (this.featureFlags.has_logical_replication) {
           this.insertNode(node, "Logical Replication", {
             icon: "fas node-all fa-sitemap node-logrep",
             type: "replication",
@@ -3301,7 +3303,7 @@ export default {
           });
         }
         
-        if (response.data.has_event_triggers) {
+        if (this.featureFlags.has_event_triggers) {
           this.insertNode(node, "Event Triggers", {
             icon: "fas node-all fa-bolt node-eventtrigger",
             type: "event_trigger_list",
@@ -3309,7 +3311,7 @@ export default {
           });
         }
   
-        if (response.data.has_fdw) {
+        if (this.featureFlags.has_fdw) {
           this.insertNode(node, "Foreign Data Wrappers", {
             icon: "fas node-all fa-cube node-fdw-list",
             type: "foreign_data_wrapper_list",
@@ -3317,7 +3319,7 @@ export default {
           });
         }
 
-        if (response.data.has_extensions) {
+        if (this.featureFlags.has_extensions) {
           this.insertNode(node, "Extensions", {
             icon: "fas node-all fa-cubes node-extension-list",
             type: "extension_list",
