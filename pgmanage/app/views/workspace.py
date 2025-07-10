@@ -398,7 +398,7 @@ def get_database_meta(request, database):
                 schema_data['tables'].append(table_data)
             
             if database.has_schema:
-                views = database.QueryViews(p_all_schemas=False, p_schema=schema["schema_name"])
+                views = database.QueryViews(all_schemas=False, schema=schema["schema_name"])
             else:
                 views = database.QueryViews()
 
@@ -410,7 +410,7 @@ def get_database_meta(request, database):
                 view_name = view.get('name_raw') or view["table_name"]
 
                 if database.has_schema:
-                    view_columns = database.QueryViewFields(p_table=view_name, p_all_schemas=False, p_schema=schema["schema_name"])
+                    view_columns = database.QueryViewFields(table=view_name, all_schemas=False, schema=schema["schema_name"])
                 else:
                     view_columns = database.QueryViewFields(table_name=view_name)
 

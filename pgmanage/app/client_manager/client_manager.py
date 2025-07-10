@@ -185,11 +185,11 @@ class Client:
         if tab["type"] in ["query", "console", "connection", "edit"]:
             try:
                 tab["thread"].stop()
-                tab["omnidatabase"].v_connection.Cancel(False)
+                tab["omnidatabase"].connection.Cancel(False)
             except Exception:
                 pass
             try:
-                tab["omnidatabase"].v_connection.Close()
+                tab["omnidatabase"].connection.Close()
             except Exception:
                 pass
 
@@ -210,19 +210,19 @@ class Client:
         """
         tab["cancelled"] = True
         try:
-            tab["omnidatabase_control"].v_connection.Cancel(False)
+            tab["omnidatabase_control"].connection.Cancel(False)
         except Exception:
             pass
         try:
-            tab["omnidatabase_control"].v_connection.Terminate(tab["debug_pid"])
+            tab["omnidatabase_control"].connection.Terminate(tab["debug_pid"])
         except Exception:
             pass
         try:
-            tab["omnidatabase_control"].v_connection.Close()
+            tab["omnidatabase_control"].connection.Close()
         except Exception:
             pass
         try:
-            tab["omnidatabase_debug"].v_connection.Close()
+            tab["omnidatabase_debug"].connection.Close()
         except Exception:
             pass
 
@@ -310,7 +310,7 @@ class Client:
 
         # check if database connection is valid
         try:
-            database_new.v_connection.Open()
+            database_new.connection.Open()
         except Exception:
             # otherwise revert to main connection
             database_new = main_tab_database
@@ -566,7 +566,7 @@ def cleanup_thread():
     while True:
         while Client.to_be_removed:
             conn = Client.to_be_removed.pop(0)
-            conn.v_connection.Close()
+            conn.connection.Close()
 
         for client_id in list(client_manager.clients):
             client = client_manager.get_client(client_id=client_id)

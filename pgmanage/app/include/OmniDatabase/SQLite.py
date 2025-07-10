@@ -40,9 +40,9 @@ class TemplateType(Enum):
     SCRIPT = 2
 
 class Template:
-    def __init__(self, p_text, p_type=TemplateType.EXECUTE):
-        self.text = p_text
-        self.type = p_type
+    def __init__(self, text, template_type=TemplateType.EXECUTE):
+        self.text = text
+        self.type = template_type
 
 '''
 ------------------------------------------------------------------------

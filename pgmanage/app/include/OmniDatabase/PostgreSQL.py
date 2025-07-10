@@ -27,8 +27,6 @@ from enum import Enum
 from urllib.parse import urlparse
 
 import app.include.Spartacus as Spartacus
-import app.include.Spartacus.Database as Database
-import app.include.Spartacus.Utils as Utils
 
 '''
 ------------------------------------------------------------------------
@@ -40,9 +38,9 @@ class TemplateType(Enum):
     SCRIPT = 2
 
 class Template:
-    def __init__(self, p_text, p_type=TemplateType.EXECUTE):
-        self.text = p_text
-        self.type = p_type
+    def __init__(self, text, template_type=TemplateType.EXECUTE):
+        self.text = text
+        self.type = template_type
 
 '''
 ------------------------------------------------------------------------
@@ -8692,10 +8690,10 @@ ALTER STATISTICS #statistics_name#
                 left join pg_collation coll on coll.oid = t.typcollation
                 where quote_ident(n.nspname) = '{0}'
                   and quote_ident(t.typname) = '{1}'
-            '''.format(schema, p_object))
+            '''.format(schema, type_name))
     
     @lock_required
-    def GetDDLDomain(self, schema, p_object):
+    def GetDDLDomain(self, schema, type_name):
         return self.connection.ExecuteScalar('''
             with domain as (
                 select t.oid,
@@ -8754,10 +8752,10 @@ ALTER STATISTICS #statistics_name#
                      (select sql from alter_domain),
                      (SELECT sql FROM comment_on)
                    )
-        '''.format(schema, p_object))
+        '''.format(schema, type_name))
 
     @lock_required
-    def GetDDLPublication(self, p_object):
+    def GetDDLPublication(self, pub_name):
         if self.version_num < 130000:
             return self.connection.ExecuteScalar("""
                 WITH publication AS (
@@ -8858,7 +8856,7 @@ ALTER STATISTICS #statistics_name#
                         ON 1 = 1
                 INNER JOIN comment_on c
                         ON 1 = 1
-            """.format(p_object))
+            """.format(pub_name))
         else:
             return self.connection.ExecuteScalar("""
                 WITH publication AS (
@@ -8965,10 +8963,10 @@ ALTER STATISTICS #statistics_name#
                         ON 1 = 1
                 INNER JOIN comment_on c
                         ON 1 = 1
-            """.format(p_object))
+            """.format(pub_name))
 
     @lock_required
-    def GetDDLSubscription(self, p_object):
+    def GetDDLSubscription(self, sub_name):
         return self.connection.ExecuteScalar("""
             WITH subscription AS (
                 SELECT oid,
@@ -9031,10 +9029,10 @@ ALTER STATISTICS #statistics_name#
                     ON 1 = 1
             INNER JOIN comment_on c
                     ON 1 = 1
-        """.format(p_object))
+        """.format(sub_name))
 
     @lock_required
-    def GetDDLStatistic(self, schema, p_object):
+    def GetDDLStatistic(self, schema, statistic):
         return self.connection.ExecuteScalar(
             """
                 WITH statistics AS (
@@ -9144,12 +9142,12 @@ ALTER STATISTICS #statistics_name#
                         ON 1 = 1
             """.format(
                 schema,
-                p_object
+                statistic
             )
         )
 
     @lock_required
-    def GetDDLAggregate(self, p_object):
+    def GetDDLAggregate(self, aggregate_name):
         return self.connection.ExecuteScalar(
             '''
                 WITH procs AS (
@@ -9390,12 +9388,12 @@ ALTER STATISTICS #statistics_name#
                 WHERE p1.function_kind = 'a'
                     AND p1.function_id = '{0}'
             '''.format(
-                p_object
+                aggregate_name
             )
         )
 
     @lock_required
-    def GetDDLTableField(self, schema, table, p_object):
+    def GetDDLTableField(self, schema, table, table_field):
         if self.version_num < 130000:
             return self.connection.ExecuteScalar(
                 '''
@@ -9522,7 +9520,7 @@ ALTER STATISTICS #statistics_name#
                 '''.format(
                     schema,
                     table,
-                    p_object
+                    table_field
                 )
             )
         else:
@@ -9655,86 +9653,86 @@ ALTER STATISTICS #statistics_name#
                 '''.format(
                     schema,
                     table,
-                    p_object
+                    table_field
                 )
             )
 
-    def GetDDL(self, schema, table, p_object, object_type):
+    def GetDDL(self, schema, table, object_name, object_type):
         if object_type == 'role':
-            return self.GetDDLRole(p_object)
+            return self.GetDDLRole(object_name)
         elif object_type == 'tablespace':
-            return self.GetDDLTablespace(p_object)
+            return self.GetDDLTablespace(object_name)
         elif object_type == 'database':
-            return self.GetDDLDatabase(p_object)
+            return self.GetDDLDatabase(object_name)
         elif object_type == 'extension':
-            return self.GetDDLExtension(p_object)
+            return self.GetDDLExtension(object_name)
         elif object_type == 'schema':
             return self.GetDDLSchema(schema)
         elif object_type == 'table':
-            return self.GetDDLClass(schema, p_object)
+            return self.GetDDLClass(schema, object_name)
         elif object_type == 'table_field':
-            return self.GetDDLTableField(schema, table, p_object)
+            return self.GetDDLTableField(schema, table, object_name)
         elif object_type == 'index':
-            return self.GetDDLClass(schema, p_object)
+            return self.GetDDLClass(schema, object_name)
         elif object_type == 'sequence':
-            return self.GetDDLClass(schema, p_object)
+            return self.GetDDLClass(schema, object_name)
         elif object_type == 'view':
-            return self.GetDDLClass(schema, p_object)
+            return self.GetDDLClass(schema, object_name)
         elif object_type == 'mview':
-            return self.GetDDLClass(schema, p_object)
+            return self.GetDDLClass(schema, object_name)
         elif object_type == 'function':
-            return self.GetDDLFunction(p_object)
+            return self.GetDDLFunction(object_name)
         elif object_type == 'procedure':
-            return self.GetDDLProcedure(p_object)
+            return self.GetDDLProcedure(object_name)
         elif object_type == 'trigger':
-            return self.GetDDLTrigger(p_object, table, schema)
+            return self.GetDDLTrigger(object_name, table, schema)
         elif object_type == 'event_trigger':
-            return self.GetDDLEventTrigger(p_object)
+            return self.GetDDLEventTrigger(object_name)
         elif object_type == 'trigger_function':
-            return self.GetDDLFunction(p_object)
+            return self.GetDDLFunction(object_name)
         elif object_type == 'direct_trigger_function':
-            return self.GetDDLFunction(p_object)
+            return self.GetDDLFunction(object_name)
         elif object_type == 'event_trigger_function':
-            return self.GetDDLFunction(p_object)
+            return self.GetDDLFunction(object_name)
         elif object_type == 'direct_event_trigger_function':
-            return self.GetDDLFunction(p_object)
+            return self.GetDDLFunction(object_name)
         elif object_type == 'pk':
-            return self.GetDDLConstraint(schema, table, p_object)
+            return self.GetDDLConstraint(schema, table, object_name)
         elif object_type == 'foreign_key':
-            return self.GetDDLConstraint(schema, table, p_object)
+            return self.GetDDLConstraint(schema, table, object_name)
         elif object_type == 'unique':
-            return self.GetDDLConstraint(schema, table, p_object)
+            return self.GetDDLConstraint(schema, table, object_name)
         elif object_type == 'check':
-            return self.GetDDLConstraint(schema, table, p_object)
+            return self.GetDDLConstraint(schema, table, object_name)
         elif object_type == 'exclude':
-            return self.GetDDLConstraint(schema, table, p_object)
+            return self.GetDDLConstraint(schema, table, object_name)
         elif object_type == 'rule':
-            return self.GetRuleDefinition(p_object, table, schema)
+            return self.GetRuleDefinition(object_name, table, schema)
         elif object_type == 'foreign_table':
-            return self.GetDDLClass(schema, p_object)
+            return self.GetDDLClass(schema, object_name)
         elif object_type == 'user_mapping':
-            return self.GetDDLUserMapping(schema, p_object)
+            return self.GetDDLUserMapping(schema, object_name)
         elif object_type == 'foreign_server':
-            return self.GetDDLForeignServer(p_object)
+            return self.GetDDLForeignServer(object_name)
         elif object_type == 'foreign_data_wrapper':
-            return self.GetDDLForeignDataWrapper(p_object)
+            return self.GetDDLForeignDataWrapper(object_name)
         elif object_type == 'type':
-            return self.GetDDLType(schema, p_object)
+            return self.GetDDLType(schema, object_name)
         elif object_type == 'domain':
-            return self.GetDDLDomain(schema, p_object)
+            return self.GetDDLDomain(schema, object_name)
         elif object_type == 'publication':
-            return self.GetDDLPublication(p_object)
+            return self.GetDDLPublication(object_name)
         elif object_type == 'subscription':
-            return self.GetDDLSubscription(p_object)
+            return self.GetDDLSubscription(object_name)
         elif object_type == 'statistic':
-            return self.GetDDLStatistic(schema, p_object)
+            return self.GetDDLStatistic(schema, object_name)
         elif object_type == 'aggregate':
-            return self.GetDDLAggregate(p_object)
+            return self.GetDDLAggregate(object_name)
         else:
             return ''
 
     @lock_required
-    def GetAutocompleteValues(self, p_columns, query_filter):
+    def GetAutocompleteValues(self, columns, query_filter):
         return self.connection.Query('''
             select {0}
             from (
@@ -9889,28 +9887,28 @@ ALTER STATISTICS #statistics_name#
             LIMIT 500 )) search
             {1}
             order by sequence,result_complete
-        '''.format(p_columns,query_filter), True)
+        '''.format(columns, query_filter), True)
 
     @lock_required
-    def ChangeRolePassword(self, p_role, password):
+    def ChangeRolePassword(self, role, password):
         self.connection.Execute(
             '''
                 ALTER ROLE {0}
                     WITH PASSWORD '{1}'
             '''.format(
-                p_role,
+                role,
                 password
             )
         )
 
     @lock_required
-    def GetObjectDescriptionAggregate(self, p_oid):
+    def GetObjectDescriptionAggregate(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regprocedure AS id,
                        coalesce(obj_description({0}, 'pg_proc'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -9920,7 +9918,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionTableField(self, p_oid, p_position):
+    def GetObjectDescriptionTableField(self, oid, position):
         row = self.connection.Query(
             '''
                 SELECT format(
@@ -9933,8 +9931,8 @@ ALTER STATISTICS #statistics_name#
                 WHERE attrelid = {0}::regclass
                   AND attnum = {1}
             '''.format(
-                p_oid,
-                p_position
+                oid,
+                position
             )
         ).Rows[0]
 
@@ -9944,7 +9942,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionConstraint(self, p_oid):
+    def GetObjectDescriptionConstraint(self, oid):
         row = self.connection.Query(
             '''
                 SELECT conname AS id,
@@ -9953,7 +9951,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_constraint c
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -9964,7 +9962,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionDatabase(self, p_oid):
+    def GetObjectDescriptionDatabase(self, oid):
         row = self.connection.Query(
             '''
                 SELECT quote_ident(datname) AS id,
@@ -9972,7 +9970,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_database
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -9982,13 +9980,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionDomain(self, p_oid):
+    def GetObjectDescriptionDomain(self, oid):
         row = self.connection.Query(
             '''
                 SELECT '{0}'::regtype AS id,
                        coalesce(obj_description({0}, 'pg_type'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -9998,7 +9996,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionExtension(self, p_oid):
+    def GetObjectDescriptionExtension(self, oid):
         row = self.connection.Query(
             '''
                 SELECT quote_ident(extname) AS id,
@@ -10006,7 +10004,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_extension
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10016,7 +10014,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionEventTrigger(self, p_oid):
+    def GetObjectDescriptionEventTrigger(self, oid):
         row = self.connection.Query(
             '''
                 SELECT quote_ident(evtname) AS id,
@@ -10024,7 +10022,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_event_trigger
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10034,7 +10032,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionForeignDataWrapper(self, p_oid):
+    def GetObjectDescriptionForeignDataWrapper(self, oid):
         row = self.connection.Query(
             '''
                 SELECT quote_ident(fdwname) AS id,
@@ -10042,7 +10040,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_foreign_data_wrapper
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10052,7 +10050,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionForeignServer(self, p_oid):
+    def GetObjectDescriptionForeignServer(self, oid):
         row = self.connection.Query(
             '''
                 SELECT quote_ident(srvname) AS id,
@@ -10060,7 +10058,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_foreign_server
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10070,13 +10068,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionForeignTable(self, p_oid):
+    def GetObjectDescriptionForeignTable(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regclass AS id,
                        coalesce(obj_description({0}, 'pg_class'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10086,13 +10084,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionFunction(self, p_oid):
+    def GetObjectDescriptionFunction(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regprocedure AS id,
                        coalesce(obj_description({0}, 'pg_proc'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10102,13 +10100,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionIndex(self, p_oid):
+    def GetObjectDescriptionIndex(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regclass AS id,
                        coalesce(obj_description({0}, 'pg_class'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10118,13 +10116,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionMaterializedView(self, p_oid):
+    def GetObjectDescriptionMaterializedView(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regclass AS id,
                        coalesce(obj_description({0}, 'pg_class'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10134,13 +10132,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionProcedure(self, p_oid):
+    def GetObjectDescriptionProcedure(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regprocedure AS id,
                        coalesce(obj_description({0}, 'pg_proc'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10150,7 +10148,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionPublication(self, p_oid):
+    def GetObjectDescriptionPublication(self, oid):
         row = self.connection.Query(
             '''
                 SELECT quote_ident(pubname) AS id,
@@ -10158,7 +10156,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_publication
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10168,13 +10166,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionRole(self, p_oid):
+    def GetObjectDescriptionRole(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regrole AS id,
                        coalesce(shobj_description({0}, 'pg_roles'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10184,7 +10182,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionRule(self, p_oid):
+    def GetObjectDescriptionRule(self, oid):
         row = self.connection.Query(
             '''
                 SELECT quote_ident(r.rulename) AS id,
@@ -10195,7 +10193,7 @@ ALTER STATISTICS #statistics_name#
                         ON r.rulename = rw.rulename
                 WHERE rw.oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10206,13 +10204,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionSchema(self, p_oid):
+    def GetObjectDescriptionSchema(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regnamespace AS id,
                        coalesce(obj_description({0}, 'pg_namespace'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10222,13 +10220,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionSequence(self, p_oid):
+    def GetObjectDescriptionSequence(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regclass AS id,
                        coalesce(obj_description({0}, 'pg_class'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10238,7 +10236,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionStatistic(self, p_oid):
+    def GetObjectDescriptionStatistic(self, oid):
         row = self.connection.Query(
             '''
                 SELECT format('%s.%s', quote_ident(stxnamespace::regnamespace::text), quote_ident(stxname)) AS id,
@@ -10246,7 +10244,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_statistic_ext
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10256,7 +10254,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionSubscription(self, p_oid):
+    def GetObjectDescriptionSubscription(self, oid):
         row = self.connection.Query(
             '''
                 SELECT quote_ident(subname) AS id,
@@ -10264,7 +10262,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_subscription
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10274,13 +10272,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionTable(self, p_oid):
+    def GetObjectDescriptionTable(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regclass AS id,
                        coalesce(obj_description({0}, 'pg_class'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10290,7 +10288,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionTablespace(self, p_oid):
+    def GetObjectDescriptionTablespace(self, oid):
         row = self.connection.Query(
             '''
                 SELECT quote_ident(spcname) AS id,
@@ -10298,7 +10296,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_tablespace
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10308,7 +10306,7 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionTrigger(self, p_oid):
+    def GetObjectDescriptionTrigger(self, oid):
         row = self.connection.Query(
             '''
                 SELECT tgname AS id,
@@ -10317,7 +10315,7 @@ ALTER STATISTICS #statistics_name#
                 FROM pg_trigger
                 WHERE oid = {0}
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10328,13 +10326,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionType(self, p_oid):
+    def GetObjectDescriptionType(self, oid):
         row = self.connection.Query(
             '''
                 SELECT '{0}'::regtype AS id,
                        coalesce(obj_description({0}, 'pg_type'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10344,13 +10342,13 @@ ALTER STATISTICS #statistics_name#
         )
 
     @lock_required
-    def GetObjectDescriptionView(self, p_oid):
+    def GetObjectDescriptionView(self, oid):
         row = self.connection.Query(
             '''
                 SELECT {0}::regclass AS id,
                        coalesce(obj_description({0}, 'pg_class'), '') AS description
             '''.format(
-                p_oid
+                oid
             )
         ).Rows[0]
 
@@ -10359,58 +10357,58 @@ ALTER STATISTICS #statistics_name#
             row['description']
         )
 
-    def GetObjectDescription(self, object_type, p_oid, p_position):
+    def GetObjectDescription(self, object_type, oid, position):
         if object_type == 'aggregate':
-            return self.GetObjectDescriptionAggregate(p_oid)
+            return self.GetObjectDescriptionAggregate(oid)
         elif object_type == 'table_field':
-            return self.GetObjectDescriptionTableField(p_oid, p_position)
+            return self.GetObjectDescriptionTableField(oid, position)
         elif object_type in ['check', 'foreign_key', 'pk', 'unique', 'exclude']:
-            return self.GetObjectDescriptionConstraint(p_oid)
+            return self.GetObjectDescriptionConstraint(oid)
         elif object_type == 'database':
-            return self.GetObjectDescriptionDatabase(p_oid)
+            return self.GetObjectDescriptionDatabase(oid)
         elif object_type == 'domain':
-            return self.GetObjectDescriptionDomain(p_oid)
+            return self.GetObjectDescriptionDomain(oid)
         elif object_type == 'extension':
-            return self.GetObjectDescriptionExtension(p_oid)
+            return self.GetObjectDescriptionExtension(oid)
         elif object_type == 'event_trigger':
-            return self.GetObjectDescriptionEventTrigger(p_oid)
+            return self.GetObjectDescriptionEventTrigger(oid)
         elif object_type == 'foreign_data_wrapper':
-            return self.GetObjectDescriptionForeignDataWrapper(p_oid)
+            return self.GetObjectDescriptionForeignDataWrapper(oid)
         elif object_type == 'foreign_server':
-            return self.GetObjectDescriptionForeignServer(p_oid)
+            return self.GetObjectDescriptionForeignServer(oid)
         elif object_type == 'foreign_table':
-            return self.GetObjectDescriptionForeignTable(p_oid)
+            return self.GetObjectDescriptionForeignTable(oid)
         elif object_type in ['function', 'trigger_function', 'direct_trigger_function', 'event_trigger_function', 'direct_event_trigger_function']:
-            return self.GetObjectDescriptionFunction(p_oid)
+            return self.GetObjectDescriptionFunction(oid)
         elif object_type == 'index':
-            return self.GetObjectDescriptionIndex(p_oid)
+            return self.GetObjectDescriptionIndex(oid)
         elif object_type == 'mview':
-            return self.GetObjectDescriptionMaterializedView(p_oid)
+            return self.GetObjectDescriptionMaterializedView(oid)
         elif object_type == 'procedure':
-            return self.GetObjectDescriptionProcedure(p_oid)
+            return self.GetObjectDescriptionProcedure(oid)
         elif object_type == 'publication':
-            return self.GetObjectDescriptionPublication(p_oid)
+            return self.GetObjectDescriptionPublication(oid)
         elif object_type == 'role':
-            return self.GetObjectDescriptionRole(p_oid)
+            return self.GetObjectDescriptionRole(oid)
         elif object_type == 'rule':
-            return self.GetObjectDescriptionRule(p_oid)
+            return self.GetObjectDescriptionRule(oid)
         elif object_type == 'schema':
-            return self.GetObjectDescriptionSchema(p_oid)
+            return self.GetObjectDescriptionSchema(oid)
         elif object_type == 'sequence':
-            return self.GetObjectDescriptionSequence(p_oid)
+            return self.GetObjectDescriptionSequence(oid)
         elif object_type == 'statistic':
-            return self.GetObjectDescriptionStatistic(p_oid)
+            return self.GetObjectDescriptionStatistic(oid)
         elif object_type == 'subscription':
-            return self.GetObjectDescriptionSubscription(p_oid)
+            return self.GetObjectDescriptionSubscription(oid)
         elif object_type == 'table':
-            return self.GetObjectDescriptionTable(p_oid)
+            return self.GetObjectDescriptionTable(oid)
         elif object_type == 'tablespace':
-            return self.GetObjectDescriptionTablespace(p_oid)
+            return self.GetObjectDescriptionTablespace(oid)
         elif object_type == 'trigger':
-            return self.GetObjectDescriptionTrigger(p_oid)
+            return self.GetObjectDescriptionTrigger(oid)
         elif object_type == 'type':
-            return self.GetObjectDescriptionType(p_oid)
+            return self.GetObjectDescriptionType(oid)
         elif object_type == 'view':
-            return self.GetObjectDescriptionView(p_oid)
+            return self.GetObjectDescriptionView(oid)
         else:
             return ''
