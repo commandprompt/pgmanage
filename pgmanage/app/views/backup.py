@@ -355,7 +355,7 @@ def create_backup(request, database):
             job = BatchJob(
                 description=BackupMessage(
                     Backup.create(backup_type),
-                    database.v_conn_id,
+                    database.conn_id,
                     resolved_path,
                     *args,
                     database=data["database"],
@@ -368,7 +368,7 @@ def create_backup(request, database):
             job = BatchJob(
                 description=BackupMessage(
                     Backup.create(backup_type),
-                    database.v_conn_id,
+                    database.conn_id,
                     resolved_path,
                     *args,
                 ),
@@ -428,7 +428,7 @@ def preview_command(request, database):
 
     backup_message = BackupMessage(
         Backup.create(backup_type),
-        database.v_conn_id,
+        database.conn_id,
         resolved_path,
         *args,
         database=data.get(database),

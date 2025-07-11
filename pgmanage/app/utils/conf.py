@@ -247,12 +247,12 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
     current_settings = get_settings(conn)
     ret = {"settings": []}
     config_history = ConfigHistory.objects.filter(
-        Q(user=request.user) & Q(connection=Connection.objects.get(id=conn.v_conn_id))
+        Q(user=request.user) & Q(connection=Connection.objects.get(id=conn.conn_id))
     )
     if not config_history:
         config_history = ConfigHistory(
             user=request.user,
-            connection=Connection.objects.get(id=conn.v_conn_id),
+            connection=Connection.objects.get(id=conn.conn_id),
             config_snapshot=json.dumps(get_settings(conn, grouped=False)),
             start_time=make_aware(datetime.now()),
             commit_comment="Initial Setup",
@@ -335,7 +335,7 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
 
             config_history = ConfigHistory(
                 user=request.user,
-                connection=Connection.objects.get(id=conn.v_conn_id),
+                connection=Connection.objects.get(id=conn.conn_id),
                 config_snapshot=json.dumps(updated_settings),
                 start_time=make_aware(datetime.now()),
                 commit_comment=commit_comment,

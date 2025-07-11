@@ -83,7 +83,7 @@ def get_connections(request, session):
                 details = database.PrintDatabaseDetails()
                 if database_object["tunnel"]["enabled"]:
                     details += f" ({database_object['tunnel']['server']}:{database_object['tunnel']['port']})"
-                conn_object['console_help'] = database.v_console_help
+                conn_object['console_help'] = database.console_help
                 conn_object['details1'] = database.PrintDatabaseInfo()
                 conn_object['details2'] = details
                 conn_object['conn_string'] = conn.conn_string
