@@ -236,7 +236,7 @@ class Session(object):
                 p_database,
                 p_sql,
                 p_loghistory):
-        v_table = p_database.v_connection.Execute(p_sql)
+        v_table = p_database.connection.Execute(p_sql)
 
         return v_table
 
@@ -244,7 +244,7 @@ class Session(object):
                 p_database,
                 p_sql,
                 p_loghistory):
-        v_table = p_database.v_connection.Query(p_sql,True)
+        v_table = p_database.connection.Query(p_sql,True)
 
         return v_table
 

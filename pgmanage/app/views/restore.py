@@ -197,7 +197,7 @@ def create_restore(request, database):
             description=restore_message, cmd=utility_path, args=args, user=request.user
         )
 
-        os.environ[str(job.id)] = database.v_password
+        os.environ[str(job.id)] = database.password
 
         job.start()
     except Exception as exc:

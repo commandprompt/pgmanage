@@ -169,11 +169,11 @@ def export_data(
     if not os.path.exists(export_dir):
         os.makedirs(export_dir)
 
-    database.v_connection.Open()
+    database.connection.Open()
 
     file_name: str = f'${str(time.time()).replace(".", "_")}.{extension}'
 
-    data = database.v_connection.QueryBlock(sql_cmd, 1000, False, True)
+    data = database.connection.QueryBlock(sql_cmd, 1000, False, True)
 
     file_path: str = os.path.join(export_dir, file_name)
     skip_headers = cmd_type in ['export_xlsx-no_headers', 'export_csv-no_headers']
@@ -184,7 +184,7 @@ def export_data(
     file.Open()
 
     has_more_records: bool
-    if database.v_connection.v_start:
+    if database.connection.v_start:
         file.Write(data)
         has_more_records = False
     elif len(data.Rows) > 0:
@@ -194,9 +194,9 @@ def export_data(
         has_more_records = False
 
     while has_more_records:
-        data = database.v_connection.QueryBlock(sql_cmd, 1000, False, True)
+        data = database.connection.QueryBlock(sql_cmd, 1000, False, True)
 
-        if database.v_connection.v_start:
+        if database.connection.v_start:
             file.Write(data)
             has_more_records = False
         elif len(data.Rows) > 0:
@@ -204,7 +204,7 @@ def export_data(
             has_more_records = True
         else:
             has_more_records = False
-    database.v_connection.Close()
+    database.connection.Close()
 
     file.Flush()
 
