@@ -14,50 +14,50 @@ def get_tree_info(request, database):
             "version": database.GetVersion(),
             "username": database.GetUserName(),
             "superuser": database.GetUserSuper(),
-            "create_role": database.TemplateCreateRole().v_text,
-            "alter_role": database.TemplateAlterRole().v_text,
-            "drop_role": database.TemplateDropRole().v_text,
-            #'create_tablespace': database.TemplateCreateTablespace().v_text,
-            #'alter_tablespace': database.TemplateAlterTablespace().v_text,
-            #'drop_tablespace': database.TemplateDropTablespace().v_text,
-            "create_database": database.TemplateCreateDatabase().v_text,
-            "alter_database": database.TemplateAlterDatabase().v_text,
-            "drop_database": database.TemplateDropDatabase().v_text,
-            #'create_sequence': database.TemplateCreateSequence().v_text,
-            #'alter_sequence': database.TemplateAlterSequence().v_text,
-            #'drop_sequence': database.TemplateDropSequence().v_text,
-            "create_function": database.TemplateCreateFunction().v_text,
-            "drop_function": database.TemplateDropFunction().v_text,
-            "create_procedure": database.TemplateCreateProcedure().v_text,
-            "drop_procedure": database.TemplateDropProcedure().v_text,
-            #'create_triggerfunction': database.TemplateCreateTriggerFunction().v_text,
-            #'drop_triggerfunction': database.TemplateDropTriggerFunction().v_text,
-            "create_view": database.TemplateCreateView().v_text,
-            "drop_view": database.TemplateDropView().v_text,
-            "create_table": database.TemplateCreateTable().v_text,
-            "alter_table": database.TemplateAlterTable().v_text,
-            "drop_table": database.TemplateDropTable().v_text,
-            "create_column": database.TemplateCreateColumn().v_text,
-            "alter_column": database.TemplateAlterColumn().v_text,
-            "drop_column": database.TemplateDropColumn().v_text,
-            "create_primarykey": database.TemplateCreatePrimaryKey().v_text,
-            "drop_primarykey": database.TemplateDropPrimaryKey().v_text,
-            "create_unique": database.TemplateCreateUnique().v_text,
-            "drop_unique": database.TemplateDropUnique().v_text,
-            "create_foreignkey": database.TemplateCreateForeignKey().v_text,
-            "drop_foreignkey": database.TemplateDropForeignKey().v_text,
-            "create_index": database.TemplateCreateIndex().v_text,
-            "drop_index": database.TemplateDropIndex().v_text,
-            #'create_trigger': database.TemplateCreateTrigger().v_text,
-            #'create_view_trigger': database.TemplateCreateViewTrigger().v_text,
-            #'alter_trigger': database.TemplateAlterTrigger().v_text,
-            #'enable_trigger': database.TemplateEnableTrigger().v_text,
-            #'disable_trigger': database.TemplateDisableTrigger().v_text,
-            #'drop_trigger': database.TemplateDropTrigger().v_text,
-            #'create_partition': database.TemplateCreatePartition().v_text,
-            #'noinherit_partition': database.TemplateNoInheritPartition().v_text,
-            #'drop_partition': database.TemplateDropPartition().v_text
-            "delete": database.TemplateDelete().v_text,
+            "create_role": database.TemplateCreateRole().text,
+            "alter_role": database.TemplateAlterRole().text,
+            "drop_role": database.TemplateDropRole().text,
+            #'create_tablespace': database.TemplateCreateTablespace().text,
+            #'alter_tablespace': database.TemplateAlterTablespace().text,
+            #'drop_tablespace': database.TemplateDropTablespace().text,
+            "create_database": database.TemplateCreateDatabase().text,
+            "alter_database": database.TemplateAlterDatabase().text,
+            "drop_database": database.TemplateDropDatabase().text,
+            #'create_sequence': database.TemplateCreateSequence().text,
+            #'alter_sequence': database.TemplateAlterSequence().text,
+            #'drop_sequence': database.TemplateDropSequence().text,
+            "create_function": database.TemplateCreateFunction().text,
+            "drop_function": database.TemplateDropFunction().text,
+            "create_procedure": database.TemplateCreateProcedure().text,
+            "drop_procedure": database.TemplateDropProcedure().text,
+            #'create_triggerfunction': database.TemplateCreateTriggerFunction().text,
+            #'drop_triggerfunction': database.TemplateDropTriggerFunction().text,
+            "create_view": database.TemplateCreateView().text,
+            "drop_view": database.TemplateDropView().text,
+            "create_table": database.TemplateCreateTable().text,
+            "alter_table": database.TemplateAlterTable().text,
+            "drop_table": database.TemplateDropTable().text,
+            "create_column": database.TemplateCreateColumn().text,
+            "alter_column": database.TemplateAlterColumn().text,
+            "drop_column": database.TemplateDropColumn().text,
+            "create_primarykey": database.TemplateCreatePrimaryKey().text,
+            "drop_primarykey": database.TemplateDropPrimaryKey().text,
+            "create_unique": database.TemplateCreateUnique().text,
+            "drop_unique": database.TemplateDropUnique().text,
+            "create_foreignkey": database.TemplateCreateForeignKey().text,
+            "drop_foreignkey": database.TemplateDropForeignKey().text,
+            "create_index": database.TemplateCreateIndex().text,
+            "drop_index": database.TemplateDropIndex().text,
+            #'create_trigger': database.TemplateCreateTrigger().text,
+            #'create_view_trigger': database.TemplateCreateViewTrigger().text,
+            #'alter_trigger': database.TemplateAlterTrigger().text,
+            #'enable_trigger': database.TemplateEnableTrigger().text,
+            #'disable_trigger': database.TemplateDisableTrigger().text,
+            #'drop_trigger': database.TemplateDropTrigger().text,
+            #'create_partition': database.TemplateCreatePartition().text,
+            #'noinherit_partition': database.TemplateNoInheritPartition().text,
+            #'drop_partition': database.TemplateDropPartition().text
+            "delete": database.TemplateDelete().text,
         }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -510,7 +510,7 @@ def template_select(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateSelect(schema, table).v_text
+        template = database.TemplateSelect(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -525,7 +525,7 @@ def template_insert(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateInsert(schema, table).v_text
+        template = database.TemplateInsert(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -540,7 +540,7 @@ def template_update(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateUpdate(schema, table).v_text
+        template = database.TemplateUpdate(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

@@ -25,8 +25,9 @@ SOFTWARE.
 
 import re
 from enum import Enum
-import app.include.Spartacus as Spartacus
 from urllib.parse import urlparse
+
+import app.include.Spartacus as Spartacus
 
 '''
 ------------------------------------------------------------------------
