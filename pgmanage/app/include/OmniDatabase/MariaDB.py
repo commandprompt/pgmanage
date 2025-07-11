@@ -327,13 +327,13 @@ class MariaDB:
             if p_table:
                 v_filter = "and i.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct i.constraint_name,
-                   i.table_name,
+            select distinct i.constraint_name as "constraint_name",
+                   i.table_name as "table_name",
                    k.referenced_table_name as r_table_name,
-                   k.table_schema,
+                   k.table_schema as "table_schema",
                    k.referenced_table_schema as r_table_schema,
-                   r.update_rule,
-                   r.delete_rule
+                   r.update_rule as "update_rule",
+                   r.delete_rule as "delete_rule"
             from information_schema.table_constraints i
             left join information_schema.key_column_usage k on i.constraint_name = k.constraint_name
             left join information_schema.referential_constraints r on i.constraint_name = r.constraint_name
@@ -369,16 +369,16 @@ class MariaDB:
             v_filter = v_filter + "and i.constraint_name in ({0}) ".format(fkey_list)
 
         return self.Query('''
-            select distinct i.constraint_name,
-                   i.table_name,
+            select distinct i.constraint_name as "constraint_name",
+                   i.table_name as "table_name",
                    k.referenced_table_name as r_table_name,
-                   k.column_name,
+                   k.column_name as "column_name",
                    k.referenced_column_name as r_column_name,
-                   k.table_schema,
+                   k.table_schema as "table_schema",
                    k.referenced_table_schema as r_table_schema,
-                   r.update_rule,
-                   r.delete_rule,
-                   k.ordinal_position
+                   r.update_rule as "update_rule",
+                   r.delete_rule as "delete_rule",
+                   k.ordinal_position as "ordinal_position"
             from information_schema.table_constraints i
             left join information_schema.key_column_usage k on i.constraint_name = k.constraint_name
             left join information_schema.referential_constraints r on i.constraint_name = r.constraint_name
