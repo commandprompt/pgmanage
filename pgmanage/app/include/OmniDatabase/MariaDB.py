@@ -506,8 +506,8 @@ class MariaDB:
             if p_table:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct t.table_schema as schema_name,
-                   t.table_name,
+            select t.table_schema as "table_name",
+                   t.table_name as "table_name",
                    (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) as index_name,
                    case when t.non_unique = 1 then 'Non Unique' else 'Unique' end as uniqueness,
                     JSON_ARRAYAGG(t.column_name) as columns,
@@ -544,7 +544,7 @@ class MariaDB:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         v_filter = "and (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) = '{0}' ".format(p_index)
         return self.Query('''
-            select distinct t.column_name,
+            select distinct t.column_name as "column_name",
                    t.seq_in_index
             from information_schema.statistics t
             where 1 = 1
