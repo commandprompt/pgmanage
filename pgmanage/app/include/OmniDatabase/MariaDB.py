@@ -430,7 +430,7 @@ class MariaDB:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         v_filter = "and concat('pk_', t.table_name) = '{0}' ".format(p_pkey)
         return self.Query('''
-            select distinct k.column_name,
+            select distinct k.column_name as "column_name",
                    k.ordinal_position
             from information_schema.table_constraints t
             join information_schema.key_column_usage k
