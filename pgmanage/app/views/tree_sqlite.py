@@ -8,19 +8,19 @@ def get_tree_info(request, database):
     try:
         data = {
             "version": database.GetVersion(),
-            "create_view": database.TemplateCreateView().v_text,
-            "drop_view": database.TemplateDropView().v_text,
-            "create_table": database.TemplateCreateTable().v_text,
-            "alter_table": database.TemplateAlterTable().v_text,
-            "drop_table": database.TemplateDropTable().v_text,
-            "create_column": database.TemplateCreateColumn().v_text,
-            "create_index": database.TemplateCreateIndex().v_text,
-            "reindex": database.TemplateReindex().v_text,
-            "drop_index": database.TemplateDropIndex().v_text,
-            "delete": database.TemplateDelete().v_text,
-            "create_trigger": database.TemplateCreateTrigger().v_text,
-            "alter_trigger": database.TemplateAlterTrigger().v_text,
-            "drop_trigger": database.TemplateDropTrigger().v_text,
+            "create_view": database.TemplateCreateView(),
+            "drop_view": database.TemplateDropView(),
+            "create_table": database.TemplateCreateTable(),
+            "alter_table": database.TemplateAlterTable(),
+            "drop_table": database.TemplateDropTable(),
+            "create_column": database.TemplateCreateColumn(),
+            "create_index": database.TemplateCreateIndex(),
+            "reindex": database.TemplateReindex(),
+            "drop_index": database.TemplateDropIndex(),
+            "delete": database.TemplateDelete(),
+            "create_trigger": database.TemplateCreateTrigger(),
+            "alter_trigger": database.TemplateAlterTrigger(),
+            "drop_trigger": database.TemplateDropTrigger(),
         }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
