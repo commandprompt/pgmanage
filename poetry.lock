@@ -286,14 +286,14 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "django"
-version = "4.2.19"
+version = "4.2.23"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "Django-4.2.19-py3-none-any.whl", hash = "sha256:a104e13f219fc55996a4e416ef7d18ab4eeb44e0aa95174c192f16cda9f94e75"},
-    {file = "Django-4.2.19.tar.gz", hash = "sha256:6c833be4b0ca614f0a919472a1028a3bbdeb6f056fa04023aeb923346ba2c306"},
+    {file = "django-4.2.23-py3-none-any.whl", hash = "sha256:dafbfaf52c2f289bd65f4ab935791cb4fb9a198f2a5ba9faf35d7338a77e9803"},
+    {file = "django-4.2.23.tar.gz", hash = "sha256:42fdeaba6e6449d88d4f66de47871015097dc6f1b87910db00a91946295cfae4"},
 ]
 
 [package.dependencies]
@@ -760,4 +760,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.9.13"
-content-hash = "77fe1b91b9b7d9ae6959f69f509f8cbdfb6ca4cc564dfd828bf54d1fb36a810a"
+content-hash = "b7ad15cbc21b773123fda851cd48184e94b236ab47e1bab689fade65e4895302"
