@@ -85,10 +85,10 @@ class Session(object):
         v_return = { 'timeout': False, 'message': '', 'kind': 'database'}
         # This region of the code cannot be accessed by multiple threads, so locking is required
         try:
-            lock_object = tunnel_locks[self.v_databases[p_database_index]['database'].v_conn_id]
+            lock_object = tunnel_locks[self.v_databases[p_database_index]['database'].conn_id]
         except:
             lock_object = threading.Lock()
-            tunnel_locks[self.v_databases[p_database_index]['database'].v_conn_id] = lock_object
+            tunnel_locks[self.v_databases[p_database_index]['database'].conn_id] = lock_object
 
         try:
             lock_object.acquire()
@@ -103,7 +103,7 @@ class Session(object):
 
                     try:
                         result = 0
-                        v_tunnel_object = tunnels[self.v_databases[p_database_index]['database'].v_conn_id]
+                        v_tunnel_object = tunnels[self.v_databases[p_database_index]['database'].conn_id]
                         if not v_tunnel_object.is_active:
                             v_tunnel_object.stop()
                             v_create_tunnel = True
@@ -137,7 +137,7 @@ class Session(object):
                         server.start()
 
                         s = SessionStore(session_key=self.v_user_key)
-                        tunnels[self.v_databases[p_database_index]['database'].v_conn_id] = server
+                        tunnels[self.v_databases[p_database_index]['database'].conn_id] = server
 
                         self.v_databases[p_database_index]['tunnel_object'] = str(server.local_bind_port)
                         self.v_databases[p_database_index]['database'].v_connection.v_host = '127.0.0.1'
@@ -236,7 +236,7 @@ class Session(object):
                 p_database,
                 p_sql,
                 p_loghistory):
-        v_table = p_database.v_connection.Execute(p_sql)
+        v_table = p_database.connection.Execute(p_sql)
 
         return v_table
 
@@ -244,7 +244,7 @@ class Session(object):
                 p_database,
                 p_sql,
                 p_loghistory):
-        v_table = p_database.v_connection.Query(p_sql,True)
+        v_table = p_database.connection.Query(p_sql,True)
 
         return v_table
 

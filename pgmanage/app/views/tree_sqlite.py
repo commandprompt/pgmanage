@@ -8,19 +8,19 @@ def get_tree_info(request, database):
     try:
         data = {
             "version": database.GetVersion(),
-            "create_view": database.TemplateCreateView().v_text,
-            "drop_view": database.TemplateDropView().v_text,
-            "create_table": database.TemplateCreateTable().v_text,
-            "alter_table": database.TemplateAlterTable().v_text,
-            "drop_table": database.TemplateDropTable().v_text,
-            "create_column": database.TemplateCreateColumn().v_text,
-            "create_index": database.TemplateCreateIndex().v_text,
-            "reindex": database.TemplateReindex().v_text,
-            "drop_index": database.TemplateDropIndex().v_text,
-            "delete": database.TemplateDelete().v_text,
-            "create_trigger": database.TemplateCreateTrigger().v_text,
-            "alter_trigger": database.TemplateAlterTrigger().v_text,
-            "drop_trigger": database.TemplateDropTrigger().v_text,
+            "create_view": database.TemplateCreateView().text,
+            "drop_view": database.TemplateDropView().text,
+            "create_table": database.TemplateCreateTable().text,
+            "alter_table": database.TemplateAlterTable().text,
+            "drop_table": database.TemplateDropTable().text,
+            "create_column": database.TemplateCreateColumn().text,
+            "create_index": database.TemplateCreateIndex().text,
+            "reindex": database.TemplateReindex().text,
+            "drop_index": database.TemplateDropIndex().text,
+            "delete": database.TemplateDelete().text,
+            "create_trigger": database.TemplateCreateTrigger().text,
+            "alter_trigger": database.TemplateAlterTrigger().text,
+            "drop_trigger": database.TemplateDropTrigger().text,
         }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -274,7 +274,7 @@ def template_select(request, database):
     kind = data["kind"]
 
     try:
-        template = database.TemplateSelect(table, kind).v_text
+        template = database.TemplateSelect(table, kind).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -287,7 +287,7 @@ def template_insert(request, database):
     table = request.data["table"]
 
     try:
-        template = database.TemplateInsert(table).v_text
+        template = database.TemplateInsert(table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -300,7 +300,7 @@ def template_update(request, database):
     table = request.data["table"]
 
     try:
-        template = database.TemplateUpdate(table).v_text
+        template = database.TemplateUpdate(table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

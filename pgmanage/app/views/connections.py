@@ -83,7 +83,7 @@ def get_connections(request, session):
                 details = database.PrintDatabaseDetails()
                 if database_object["tunnel"]["enabled"]:
                     details += f" ({database_object['tunnel']['server']}:{database_object['tunnel']['port']})"
-                conn_object['console_help'] = database.v_console_help
+                conn_object['console_help'] = database.console_help
                 conn_object['details1'] = database.PrintDatabaseInfo()
                 conn_object['details2'] = details
                 conn_object['conn_string'] = conn.conn_string
@@ -266,7 +266,7 @@ def test_connection(request):
                         ssh_username=conn_object['tunnel']['user'],
                         ssh_private_key_password=ssh_password,
                         ssh_pkey=key,
-                        remote_bind_address=(database.v_active_server, int(database.v_active_port)),
+                        remote_bind_address=(database.active_server, int(database.active_port)),
                         logger=None,
                         set_keepalive=120,
                     )
@@ -275,14 +275,14 @@ def test_connection(request):
                         (conn_object['tunnel']['server'], int(conn_object['tunnel']['port'])),
                         ssh_username=conn_object['tunnel']['user'],
                         ssh_password=ssh_password,
-                        remote_bind_address=(database.v_active_server, int(database.v_active_port)),
+                        remote_bind_address=(database.active_server, int(database.active_port)),
                         logger=None,
                         set_keepalive=120
                     )
                 server.start()
 
-                database.v_connection.v_host = '127.0.0.1'
-                database.v_connection.v_port = server.local_bind_port
+                database.connection.v_host = '127.0.0.1'
+                database.connection.v_port = server.local_bind_port
 
                 message = database.TestConnection()
                 server.close()

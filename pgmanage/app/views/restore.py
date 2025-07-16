@@ -190,14 +190,14 @@ def create_restore(request, database):
     args = get_args_param_values(data, database, resolved_path)
 
     restore_message = RestoreMessage(
-        database.v_conn_id, resolved_path, *args, database=data.get("database")
+        database.conn_id, resolved_path, *args, database=data.get("database")
     )
     try:
         job = BatchJob(
             description=restore_message, cmd=utility_path, args=args, user=request.user
         )
 
-        os.environ[str(job.id)] = database.v_password
+        os.environ[str(job.id)] = database.password
 
         job.start()
     except Exception as exc:
@@ -244,7 +244,7 @@ def preview_command(request, database):
     args = get_args_param_values(data, database, resolved_path)
 
     restore_message = RestoreMessage(
-        database.v_conn_id, resolved_path, *args, database=data.get("database")
+        database.conn_id, resolved_path, *args, database=data.get("database")
     )
 
     return JsonResponse(data={"command": restore_message.details(utility_path)})
