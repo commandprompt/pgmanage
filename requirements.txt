@@ -1,5 +1,5 @@
 cryptography==41.0.7
-Django==4.2.19
+Django==4.2.23
 CherryPy==18.1.1
 sqlparse==0.5.3
 psycopg2==2.9.10
