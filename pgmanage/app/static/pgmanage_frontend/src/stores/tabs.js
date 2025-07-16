@@ -593,7 +593,21 @@ const useTabsStore = defineStore("tabs", {
       this.selectTab(tab);
     },
     createERDTab(schema = "") {
-      let tabName = schema ? `ERD: ${schema}` : "ERD";
+      let secondaryTabs = this.selectedPrimaryTab.metaData.secondaryTabs;
+      let existingTabs = secondaryTabs.filter((t) => {
+        return t.component === "ERDTab";
+      });
+
+      let tabName = schema
+        ? `ERD: ${this.selectedPrimaryTab?.metaData?.selectedDatabase}@${schema}`
+        : "ERD";
+      if (existingTabs) {
+        let existingSameTab = existingTabs.find((t) => t.name == tabName);
+        if (!!existingSameTab) {
+          this.selectTab(existingSameTab);
+          return;
+        }
+      }
 
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
