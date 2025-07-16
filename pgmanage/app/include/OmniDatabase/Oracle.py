@@ -29,6 +29,8 @@ import app.include.Spartacus as Spartacus
 import app.include.Spartacus.Database as Database
 import app.include.Spartacus.Utils as Utils
 
+from .sql_templates import get_template
+
 '''
 ------------------------------------------------------------------------
 Template
@@ -834,392 +836,124 @@ class Oracle:
     ))
 
     def TemplateCreateRole(self):
-        return Template('''CREATE { ROLE | USER } name
---NOT IDENTIFIED
---IDENTIFIED BY password
---DEFAULT TABLESPACE tablespace
---TEMPORARY TABLESPACE tablespace
---QUOTA { size | UNLIMITED } ON tablespace
---PASSWORD EXPIRE
---ACCOUNT { LOCK | UNLOCK }
-''')
+        template = get_template("oracle", "create_role")
+        return template.template
 
     def TemplateAlterRole(self):
-        return Template('''ALTER { ROLE | USER } #role_name#
---NOT IDENTIFIED
---IDENTIFIED BY password
---DEFAULT TABLESPACE tablespace
---TEMPORARY TABLESPACE tablespace
---QUOTA { size | UNLIMITED } ON tablespace
---DEFAULT ROLE { role [, role ] ... | ALL [ EXCEPT role [, role ] ... ] | NONE }
---PASSWORD EXPIRE
---ACCOUNT { LOCK | UNLOCK }
-''')
+        template = get_template("oracle", "alter_role")
+        return template.template
 
     def TemplateDropRole(self):
-        return Template('''DROP { ROLE | USER } #role_name#
---CASCADE
-''')
+        template = get_template("oracle", "drop_role")
+        return template.template
 
     def TemplateCreateTablespace(self):
-        return Template('''CREATE { SMALLFILE | BIGFILE }
-[ TEMPORARY | UNDO ] TABLESPACE name
-[ DATAFILE | TEMPFILE ] 'filename' [ SIZE size ] [ REUSE ]
---AUTOEXTEND OFF | AUTOEXTEND ON [ NEXT size ]
---MAXSIZE [ size | UNLIMITED ]
---MINIMUM EXTENT size
---BLOCKSIZE size
---LOGGING | NOLOGGING | FORCE LOGGING
---ENCRYPTION [ USING 'algorithm' ]
---ONLINE | OFFLINE
---EXTENT MANAGEMENT LOCAL { AUTOALLOCATE | UNIFORM [ SIZE size ] }
---SEGMENT SPACE MANAGEMENT { AUTO | MANUAL }
---FLASHBACK { ON | OFF }
---RETENTION { GUARANTEE | NOGUARANTEE }
-''')
+        template = get_template("oracle", "create_tablespace")
+        return template.template
 
     def TemplateAlterTablespace(self):
-        return Template('''ALTER TABLESPACE #tablespace_name#
---MINIMUM EXTENT size
---RESIZE size
---COALESCE
---SHRINK SPACE [ KEEP size ]
---RENAME TO new_name
---[ BEGIN | END ] BACKUP
---ADD [ DATAFILE | TEMPFILE ] 'filename' [ SIZE size ] [ REUSE AUTOEXTEND OFF | AUTOEXTEND ON [ NEXT size ] ] [ MAXSIZE [ size | UNLIMITED ] ]
---DROP [ DATAFILE | TEMPFILE ] 'filename'
---SHRINK TEMPFILE 'filename' [ KEEP size ]
---RENAME DATAFILE 'filename' TO 'new_filename'
---[ DATAFILE | TEMPFILE ] [ ONLINE | OFFLINE ]
---[ NO ] FORCE LOGGING
---ONLINE
---OFFLINE [ NORMAL | TEMPORARY | IMMEDIATE ]
---READ [ ONLY | WRITE ]
---PERMANENT | TEMPORARY
---AUTOEXTEND OFF | AUTOEXTEND ON [ NEXT size ]
---MAXSIZE [ size | UNLIMITED ]
---FLASHBACK { ON | OFF }
---RETENTION { GUARANTEE | NOGUARANTEE }
-''')
+        template = get_template("oracle", "alter_tablespace")
+        return template.template
 
     def TemplateDropTablespace(self):
-        return Template('''DROP TABLESPACE #tablespace_name#
---INCLUDING CONTENTS
---[ AND | KEEP ] DATAFILES
---CASCADE CONSTRAINTS
-''')
+        template = get_template("oracle", "drop_tablespace")
+        return template.template
 
     def TemplateCreateFunction(self):
-        return Template('''CREATE OR REPLACE FUNCTION #schema_name#.name
---(
---    [ argmode ] [ argname ] argtype [ { DEFAULT | = } default_expr ]
---)
---RETURN rettype
---PIPELINED
-AS
--- variables
--- pragmas
-BEGIN
--- definition
-END;
-''')
+        template = get_template("oracle", "create_function")
+        return template.template
 
     def TemplateDropFunction(self):
-        return Template('DROP FUNCTION #function_name#')
+        template = get_template("oracle", "drop_function")
+        return template.template
 
     def TemplateCreateProcedure(self):
-        return Template('''CREATE OR REPLACE PROCEDURE #schema_name#.name
---(
---    [ argmode ] [ argname ] argtype [ { DEFAULT | = } default_expr ]
---)
-AS
--- variables
--- pragmas
-BEGIN
--- definition
-END;
-''')
+        template = get_template("oracle", "create_procedure")
+        return template.template
 
     def TemplateDropProcedure(self):
-        return Template('DROP PROCEDURE #function_name#')
+        template = get_template("oracle", "drop_procedure")
+        return template.template
 
     def TemplateCreateTable(self):
-        return Template('''CREATE
---GLOBAL TEMPORARY
-TABLE #schema_name#.table_name
---AS query
-(
-    column_name data_type
-    --SORT
-    --DEFAULT expr
-    --ENCRYPT [ USING 'encrypt_algorithm' ] [ IDENTIFIED BY password ] [ [NO] SALT ]
-    --CONSTRAINT constraint_name
-    --NOT NULL
-    --NULL
-    --UNIQUE
-    --PRIMARY KEY
-    --REFERENCES reftable [ ( refcolumn ) ] [ ON DELETE { CASCADE | SET NULL } ]
-    --CHECK ( condition )
-    --DEFERRABLE
-    --NOT DEFERRABLE
-    --INITIALLY IMMEDIATE
-    --INITIALLY DEFERRED
-    --ENABLE
-    --DISABLE
-    --VALIDATE
-    --NOVALIDATE
-    --RELY
-    --NORELY
-    --USING INDEX index_name
-)
---ON COMMIT DELETE ROWS
---ON COMMIT PRESERVE ROWS
---PCTFREE integer
---PCTUSED integer
---INITRANS integer
---STORAGE ( { [ INITIAL size_clause ] | [ NEXT size_clause ] | [ MINEXTENTS integer ] | [ MAXEXTENTS { integer | UNLIMITED } ] } )
---TABLESPACE tablespace
---LOGGING
---NOLOGGING
---COMPRESS
---NOCOMPRESS
---SCOPE IS scope_table
---WITH ROWID
---SCOPE FOR ( { refcol | refattr } ) IS scope_table
---REF ( { refcol | refattr } ) WITH ROWID
---GROUP log_group ( column [ NO LOG ] ) [ ALWAYS ]
---DATA ( { ALL | PRIMARY KEY | UNIQUE | FOREIGN KEY } ) COLUMNS
-''')
+        template = get_template("oracle", "create_table")
+        return template.template
 
     def TemplateAlterTable(self):
-        return Template('''ALTER TABLE #table_name#
---ADD column_name data_type
---MODIFY (column_name [ data_type ] )
---SORT
---DEFAULT expr
---ENCRYPT [ USING 'encrypt_algorithm' ] [ IDENTIFIED BY password ] [ [NO] SALT ]
---CONSTRAINT constraint_name
---NOT NULL
---NULL
---UNIQUE
---PRIMARY KEY
---REFERENCES reftable [ ( refcolumn ) ] [ ON DELETE { CASCADE | SET NULL } ]
---CHECK ( condition )
---DEFERRABLE
---NOT DEFERRABLE
---INITIALLY IMMEDIATE
---INITIALLY DEFERRED
---ENABLE
---DISABLE
---VALIDATE
---NOVALIDATE
---RELY
---NORELY
---USING INDEX index_name
---SET UNUSED COLUMN column [ { CASCADE CONSTRAINTS | INVALIDADE } ]
---DROP COLUMN column [ { CASCADE CONSTRAINTS | INVALIDADE } ] [ CHECKPOINT integer ]
---DROP { UNUSED COLUMNS | COLUMNS CONTINUE } [ CHECKPOINT integer ]
---RENAME COLUMN old_name TO new_name
---ADD CONSTRAINT constraint_name
---NOT NULL
---NULL
---UNIQUE
---PRIMARY KEY
---REFERENCES reftable [ ( refcolumn ) ] [ ON DELETE { CASCADE | SET NULL } ]
---CHECK ( condition )
---MODIFY [ CONSTRAINT constraint_name ] [ PRIMARY KEY ] [ UNIQUE ( column ) ]
---DEFERRABLE
---NOT DEFERRABLE
---INITIALLY IMMEDIATE
---INITIALLY DEFERRED
---ENABLE
---DISABLE
---VALIDATE
---NOVALIDATE
---RELY
---NORELY
---USING INDEX index_name
---RENAME CONSTRAINT old_name TO new_name
---DROP PRIMARY KEY [ CASCADE ] [ { KEEP | DROP } INDEX ]
---DROP UNIQUE ( column ) [ CASCADE ] [ { KEEP | DROP } INDEX ]
---DROP CONSTRAINT constraint_name [ CASCADE ]
---PCTFREE integer
---PCTUSED integer
---INITRANS integer
---STORAGE ( { [ INITIAL size_clause ] | [ NEXT size_clause ] | [ MINEXTENTS integer ] | [ MAXEXTENTS { integer | UNLIMITED } ] } )
---TABLESPACE tablespace
---LOGGING
---NOLOGGING
---COMPRESS
---NOCOMPRESS
---CACHE
---NOCACHE
---READ ONLY
---READ WRITE
---SCOPE IS scope_table
---WITH ROWID
---SCOPE FOR ( { refcol | refattr } ) IS scope_table
---REF ( { refcol | refattr } ) WITH ROWID
---GROUP log_group ( column [ NO LOG ] ) [ ALWAYS ]
---DATA ( { ALL | PRIMARY KEY | UNIQUE | FOREIGN KEY } ) COLUMNS
---NOPARALLEL
---PARALLEL integer
-''')
+        template = get_template("oracle", "alter_table")
+        return template.template
 
     def TemplateDropTable(self):
-        return Template('''DROP TABLE #table_name#
---CASCADE CONSTRAINTS
---PURGE
-''')
+        template = get_template("oracle", "drop_table")
+        return template.template
 
     def TemplateCreateColumn(self):
-        return Template('''ALTER TABLE #table_name#
-ADD name data_type
---SORT
---DEFAULT expr
---NOT NULL
-''')
+        template = get_template("oracle", "create_column")
+        return template.template
 
     def TemplateAlterColumn(self):
-        return Template('''ALTER TABLE #table_name#
---MODIFY #column_name# { datatype | DEFAULT expr | [ NULL | NOT NULL ]}
---RENAME COLUMN #column_name# TO new_name
-'''
-)
+        template = get_template("oracle", "alter_column")
+        return template.template
 
     def TemplateDropColumn(self):
-        return Template('''ALTER TABLE #table_name#
-DROP COLUMN #column_name#
---CASCADE CONSTRAINTS
---INVALIDATE
-''')
+        template = get_template("oracle", "drop_column")
+        return template.template
 
     def TemplateCreatePrimaryKey(self):
-        return Template('''ALTER TABLE #table_name#
-ADD CONSTRAINT name
-PRIMARY KEY ( column_name [, ... ] )
---[ NOT ] DEFERRABLE
---INITIALLY { IMMEDIATE | DEFERRED }
---RELY | NORELY
---USING INDEX index_name
---ENABLE
---DISABLE
---VALIDATE
---NOVALIDATE
---EXCEPTIONS INTO table_name
-''')
+        template = get_template("oracle", "create_primarykey")
+        return template.template
 
     def TemplateDropPrimaryKey(self):
-        return Template('''ALTER TABLE #table_name#
-DROP CONSTRAINT #constraint_name#
---CASCADE
-''')
+        template = get_template("oracle", "drop_primarykey")
+        return template.template
 
     def TemplateCreateUnique(self):
-        return Template('''ALTER TABLE #table_name#
-ADD CONSTRAINT name
-UNIQUE ( column_name [, ... ] )
---[ NOT ] DEFERRABLE
---INITIALLY { IMMEDIATE | DEFERRED }
---RELY | NORELY
---USING INDEX index_name
---ENABLE
---DISABLE
---VALIDATE
---NOVALIDATE
---EXCEPTIONS INTO table_name
-''')
+        template = get_template("oracle", "create_unique")
+        return template.template
 
     def TemplateDropUnique(self):
-        return Template('''ALTER TABLE #table_name#
-DROP CONSTRAINT #constraint_name#
---CASCADE
-''')
+        template = get_template("oracle", "drop_unique")
+        return template.template
 
     def TemplateCreateForeignKey(self):
-        return Template('''ALTER TABLE #table_name#
-ADD CONSTRAINT name
-FOREIGN KEY ( column_name [, ... ] )
-REFERENCES reftable [ ( refcolumn [, ... ] ) ]
---[ NOT ] DEFERRABLE
---INITIALLY { IMMEDIATE | DEFERRED }
---RELY | NORELY
---USING INDEX index_name
---ENABLE
---DISABLE
---VALIDATE
---NOVALIDATE
---EXCEPTIONS INTO table_name
-''')
+        template = get_template("oracle", "create_foreignkey")
+        return template.template
 
     def TemplateDropForeignKey(self):
-        return Template('''ALTER TABLE #table_name#
-DROP CONSTRAINT #constraint_name#
---CASCADE
-''')
+        template = get_template("oracle", "drop_foreignkey")
+        return template.template
 
     def TemplateCreateIndex(self):
-        return Template('''CREATE [ UNIQUE ] INDEX name
-ON #table_name#
-( { column_name | ( expression ) } [ ASC | DESC ] )
---ONLINE
---TABLESPACE tablespace
---[ SORT | NOSORT ]
---REVERSE
---[ VISIBLE | INVISIBLE ]
---[ NOPARALLEL | PARALLEL integer ]
-''')
+        template = get_template("oracle", "create_index")
+        return template.template
 
     def TemplateAlterIndex(self):
-        return Template('''ALTER INDEX #index_name#
---COMPILE
---[ ENABLE | DISABLE ]
---UNUSABLE
---[ VISIBLE | INVISIBLE ]
---RENAME TO new_name
---COALESCE
---[ MONITORING | NOMONITORING ] USAGE
---UPDATE BLOCK REFERENCES
-''')
+        template = get_template("oracle", "alter_index")
+        return template.template
 
     def TemplateDropIndex(self):
-        return Template('''DROP INDEX #index_name#
---FORCE
-''')
+        template = get_template("oracle", "drop_index")
+        return template.template
 
     def TemplateCreateSequence(self):
-        return Template('''CREATE SEQUENCE #schema_name#.name
---INCREMENT BY increment
---MINVALUE minvalue | NOMINVALUE
---MAXVALUE maxvalue | NOMAXVALUE
---START WITH start
---CACHE cache | NOCACHE
---CYCLE | NOCYCLE
---ORDER | NOORDER
-''')
+        template = get_template("oracle", "create_sequence")
+        return template.template
 
     def TemplateAlterSequence(self):
-        return Template('''ALTER SEQUENCE #sequence_name#
---INCREMENT BY increment
---MINVALUE minvalue | NOMINVALUE
---MAXVALUE maxvalue | NOMAXVALUE
---CACHE cache | NOCACHE
---CYCLE | NOCYCLE
---ORDER | NOORDER
-''')
+        template = get_template("oracle", "alter_sequence")
+        return template.template
 
     def TemplateDropSequence(self):
-        return Template('DROP SEQUENCE #sequence_name#')
+        template = get_template("oracle", "drop_sequence")
+        return template.template
 
     def TemplateCreateView(self):
-        return Template('''CREATE OR REPLACE VIEW #schema_name#.name AS
-SELECT ...
-''')
+        template = get_template("oracle", "create_view")
+        return template.template
 
     def TemplateDropView(self):
-        return Template('''DROP VIEW #view_name#
---CASCADE CONSTRAINTS
-''')
+        template = get_template("oracle", "drop_view")
+        return template.template
 
     def TemplateSelect(self, p_schema, p_table):
         v_sql = 'SELECT t.'
@@ -1335,9 +1069,8 @@ SELECT ...
         return Template(v_sql)
 
     def TemplateDelete(self):
-        return Template('''DELETE FROM #table_name#
-WHERE condition
-''')
+        template = get_template("oracle", "delete")
+        return template.template
 
     @lock_required
     def GetProperties(self, p_schema, p_object, p_type):
