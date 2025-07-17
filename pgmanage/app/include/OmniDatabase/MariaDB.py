@@ -728,7 +728,7 @@ class MariaDB:
         return self.Query('''
             select distinct c.table_name as "table_name",
                    c.column_name as "column_name",
-                   c.data_type,
+                   c.data_type as "data_type",
                    c.is_nullable as nullable,
                    c.character_maximum_length as data_length,
                    c.numeric_precision as data_precision,
