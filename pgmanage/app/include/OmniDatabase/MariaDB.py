@@ -455,7 +455,7 @@ class MariaDB:
             if p_table:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct t.constraint_name,
+            select distinct t.constraint_name as "constraint_name",
                    t.table_name,
                    t.table_schema
             from information_schema.table_constraints t
@@ -481,7 +481,7 @@ class MariaDB:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         v_filter = "and t.constraint_name = '{0}' ".format(p_unique)
         return self.Query('''
-            select distinct k.column_name,
+            select distinct k.column_name as "column_name",
                    k.ordinal_position
             from information_schema.table_constraints t
             join information_schema.key_column_usage k
