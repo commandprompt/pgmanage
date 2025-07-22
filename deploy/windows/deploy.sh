@@ -22,6 +22,10 @@ then
     APP_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
 fi
 
+NWJS_URL='https://dl.nwjs.io/v0.69.1/nwjs-v0.69.1-win-x64.zip'
+NWJS_ARCHIVE='nwjs-v0.69.1-win-x64.zip'
+NWJS_DIR='nwjs-v0.69.1-win-x64'
+
 APP_LONG_VERSION=PgManage.$APP_VERSION
 
 echo "making release dir: release_$APP_VERSION"
@@ -71,10 +75,10 @@ mv dist/pgmanage-server $DEPLOY_DIR/release_$APP_VERSION/
 mv dist/process_executor $DEPLOY_DIR/release_$APP_VERSION/pgmanage-server/
 
 cd $DEPLOY_DIR
-curl -C - https://dl.nwjs.io/v0.69.1/nwjs-v0.69.1-win-x64.zip -o nwjs.zip
-unzip -o nwjs.zip -d $TEMP_DIR/
+curl -C - -LO $NWJS_URL
+unzip -o $NWJS_ARCHIVE -d $TEMP_DIR/
 
-mv $TEMP_DIR/nwjs-v0.69.1-win-x64/* release_$APP_VERSION/
+mv $TEMP_DIR/$NWJS_DIR/* release_$APP_VERSION/
 mv release_$APP_VERSION/nw.exe release_$APP_VERSION/pgmanage-app.exe
 cp $TEMP_DIR/deploy/app/index.html release_$APP_VERSION
 cp $TEMP_DIR/deploy/app/package.json release_$APP_VERSION

@@ -21,6 +21,10 @@ then
     APP_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
 fi
 
+NWJS_URL='https://dl.nwjs.io/v0.69.1/nwjs-v0.69.1-osx-x64.zip'
+NWJS_ARCHIVE='nwjs-v0.69.1-osx-x64.zip'
+NWJS_DIR='nwjs-v0.69.1-osx-x64'
+
 APP_LONG_VERSION=pgmanage-$APP_VERSION
 APP_NAME=PgManage
 RELEASE_DIR=$DEPLOY_DIR/release_$APP_VERSION
@@ -95,11 +99,11 @@ mv dist/pgmanage-server/* pgmanage-server/
 
 cd $DEPLOY_DIR
 
-curl -C - -LO https://dl.nwjs.io/v0.69.1/nwjs-v0.69.1-osx-x64.zip
-unzip nwjs-v0.69.1-osx-x64.zip -d $TEMP_DIR
+curl -C - -LO $NWJS_URL
+unzip $NWJS_ARCHIVE -d $TEMP_DIR
 
 cd $TEMP_DIR
-mv nwjs-v0.69.1-osx-x64/nwjs.app $APP_LONG_VERSION.app
+mv $NWJS_DIR/nwjs.app $APP_LONG_VERSION.app
 
 mkdir $APP_LONG_VERSION.app/Contents/Resources/app.nw
 mv pgmanage/pgmanage-server $APP_LONG_VERSION.app/Contents/Resources/app.nw/
