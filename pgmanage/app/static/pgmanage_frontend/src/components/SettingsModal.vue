@@ -173,7 +173,7 @@
                   <label for="txt_confirm_new_pwd" class="fw-bold mb-2">Confirm</label>
                   <input ref="passwordConfirm" v-model="passwordConfirm" id="txt_confirm_new_pwd" type="password"
                     class="form-control" @input="checkPassword" minlength="8" required>
-                  <div class="invalid-tooltip">
+                  <div class="invalid-feedback">
                     Password must be matching.
                   </div>
                 </div>
