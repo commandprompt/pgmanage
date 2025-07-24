@@ -593,26 +593,39 @@ import { handleError } from '../logging/utils';
       },
       handleTypeChange(event) {
         let technology = event.target.value
-        if(technology === 'terminal') {
-          // erase db fields
-          this.connectionLocal.server = ''
-          this.connectionLocal.port = ''
-          this.connectionLocal.service = ''
-          this.connectionLocal.user = ''
-          this.connectionLocal.password = ''
-          // open ssh subform
-          this.connectionLocal.tunnel.enabled = true
-          setTimeout(this.scrollToTunnel,10)
-        } else {
-          this.connectionLocal.tunnel.enabled = false
-        }
+        switch(technology) {
+          case 'terminal':
+            // erase db fields
+            this.connectionLocal.server = ''
+            this.connectionLocal.service = ''
+            this.connectionLocal.user = ''
+            this.connectionLocal.password = ''
+            // open ssh subform
+            this.connectionLocal.tunnel.enabled = true
+            setTimeout(this.scrollToTunnel,10)
+            break
 
-        if(technology === 'sqlite') {
-          this.connectionLocal.server = ''
-          this.connectionLocal.port = ''
-          this.connectionLocal.user = ''
-          this.connectionLocal.password = ''
+          case 'sqlite':
+            this.connectionLocal.server = ''
+            this.connectionLocal.user = ''
+            this.connectionLocal.password = ''
+            break
+
+          case 'postgresql':
+            this.connectionLocal.connection_params =  {sslmode: 'prefer'}
+            break
+
+          case 'mariadb':
+          case 'mysql':
+            this.connectionLocal.connection_params = {'ssl': {'ssl': true}}
+            this.tempMode = 'ssl'
+            break
+
+          case 'oracle':
+            this.connectionLocal.connection_params = {protocol: "tcps"}
+            break
         }
+        this.connectionLocal.port = this.placeholder.port.replace('ex: ','')
       },
       scrollToTunnel(){
         // scroll the tunnel form into viewport if tunnel was enabled
@@ -632,24 +645,6 @@ import { handleError } from '../logging/utils';
           this.v$.connectionLocal.$reset();
         },
         deep: true
-      },
-      'connectionLocal.technology': function (newVal, oldVal) {
-        if (oldVal === undefined) {
-          this.tempMode  = Object.keys(this.connectionLocal.connection_params)[0]
-          return
-        }
-        if (newVal === 'postgresql') {
-          this.connectionLocal.connection_params =  {sslmode: 'prefer'}
-        } else if (newVal === 'oracle') {
-          this.connectionLocal.connection_params = {protocol: "tcps"}
-        } else if (['mysql', 'mariadb'].includes(newVal)){
-          this.connectionLocal.connection_params = {'ssl': {'ssl': true}}
-          this.tempMode = 'ssl'
-        } else {
-          this.connectionLocal.connection_params = {}
-        }
-        if (newVal)
-          this.connectionLocal.port = this.placeholder.port.replace('ex: ','')
       },
       isChanged(value) {
         this.$emit("connection:change", value);
