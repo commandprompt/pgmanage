@@ -1,7 +1,7 @@
 <template>
   <div ref="resultDiv" :id="`query_result_tabs_container_${tabId}`" class="omnidb__query-result-tabs pe-2">
     <button :id="`bt_fullscreen_${tabId}`" style="position: absolute; top: 0.25rem; right: 0.5rem" type="button"
-      class="btn btn-sm btn-icon btn-icon-primary" @click="toggleFullScreen()">
+      class="btn btn-sm btn-icon btn-icon-primary pe-2" @click="toggleFullScreen()">
       <i class="fas fa-expand"></i>
     </button>
 
