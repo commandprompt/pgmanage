@@ -1,22 +1,20 @@
 <template>
-  <div>
-    <div class="d-flex justify-content-between gap-2 p-2 border-bottom bg-light">
-      <button class="btn btn-outline-secondary btn-sm" @click="resetToDefault" title="Reset to default">
-        Reset
+  <div class="position-relative">
+    <div class="floating-toolbar floating-toolbar--filled floating-toolbar--right-top">
+      <button class="btn btn-icon-secondary" @click="resetToDefault" title="Reset to default">
+        <i class="fa-solid fa-rotate-left"></i>
       </button>
       
-      <div class="float-right">
-        <!-- Zoom In -->
-        <button class="btn btn-outline-secondary btn-sm me-2" @click="zoomIn" title="Zoom In">
-          <i class="fas fa-search-plus"></i>
-        </button>
-  
-        <!-- Zoom Out -->
-        <button class="btn btn-outline-secondary btn-sm" @click="zoomOut" title="Zoom Out">
-          <i class="fas fa-search-minus"></i>
-        </button>
+      <span class="divider"></span>
 
-      </div>
+      <!-- Zoom In -->
+      <button class="btn btn-icon-secondary" @click="zoomIn" title="Zoom In">
+        <i class="fas fa-search-plus"></i>
+      </button>
+      <!-- Zoom Out -->
+      <button class="btn btn-icon-secondary" @click="zoomOut" title="Zoom Out">
+        <i class="fas fa-search-minus"></i>
+      </button>
     </div>
   <div class="pt-3" style="width: 100%; height: calc(100vh - 70px); visibility: hidden" ref="cyContainer"></div>
 
