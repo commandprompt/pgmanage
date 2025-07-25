@@ -1,0 +1,26 @@
+.floating-toolbar {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    z-index: 2; 
+    border-radius: $borderRadius;
+    
+    &--filled {
+        @include themify() {
+            background-color: themed($surfaceBgSecondary);
+        }
+    }
+    
+    &--right-top {
+        right: 0.5rem;
+        top: 0.5rem;
+    }
+    
+    .divider {
+        display: block;
+        width: 1px;
+        height: 1.5rem;
+        background-color: $secondaryGrey;
+        opacity: 0.5;
+    }
+}
