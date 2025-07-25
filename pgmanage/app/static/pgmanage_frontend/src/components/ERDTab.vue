@@ -7,13 +7,13 @@
       
       <span class="divider"></span>
 
-      <!-- Zoom In -->
-      <button class="btn btn-icon-secondary" @click="zoomIn" title="Zoom In">
-        <i class="fas fa-search-plus"></i>
-      </button>
       <!-- Zoom Out -->
       <button class="btn btn-icon-secondary" @click="zoomOut" title="Zoom Out">
         <i class="fas fa-search-minus"></i>
+      </button>
+      <!-- Zoom In -->
+      <button class="btn btn-icon-secondary" @click="zoomIn" title="Zoom In">
+        <i class="fas fa-search-plus"></i>
       </button>
     </div>
   <div class="pt-3" style="width: 100%; height: calc(100vh - 70px); visibility: hidden" ref="cyContainer"></div>
