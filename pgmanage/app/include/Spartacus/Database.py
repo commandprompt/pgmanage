@@ -2966,6 +2966,7 @@ class Oracle(Generic):
             self.v_password = p_password
             self.v_con = None
             self.v_cur = None
+            self.v_autocommit = True
             self.v_help = Spartacus.Database.DataTable()
             self.v_help.Columns = ['Command', 'Syntax', 'Description']
             self.v_help.AddRow(['\\?', '\\?', 'Show Commands.'])
@@ -3010,6 +3011,7 @@ class Oracle(Generic):
             self.v_con = oracledb.connect(
                 self.GetConnectionString(),
                 **self.connection_params)
+            self.v_con.autocommit = p_autocommit
             self.v_cur = self.v_con.cursor()
             self.v_start = True
         except oracledb.Error as exc:
@@ -3234,6 +3236,7 @@ class Oracle(Generic):
                 raise Spartacus.Database.Exception('This method should be called in the middle of Open() and Close() calls.')
             else:
                 if self.v_start:
+                    self.v_con.autocommit = self.v_autocommit
                     self.v_cur.execute(p_sql)
                 v_table = DataTable(None, p_alltypesstr, p_simple)
                 if self.v_cur.description:
@@ -3263,6 +3266,9 @@ class Oracle(Generic):
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
+        finally:
+            self.v_autocommit = True
+            
     def InsertBlock(self, p_block, p_tablename, p_fields=None):
         try:
             v_columnames = []
