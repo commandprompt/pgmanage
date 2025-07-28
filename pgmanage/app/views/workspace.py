@@ -5,7 +5,7 @@ import sys
 from datetime import datetime, timezone
 
 from app.client_manager import client_manager
-from app.models.main import Connection, Shortcut, Tab, UserDetails
+from app.models.main import Connection, Shortcut, Tab, UserDetails, ERDLayout
 from app.utils.crypto import make_hash
 from app.utils.decorators import database_required, user_authenticated
 from app.utils.key_manager import key_manager
@@ -226,7 +226,8 @@ def renew_password(request, session):
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def draw_graph(request, database):
-    schema = request.data.get("schema", '')
+    data = request.data
+    schema = data.get("schema", '')
     edge_dict = {}
     node_dict = {}
 
@@ -294,13 +295,80 @@ def draw_graph(request, database):
                         col['is_pk'] = True
                         col['cgid'] = f"{fkcol['r_table_name']}-{fkcol['r_column_name']}"
 
-        response_data = {"nodes": list(node_dict.values()), "edges": list(edge_dict.values())}
+
+        database_name = (
+            "sqlite3" if database.v_db_type == "sqlite" else database.v_service
+        )
+        layout_name = f"{database_name}@{data.get('schema')}"
+
+        layout_obj = ERDLayout.objects.filter(name=layout_name, connection=Connection.objects.get(id=data.get("database_index"))).first()
+
+        if layout_obj:
+            layout_data = layout_obj.layout
+
+            layout_nodes = {node["data"]["id"]: node for node in layout_data.get('elements', {}).get('nodes', [])}
+            layout_edges = {edge["data"]["cgid"]: edge for edge in layout_data.get("elements", {}).get("edges", []) if edge["data"]["cgid"] is not None}
+
+
+            current_node_ids = set(node_dict.keys())
+            current_edge_ids = set(edge_dict.keys())
+
+            filtered_nodes = [node for id_, node in layout_nodes.items() if id_ in current_node_ids]
+
+
+            new_nodes = [v for k, v in node_dict.items() if k not in layout_nodes.keys()]
+
+            filtered_edges = [edge for id_, edge in layout_edges.items() if id_ in current_edge_ids]
+
+            new_edges = [
+                edge for edge in edge_dict.values()
+                if  edge['cgid'] not in layout_edges.keys()
+            ]
+
+            layout_data["elements"] = {
+                "nodes": filtered_nodes,
+                "edges": filtered_edges
+            }
+
+            return JsonResponse(data={
+                "layout": layout_data,
+                "new_nodes": new_nodes,
+                "new_edges": new_edges,
+            })
+
+        response_data = {
+            "nodes": list(node_dict.values()),
+            "edges": list(edge_dict.values()),
+        }
 
     except Exception as exc:
         return JsonResponse(data={'data': str(exc)}, status=400)
-
     return JsonResponse(response_data)
 
+
+@user_authenticated
+def save_graph_state(request):
+    try:
+        data = request.data
+        database_index = data.get("database_index")
+        layout = data.get("layout")
+        database_name = (
+            "sqlite3"
+            if os.path.isfile(data.get("database_name"))
+            else data.get("database_name")
+        )
+        layout_name = f"{database_name}@{data.get('schema')}"
+        conn = Connection.objects.get(id=database_index)
+
+        layout_obj, _ = ERDLayout.objects.update_or_create(
+                connection=conn,
+                name=layout_name,
+                defaults={"layout": layout},
+            )
+    except Exception as exc:
+        return JsonResponse(data={'data': str(exc)}, status=400)
+
+    return JsonResponse({"status": "saved"})
 
 
 @user_authenticated

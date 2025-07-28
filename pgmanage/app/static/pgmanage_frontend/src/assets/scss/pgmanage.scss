@@ -29,6 +29,7 @@ $theme-map: null; //important! do not delete this
 @import './components/bootstrap-tooltips';
 @import './components/welcome-screen';
 @import './components/snippets';
+@import './components/floating-toolbar';
 
 @import './libs/pev2/pev2';
 @import './libs/tabulator';
