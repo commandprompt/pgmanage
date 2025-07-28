@@ -166,7 +166,7 @@ export default {
     },
     switchToManual() {
       if (!this.rawInputDirty) {
-        const trimmedQuery = this.rawQuery.trim().toLowerCase();
+        const trimmedQuery = this.rawQuery.trim();
         const { orderByClause } = extractOrderByClause(trimmedQuery);
         const convertedFilters = this.convertFiltersToManual(this.localFilters);
         this.rawQuery = `${convertedFilters} ${orderByClause}`
