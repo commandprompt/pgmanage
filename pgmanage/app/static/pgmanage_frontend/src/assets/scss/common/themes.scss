@@ -27,7 +27,7 @@ $cronLightInputColor: 'cronLightInputColor';
 $cronLightInputBg: 'cronLightInputBg';
 $cronLightInputHover: 'cronLightInputHover';
 $tooltipBg: 'tooltipBg';
-$pev2Bg: 'pev2Bg';
+$panelsBg: 'panelsBg';
 $pev2NavLinkColor: 'pev2NavLinkColor';
 $pev2ProgressBorder: 'pev2ProgressBorder';
 $pev2TableRowHighlight: 'pev2TableRowHighlight';
@@ -72,7 +72,7 @@ $themes: (
         cronLightInputBg: transparent,
         cronLightInputHover: rgba($primaryBlue, 0.15),
         tooltipBg: #C6DAF3,
-        pev2Bg: $white,
+        panelsBg: $white,
         pev2NavLinkColor: $primaryBlue,
         pev2TableRowHighlight: rgba($primaryBlue, 0.15),
         pev2PlanNodeHeader: $bgLightTertiary,
@@ -115,7 +115,7 @@ $themes: (
         cronLightInputBg: rgba($primaryBlue, 0.15),
         cronLightInputHover: $primaryBlue,
         tooltipBg: $darkHighlighted,
-        pev2Bg: $primaryDark,
+        panelsBg: $primaryDark,
         pev2NavLinkColor: $white,
         pev2TableRowHighlight: rgba($white, 0.1),
         pev2PlanNodeHeader: #2B4A6F,

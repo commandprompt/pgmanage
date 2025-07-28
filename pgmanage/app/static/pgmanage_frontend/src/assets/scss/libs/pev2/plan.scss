@@ -12,7 +12,7 @@ $connectorLine: 2px solid darken($lineColor, 10%);
   -moz-osx-font-smoothing: grayscale;
 
   @include themify() {
-    background-color: themed($pev2Bg) !important;
+    background-color: themed($panelsBg) !important;
     color: themed($color);
   }
 
@@ -225,7 +225,7 @@ a[href="https://github.com/dalibo/pev2"]{
     
     @include themify() {
       color: themed($color);
-      background-color: themed($pev2Bg);
+      background-color: themed($panelsBg);
     }
   }
 
