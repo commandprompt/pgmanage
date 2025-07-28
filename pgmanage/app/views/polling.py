@@ -514,6 +514,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
             elif request_type == RequestType.SCHEMA_EDIT_DATA:
                 t = StoppableThread(thread_schema_edit_data, request_data)
                 workspace_context["thread"] = t
+                workspace_context["type"] = "schema_edit"
                 t.start()
 
         # Debugger

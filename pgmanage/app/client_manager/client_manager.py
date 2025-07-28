@@ -182,7 +182,7 @@ class Client:
         else:
             del self._connection_sessions[workspace_id]
 
-        if tab["type"] in ["query", "console", "connection", "edit"]:
+        if tab["type"] in ["query", "console", "connection", "edit", "schema_edit"]:
             try:
                 tab["thread"].stop()
                 tab["omnidatabase"].v_connection.Cancel(False)
