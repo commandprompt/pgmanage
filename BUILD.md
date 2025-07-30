@@ -36,7 +36,7 @@ TODO
 
 The build should be done on Windows 10 x86_64 OS.
 The following software should be installed prior to runnig the build script:
-Official Python 3.8.10 windows release
+Official Python 3.11.9 windows release
 
  - Cygwin
  - NSIS
