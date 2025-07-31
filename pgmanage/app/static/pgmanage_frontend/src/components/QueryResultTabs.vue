@@ -74,6 +74,7 @@ import mean from 'lodash/mean';
 import last from 'lodash/last';
 import { Tab } from "bootstrap";
 import { handleError } from "../logging/utils";
+import dialects from './dialect-data';
 
 export default {
   components: {
@@ -157,6 +158,14 @@ export default {
   },
   mounted() {
     this.handleResize();
+    const DIALECT_MAP = {
+        oracle: "oracledb",
+        mariadb: "mysql",
+        postgresql: "postgres",
+    };
+    let mappedDialect = DIALECT_MAP[this.dialect] || this.dialect;
+    this.numericTypes = dialects[mappedDialect]?.numericTypes || [];
+
     if (this.dialect === "postgresql") {
       
       this.$refs.explainTab.addEventListener("shown.bs.tab", () => {
@@ -464,12 +473,17 @@ export default {
           return `${col}<br><span class='subscript'>${colTypes[idx]}</span>`
         }
 
+        let colHozAlign = (function(idx) {
+          return this.numericTypes.includes(colTypes?.[idx]) ? "right" : "left";
+        }).bind(this)
+
         return {
           title: formatTitle(col, idx),
           field: idx.toString(),
           resizable: "header",
           formatter: this.cellFormatter,
           contextMenu: cellContextMenu,
+          hozAlign: colHozAlign(idx),
           headerDblClick: (e, column) => {
             if (
               column.getWidth() >
