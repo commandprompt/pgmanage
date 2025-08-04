@@ -15,3 +15,6 @@ django-vite==3.0.4
 # pinned because newer versions caused pyinstaller issues with dateutil
 portend==3.1
 tempora==5.6
+# paramiko is indirect dependency of sshtunnel
+# pinned because newer versions caused pyinstaller issues
+paramiko==3.5.1
