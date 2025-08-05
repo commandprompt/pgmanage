@@ -7,7 +7,6 @@ import os
 # https://github.com/orgs/pyinstaller/discussions/6126
 
 exclude_patterns = [
-  os.path.join('static', 'pgmanage_frontend'),
   '.dist-info',
   '.py',
   'django\\contrib\\gis',
@@ -23,7 +22,9 @@ block_cipher = None
 data_files_server = [
   ('pgmanage.db','.'),
   ('config.py','.'),
-  ('app/static','app/static'),
+  ('app/static/dist','app/static/dist'),
+  ('app/static/plugins','app/static/plugins'),
+  ('app/static/temp','app/static/temp'),
   ('app/include','app/include'),
   ('app/templates','app/templates'),
   ('app/plugins','app/plugins'),
