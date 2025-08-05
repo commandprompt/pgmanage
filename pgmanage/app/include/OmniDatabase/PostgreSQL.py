@@ -450,6 +450,7 @@ class PostgreSQL:
             where = "WHERE category != 'Preset Options'"
 
         return self.v_connection.Query('''
+        set LC_MESSAGES to 'C';                      
         SELECT name, setting,
       current_setting(name) AS current_setting,
         unit,
