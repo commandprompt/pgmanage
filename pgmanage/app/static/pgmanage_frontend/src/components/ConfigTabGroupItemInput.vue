@@ -33,7 +33,7 @@
   <div class="col-5 d-flex align-items-center">
     <button v-if="
       setting.setting != setting.boot_val &&
-      setting.category != 'Preset Options'
+      setting.is_preset_option != 'True'
     " type="button" class="btn btn-link btn-sm" :id="buttonId" :title="`Reset to: ${setting.boot_val}`"
       ref="resetButton"
       @click.prevent="setDefault">
@@ -95,7 +95,7 @@ export default {
       return Object.assign({}, this.initialSetting);
     },
     isReadOnly() {
-      return this.initialSetting.category === "Preset Options";
+      return this.initialSetting.is_preset_option === 'True';
     }
   },
   validations() {
