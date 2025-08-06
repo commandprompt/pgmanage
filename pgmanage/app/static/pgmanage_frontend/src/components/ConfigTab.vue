@@ -429,13 +429,13 @@ export default {
           database_index: this.databaseIndex,
           workspace_id: this.workspaceId,
           grouped: false,
-          exclude_read_only: true
+          exclude_read_only: false
         })
         .then((response) => {
           this.configUnapplicableDiffData = {}
-          let diff = Object.keys(response.data.settings).reduce((diff, key) => {
-            if (!this.selectedConf.config_snapshot.hasOwnProperty(key)) {
-              this.configUnapplicableDiffData[key] = response.data.settings[key]
+          let diff = Object.keys(this.selectedConf.config_snapshot).reduce((diff, key) => {
+            if (!response.data.settings.hasOwnProperty(key)) {
+              this.configUnapplicableDiffData[key] = this.selectedConf.config_snapshot[key]
               return diff
             }
             if (this.selectedConf.config_snapshot[key]['setting'] === response.data.settings[key]['setting']) return diff
