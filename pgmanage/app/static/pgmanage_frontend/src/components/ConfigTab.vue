@@ -111,33 +111,55 @@
         <div class="modal-body">
           <p v-if="modalRevertConfig && !hasRevertValues">No changes to revert to.</p>
           <p v-else class="pb-2">The following changes will be applied:</p>
-          <table v-if="(modalRevertConfig && hasRevertValues) || !modalRevertConfig" class="table table-sm">
-            <thead>
-              <tr>
-                <th width="50%" class="border-top-0 pb-1">Name</th>
-                <th width="50%" class="border-top-0 pb-1">New value</th>
-              </tr>
-            </thead>
-            <tbody>
-
-              <template v-if="!modalRevertConfig">
-                <tr v-for="(setting_value, setting_name) in updateSettings" :key="setting_value">
-                  <td>{{ setting_name }}</td>
-                  <td>
-                    <b>{{ setting_value.setting }}</b>
-                  </td>
+          <template v-if="(modalRevertConfig && hasRevertValues) || !modalRevertConfig">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th width="50%" class="border-top-0 pb-1">Name</th>
+                  <th width="50%" class="border-top-0 pb-1">New value</th>
                 </tr>
-              </template>
-              <template v-else>
-                <tr v-for="(setting_value, setting_name) in configDiffData" :key="setting_value">
-                  <td>{{ setting_name }}</td>
-                  <td>
-                    <b>{{ setting_value.setting }}</b>
-                  </td>
+              </thead>
+              <tbody>
+  
+                <template v-if="!modalRevertConfig">
+                  <tr v-for="(setting_value, setting_name) in updateSettings" :key="setting_value">
+                    <td>{{ setting_name }}</td>
+                    <td>
+                      <b>{{ setting_value.setting }}</b>
+                    </td>
+                  </tr>
+                </template>
+                <template v-else>
+                  <tr v-for="(setting_value, setting_name) in configDiffData" :key="setting_value">
+                    <td>{{ setting_name }}</td>
+                    <td>
+                      <b>{{ setting_value.setting }}</b>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            
+            <template v-if="hasUnapplicableRevertValues">
+              <p class="pb-2">The following changes can not be applied due to database versions or extensions differences:</p>
+              <table  class="table table-sm">
+              <thead>
+                <tr>
+                  <th width="50%" class="border-top-0 pb-1">Name</th>
+                  <th width="50%" class="border-top-0 pb-1">New value</th>
                 </tr>
-              </template>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                  <tr v-for="(setting_value, setting_name) in configUnapplicableDiffData" :key="setting_value">
+                    <td>{{ setting_name }}</td>
+                    <td>
+                      <b>{{ setting_value.setting }}</b>
+                    </td>
+                  </tr>
+              </tbody>
+            </table>
+            </template>
+          </template>
           <div v-if="!modalRevertConfig" class="form-group">
             <label :for="`${tabId}_commit_message`" class="fw-bold mb-2">Commit Comment</label>
             <input v-model="commitComment" :id="`${tabId}_commit_message`" class="form-control"
@@ -205,6 +227,7 @@ export default {
       modalId: `config_modal_${this.workspaceId}_${Date.now()}`,
       modalRevertConfig: false,
       configDiffData: '',
+      configUnapplicableDiffData: '',
       intervalId: ''
     };
   },
@@ -246,7 +269,10 @@ export default {
     },
     hasRevertValues() {
       return !!Object.keys(this.configDiffData).length;
-    }
+    },
+    hasUnapplicableRevertValues() {
+      return !!Object.keys(this.configUnapplicableDiffData).length;
+    },
   },
   watch: {
     hasUpdateValues() {
@@ -403,10 +429,15 @@ export default {
           database_index: this.databaseIndex,
           workspace_id: this.workspaceId,
           grouped: false,
-          exclude_read_only: true
+          exclude_read_only: false
         })
         .then((response) => {
-          let diff = Object.keys(response.data.settings).reduce((diff, key) => {
+          this.configUnapplicableDiffData = {}
+          let diff = Object.keys(this.selectedConf.config_snapshot).reduce((diff, key) => {
+            if (!response.data.settings.hasOwnProperty(key)) {
+              this.configUnapplicableDiffData[key] = this.selectedConf.config_snapshot[key]
+              return diff
+            }
             if (this.selectedConf.config_snapshot[key]['setting'] === response.data.settings[key]['setting']) return diff
             return {
               ...diff,
