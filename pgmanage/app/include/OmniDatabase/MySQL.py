@@ -511,12 +511,12 @@ class MySQL:
         return self.Query('''
             select t.table_schema as "schema_name",
                    t.table_name as "table_name",
-                   (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) as "index_name",
+                   t.index_name as "index_name",
                    case when t.non_unique = 1 then 'Non Unique' else 'Unique' end as "uniqueness",
                     JSON_ARRAYAGG(t.column_name) as columns,
                     case 
-                        when tc.constraint_type = 'PRIMARY KEY' then TRUE 
-                        else FALSE 
+                        when tc.constraint_type = 'PRIMARY KEY' then 'TRUE' 
+                        else 'FALSE' 
                     end as is_primary,
                     t.index_type AS index_type
             from information_schema.statistics t
@@ -545,7 +545,7 @@ class MySQL:
         else:
             if p_table:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
-        v_filter = "and (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) = '{0}' ".format(p_index)
+        v_filter += "and t.index_name = '{0}' ".format(p_index)
         return self.Query('''
             select distinct t.column_name as "column_name",
                    t.seq_in_index as "seq_in_index"
@@ -1236,13 +1236,28 @@ WHERE condition
                   and routine_schema = '{0}'
                   and routine_name = '{1}'
             '''.format(p_schema, p_object), True).Transpose('Property', 'Value')
+        elif p_type == 'index':
+            return self.Query('''SELECT
+                        table_schema,
+                        table_name,
+                        index_name,
+                        GROUP_CONCAT(column_name ORDER BY seq_in_index) AS columns,
+                        GROUP_CONCAT(seq_in_index ORDER BY seq_in_index) AS seq_in_index_list,
+                        GROUP_CONCAT(cardinality ORDER BY seq_in_index) AS cardinality_list,
+                        GROUP_CONCAT(non_unique ORDER BY seq_in_index) AS non_unique,
+                        GROUP_CONCAT(index_type ORDER BY seq_in_index) AS index_type
+                    FROM information_schema.statistics
+                    WHERE index_name = '{0}'
+                    AND table_schema = '{1}'
+                    AND table_name = '{2}'
+                    GROUP BY table_schema, table_name, index_name'''.format(p_object, p_schema, p_table)).Transpose('Property', 'Value')
         else:
             return None
 
     def GetDDL(self, p_schema, p_table, p_object, p_type):
         if p_type == 'function' or p_type == 'procedure':
             return self.Query('show create {0} {1}.{2}'.format(p_type, p_schema, p_object), True, True).Rows[0][2]
-        else:
+        elif p_type in ["table", "view"]:
             return self.Query('show create {0} {1}.{2}'.format(p_type, p_schema, p_object), True, True).Rows[0][1]
 
     def GetAutocompleteValues(self, p_columns, p_filter):
