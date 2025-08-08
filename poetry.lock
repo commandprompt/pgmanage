@@ -497,6 +497,24 @@ docs = ["jaraco.packaging (>=8.2)", "rst.linker (>=1.9)", "sphinx"]
 testing = ["pytest (>=6)", "pytest-black (>=0.3.7) ; platform_python_implementation != \"PyPy\"", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.0.1)", "pytest-flake8", "pytest-mypy ; platform_python_implementation != \"PyPy\""]
 
 [[package]]
+name = "prettytable"
+version = "3.16.0"
+description = "A simple Python library for easily displaying tabular data in a visually appealing ASCII table format"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "prettytable-3.16.0-py3-none-any.whl", hash = "sha256:b5eccfabb82222f5aa46b798ff02a8452cf530a352c31bddfa29be41242863aa"},
+    {file = "prettytable-3.16.0.tar.gz", hash = "sha256:3c64b31719d961bf69c9a7e03d0c1e477320906a98da63952bc6698d6164ff57"},
+]
+
+[package.dependencies]
+wcwidth = "*"
+
+[package.extras]
+tests = ["pytest", "pytest-cov", "pytest-lazy-fixtures"]
+
+[[package]]
 name = "psutil"
 version = "6.1.1"
 description = "Cross-platform lib for process and system monitoring in Python."
@@ -749,6 +767,18 @@ files = [
 ]
 
 [[package]]
+name = "wcwidth"
+version = "0.2.13"
+description = "Measures the displayed width of unicode strings in a terminal"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "wcwidth-0.2.13-py2.py3-none-any.whl", hash = "sha256:3da69048e4540d84af32131829ff948f1e022c1c6bdb8d6102117aac784f6859"},
+    {file = "wcwidth-0.2.13.tar.gz", hash = "sha256:72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5"},
+]
+
+[[package]]
 name = "zc-lockfile"
 version = "3.0.post1"
 description = "Basic inter-process locks"
@@ -769,4 +799,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.9.13"
-content-hash = "5937111ec0ccf813ccc7daec8ed839922977768a17e9774ebe1052461a8a81d4"
+content-hash = "7ef542dc35e65bc3b7f8151216e5b3beb8b3a47a2d70fb27f2b62e9de8fb1bdd"
