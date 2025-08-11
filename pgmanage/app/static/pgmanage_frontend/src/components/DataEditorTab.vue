@@ -368,7 +368,7 @@ export default {
           .filter((item) => item !== null);
       };
 
-      const trimmedQuery = this.rawQuery.trim().toLowerCase();
+      const trimmedQuery = this.rawQuery.trim();
       const { queryFilterCleaned, orderByClause } =
         extractOrderByClause(trimmedQuery);
 

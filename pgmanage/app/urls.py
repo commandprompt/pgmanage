@@ -39,6 +39,7 @@ base_urlpatterns = [
     path('master_password/', views.workspace.master_password, name='master_password'),
     path('reset_master_password/', views.workspace.reset_master_password, name='reset_master_password'),
     path('draw_graph/', views.workspace.draw_graph, name='draw_graph'),
+    path('save_graph_state/', views.workspace.save_graph_state, name='save_graph_state'),
     path('get_table_columns/', views.workspace.get_table_columns, name='get_table_columns'),
     path('refresh_monitoring/', views.workspace.refresh_monitoring, name='refresh_monitoring'),
     # path('delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),

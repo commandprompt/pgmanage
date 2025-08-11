@@ -239,3 +239,12 @@ class Job(models.Model):
     utility_pid = models.IntegerField(null=True)
     process_state = models.IntegerField(null=True)
     connection = models.ForeignKey(Connection, on_delete=models.CASCADE, null=True)
+
+
+class ERDLayout(models.Model):
+    connection = models.ForeignKey(Connection, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    layout = models.JSONField()
+
+    class Meta:
+        unique_together = ["connection", "name"]

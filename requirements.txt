@@ -1,11 +1,11 @@
-cryptography==41.0.7
-Django==4.2.19
+cryptography==45.0.5
+Django==4.2.23
 CherryPy==18.1.1
 sqlparse==0.5.3
 psycopg2==2.9.10
 openpyxl==3.1.3
-RestrictedPython==7.4
-oracledb==2.5.1
+RestrictedPython==8.0
+oracledb==3.2
 pymysql==1.1.1
 pgspecial==1.13.0
 sshtunnel==0.4.0
@@ -15,3 +15,6 @@ django-vite==3.0.4
 # pinned because newer versions caused pyinstaller issues with dateutil
 portend==3.1
 tempora==5.6
+# paramiko is indirect dependency of sshtunnel
+# pinned because newer versions caused pyinstaller issues
+paramiko==3.5.1

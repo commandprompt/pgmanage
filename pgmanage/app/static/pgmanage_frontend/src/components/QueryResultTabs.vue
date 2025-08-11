@@ -1,7 +1,7 @@
 <template>
   <div ref="resultDiv" :id="`query_result_tabs_container_${tabId}`" class="omnidb__query-result-tabs pe-2">
     <button :id="`bt_fullscreen_${tabId}`" style="position: absolute; top: 0.25rem; right: 0.5rem" type="button"
-      class="btn btn-sm btn-icon btn-icon-primary" @click="toggleFullScreen()">
+      class="btn btn-sm btn-icon btn-icon-primary pe-2" @click="toggleFullScreen()">
       <i class="fas fa-expand"></i>
     </button>
 
@@ -74,6 +74,7 @@ import mean from 'lodash/mean';
 import last from 'lodash/last';
 import { Tab } from "bootstrap";
 import { handleError } from "../logging/utils";
+import dialects from './dialect-data';
 
 export default {
   components: {
@@ -157,6 +158,14 @@ export default {
   },
   mounted() {
     this.handleResize();
+    const DIALECT_MAP = {
+        oracle: "oracledb",
+        mariadb: "mysql",
+        postgresql: "postgres",
+    };
+    let mappedDialect = DIALECT_MAP[this.dialect] || this.dialect;
+    this.numericTypes = dialects[mappedDialect]?.numericTypes || [];
+
     if (this.dialect === "postgresql") {
       
       this.$refs.explainTab.addEventListener("shown.bs.tab", () => {
@@ -213,10 +222,21 @@ export default {
 
       let headers = [];
       let headerIndexMap = {}; // Map header titles to their original indices
+      let nameCount = {}; // to track duplicates
+
 
       Object.keys(last(data)).forEach((key) => {
           const originalIndex = parseInt(key, 10);
-          const header = this.columns[originalIndex];
+          let  header = this.columns[originalIndex];
+
+          // Track duplicates
+          if (nameCount[header]) {
+            nameCount[header]++;
+            header = `${header}_${nameCount[header]}`;
+          } else {
+            nameCount[header] = 1;
+          }
+
           headers.push(header);
           headerIndexMap[header] = originalIndex;
       });
@@ -464,12 +484,17 @@ export default {
           return `${col}<br><span class='subscript'>${colTypes[idx]}</span>`
         }
 
+        let colHozAlign = (function(idx) {
+          return this.numericTypes.includes(colTypes?.[idx]) ? "right" : "left";
+        }).bind(this)
+
         return {
           title: formatTitle(col, idx),
           field: idx.toString(),
           resizable: "header",
           formatter: this.cellFormatter,
           contextMenu: cellContextMenu,
+          hozAlign: colHozAlign(idx),
           headerDblClick: (e, column) => {
             if (
               column.getWidth() >

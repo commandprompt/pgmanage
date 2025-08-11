@@ -2,39 +2,37 @@
   <div
     :id="`${workspaceId}_panel_snippet`"
     :class="[
-      'panel-body',
-      'omnidb__panel omnidb__panel--snippet',
-      { 'omnidb__panel--slide-in': isVisible },
+      'snippets',
+      { 'snippets--slide-in': isVisible },
     ]"
   >
     <button
       type="button"
-      class="px-4 btn btn-secondary omnidb__panel__toggler"
+      class="snippets__toggler"
       @click="togglePanel"
     >
-      <i class="fas fa-arrows-alt-v"></i>
+      <i :class="[
+        'fas',
+        isVisible ? 'fa-chevron-down': 'fa-chevron-up'
+      ]"></i>
     </button>
 
     <div class="container-fluid h-100 position-relative g-0">
       <div :id="`${workspaceId}_snippet_div_layout_grid`" class="row h-100">
         <splitpanes class="default-theme">
           <pane min-size="18" size="25">
-            <div class="omnidb__snippets__div-left col h-100">
-              <div class="row h-100 g-0">
-                <div class="omnidb__snippets__content-left border-end">
-                  <div class="snippets-tree">
-                    <TreeSnippets
-                      :workspace-id="workspaceId"
-                      @tree-updated="getAllSnippets"
-                    />
-                  </div>
-                </div>
+            <div class="snippets__left h-100 border-end">
+              <div class="snippets__tree">
+                <TreeSnippets
+                  :workspace-id="workspaceId"
+                  @tree-updated="getAllSnippets"
+                />
               </div>
             </div>
           </pane>
           <pane min-size="2">
             <div
-              class="omnidb__snippets__div-right pt-0 col h-100 position-relative"
+              class="snippets__right pt-0 h-100 position-relative"
             >
               <div class="row">
                 <DatabaseTabs :id="`${workspaceId}`" class="w-100" :workspace-id="workspaceId" />
@@ -153,23 +151,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.snippets-tree {
-  overflow: auto;
-  flex-grow: 1;
-  transition: scroll 0.3s;
-}
-
-.panel-body {
-  height: 100vh;
-}
-
-.omnidb__panel--slide-in {
-  transform: translateY(-98vh);
-}
-
-.splitpanes .splitpanes__pane {
-  transition: none;
-}
-</style>
