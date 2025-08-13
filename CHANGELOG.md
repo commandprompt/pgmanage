@@ -13,7 +13,13 @@
     - fixed erros when loading DDL for metadata link objects in DB tree
     - fixed back-end issue with idle schema editor thread not always getting terminated
     - fixed "autocommit" checkbox not working for Oracle DB connections
-
+    - fixed validation errors when entering octal file permissions in Server Configuration Tab (#705)
+    - fixed error when rolling back Postgres Server Configuration snapshots that have values not applicable to the current server setup
+    - fixed errors when restoreing Postgres Server Configuration for databases running with non-english locales (#707)
+    - fixed query result file export when query result have duplicate column names (#715)
+    - fixed query result copy as JSON when query result have duplicate column names (#712)
+    - fixed isssue with saving custom monitoring widgets without chart code block defined (#720)
+    
   - Other changes
     - updated restrictedpython from 7.4 to 8.0
     - updated django from 4.2.19 to 4.2.23 
@@ -22,6 +28,7 @@
     - updated nw.js from 0.69.1 to 0.77.0
     - refactored database capability flags code in back-end
     - removed unnecessary files from binary packages
+    - minor layout fixes and improvements
 
 # PgManage 1.3 Release
 
