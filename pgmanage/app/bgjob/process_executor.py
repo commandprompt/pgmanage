@@ -76,7 +76,6 @@ class ProcessLogger(Thread):
                 )
                 self.logger.write(b",")
                 self.logger.write(msg.lstrip(b"\r\n" if _IS_WIN else b"\n"))
-                self.logger.write(os.linesep.encode("utf-8"))
 
             return True
         return False
