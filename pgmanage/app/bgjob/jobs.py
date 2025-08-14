@@ -82,7 +82,7 @@ class BatchJob:
 
     def _create_job(self, description, command, args):
         current_time = datetime.now().strftime("%Y%m%d%H%M%S%f")
-        log_dir = os.path.join(HOME_DIR, "process_logs", self.user.username)
+        log_dir = os.path.join(HOME_DIR, "process_logs", self.user.id)
 
         def random_number(size):
             return "".join(
