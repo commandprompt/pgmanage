@@ -267,7 +267,7 @@ if options.reset:
 
 if options.listusers:
     from app.include.Spartacus.Database import DataTable
-    table = DataTable()
+    table = DataTable(p_simple=True)
     table.AddColumn('id')
     table.AddColumn('username')
     table.AddColumn('superuser')
@@ -297,7 +297,7 @@ if options.listconnections:
     maintenance_action = True
 
     from app.include.Spartacus.Database import DataTable
-    table = DataTable()
+    table = DataTable(p_simple=True)
     table.AddColumn('id')
     table.AddColumn('technology')
     table.AddColumn('alias')

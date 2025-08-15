@@ -8,19 +8,19 @@ def get_tree_info(request, database):
     try:
         data = {
             "version": database.GetVersion(),
-            "create_view": database.TemplateCreateView().text,
-            "drop_view": database.TemplateDropView().text,
-            "create_table": database.TemplateCreateTable().text,
-            "alter_table": database.TemplateAlterTable().text,
-            "drop_table": database.TemplateDropTable().text,
-            "create_column": database.TemplateCreateColumn().text,
-            "create_index": database.TemplateCreateIndex().text,
-            "reindex": database.TemplateReindex().text,
-            "drop_index": database.TemplateDropIndex().text,
-            "delete": database.TemplateDelete().text,
-            "create_trigger": database.TemplateCreateTrigger().text,
-            "alter_trigger": database.TemplateAlterTrigger().text,
-            "drop_trigger": database.TemplateDropTrigger().text,
+            "create_view": database.TemplateCreateView(),
+            "drop_view": database.TemplateDropView(),
+            "create_table": database.TemplateCreateTable(),
+            "alter_table": database.TemplateAlterTable(),
+            "drop_table": database.TemplateDropTable(),
+            "create_column": database.TemplateCreateColumn(),
+            "create_index": database.TemplateCreateIndex(),
+            "reindex": database.TemplateReindex(),
+            "drop_index": database.TemplateDropIndex(),
+            "delete": database.TemplateDelete(),
+            "create_trigger": database.TemplateCreateTrigger(),
+            "alter_trigger": database.TemplateAlterTrigger(),
+            "drop_trigger": database.TemplateDropTrigger(),
         }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)

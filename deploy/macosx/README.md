@@ -2,7 +2,7 @@
 
 The following software should be installed prior to running the build script:
 
-Official Python 3.9.* macOs release
+Official Python 3.11.* macOs release
 
 - Node.js
 - npm

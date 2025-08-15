@@ -44,6 +44,7 @@
         @move-widget-down="moveWidgetDown"
         @delete-widget="deleteWidget"
         @add-widget="addWidget"
+        @update-widget="updateWidget"
       />
     </Teleport>
   </div>
@@ -159,6 +160,17 @@ export default {
         widget_data: {}
       })
     },
+    updateWidget(widgetData) {
+      let widget = this.widgets.find((widget) => widget.id === widgetData.id);
+      let newWidget = {...widget};
+      newWidget.title = widgetData.title;
+      newWidget.interval = widgetData.interval;
+      newWidget.type = widgetData.type;
+      this.deleteWidget(widget.id);
+      this.$nextTick(() => {
+        this.addWidget(newWidget);
+      })
+    }
   },
   computed: {
     visibleSortedWidgets() {

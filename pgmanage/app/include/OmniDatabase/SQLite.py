@@ -29,6 +29,7 @@ from collections import OrderedDict
 from enum import Enum
 
 import app.include.Spartacus as Spartacus
+from .sql_templates import get_template
 
 '''
 ------------------------------------------------------------------------
@@ -880,92 +881,56 @@ class SQLite:
         )
 
     def TemplateCreateView(self):
-        return Template('''CREATE
---TEMPORARY
-VIEW view_name
---( column_definition, ... )
-AS
---SELECT...
-''')
+        template = get_template("sqlite", "create_view")
+        return template.template
 
     def TemplateDropView(self):
-        return Template('DROP VIEW #view_name#')
+        template = get_template("sqlite", "drop_view")
+        return template.template
 
     def TemplateCreateTable(self):
-        return Template('''CREATE
---TEMPORARY
-TABLE table_name
-(
-    column_name data_type
-    --CONSTRAINT constraint_name
-    --NOT NULL
-    --CHECK
-    --UNIQUE
-    --PRIMARY KEY
-    --FOREIGN KEY
-)
---WITHOUT ROWID
-''')
+        template = get_template("sqlite", "create_table")
+        return template.template
 
     def TemplateAlterTable(self):
-        return Template('''ALTER TABLE #table_name#
---RENAME TO new_table_name
---RENAME COLUMN column_name TO new_column_name
---ADD COLUMN columnd_definition
-''')
+        template = get_template("sqlite", "alter_table")
+        return template.template
 
     def TemplateDropTable(self):
-        return Template('DROP TABLE #table_name#')
+        template = get_template("sqlite", "drop_table")
+        return template.template
 
     def TemplateCreateColumn(self):
-        return Template('''ALTER TABLE #table_name#
-ADD COLUMN columnd_definition
-''')
+        template = get_template("sqlite", "create_column")
+        return template.template
 
     def TemplateCreateIndex(self):
-        return Template('''CREATE
---UNIQUE
-INDEX index_name ON #table_name# ( column_name, ... )
---WHERE expression
-''')
+        template = get_template("sqlite", "create_index")
+        return template.template
 
     def TemplateReindex(self):
-        return Template('REINDEX #index_name#')
+        template = get_template("sqlite", "reindex")
+        return template.template
 
     def TemplateDropIndex(self):
-        return Template('DROP INDEX #index_name#')
+        template = get_template("sqlite", "drop_index")
+        return template.template
 
     def TemplateDelete(self):
-        return Template('''DELETE FROM
-#table_name#
-WHERE condition
-''')
+        template = get_template("sqlite", "delete")
+        return template.template
 
     def TemplateCreateTrigger(self):
-        return Template('''CREATE
---TEMPORARY
-TRIGGER trigger_name
---BEFORE
---AFTER
---INSTEAD OF
---DELETE
---INSERT
---UPDATE
---OF column_name
-ON #table_name#
---FOR EACH ROW
-WHEN expression
-BEGIN
-    statement
-;
-END
-''')
+        template = get_template("sqlite", "create_trigger")
+        return template.template
 
     def TemplateDropTrigger(self):
-        return Template('DROP TRIGGER #trigger_name#')
+        template = get_template("sqlite", "drop_trigger")
+        return template.template
 
     def TemplateAlterTrigger(self):
-        return Template(f"{self.TemplateDropTrigger().text};\n{self.TemplateCreateTrigger().text}")
+        template = get_template("sqlite", "alter_trigger")
+        return template.template
 
     def GetAutocompleteValues(self, p_columns, p_filter):
         return None

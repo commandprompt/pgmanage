@@ -878,12 +878,15 @@ export default {
         "view",
         "function",
         "procedure",
+        "index"
       ];
       if (handledTypes.includes(node.data.type)) {
+        const table = node.data.table ?? null
+        const schema = node.data.schema ?? this.getParentNodeDeep(node, 2).title
         this.$emit("treeTabsUpdate", {
           data: {
-            schema: this.getParentNodeDeep(node, 2).title,
-            table: null,
+            schema: schema,
+            table: table,
             object: node.title,
             type: node.data.type,
           },
@@ -1294,7 +1297,9 @@ export default {
               type: "index",
               contextMenu: "cm_index",
               unique: el.unique ? 'Unique' : "Non unique",
-              database: node.data.database
+              database: node.data.database,
+              table: this.getParentNode(node).title,
+              schema: this.getParentNodeDeep(node, 3).title,
             });
           });
         })

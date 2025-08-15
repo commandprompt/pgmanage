@@ -50,7 +50,7 @@
                   <div class="form-switch m-0">
                     <input
                       :checked="widget.visible"
-                      @click="this.$emit('toggleWidget', widget, !widget.visible)"
+                      @click="$emit('toggleWidget', widget, !widget.visible)"
                       type="checkbox"
                       class="form-check-input"
                       >
@@ -60,13 +60,13 @@
 
               <div class="col d-flex me-2 justify-content-end">
                 <button
-                  @click='this.$emit("moveWidgetUp", index)'
+                  @click='$emit("moveWidgetUp", index)'
                   class="btn btn-icon btn-icon-secondary" title="Move widget up" type="button">
                   <i class="fas fa-circle-up"></i>
                 </button>
 
                 <button
-                  @click='this.$emit("moveWidgetDown", index)'
+                  @click='$emit("moveWidgetDown", index)'
                   class="btn btn-icon btn-icon-secondary ms-2" title="Move widget down" type="button">
                   <i class="fas fa-circle-down"></i>
                 </button>
@@ -88,14 +88,14 @@
               <div class="col d-flex me-2 justify-content-end">
                 <button
                   v-if="widget.editable"
-                  @click="this.editMonitoringWidget(widget.id)"
+                  @click="editMonitoringWidget(widget.id)"
                   class="btn btn-icon btn-icon-secondary" title="Edit" type="button">
                   <i class="fas fa-edit"></i>
                 </button>
 
                 <button type="button"
                   v-if="widget.editable"
-                  @click="this.deleteMonitorWidget(widget.id)"
+                  @click="deleteMonitorWidget(widget.id)"
                   class="btn btn-icon btn-icon-danger ms-2" title="Remove">
                   <i class="fas fa-circle-xmark"></i>
                 </button>
@@ -122,6 +122,7 @@
     :widget-id="editWidgetId"
     @modal-hide="onEditHide"
     @widget-created="onWidgetCreated"
+    @widget-updated="onWidgetUpdated"
   />
 </template>
 
@@ -146,7 +147,7 @@ export default {
     widgets: Array,
   },
   mixins: [HumanizeDurationMixin],
-  emits: ["modalHide", "toggleWidget", "moveWidgetUp", "moveWidgetDown", "deleteWidget", "addWidget"],
+  emits: ["modalHide", "toggleWidget", "moveWidgetUp", "moveWidgetDown", "deleteWidget", "addWidget", "updateWidget"],
   data() {
     return {
       table: null,
@@ -203,6 +204,9 @@ export default {
     },
     onWidgetCreated(widgetData) {
       this.$emit("addWidget", widgetData)
+    },
+    onWidgetUpdated(widgetData){
+      this.$emit("updateWidget", widgetData);
     }
   },
 };
