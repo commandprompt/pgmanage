@@ -169,11 +169,11 @@ def export_data(
     if not os.path.exists(export_dir):
         os.makedirs(export_dir)
 
-    database.v_connection.Open()
+    database.connection.Open()
 
     file_name: str = f'${str(time.time()).replace(".", "_")}.{extension}'
 
-    data = database.v_connection.QueryBlock(sql_cmd, 1000, False, True)
+    data = database.connection.QueryBlock(sql_cmd, 1000, False, True)
 
     file_path: str = os.path.join(export_dir, file_name)
     skip_headers = cmd_type in ['export_xlsx-no_headers', 'export_csv-no_headers']
@@ -184,7 +184,7 @@ def export_data(
     file.Open()
 
     has_more_records: bool
-    if database.v_connection.v_start:
+    if database.connection.v_start:
         file.Write(data)
         has_more_records = False
     elif len(data.Rows) > 0:
@@ -194,9 +194,9 @@ def export_data(
         has_more_records = False
 
     while has_more_records:
-        data = database.v_connection.QueryBlock(sql_cmd, 1000, False, True)
+        data = database.connection.QueryBlock(sql_cmd, 1000, False, True)
 
-        if database.v_connection.v_start:
+        if database.connection.v_start:
             file.Write(data)
             has_more_records = False
         elif len(data.Rows) > 0:
@@ -204,7 +204,7 @@ def export_data(
             has_more_records = True
         else:
             has_more_records = False
-    database.v_connection.Close()
+    database.connection.Close()
 
     file.Flush()
 
@@ -556,7 +556,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                         v_conn_tab_connection.v_active_service,
                         v_conn_tab_connection.v_active_user,
                         v_conn_tab_connection.v_connection.v_password,
-                        v_conn_tab_connection.v_conn_id,
+                        v_conn_tab_connection.conn_id,
                         v_conn_tab_connection.v_alias,
                         p_conn_string=v_conn_tab_connection.v_conn_string,
                         p_parse_conn_string=False,
@@ -568,7 +568,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                         v_conn_tab_connection.v_active_service,
                         v_conn_tab_connection.v_active_user,
                         v_conn_tab_connection.v_connection.v_password,
-                        v_conn_tab_connection.v_conn_id,
+                        v_conn_tab_connection.conn_id,
                         v_conn_tab_connection.v_alias,
                         p_conn_string=v_conn_tab_connection.v_conn_string,
                         p_parse_conn_string=False,
@@ -1006,10 +1006,10 @@ def thread_query(self, args) -> None:
         ):
             db_tab = Tab(
                 user=User.objects.get(id=session.v_user_id),
-                connection=Connection.objects.get(id=database.v_conn_id),
+                connection=Connection.objects.get(id=database.conn_id),
                 title=tab_title,
                 snippet=workspace_context.get("sql_save"),
-                database=database.v_active_service,
+                database=database.active_service,
             )
             db_tab.save()
             inserted_id = db_tab.id
@@ -1041,7 +1041,7 @@ def thread_query(self, args) -> None:
                 "download_name": f"pgmanage_exported-{file_suffix}.{extension}",
                 "duration": duration,
                 "inserted_id": inserted_id,
-                "con_status": database.v_connection.GetConStatus(),
+                "con_status": database.connection.GetConStatus(),
                 "chunks": False,
             }
 
@@ -1049,25 +1049,25 @@ def thread_query(self, args) -> None:
                 queue_response(client_object, response_data)
         else:
             if mode == QueryModes.DATA_OPERATION:
-                database.v_connection.v_autocommit = autocommit
+                database.connection.v_autocommit = autocommit
                 if (
-                    not database.v_connection.v_con
-                    or database.v_connection.GetConStatus() == 0
+                    not database.connection.v_con
+                    or database.connection.GetConStatus() == 0
                 ):
-                    database.v_connection.Open()
+                    database.connection.Open()
                 else:
-                    database.v_connection.v_start = True
+                    database.connection.v_start = True
 
             if (
                 mode in (QueryModes.DATA_OPERATION, QueryModes.FETCH_MORE)
                 and not all_data
             ):
                 block_size = block_size if mode == QueryModes.FETCH_MORE else 50
-                data = database.v_connection.QueryBlock(sql_cmd, block_size, True, True)
+                data = database.connection.QueryBlock(sql_cmd, block_size, True, True)
 
-                notices = database.v_connection.GetNotices()[:]
+                notices = database.connection.GetNotices()[:]
 
-                database.v_connection.ClearNotices()
+                database.connection.ClearNotices()
 
                 log_end_time = datetime.now(timezone.utc)
                 duration = get_duration(log_start_time, log_end_time)
@@ -1075,7 +1075,7 @@ def thread_query(self, args) -> None:
                 response_data["data"] = {
                     "col_names": data.Columns,
                     "col_types": [
-                        database.v_connection.ResolveType(c)
+                        database.connection.ResolveType(c)
                         for c in data.ColumnTypeCodes
                     ],
                     "data": data.Rows,
@@ -1083,8 +1083,8 @@ def thread_query(self, args) -> None:
                     "duration": duration,
                     "notices": notices,
                     "inserted_id": inserted_id,
-                    "status": database.v_connection.GetStatus(),
-                    "con_status": database.v_connection.GetConStatus(),
+                    "status": database.connection.GetStatus(),
+                    "con_status": database.connection.GetConStatus(),
                     "chunks": True,
                 }
 
@@ -1095,11 +1095,11 @@ def thread_query(self, args) -> None:
 
                 while has_more_records:
 
-                    data = database.v_connection.QueryBlock(sql_cmd, 10000, True, True)
+                    data = database.connection.QueryBlock(sql_cmd, 10000, True, True)
 
-                    notices = database.v_connection.GetNotices()
+                    notices = database.connection.GetNotices()
 
-                    database.v_connection.ClearNotices()
+                    database.connection.ClearNotices()
 
                     log_end_time = datetime.now(timezone.utc)
 
@@ -1108,7 +1108,7 @@ def thread_query(self, args) -> None:
                     response_data["data"] = {
                         "col_names": data.Columns,
                         "col_types": [
-                            database.v_connection.ResolveType(c)
+                            database.connection.ResolveType(c)
                             for c in data.ColumnTypeCodes
                         ],
                         "data": data.Rows,
@@ -1121,7 +1121,7 @@ def thread_query(self, args) -> None:
                         "chunks": True,
                     }
 
-                    if database.v_connection.v_start:
+                    if database.connection.v_start:
                         has_more_records = False
                     elif len(data.Rows) > 0:
                         has_more_records = True
@@ -1135,7 +1135,7 @@ def thread_query(self, args) -> None:
 
                 if not self.cancel:
 
-                    notices = database.v_connection.GetNotices()
+                    notices = database.connection.GetNotices()
 
                     log_end_time = datetime.now(timezone.utc)
                     duration = get_duration(log_start_time, log_end_time)
@@ -1143,7 +1143,7 @@ def thread_query(self, args) -> None:
                     response_data["data"] = {
                         "col_names": data.Columns,
                         "col_types": [
-                            database.v_connection.ResolveType(c)
+                            database.connection.ResolveType(c)
                             for c in data.ColumnTypeCodes
                         ],
                         "data": data.Rows,
@@ -1151,8 +1151,8 @@ def thread_query(self, args) -> None:
                         "duration": duration,
                         "notices": notices,
                         "inserted_id": inserted_id,
-                        "status": database.v_connection.GetStatus(),
-                        "con_status": database.v_connection.GetConStatus(),
+                        "status": database.connection.GetStatus(),
+                        "con_status": database.connection.GetConStatus(),
                         "chunks": True,
                     }
                     queue_response(client_object, response_data)
@@ -1160,9 +1160,9 @@ def thread_query(self, args) -> None:
                 duration = get_duration(log_start_time, log_end_time)
 
                 if mode == QueryModes.COMMIT:
-                    database.v_connection.Query("COMMIT;", True)
+                    database.connection.Query("COMMIT;", True)
                 else:
-                    database.v_connection.Query("ROLLBACK;", True)
+                    database.connection.Query("ROLLBACK;", True)
 
                 response_data["data"] = {
                     "col_names": None,
@@ -1171,14 +1171,14 @@ def thread_query(self, args) -> None:
                     "duration": duration,
                     "notices": [],
                     "inserted_id": inserted_id,
-                    "status": database.v_connection.GetStatus(),
-                    "con_status": database.v_connection.GetConStatus(),
+                    "status": database.connection.GetStatus(),
+                    "con_status": database.connection.GetConStatus(),
                     "chunks": False,
                 }
                 queue_response(client_object, response_data)
     except Exception as exc:
         if not self.cancel:
-            notices = database.v_connection.GetNotices()
+            notices = database.connection.GetNotices()
 
             log_end_time = datetime.now(timezone.utc)
             duration = get_duration(log_start_time, log_end_time)
@@ -1191,7 +1191,7 @@ def thread_query(self, args) -> None:
                 "notices": notices,
                 "inserted_id": inserted_id,
                 "status": 0,
-                "con_status": database.v_connection.GetConStatus(),
+                "con_status": database.connection.GetConStatus(),
                 "chunks": False,
             }
 
@@ -1207,8 +1207,8 @@ def thread_query(self, args) -> None:
             end=log_end_time,
             duration=duration,
             status=log_status,
-            conn_id=database.v_conn_id,
-            database=database.v_active_service,
+            conn_id=database.conn_id,
+            database=database.active_service,
         )
 
     if mode == QueryModes.DATA_OPERATION and workspace_context.get("tab_db_id") and log_query:
@@ -1251,33 +1251,33 @@ def thread_console(self, args) -> None:
             run_command_list: bool = True
 
             if mode == ConsoleModes.DATA_OPERATION:
-                database.v_connection.v_autocommit = autocommit
+                database.connection.v_autocommit = autocommit
                 if (
-                    not database.v_connection.v_con
-                    or database.v_connection.GetConStatus() == 0
+                    not database.connection.v_con
+                    or database.connection.GetConStatus() == 0
                 ):
-                    database.v_connection.Open()
+                    database.connection.Open()
                 else:
-                    database.v_connection.v_start = True
+                    database.connection.v_start = True
 
             if mode == ConsoleModes.FETCH_MORE:
-                table = database.v_connection.QueryBlock("", block_size, True, True)
+                table = database.connection.QueryBlock("", block_size, True, True)
                 # need to stop again
-                if not database.v_connection.v_start or len(table.Rows) >= block_size:
+                if not database.connection.v_start or len(table.Rows) >= block_size:
                     data_return += (
                         "\n"
-                        + table.Pretty(database.v_connection.v_expanded)
+                        + table.Pretty(database.connection.v_expanded)
                         + "\n"
-                        + database.v_connection.GetStatus()
+                        + database.connection.GetStatus()
                     )
                     run_command_list = False
                     show_fetch_button = True
                 else:
                     data_return += (
                         "\n"
-                        + table.Pretty(database.v_connection.v_expanded)
+                        + table.Pretty(database.connection.v_expanded)
                         + "\n"
-                        + database.v_connection.GetStatus()
+                        + database.connection.GetStatus()
                     )
                     run_command_list = True
                     list_sql = workspace_context["remaining_commands"]
@@ -1286,9 +1286,9 @@ def thread_console(self, args) -> None:
                 run_command_list = False
                 while has_more_records:
 
-                    data = database.v_connection.QueryBlock("", 10000, True, True)
+                    data = database.connection.QueryBlock("", 10000, True, True)
                     data_return = (
-                        "\n" + data.Pretty(database.v_connection.v_expanded) + "\n"
+                        "\n" + data.Pretty(database.connection.v_expanded) + "\n"
                     )
                     data_return = data_return.replace("\n", "\r\n")
 
@@ -1303,7 +1303,7 @@ def thread_console(self, args) -> None:
                         "con_status": "",
                     }
 
-                    if database.v_connection.v_start:
+                    if database.connection.v_start:
                         has_more_records = False
                     elif len(data.Rows) > 0:
                         has_more_records = True
@@ -1329,17 +1329,17 @@ def thread_console(self, args) -> None:
                         formated_sql = sql.strip()
                         data_return += (
                             "\n"
-                            + database.v_active_service
+                            + database.active_service
                             + "=# "
                             + formated_sql
                             + "\n"
                         )
 
-                        database.v_connection.ClearNotices()
-                        database.v_connection.v_start = True
-                        data1 = database.v_connection.Special(sql)
+                        database.connection.ClearNotices()
+                        database.connection.v_start = True
+                        data1 = database.connection.Special(sql)
 
-                        notices = database.v_connection.GetNotices()
+                        notices = database.connection.GetNotices()
                         notices_text = ""
                         if len(notices) > 0:
                             for notice in notices:
@@ -1348,14 +1348,14 @@ def thread_console(self, args) -> None:
 
                         data_return += data1
 
-                        if database.v_use_server_cursor:
-                            if database.v_connection.v_last_fetched_size == 50:
+                        if database.use_server_cursor:
+                            if database.connection.v_last_fetched_size == 50:
                                 workspace_context["remaining_commands"] = list_sql[counter:]
                                 show_fetch_button = True
                                 break
                     except Exception as exc:
                         try:
-                            notices = database.v_connection.GetNotices()
+                            notices = database.connection.GetNotices()
                             notices_text = ""
                             if len(notices) > 0:
                                 for notice in notices:
@@ -1376,7 +1376,7 @@ def thread_console(self, args) -> None:
                 "data": data_return,
                 "last_block": True,
                 "duration": duration,
-                "con_status": database.v_connection.GetConStatus(),
+                "con_status": database.connection.GetConStatus(),
             }
 
             # send data in chunks to avoid blocking the websocket server
@@ -1404,8 +1404,8 @@ def thread_console(self, args) -> None:
                             "last_block": True,
                             "duration": duration,
                             "show_fetch_button": show_fetch_button,
-                            "con_status": database.v_connection.GetConStatus(),
-                            "status": database.v_connection.GetStatus(),
+                            "con_status": database.connection.GetConStatus(),
+                            "status": database.connection.GetStatus(),
                         }
                     if not self.cancel:
                         queue_response(client_object, response_data_copy)
@@ -1414,7 +1414,7 @@ def thread_console(self, args) -> None:
                     queue_response(client_object, response_data)
 
             try:
-                database.v_connection.ClearNotices()
+                database.connection.ClearNotices()
             except Exception:
                 None
         except Exception as exc:
@@ -1434,10 +1434,10 @@ def thread_console(self, args) -> None:
             # logging to console history
             query_object = ConsoleHistory(
                 user=User.objects.get(id=session.v_user_id),
-                connection=Connection.objects.get(id=database.v_conn_id),
+                connection=Connection.objects.get(id=database.conn_id),
                 start_time=datetime.now(timezone.utc),
                 snippet=sql_cmd.replace("'", "''"),
-                database=database.v_active_service,
+                database=database.active_service,
             )
 
             query_object.save()
@@ -1515,18 +1515,18 @@ def thread_save_edit_data(self, args) -> None:
         client_object: Client = args["client_object"]
         command: str = args["sql_cmd"]
 
-        if database.v_db_type in ["sqlite","mysql"] and len(command.split(";\n")) >= 2:
+        if database.db_type in ["sqlite","mysql"] and len(command.split(";\n")) >= 2:
             try:
-                database.v_connection.Open(False)
-                database.v_connection.Execute("BEGIN")
+                database.connection.Open(False)
+                database.connection.Execute("BEGIN")
                 for sql in command.split(";\n"):
-                    database.v_connection.Execute(sql)
-                database.v_connection.Commit()
+                    database.connection.Execute(sql)
+                database.connection.Commit()
             except Exception as exc:
-                database.v_connection.v_con.rollback()
+                database.connection.v_con.rollback()
                 raise DatabaseError(str(exc)) from exc
         else:
-            database.v_connection.Execute(command)
+            database.connection.Execute(command)
 
         if not self.cancel:
             queue_response(client_object, response_data)
@@ -1552,29 +1552,29 @@ def thread_schema_edit_data(self, args) -> None:
         autocommit: bool = args.get("autocommit")
         database = args.get("database")
 
-        database.v_connection.v_autocommit = autocommit
+        database.connection.v_autocommit = autocommit
 
-        if not database.v_connection.v_con or database.v_connection.GetConStatus() == 0:
-            database.v_connection.Open()
+        if not database.connection.v_con or database.connection.GetConStatus() == 0:
+            database.connection.Open()
         else:
-            database.v_connection.v_start = True
+            database.connection.v_start = True
 
-        if database.v_db_type == "sqlite" and len(sql_cmd.split(";\n")) >= 2:
+        if database.db_type == "sqlite" and len(sql_cmd.split(";\n")) >= 2:
             try:
-                database.v_connection.Execute("BEGIN")
+                database.connection.Execute("BEGIN")
                 for sql in sql_cmd.split(";\n"):
-                    database.v_connection.Execute(sql)
-                database.v_connection.Commit()
+                    database.connection.Execute(sql)
+                database.connection.Commit()
             except Exception as exc:
-                database.v_connection.v_con.rollback()
+                database.connection.v_con.rollback()
                 raise DatabaseError(str(exc))
         else:
-            database.v_connection.QueryBlock(sql_cmd, 50, True, True)
+            database.connection.QueryBlock(sql_cmd, 50, True, True)
 
-        database.v_connection.ClearNotices()
+        database.connection.ClearNotices()
 
         response_data["data"] = {
-            "status": database.v_connection.GetStatus(),
+            "status": database.connection.GetStatus(),
         }
 
         if not self.cancel:

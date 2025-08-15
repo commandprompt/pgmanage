@@ -27,9 +27,9 @@ import os.path
 import re
 from collections import OrderedDict
 from enum import Enum
+
 import app.include.Spartacus as Spartacus
-import app.include.Spartacus.Database as Database
-import app.include.Spartacus.Utils as Utils
+
 from .sql_templates import get_template
 
 '''
@@ -42,9 +42,9 @@ class TemplateType(Enum):
     SCRIPT = 2
 
 class Template:
-    def __init__(self, p_text, p_type=TemplateType.EXECUTE):
-        self.v_text = p_text
-        self.v_type = p_type
+    def __init__(self, text, template_type=TemplateType.EXECUTE):
+        self.text = text
+        self.type = template_type
 
 '''
 ------------------------------------------------------------------------
@@ -52,78 +52,78 @@ SQLite
 ------------------------------------------------------------------------
 '''
 class SQLite:
-    def __init__(self, p_service, p_conn_id=0, p_alias='', p_foreignkeys=True):
-        self.v_alias = p_alias
-        self.v_db_type = 'sqlite'
-        self.v_conn_string = ''
-        self.v_conn_id = p_conn_id
-        self.v_server = ''
-        self.v_port = ''
-        self.v_service = p_service
-        self.v_active_service = p_service
-        self.v_user = ''
-        self.v_active_user = ''
-        self.v_schema = ''
-        self.v_connection = Spartacus.Database.SQLite(p_service, p_foreignkeys)
+    def __init__(self, service, conn_id=0, alias='', foreign_keys=True):
+        self.alias = alias
+        self.db_type = 'sqlite'
+        self.conn_string = ''
+        self.conn_id = conn_id
+        self.server = ''
+        self.port = ''
+        self.service = service
+        self.active_service = service
+        self.user = ''
+        self.active_user = ''
+        self.schema = ''
+        self.connection = Spartacus.Database.SQLite(service, foreign_keys)
 
         self.has_schema = False
-        self.v_has_functions = False
-        self.v_has_procedures = False
-        self.v_has_packages = False
-        self.v_has_sequences = False
-        self.v_has_primary_keys = True
-        self.v_has_foreign_keys = True
-        self.v_has_uniques = True
-        self.v_has_indexes = True
-        self.v_has_checks = False
-        self.v_has_excludes = False
-        self.v_has_rules = False
-        self.v_has_triggers = True
-        self.v_has_partitions = True
-        self.v_has_statistics = False
+        self.has_functions = False
+        self.has_procedures = False
+        self.has_packages = False
+        self.has_sequences = False
+        self.has_primary_keys = True
+        self.has_foreign_keys = True
+        self.has_uniques = True
+        self.has_indexes = True
+        self.has_checks = False
+        self.has_excludes = False
+        self.has_rules = False
+        self.has_triggers = True
+        self.has_partitions = True
+        self.has_statistics = False
 
-        self.v_has_update_rule = True
-        self.v_can_rename_table = True
-        self.v_rename_table_command = "alter table #p_table_name# rename to #p_new_table_name#"
-        self.v_create_pk_command = "constraint #p_constraint_name# primary key (#p_columns#)"
-        self.v_create_fk_command = "constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
-        self.v_create_unique_command = "constraint #p_constraint_name# unique (#p_columns#)"
-        self.v_can_alter_type = False
-        self.v_can_alter_nullable = False
-        self.v_can_rename_column = False
-        self.v_can_add_column = True
-        self.v_add_column_command = "alter table #p_table_name# add column #p_column_name# #p_data_type# #p_nullable#"
-        self.v_can_drop_column = False
-        self.v_can_add_constraint = False
-        self.v_can_drop_constraint = False
-        self.v_create_index_command = "create index #p_index_name# on #p_table_name# (#p_columns#)";
-        self.v_create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
-        self.v_drop_index_command = "drop index #p_index_name#"
-        self.v_console_help = "Console tab."
-        self.v_use_server_cursor = False
-        self.v_version = ''
-        self.v_version_num = ''
+        self.has_update_rule = True
+        self.can_rename_table = True
+        self.rename_table_command = "alter table #p_table_name# rename to #p_new_table_name#"
+        self.create_pk_command = "constraint #p_constraint_name# primary key (#p_columns#)"
+        self.create_fk_command = "constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
+        self.create_unique_command = "constraint #p_constraint_name# unique (#p_columns#)"
+        self.can_alter_type = False
+        self.can_alter_nullable = False
+        self.can_rename_column = False
+        self.can_add_column = True
+        self.add_column_command = "alter table #p_table_name# add column #p_column_name# #p_data_type# #p_nullable#"
+        self.can_drop_column = False
+        self.can_add_constraint = False
+        self.can_drop_constraint = False
+        self.create_index_command = "create index #p_index_name# on #p_table_name# (#p_columns#)";
+        self.create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
+        self.drop_index_command = "drop index #p_index_name#"
+        self.console_help = "Console tab."
+        self.use_server_cursor = False
+        self.version = ''
+        self.version_num = ''
 
     # Decorator to acquire lock before performing action
     def lock_required(function):
         def wrap(self, *args, **kwargs):
             try:
-                if self.v_lock != None:
-                    self.v_lock.acquire()
+                if self.lock != None:
+                    self.lock.acquire()
             except:
                 None
             try:
                 r = function(self, *args, **kwargs)
             except:
                 try:
-                    if self.v_lock != None:
-                        self.v_lock.release()
+                    if self.lock != None:
+                        self.lock.release()
                 except:
                     None
                 raise
             try:
-                if self.v_lock != None:
-                    self.v_lock.release()
+                if self.lock != None:
+                    self.lock.release()
             except:
                 None
             return r
@@ -133,51 +133,51 @@ class SQLite:
 
     @lock_required
     def GetVersion(self):
-        self.v_version = self.v_connection.ExecuteScalar('SELECT sqlite_version()')
-        v_splitted_version = self.v_version.split('.')
-        self.v_version_num = '{0}{1}{2}'.format(
-            v_splitted_version[0].zfill(2),
-            v_splitted_version[1].zfill(2),
-            v_splitted_version[2].zfill(2)
+        self.version = self.connection.ExecuteScalar('SELECT sqlite_version()')
+        splitted_version = self.version.split('.')
+        self.version_num = '{0}{1}{2}'.format(
+            splitted_version[0].zfill(2),
+            splitted_version[1].zfill(2),
+            splitted_version[2].zfill(2)
         )
-        return 'SQLite ' + self.v_version
+        return 'SQLite ' + self.version
 
     def GetName(self):
-        return self.v_service
+        return self.service
 
     def PrintDatabaseInfo(self):
-        if '/' in self.v_service:
-            v_strings = self.v_service.split('/')
-            return v_strings[len(v_strings)-1]
+        if '/' in self.service:
+            strings = self.service.split('/')
+            return strings[len(strings)-1]
         else:
-            return self.v_service
+            return self.service
 
     def PrintDatabaseDetails(self):
         return 'Local File'
 
-    def HandleUpdateDeleteRules(self, p_update_rule, p_delete_rule):
-        v_rules = ''
-        if p_update_rule.strip() != "":
-            v_rules += " on update " + p_update_rule + " "
-        if p_delete_rule.strip() != "":
-            v_rules += " on delete " + p_delete_rule + " "
-        return v_rules
+    def HandleUpdateDeleteRules(self, update_rule, delete_rule):
+        rules = ''
+        if update_rule.strip() != "":
+            rules += " on update " + update_rule + " "
+        if delete_rule.strip() != "":
+            rules += " on delete " + delete_rule + " "
+        return rules
 
     def TestConnection(self):
-        v_return = ''
+        return_data = ''
         try:
-            if os.path.isfile(self.v_service):
-                self.v_connection.Query("PRAGMA schema_version;")
-                v_return = 'Connection successful.'
+            if os.path.isfile(self.service):
+                self.connection.Query("PRAGMA schema_version;")
+                return_data = 'Connection successful.'
             else:
-                v_return = 'File does not exist, if you try to manage this connection a database file will be created.'
+                return_data = 'File does not exist, if you try to manage this connection a database file will be created.'
         except Exception as exc:
-            v_return = str(exc)
-        return v_return
+            return_data = str(exc)
+        return return_data
 
     @lock_required
-    def QueryTables(self, *kwargs):
-        return self.v_connection.Query('''
+    def QueryTables(self, *args):
+        return self.connection.Query('''
             select name as table_name,
                 quote(name) as name_raw
 		    from sqlite_master
@@ -186,9 +186,9 @@ class SQLite:
         ''', True)
 
     @lock_required
-    def QueryTablesFields(self, p_table=None, *kwargs):
-        v_table_columns_all = Spartacus.Database.DataTable()
-        v_table_columns_all.Columns = [
+    def QueryTablesFields(self, table_name=None, *args):
+        table_columns_all = Spartacus.Database.DataTable()
+        table_columns_all.Columns = [
             'column_name',
             'data_type',
             'nullable',
@@ -197,17 +197,17 @@ class SQLite:
             'data_scale',
             'table_name'
         ]
-        if p_table:
-            v_tables = Spartacus.Database.DataTable()
-            v_tables.Columns.append('table_name')
-            v_tables.Rows.append(OrderedDict(zip(v_tables.Columns, [p_table])))
+        if table_name:
+            tables = Spartacus.Database.DataTable()
+            tables.Columns.append('table_name')
+            tables.Rows.append(OrderedDict(zip(tables.Columns, [table_name])))
         else:
-            v_tables = self.QueryTables()
-        for v_table in v_tables.Rows:
-            table_name = '"{0}"'.format(v_table['table_name'].lstrip("\'").rstrip("\'"))
-            v_table_columns_tmp = self.v_connection.Query('pragma table_info({0})'.format(table_name), True)
-            v_table_columns = Spartacus.Database.DataTable()
-            v_table_columns.Columns = [
+            tables = self.QueryTables()
+        for table in tables.Rows:
+            quoted_table_name = '"{0}"'.format(table['table_name'].lstrip("\'").rstrip("\'"))
+            table_columns_tmp = self.connection.Query('pragma table_info({0})'.format(quoted_table_name), True)
+            table_columns = Spartacus.Database.DataTable()
+            table_columns.Columns = [
                 'column_name',
                 'data_type',
                 'nullable',
@@ -216,43 +216,43 @@ class SQLite:
                 'data_scale',
                 'table_name'
             ]
-            for r in v_table_columns_tmp.Rows:
-                v_row = []
-                v_row.append(r['name'])
+            for r in table_columns_tmp.Rows:
+                row = []
+                row.append(r['name'])
                 if '(' in r['type']:
-                    v_index = r['type'].find('(')
-                    v_data_type = r['type'].lower()[0 : v_index]
+                    index = r['type'].find('(')
+                    data_type = r['type'].lower()[0 : index]
                     if ',' in r['type']:
-                        v_sizes = r['type'][v_index + 1 : r['type'].find(')')].split(',')
-                        v_data_length = ''
-                        v_data_precision = v_sizes[0]
-                        v_data_scale = v_sizes[1]
+                        sizes = r['type'][index + 1 : r['type'].find(')')].split(',')
+                        data_length = ''
+                        data_precision = sizes[0]
+                        data_scale = sizes[1]
                     else:
-                        v_data_length = r['type'][v_index + 1 : r['type'].find(')')]
-                        v_data_precision = ''
-                        v_data_scale = ''
+                        data_length = r['type'][index + 1 : r['type'].find(')')]
+                        data_precision = ''
+                        data_scale = ''
                 else:
-                    v_data_type = r['type'].lower()
-                    v_data_length = ''
-                    v_data_precision = ''
-                    v_data_scale = ''
-                v_row.append(v_data_type)
+                    data_type = r['type'].lower()
+                    data_length = ''
+                    data_precision = ''
+                    data_scale = ''
+                row.append(data_type)
                 if r['notnull'] == '1':
-                    v_row.append('NO')
+                    row.append('NO')
                 else:
-                    v_row.append('YES')
-                v_row.append(v_data_length)
-                v_row.append(v_data_precision)
-                v_row.append(v_data_scale)
-                v_row.append(v_table['table_name'])
-                v_table_columns.Rows.append(OrderedDict(zip(v_table_columns.Columns, v_row)))
-            v_table_columns_all.Merge(v_table_columns)
-        return v_table_columns_all
+                    row.append('YES')
+                row.append(data_length)
+                row.append(data_precision)
+                row.append(data_scale)
+                row.append(table['table_name'])
+                table_columns.Rows.append(OrderedDict(zip(table_columns.Columns, row)))
+            table_columns_all.Merge(table_columns)
+        return table_columns_all
 
     @lock_required
-    def QueryTablesForeignKeys(self, p_table=None, *kwargs):
-        v_fks_all = Spartacus.Database.DataTable()
-        v_fks_all.Columns = [
+    def QueryTablesForeignKeys(self, table_name=None, *args):
+        fks_all = Spartacus.Database.DataTable()
+        fks_all.Columns = [
             'r_table_name',
             'table_name',
             'r_column_name',
@@ -263,21 +263,21 @@ class SQLite:
             'table_schema',
             'r_table_schema'
         ]
-        if p_table:
-            v_tables = Spartacus.Database.DataTable()
-            v_tables.Columns.append('table_name')
-            v_tables.Rows.append(OrderedDict(zip(v_tables.Columns, [p_table])))
+        if table_name:
+            tables = Spartacus.Database.DataTable()
+            tables.Columns.append('table_name')
+            tables.Rows.append(OrderedDict(zip(tables.Columns, [table_name])))
         else:
-            v_tables = self.v_connection.Query('''
+            tables = self.connection.Query('''
                 select name as table_name
                 from sqlite_master
                 where type = 'table'
                 ''', True)
 
-        for v_table in v_tables.Rows:
-            v_fks_tmp = self.v_connection.Query("pragma foreign_key_list('{0}')".format(v_table['table_name']), True)
-            v_fks = Spartacus.Database.DataTable()
-            v_fks.Columns = [
+        for table in tables.Rows:
+            fks_tmp = self.connection.Query("pragma foreign_key_list('{0}')".format(table['table_name']), True)
+            fks = Spartacus.Database.DataTable()
+            fks.Columns = [
                 'r_table_name',
                 'table_name',
                 'r_column_name',
@@ -288,23 +288,23 @@ class SQLite:
                 'table_schema',
                 'r_table_schema'
             ]
-            for r in v_fks_tmp.Rows:
-                v_row = []
-                v_row.append(r['table'])
-                v_row.append(v_table['table_name'])
-                v_row.append(r['to'])
-                v_row.append(r['from'])
-                v_row.append(v_table['table_name'] + '_fk_' + str(r['id']))
-                v_row.append(r['on_update'])
-                v_row.append(r['on_delete'])
-                v_row.append('')
-                v_row.append('')
-                v_fks.Rows.append(OrderedDict(zip(v_fks.Columns, v_row)))
-            v_fks_all.Merge(v_fks)
-        return v_fks_all
+            for r in fks_tmp.Rows:
+                row = []
+                row.append(r['table'])
+                row.append(table['table_name'])
+                row.append(r['to'])
+                row.append(r['from'])
+                row.append(table['table_name'] + '_fk_' + str(r['id']))
+                row.append(r['on_update'])
+                row.append(r['on_delete'])
+                row.append('')
+                row.append('')
+                fks.Rows.append(OrderedDict(zip(fks.Columns, row)))
+            fks_all.Merge(fks)
+        return fks_all
 
     @lock_required
-    def QueryTablesForeignKeysColumns(self, fkey, table=None, *args):
+    def QueryTablesForeignKeysColumns(self, fkey, table_name=None, *args):
         fk = Spartacus.Database.DataTable()
         fk.Columns = [
             'r_table_name',
@@ -318,8 +318,8 @@ class SQLite:
             'r_table_schema'
         ]
 
-        if table:
-            q = "select * from pragma_foreign_key_list('{0}')".format(table)
+        if table_name:
+            q = "select * from pragma_foreign_key_list('{0}')".format(table_name)
         else:
             q = '''SELECT
                     m.name,
@@ -333,13 +333,13 @@ class SQLite:
 
         fkeys = fkey if isinstance(fkey, list) else [fkey]
 
-        fks_tmp = self.v_connection.Query(q, True)
+        fks_tmp = self.connection.Query(q, True)
         for row in fks_tmp.Rows:
-            constraint_name = row.get('name', table) + '_fk_' + str(row['id'])
+            constraint_name = row.get('name', table_name) + '_fk_' + str(row['id'])
             if constraint_name in fkeys:
                 result_row = OrderedDict(zip(fk.Columns, [
                     row['table'],
-                    row.get('name', table),
+                    row.get('name', table_name),
                     row['to'],
                     row['from'],
                     constraint_name,
@@ -354,144 +354,144 @@ class SQLite:
         return fk
 
     @lock_required
-    def QueryTablesPrimaryKeys(self, p_table=None):
-        v_pks_all = Spartacus.Database.DataTable()
-        v_pks_all.Columns = [
+    def QueryTablesPrimaryKeys(self, table_name=None):
+        pks_all = Spartacus.Database.DataTable()
+        pks_all.Columns = [
             'constraint_name',
             'column_name',
             'table_name'
         ]
-        if p_table:
-            v_tables = Spartacus.Database.DataTable()
-            v_tables.Columns.append('table_name')
-            v_tables.Rows.append(OrderedDict(zip(v_tables.Columns, [p_table])))
+        if table_name:
+            tables = Spartacus.Database.DataTable()
+            tables.Columns.append('table_name')
+            tables.Rows.append(OrderedDict(zip(tables.Columns, [table_name])))
         else:
-            v_tables = self.QueryTables()
-        for v_table in v_tables.Rows:
-            v_pks_tmp = self.v_connection.Query("pragma table_info('{0}')".format(v_table['table_name']), True)
-            v_pks = Spartacus.Database.DataTable()
-            v_pks.Columns = [
+            tables = self.QueryTables()
+        for table in tables.Rows:
+            pks_tmp = self.connection.Query("pragma table_info('{0}')".format(table['table_name']), True)
+            pks = Spartacus.Database.DataTable()
+            pks.Columns = [
                 'constraint_name',
                 'column_name',
                 'table_name'
             ]
-            for r in v_pks_tmp.Rows:
+            for r in pks_tmp.Rows:
                 if r['pk'] != '0':
-                    v_row = []
-                    v_row.append('pk_' + v_table['table_name'])
-                    v_row.append(r['name'])
-                    v_row.append(v_table['table_name'])
-                    v_pks.Rows.append(OrderedDict(zip(v_pks.Columns, v_row)))
-            v_pks_all.Merge(v_pks)
-        return v_pks_all
+                    row = []
+                    row.append('pk_' + table['table_name'])
+                    row.append(r['name'])
+                    row.append(table['table_name'])
+                    pks.Rows.append(OrderedDict(zip(pks.Columns, row)))
+            pks_all.Merge(pks)
+        return pks_all
 
     @lock_required
-    def QueryTablesPrimaryKeysColumns(self, p_table=None):
-        v_pk_tmp = self.v_connection.Query("pragma table_info('{0}')".format(p_table), True)
+    def QueryTablesPrimaryKeysColumns(self, table=None):
+        pk_tmp = self.connection.Query("pragma table_info('{0}')".format(table), True)
 
-        v_pk = Spartacus.Database.DataTable()
-        v_pk.Columns = ['column_name']
+        pk = Spartacus.Database.DataTable()
+        pk.Columns = ['column_name']
 
-        for v_row in v_pk_tmp.Rows:
-            if v_row['pk'] != '0':
-                v_row = [v_row['name']]
-                v_pk.Rows.append(OrderedDict(zip(v_pk.Columns, v_row)))
+        for row in pk_tmp.Rows:
+            if row['pk'] != '0':
+                row = [row['name']]
+                pk.Rows.append(OrderedDict(zip(pk.Columns, row)))
 
-        return v_pk
+        return pk
 
     @lock_required
-    def QueryTablesUniques(self, p_table=None):
-        v_uniques_all = Spartacus.Database.DataTable()
+    def QueryTablesUniques(self, table_name=None):
+        uniques_all = Spartacus.Database.DataTable()
 
-        v_uniques_all.Columns = [
+        uniques_all.Columns = [
             'constraint_name',
             'table_name'
         ]
 
-        if p_table:
-            v_tables = self.v_connection.Query('''
+        if table_name:
+            tables = self.connection.Query('''
                 select name
                 from sqlite_master
                 where type = 'table'
                   and name = '{0}'
-            '''.format(p_table), True)
+            '''.format(table_name), True)
         else:
-            v_tables = self.v_connection.Query('''
+            tables = self.connection.Query('''
                 select name
                 from sqlite_master
                 where type = 'table'
             ''', True)
 
-        for v_table in v_tables.Rows:
-            v_uniques = self.v_connection.Query('''
+        for table in tables.Rows:
+            uniques = self.connection.Query('''
                 PRAGMA index_list('{0}')
             '''.format(
-                v_table['name']
+                table['name']
             ), True)
 
-            for v_unique in v_uniques.Rows:
-                if v_unique['origin'] == 'u':
-                    v_uniques_all.AddRow([
-                        v_unique['name'],
-                        v_table['name']
+            for unique in uniques.Rows:
+                if unique['origin'] == 'u':
+                    uniques_all.AddRow([
+                        unique['name'],
+                        table['name']
                     ])
 
-        return v_uniques_all
+        return uniques_all
 
     @lock_required
-    def QueryTablesUniquesColumns(self, p_unique, p_table=None):
-        v_uniques_all = Spartacus.Database.DataTable()
+    def QueryTablesUniquesColumns(self, unique_name, table_name=None):
+        uniques_all = Spartacus.Database.DataTable()
 
-        v_uniques_all.Columns = [
+        uniques_all.Columns = [
             'constraint_name',
             'column_name',
             'table_name'
         ]
 
-        if p_table:
-            v_tables = self.v_connection.Query('''
+        if table_name:
+            tables = self.connection.Query('''
                 select name
                 from sqlite_master
                 where type = 'table'
                   and name = '{0}'
-            '''.format(p_table), True)
+            '''.format(table_name), True)
         else:
-            v_tables = self.v_connection.Query('''
+            tables = self.connection.Query('''
                 select name
                 from sqlite_master
                 where type = 'table'
             ''', True)
 
-        for v_table in v_tables.Rows:
-            v_uniques = self.v_connection.Query('''
+        for table in tables.Rows:
+            uniques = self.connection.Query('''
                 PRAGMA index_list('{0}')
             '''.format(
-                v_table['name']
+                table['name']
             ), True)
 
-            for v_unique in v_uniques.Rows:
-                if v_unique['origin'] == 'u':
-                    if v_unique['name'] == p_unique:
-                        v_unique_columns = self.v_connection.Query('''
+            for unique in uniques.Rows:
+                if unique['origin'] == 'u':
+                    if unique['name'] == unique_name:
+                        unique_columns = self.connection.Query('''
                             PRAGMA index_info('{0}')
                         '''.format(
-                            v_unique['name']
+                            unique['name']
                         ), True)
 
-                        for v_unique_column in v_unique_columns.Rows:
-                            v_uniques_all.AddRow([
-                                v_unique['name'],
-                                v_unique_column['name'],
-                                v_table['name']
+                        for unique_column in unique_columns.Rows:
+                            uniques_all.AddRow([
+                                unique['name'],
+                                unique_column['name'],
+                                table['name']
                             ])
 
-        return v_uniques_all
+        return uniques_all
 
     @lock_required
-    def QueryTablesIndexes(self, p_table=None):
-        v_indexes_all = Spartacus.Database.DataTable()
+    def QueryTablesIndexes(self, table_name=None):
+        indexes_all = Spartacus.Database.DataTable()
 
-        v_indexes_all.Columns = [
+        indexes_all.Columns = [
             "index_name",
             "table_name",
             "unique",
@@ -500,20 +500,20 @@ class SQLite:
             "constraint",
         ]
 
-        if p_table:
-            v_tables = self.v_connection.Query(
+        if table_name:
+            tables = self.connection.Query(
                 """
                 select name
                 from sqlite_master
                 where type = 'table'
                   and name = '{0}'
             """.format(
-                    p_table
+                    table_name
                 ),
                 True,
             )
         else:
-            v_tables = self.v_connection.Query(
+            tables = self.connection.Query(
                 """
                 select name
                 from sqlite_master
@@ -522,24 +522,24 @@ class SQLite:
                 True,
             )
 
-        for v_table in v_tables.Rows:
-            v_indexes = self.v_connection.Query(
+        for table in tables.Rows:
+            indexes = self.connection.Query(
                 """
                 PRAGMA index_list('{0}')
             """.format(
-                    v_table["name"]
+                    table["name"]
                 ),
                 True,
             )
 
-            for v_index in v_indexes.Rows:
-                if v_index["origin"] == "c":
+            for index in indexes.Rows:
+                if index["origin"] == "c":
                     # Get columns associated with the index
-                    index_columns = self.v_connection.Query(
+                    index_columns = self.connection.Query(
                         """
                         PRAGMA index_info('{0}')
                     """.format(
-                            v_index["name"]
+                            index["name"]
                         ),
                         True,
                     )
@@ -547,14 +547,14 @@ class SQLite:
                     # Collect column names
                     column_names = [col["name"] for col in index_columns.Rows]
 
-                    create_stmt = self.v_connection.Query(
+                    create_stmt = self.connection.Query(
                         """
                         SELECT sql
                         FROM sqlite_master
                         WHERE type = 'index'
                         AND name = '{0}'
                     """.format(
-                            v_index["name"]
+                            index["name"]
                         ),
                         True,
                     )
@@ -565,71 +565,71 @@ class SQLite:
                             create_stmt.Rows[0]["sql"].split("WHERE", 1)[1].strip()
                         )
 
-                    v_indexes_all.AddRow(
+                    indexes_all.AddRow(
                         [
-                            v_index["name"],
-                            v_table["name"],
-                            v_index["unique"] == "1",
-                            v_index["origin"] == "pk",
+                            index["name"],
+                            table["name"],
+                            index["unique"] == "1",
+                            index["origin"] == "pk",
                             column_names,
                             constraint,
                         ]
                     )
 
-        return v_indexes_all
+        return indexes_all
 
     @lock_required
-    def QueryTablesIndexesColumns(self, p_index, p_table=None):
-        v_indexes_all = Spartacus.Database.DataTable()
+    def QueryTablesIndexesColumns(self, index_name, table_name=None):
+        indexes_all = Spartacus.Database.DataTable()
 
-        v_indexes_all.Columns = [
+        indexes_all.Columns = [
             'index_name',
             'column_name',
             'table_name'
         ]
 
-        if p_table:
-            v_tables = self.v_connection.Query('''
+        if table_name:
+            tables = self.connection.Query('''
                 select name
                 from sqlite_master
                 where type = 'table'
                   and name = '{0}'
-            '''.format(p_table), True)
+            '''.format(table_name), True)
         else:
-            v_tables = self.v_connection.Query('''
+            tables = self.connection.Query('''
                 select name
                 from sqlite_master
                 where type = 'table'
             ''', True)
 
-        for v_table in v_tables.Rows:
-            v_indexes = self.v_connection.Query('''
+        for table in tables.Rows:
+            indexes = self.connection.Query('''
                 PRAGMA index_list('{0}')
             '''.format(
-                v_table['name']
+                table['name']
             ), True)
 
-            for v_index in v_indexes.Rows:
-                if v_index['origin'] == 'c':
-                    if v_index['name'] == p_index:
-                        v_index_columns = self.v_connection.Query('''
+            for index in indexes.Rows:
+                if index['origin'] == 'c':
+                    if index['name'] == index_name:
+                        index_columns = self.connection.Query('''
                             PRAGMA index_info('{0}')
                         '''.format(
-                            v_index['name']
+                            index['name']
                         ), True)
 
-                        for v_index_column in v_index_columns.Rows:
-                            v_indexes_all.AddRow([
-                                v_index['name'],
-                                v_index_column['name'],
-                                v_table['name']
+                        for index_column in index_columns.Rows:
+                            indexes_all.AddRow([
+                                index['name'],
+                                index_column['name'],
+                                table['name']
                             ])
 
-        return v_indexes_all
+        return indexes_all
 
     @lock_required
     def QueryViews(self):
-        return self.v_connection.Query('''
+        return self.connection.Query('''
             select name as table_name,
                    quote(name) as name_raw
 		    from sqlite_master
@@ -638,9 +638,9 @@ class SQLite:
         ''', True)
 
     @lock_required
-    def QueryViewFields(self, p_table=None):
-        v_table_columns_all = Spartacus.Database.DataTable()
-        v_table_columns_all.Columns = [
+    def QueryViewFields(self, table_name=None):
+        table_columns_all = Spartacus.Database.DataTable()
+        table_columns_all.Columns = [
             'column_name',
             'data_type',
             'nullable',
@@ -649,16 +649,16 @@ class SQLite:
             'data_scale',
             'table_name'
         ]
-        if p_table:
-            v_tables = Spartacus.Database.DataTable()
-            v_tables.Columns.append('table_name')
-            v_tables.Rows.append(OrderedDict(zip(v_tables.Columns, [p_table])))
+        if table_name:
+            tables = Spartacus.Database.DataTable()
+            tables.Columns.append('table_name')
+            tables.Rows.append(OrderedDict(zip(tables.Columns, [table_name])))
         else:
-            v_tables = self.QueryTables()
-        for v_table in v_tables.Rows:
-            v_table_columns_tmp = self.v_connection.Query("pragma table_info({0})".format(v_table['table_name']), True)
-            v_table_columns = Spartacus.Database.DataTable()
-            v_table_columns.Columns = [
+            tables = self.QueryTables()
+        for table in tables.Rows:
+            table_columns_tmp = self.connection.Query("pragma table_info({0})".format(table['table_name']), True)
+            table_columns = Spartacus.Database.DataTable()
+            table_columns.Columns = [
                 'column_name',
                 'data_type',
                 'nullable',
@@ -667,42 +667,42 @@ class SQLite:
                 'data_scale',
                 'table_name'
             ]
-            for r in v_table_columns_tmp.Rows:
-                v_row = []
-                v_row.append(r['name'])
+            for r in table_columns_tmp.Rows:
+                row = []
+                row.append(r['name'])
                 if '(' in r['type']:
-                    v_index = r['type'].find('(')
-                    v_data_type = r['type'].lower()[0 : v_index]
+                    index = r['type'].find('(')
+                    data_type = r['type'].lower()[0 : index]
                     if ',' in r['type']:
-                        v_sizes = r['type'][v_index + 1 : r['type'].find(')')].split(',')
-                        v_data_length = ''
-                        v_data_precision = v_sizes[0]
-                        v_data_scale = v_sizes[1]
+                        sizes = r['type'][index + 1 : r['type'].find(')')].split(',')
+                        data_length = ''
+                        data_precision = sizes[0]
+                        data_scale = sizes[1]
                     else:
-                        v_data_length = r['type'][v_index + 1 : r['type'].find(')')]
-                        v_data_precision = ''
-                        v_data_scale = ''
+                        data_length = r['type'][index + 1 : r['type'].find(')')]
+                        data_precision = ''
+                        data_scale = ''
                 else:
-                    v_data_type = r['type'].lower()
-                    v_data_length = ''
-                    v_data_precision = ''
-                    v_data_scale = ''
-                v_row.append(v_data_type)
+                    data_type = r['type'].lower()
+                    data_length = ''
+                    data_precision = ''
+                    data_scale = ''
+                row.append(data_type)
                 if r['notnull'] == '1':
-                    v_row.append('NO')
+                    row.append('NO')
                 else:
-                    v_row.append('YES')
-                v_row.append(v_data_length)
-                v_row.append(v_data_precision)
-                v_row.append(v_data_scale)
-                v_row.append(v_table['table_name'])
-                v_table_columns.Rows.append(OrderedDict(zip(v_table_columns.Columns, v_row)))
-            v_table_columns_all.Merge(v_table_columns)
-        return v_table_columns_all
+                    row.append('YES')
+                row.append(data_length)
+                row.append(data_precision)
+                row.append(data_scale)
+                row.append(table['table_name'])
+                table_columns.Rows.append(OrderedDict(zip(table_columns.Columns, row)))
+            table_columns_all.Merge(table_columns)
+        return table_columns_all
 
     @lock_required
     def QueryTablesTriggers(self, p_table=None):
-        return self.v_connection.Query('''
+        return self.connection.Query('''
             SELECT name AS trigger_name,
                    tbl_name AS table_name
             FROM sqlite_master
@@ -715,170 +715,169 @@ class SQLite:
     def TemplateSelect(self, p_table, p_kind):
         # table
         if p_kind == 't':
-            v_sql = 'SELECT t.'
-            v_fields = self.QueryTablesFields(p_table)
+            sql = 'SELECT t.'
+            fields = self.QueryTablesFields(p_table)
 
-            if len(v_fields.Rows) > 0:
-                v_sql += '\n     , t.'.join([r['column_name'] for r in v_fields.Rows])
+            if len(fields.Rows) > 0:
+                sql += '\n     , t.'.join([r['column_name'] for r in fields.Rows])
 
-            v_sql += "\nFROM '{0}' t".format(p_table)
+            sql += "\nFROM '{0}' t".format(p_table)
 
-            v_pk = self.QueryTablesPrimaryKeys(p_table)
+            pk = self.QueryTablesPrimaryKeys(p_table)
 
-            if len(v_pk.Rows) > 0:
-                v_fields = self.QueryTablesPrimaryKeysColumns(p_table)
+            if len(pk.Rows) > 0:
+                fields = self.QueryTablesPrimaryKeysColumns(p_table)
 
-                if len(v_fields.Rows) > 0:
-                    v_sql += '\nORDER BY t.'
-                    v_sql += '\n       , t.'.join([r['column_name'] for r in v_fields.Rows])
+                if len(fields.Rows) > 0:
+                    sql += '\nORDER BY t.'
+                    sql += '\n       , t.'.join([r['column_name'] for r in fields.Rows])
         # view
         elif p_kind == 'v':
-            v_sql = 'SELECT t.'
-            v_fields = self.QueryViewFields(p_table)
+            sql = 'SELECT t.'
+            fields = self.QueryViewFields(p_table)
 
-            if len(v_fields.Rows) > 0:
-                v_sql += '\n     , t.'.join([r['column_name'] for r in v_fields.Rows])
+            if len(fields.Rows) > 0:
+                sql += '\n     , t.'.join([r['column_name'] for r in fields.Rows])
 
-            v_sql += "\nFROM '{0}' t".format(p_table)
+            sql += "\nFROM '{0}' t".format(p_table)
 
-        return Template(v_sql)
+        return Template(sql)
 
-    def TemplateInsert(self, p_table):
-        v_fields = self.QueryTablesFields(p_table)
+    def TemplateInsert(self, table_name):
+        fields = self.QueryTablesFields(table_name)
 
-        if len(v_fields.Rows) > 0:
-            v_sql = "INSERT INTO '{0}' (\n".format(p_table)
-            v_pk = self.QueryTablesPrimaryKeys(p_table)
+        if len(fields.Rows) > 0:
+            sql = "INSERT INTO '{0}' (\n".format(table_name)
+            pk = self.QueryTablesPrimaryKeys(table_name)
 
-            if len(v_pk.Rows) > 0:
-                v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(p_table)
-                v_pk_fields = [r['column_name'] for r in v_table_pk_fields.Rows]
-                v_values = []
-                v_first = True
+            if len(pk.Rows) > 0:
+                table_pk_fields = self.QueryTablesPrimaryKeysColumns(table_name)
+                pk_fields = [r['column_name'] for r in table_pk_fields.Rows]
+                values = []
+                first = True
 
-                for r in v_fields.Rows:
-                    if v_first:
-                        v_sql += '      {0}'.format(r['column_name'])
-                        if r['column_name'] in v_pk_fields:
-                            v_values.append('      ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
+                for r in fields.Rows:
+                    if first:
+                        sql += '      {0}'.format(r['column_name'])
+                        if r['column_name'] in pk_fields:
+                            values.append('      ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
                         elif r['nullable'] == 'YES':
-                            v_values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
-                        v_first = False
+                            values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                        first = False
                     else:
-                        v_sql += '\n    , {0}'.format(r['column_name'])
-                        if r['column_name'] in v_pk_fields:
-                            v_values.append('\n    , ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
+                        sql += '\n    , {0}'.format(r['column_name'])
+                        if r['column_name'] in pk_fields:
+                            values.append('\n    , ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
                         elif r['nullable'] == 'YES':
-                            v_values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
             else:
-                v_values = []
-                v_first = True
+                values = []
+                first = True
 
-                for r in v_fields.Rows:
-                    if v_first:
-                        v_sql += '      {0}'.format(r['column_name'])
+                for r in fields.Rows:
+                    if first:
+                        sql += '      {0}'.format(r['column_name'])
                         if r['nullable'] == 'YES':
-                            v_values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
-                        v_first = False
+                            values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                        first = False
                     else:
-                        v_sql += '\n    , {0}'.format(r['column_name'])
+                        sql += '\n    , {0}'.format(r['column_name'])
                         if r['nullable'] == 'YES':
-                            v_values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
 
-            v_sql += '\n) VALUES (\n'
+            sql += '\n) VALUES (\n'
 
-            for v in v_values:
-                v_sql += v
+            for v in values:
+                sql += v
 
-            v_sql += '\n)'
+            sql += '\n)'
         else:
-            v_sql = ''
+            sql = ''
 
-        return Template(v_sql)
+        return Template(sql)
 
-    def TemplateUpdate(self, p_table):
-        v_fields = self.QueryTablesFields(p_table)
+    def TemplateUpdate(self, table_name):
+        fields = self.QueryTablesFields(table_name)
 
-        if len(v_fields.Rows) > 0:
-            v_sql = "UPDATE '{0}' \nSET ".format(p_table)
-            v_pk = self.QueryTablesPrimaryKeys(p_table)
+        if len(fields.Rows) > 0:
+            sql = "UPDATE '{0}' \nSET ".format(table_name)
+            pk = self.QueryTablesPrimaryKeys(table_name)
 
-            if len(v_pk.Rows) > 0:
-                v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(p_table)
-                v_pk_fields = [r['column_name'] for r in v_table_pk_fields.Rows]
-                v_first = True
+            if len(pk.Rows) > 0:
+                table_pk_fields = self.QueryTablesPrimaryKeysColumns(table_name)
+                pk_fields = [r['column_name'] for r in table_pk_fields.Rows]
+                first = True
 
-                for r in v_fields.Rows:
-                    if v_first:
-                        if r['column_name'] in v_pk_fields:
-                            v_sql += '{0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
+                for r in fields.Rows:
+                    if first:
+                        if r['column_name'] in pk_fields:
+                            sql += '{0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
                         elif r['nullable'] == 'YES':
-                            v_sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
-                        v_first = False
+                            sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                        first = False
                     else:
-                        if r['column_name'] in v_pk_fields:
-                            v_sql += '\n    , {0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
+                        if r['column_name'] in pk_fields:
+                            sql += '\n    , {0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
                         elif r['nullable'] == 'YES':
-                            v_sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
             else:
-                v_first = True
+                first = True
 
-                for r in v_fields.Rows:
-                    if v_first:
+                for r in fields.Rows:
+                    if first:
                         if r['nullable'] == 'YES':
-                            v_sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
-                        v_first = False
+                            sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                        first = False
                     else:
                         if r['nullable'] == 'YES':
-                            v_sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
 
-            v_sql += '\nWHERE condition'
+            sql += '\nWHERE condition'
         else:
-            v_sql = ''
+            sql = ''
 
-        return Template(v_sql)
+        return Template(sql)
 
     @lock_required
-    def QueryDataLimited(self, p_query, p_count=-1):
-        if p_count != -1:
-            self.v_connection.Open()
-            v_data = self.v_connection.QueryBlock(p_query, p_count, True)
-            self.v_connection.Close()
-            return v_data
-        else:
-            return self.v_connection.Query(p_query, True)
+    def QueryDataLimited(self, query, count=-1):
+        if count != -1:
+            self.connection.Open()
+            data = self.connection.QueryBlock(query, count, True)
+            self.connection.Close()
+            return data
+        return self.connection.Query(query, True)
 
     @lock_required
-    def QueryTableRecords(self, p_column_list, p_table, p_filter, p_count=-1):
-        v_limit = ''
-        if p_count != -1:
-            v_limit = ' limit ' + p_count
-        return self.v_connection.Query('''
+    def QueryTableRecords(self, column_list, table, query_filter, count=-1):
+        limit = ''
+        if count != -1:
+            limit = ' limit ' + count
+        return self.connection.Query('''
             select {0}
             from '{1}' t
             {2}
             {3}
         '''.format(
-                p_column_list,
-                p_table,
-                p_filter,
-                v_limit
+                column_list,
+                table,
+                query_filter,
+                limit
             ), True
         )
 
@@ -950,7 +949,7 @@ class SQLite:
         return ret
 
     def GetPropertiesTable(self, p_object):
-        return self.v_connection.Query('''
+        return self.connection.Query('''
             SELECT type AS "Type",
                    name AS "Name",
                    rootpage AS "Root Page"
@@ -959,34 +958,34 @@ class SQLite:
               AND name = '{0}'
         '''.format(p_object))
 
-    def GetPropertiesTableField(self, p_table, p_object):
-        return self.v_connection.Query('''
+    def GetPropertiesTableField(self, p_table, object_name):
+        return self.connection.Query('''
             SELECT 'Column' AS "Type",
                    '{0}' AS "Name"
-        '''.format(p_object))
+        '''.format(object_name))
 
-    def GetPropertiesIndex(self, p_object):
-        return self.v_connection.Query('''
+    def GetPropertiesIndex(self, object_name):
+        return self.connection.Query('''
             SELECT type AS "Type",
                    name AS "Name",
                    rootpage AS "Root Page"
             FROM sqlite_master
             WHERE type = 'index'
               AND name = '{0}'
-        '''.format(p_object))
+        '''.format(object_name))
 
-    def GetPropertiesView(self, p_object):
-        return self.v_connection.Query('''
+    def GetPropertiesView(self, object_name):
+        return self.connection.Query('''
             SELECT type AS "Type",
                    name AS "Name",
                    rootpage AS "Root Page"
             FROM sqlite_master
             WHERE type = 'view'
               AND name = '{0}'
-        '''.format(p_object))
+        '''.format(object_name))
 
-    def GetPropertiesTrigger(self, p_table, p_object):
-        return self.v_connection.Query('''
+    def GetPropertiesTrigger(self, table_name, object_name):
+        return self.connection.Query('''
             SELECT type AS "Type",
                    name AS "Name",
                    rootpage AS "Root Page"
@@ -994,25 +993,25 @@ class SQLite:
             WHERE type = 'trigger'
               AND name = '{0}'
               AND tbl_name = '{1}'
-        '''.format(p_object, p_table))
+        '''.format(object_name, table_name))
 
-    def GetPropertiesPK(self, p_table, p_object):
-        return self.v_connection.Query('''
+    def GetPropertiesPK(self, table_name, object_name):
+        return self.connection.Query('''
             SELECT 'PK' AS "Type",
                    '{0}' AS "Name"
-        '''.format(p_object))
+        '''.format(object_name))
 
-    def GetPropertiesFK(self, p_table, p_object):
-        return self.v_connection.Query('''
+    def GetPropertiesFK(self, table_name, object_name):
+        return self.connection.Query('''
             SELECT 'FK' AS "Type",
                    '{0}' AS "Name"
-        '''.format(p_object))
+        '''.format(object_name))
 
-    def GetPropertiesUnique(self, p_table, p_object):
-        return self.v_connection.Query('''
+    def GetPropertiesUnique(self, table_name, object_name):
+        return self.connection.Query('''
             SELECT 'Unique' AS "Type",
                    '{0}' AS "Name"
-        '''.format(p_object))
+        '''.format(object_name))
 
     def GetProperties(self, p_table, p_object, p_type):
         try:
@@ -1037,58 +1036,57 @@ class SQLite:
         except Spartacus.Database.Exception as exc:
             if str(exc) == 'Can only transpose a table with a single row.':
                 raise Exception('Object {0} does not exist anymore. Please refresh the tree view.'.format(p_object))
-            else:
-                raise exc
+            raise exc
 
-    def GetDDLTable(self, p_object):
-        return self.v_connection.ExecuteScalar('''
+    def GetDDLTable(self, object_name):
+        return self.connection.ExecuteScalar('''
             SELECT sql
             FROM sqlite_master
             WHERE type = 'table'
               AND name = '{0}'
-        '''.format(p_object))
+        '''.format(object_name))
 
-    def GetDDLIndex(self, p_object):
-        return self.v_connection.ExecuteScalar('''
+    def GetDDLIndex(self, object_name):
+        return self.connection.ExecuteScalar('''
             SELECT sql
             FROM sqlite_master
             WHERE type = 'index'
               AND name = '{0}'
-        '''.format(p_object))
+        '''.format(object_name))
 
-    def GetDDLView(self, p_object):
-        return self.v_connection.ExecuteScalar('''
+    def GetDDLView(self, object_name):
+        return self.connection.ExecuteScalar('''
             SELECT sql
             FROM sqlite_master
             WHERE type = 'view'
               AND name = '{0}'
-        '''.format(p_object))
+        '''.format(object_name))
 
-    def GetDDLTrigger(self, p_object, p_table):
-        return self.v_connection.ExecuteScalar('''
+    def GetDDLTrigger(self, object_name, table_name):
+        return self.connection.ExecuteScalar('''
             SELECT sql
             FROM sqlite_master
             WHERE type = 'trigger'
               AND name = '{0}'
               AND tbl_name = '{1}'
-        '''.format(p_object, p_table))
+        '''.format(object_name, table_name))
 
-    def GetDDL(self, p_table, p_object, p_type):
-        if p_type == 'table':
-            return self.GetDDLTable(p_object)
-        elif p_type == 'index':
-            return self.GetDDLIndex(p_object)
-        elif p_type == 'view':
-            return self.GetDDLView(p_object)
-        elif p_type == 'trigger':
-            return self.GetDDLTrigger(p_object, p_table)
+    def GetDDL(self, table_name, object_name, object_type):
+        if object_type == 'table':
+            return self.GetDDLTable(object_name)
+        elif object_type == 'index':
+            return self.GetDDLIndex(object_name)
+        elif object_type == 'view':
+            return self.GetDDLView(object_name)
+        elif object_type == 'trigger':
+            return self.GetDDLTrigger(object_name, table_name)
         else:
             return ''
 
     @lock_required
-    def QueryTableDefinition(self, table=None):
-        return self.v_connection.Query("PRAGMA table_info('{0}')".format(table), True)
+    def QueryTableDefinition(self, table_name=None):
+        return self.connection.Query("PRAGMA table_info('{0}')".format(table_name), True)
 
     @lock_required
     def GetViewDefinition(self, view):
-        return self.v_connection.ExecuteScalar(f"SELECT sql from sqlite_master WHERE type = 'view' AND name = '{view}'")
+        return self.connection.ExecuteScalar(f"SELECT sql from sqlite_master WHERE type = 'view' AND name = '{view}'")

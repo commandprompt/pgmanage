@@ -837,7 +837,7 @@ def get_databases(request, database):
     list_databases = []
 
     try:
-        conn_object = Connection.objects.get(id=database.v_conn_id)
+        conn_object = Connection.objects.get(id=database.conn_id)
         databases = database.QueryDatabases()
         for database_object in databases.Rows:
             database_data = {
@@ -1631,7 +1631,7 @@ def template_select(request, database):
     kind = data["kind"]
 
     try:
-        template = database.TemplateSelect(schema, table, kind).v_text
+        template = database.TemplateSelect(schema, table, kind).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1646,7 +1646,7 @@ def template_insert(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateInsert(schema, table).v_text
+        template = database.TemplateInsert(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1661,7 +1661,7 @@ def template_update(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateUpdate(schema, table).v_text
+        template = database.TemplateUpdate(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1677,7 +1677,7 @@ def template_select_function(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateSelectFunction(schema, function, functionid).v_text
+        template = database.TemplateSelectFunction(schema, function, functionid).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1693,7 +1693,7 @@ def template_call_procedure(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateCallProcedure(schema, procedure, procedureid).v_text
+        template = database.TemplateCallProcedure(schema, procedure, procedureid).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

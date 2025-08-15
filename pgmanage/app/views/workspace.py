@@ -434,10 +434,10 @@ def get_database_meta(request, database):
             for database_object in databases.Rows:
                 response_data["databases"].append(database_object[0])
 
-        if database.v_db_type in ["mysql", "mariadb"]:
-            schemas = [{"schema_name": database.v_service}]
+        if database.db_type in ["mysql", "mariadb"]:
+            schemas = [{"schema_name": database.service}]
         elif database.has_schema:
-            schemas = database.QuerySchemas().Rows if hasattr(database, 'QuerySchemas') else [{"schema_name": database.v_schema}]
+            schemas = database.QuerySchemas().Rows if hasattr(database, 'QuerySchemas') else [{"schema_name": database.schema}]
         else:
             schemas = [{'schema_name': '-noschema-'}]
 
@@ -466,7 +466,7 @@ def get_database_meta(request, database):
                 schema_data['tables'].append(table_data)
             
             if database.has_schema:
-                views = database.QueryViews(p_all_schemas=False, p_schema=schema["schema_name"])
+                views = database.QueryViews(all_schemas=False, schema=schema["schema_name"])
             else:
                 views = database.QueryViews()
 
@@ -478,9 +478,9 @@ def get_database_meta(request, database):
                 view_name = view.get('name_raw') or view["table_name"]
 
                 if database.has_schema:
-                    view_columns = database.QueryViewFields(p_table=view_name, p_all_schemas=False, p_schema=schema["schema_name"])
+                    view_columns = database.QueryViewFields(table=view_name, all_schemas=False, schema=schema["schema_name"])
                 else:
-                    view_columns = database.QueryViewFields(p_table=view_name)
+                    view_columns = database.QueryViewFields(table_name=view_name)
 
                 view_data['columns'] = list((c['column_name'] for c in view_columns.Rows))
                 schema_data['views'].append(view_data)

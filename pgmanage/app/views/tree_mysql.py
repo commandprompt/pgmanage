@@ -281,7 +281,7 @@ def get_indexes_columns(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_databases(request, database):
     try:
-        conn_object = Connection.objects.get(id=database.v_conn_id)
+        conn_object = Connection.objects.get(id=database.conn_id)
 
         databases = database.QueryDatabases()
         list_databases = [
@@ -493,7 +493,7 @@ def template_select(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateSelect(schema, table).v_text
+        template = database.TemplateSelect(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -508,7 +508,7 @@ def template_insert(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateInsert(schema, table).v_text
+        template = database.TemplateInsert(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -523,7 +523,7 @@ def template_update(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateUpdate(schema, table).v_text
+        template = database.TemplateUpdate(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

@@ -44,7 +44,7 @@ class PostgreSQL(TestCase):
             0,
             self.test_connection.id
         )
-        self.database.v_connection.v_password = self.password
+        self.database.connection.v_password = self.password
         self.database.GetVersion()
         self.major_version = self.database.major_version
 
@@ -1059,26 +1059,26 @@ DROP SUBSCRIPTION #sub_name#
         assert 401 == response.status_code
 
     def test_get_uniques_postgresql_session(self):
-        self.database.v_connection.Execute('alter table public.categories drop constraint if exists un_test')
-        self.database.v_connection.Execute('alter table public.categories add constraint un_test unique (categoryname)')
+        self.database.connection.Execute('alter table public.categories drop constraint if exists un_test')
+        self.database.connection.Execute('alter table public.categories add constraint un_test unique (categoryname)')
         response = self.client_session.post('/get_uniques_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a['constraint_name'] for a in data], ['un_test'])
-        self.database.v_connection.Execute('alter table public.categories drop constraint un_test')
+        self.database.connection.Execute('alter table public.categories drop constraint un_test')
 
     def test_get_uniques_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_uniques_columns_postgresql/')
         assert 401 == response.status_code
 
     def test_get_uniques_columns_postgresql_session(self):
-        self.database.v_connection.Execute('alter table public.categories drop constraint if exists un_test')
-        self.database.v_connection.Execute('alter table public.categories add constraint un_test unique (categoryname)')
+        self.database.connection.Execute('alter table public.categories drop constraint if exists un_test')
+        self.database.connection.Execute('alter table public.categories add constraint un_test unique (categoryname)')
         response = self.client_session.post('/get_uniques_columns_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "unique": "un_test", "schema": "public", "table": "categories"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a for a in data], ['categoryname'])
-        self.database.v_connection.Execute('alter table public.categories drop constraint un_test')
+        self.database.connection.Execute('alter table public.categories drop constraint un_test')
 
     def test_get_indexes_postgresql_nosession(self):
         response = self.client_nosession.post('/get_indexes_postgresql/')
@@ -1173,19 +1173,19 @@ DROP SUBSCRIPTION #sub_name#
         assert 401 == response.status_code
 
     def test_get_views_postgresql_session(self):
-        self.database.v_connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
+        self.database.connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
         response = self.client_session.post('/get_views_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a['name'] for a in data], ['vw_omnidb_test'])
-        self.database.v_connection.Execute('drop view vw_omnidb_test')
+        self.database.connection.Execute('drop view vw_omnidb_test')
 
     def test_get_views_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_views_columns_postgresql/')
         assert 401 == response.status_code
 
     def test_get_views_columns_postgresql_session(self):
-        self.database.v_connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
+        self.database.connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
         response = self.client_session.post('/get_views_columns_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "vw_omnidb_test"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
@@ -1195,14 +1195,14 @@ DROP SUBSCRIPTION #sub_name#
             'lastname',
             'totalamount'
         ])
-        self.database.v_connection.Execute('drop view vw_omnidb_test')
+        self.database.connection.Execute('drop view vw_omnidb_test')
 
     def test_get_view_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_view_definition_postgresql/')
         assert 401 == response.status_code
 
     def test_get_view_definition_postgresql_session(self):
-        self.database.v_connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
+        self.database.connection.Execute('create or replace view vw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
         response = self.client_session.post('/get_view_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "view": "vw_omnidb_test"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
@@ -1214,7 +1214,7 @@ DROP SUBSCRIPTION #sub_name#
    FROM (customers c
      JOIN orders o ON ((o.customerid = c.customerid)))
   GROUP BY c.customerid, c.firstname, c.lastname''' in data['data']
-        self.database.v_connection.Execute('drop view vw_omnidb_test')
+        self.database.connection.Execute('drop view vw_omnidb_test')
 
     def test_get_databases_postgresql_nosession(self):
         response = self.client_nosession.post('/get_databases_postgresql/')
@@ -1251,13 +1251,13 @@ DROP SUBSCRIPTION #sub_name#
         assert 401 == response.status_code
 
     def test_get_checks_postgresql_session(self):
-        self.database.v_connection.Execute('alter table public.categories drop constraint if exists ch_test')
-        self.database.v_connection.Execute("alter table public.categories add constraint ch_test check ( position(' ' in categoryname) = 0 )")
+        self.database.connection.Execute('alter table public.categories drop constraint if exists ch_test')
+        self.database.connection.Execute("alter table public.categories add constraint ch_test check ( position(' ' in categoryname) = 0 )")
         response = self.client_session.post('/get_checks_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a['constraint_name'] for a in data], ['ch_test'])
-        self.database.v_connection.Execute('alter table public.categories drop constraint ch_test')
+        self.database.connection.Execute('alter table public.categories drop constraint ch_test')
 
     def test_get_excludes_postgresql_nosession(self):
         response = self.client_nosession.post('/get_excludes_postgresql/')
@@ -1265,57 +1265,57 @@ DROP SUBSCRIPTION #sub_name#
 
 
     def test_get_excludes_postgresql_session(self):
-        self.database.v_connection.Execute('alter table public.categories drop constraint if exists ex_test')
-        self.database.v_connection.Execute('alter table public.categories add constraint ex_test exclude (categoryname with = )')
+        self.database.connection.Execute('alter table public.categories drop constraint if exists ex_test')
+        self.database.connection.Execute('alter table public.categories add constraint ex_test exclude (categoryname with = )')
         response = self.client_session.post('/get_excludes_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert data[0]['constraint_name'] == 'ex_test'
-        self.database.v_connection.Execute('alter table public.categories drop constraint ex_test')
+        self.database.connection.Execute('alter table public.categories drop constraint ex_test')
 
     def test_get_rules_postgresql_nosession(self):
         response = self.client_nosession.post('/get_rules_postgresql/')
         assert 401 == response.status_code
 
     def test_get_rules_postgresql_session(self):
-        self.database.v_connection.Execute('create or replace rule ru_test as on delete to public.categories do instead nothing')
+        self.database.connection.Execute('create or replace rule ru_test as on delete to public.categories do instead nothing')
         response = self.client_session.post('/get_rules_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a['rule_name'] for a in data], ['ru_test'])
-        self.database.v_connection.Execute('drop rule ru_test on public.categories')
+        self.database.connection.Execute('drop rule ru_test on public.categories')
 
     def test_get_rule_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_rule_definition_postgresql/')
         assert 401 == response.status_code
 
     def test_get_rule_definition_postgresql_session(self):
-        self.database.v_connection.Execute('create or replace rule ru_test as on delete to public.categories do instead nothing')
+        self.database.connection.Execute('create or replace rule ru_test as on delete to public.categories do instead nothing')
         response = self.client_session.post('/get_rule_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories", "rule": "ru_test"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert '''CREATE OR REPLACE RULE ru_test AS
     ON DELETE TO public.categories DO INSTEAD NOTHING;''' in data['data']
-        self.database.v_connection.Execute('drop rule ru_test on public.categories')
+        self.database.connection.Execute('drop rule ru_test on public.categories')
 
     def test_get_triggerfunctions_postgresql_nosession(self):
         response = self.client_nosession.post('/get_triggerfunctions_postgresql/')
         assert 401 == response.status_code
 
     def test_get_triggerfunctions_postgresql_session(self):
-        self.database.v_connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
+        self.database.connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
         response = self.client_session.post('/get_triggerfunctions_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a['name'] for a in data], ['tg_ins_category'])
-        self.database.v_connection.Execute('drop function tg_ins_category()')
+        self.database.connection.Execute('drop function tg_ins_category()')
 
     def test_get_triggerfunction_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_triggerfunction_definition_postgresql/')
         assert 401 == response.status_code
 
     def test_get_triggerfunction_definition_postgresql_session(self):
-        self.database.v_connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
+        self.database.connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
         response = self.client_session.post('/get_triggerfunction_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "function": "public.tg_ins_category()"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
@@ -1329,46 +1329,46 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
         assert 401 == response.status_code
 
     def test_get_triggers_postgresql_session(self):
-        self.database.v_connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
-        self.database.v_connection.Execute('create or replace trigger tg_ins before insert on public.categories for each statement execute procedure public.tg_ins_category()')
+        self.database.connection.Execute("create or replace function public.tg_ins_category() returns trigger language plpgsql as $function$begin new.categoryname := old.categoryname || ' modified'; end;$function$")
+        self.database.connection.Execute('create or replace trigger tg_ins before insert on public.categories for each statement execute procedure public.tg_ins_category()')
         response = self.client_session.post('/get_triggers_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a['trigger_name'] for a in data], ['tg_ins'])
-        self.database.v_connection.Execute('drop trigger tg_ins on public.categories')
-        self.database.v_connection.Execute('drop function public.tg_ins_category()')
+        self.database.connection.Execute('drop trigger tg_ins on public.categories')
+        self.database.connection.Execute('drop function public.tg_ins_category()')
 
     def test_get_inheriteds_postgresql_nosession(self):
         response = self.client_nosession.post('/get_inheriteds_postgresql/')
         assert 401 == response.status_code
 
     def test_get_inheriteds_postgresql_session(self):
-        self.database.v_connection.Execute('create table if not exists public.categories_p1 (check ( category < 100 )) inherits (public.categories)')
+        self.database.connection.Execute('create table if not exists public.categories_p1 (check ( category < 100 )) inherits (public.categories)')
         response = self.client_session.post('/get_inheriteds_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "categories"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal(data, ['public.categories_p1'])
-        self.database.v_connection.Execute('alter table public.categories_p1 no inherit public.categories')
-        self.database.v_connection.Execute('drop table public.categories_p1')
+        self.database.connection.Execute('alter table public.categories_p1 no inherit public.categories')
+        self.database.connection.Execute('drop table public.categories_p1')
 
     def test_get_mviews_postgresql_nosession(self):
         response = self.client_nosession.post('/get_mviews_postgresql/')
         assert 401 == response.status_code
 
     def test_get_mviews_postgresql_session(self):
-        self.database.v_connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
+        self.database.connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
         response = self.client_session.post('/get_mviews_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a['name'] for a in data], ['mvw_omnidb_test'])
-        self.database.v_connection.Execute('drop materialized view public.mvw_omnidb_test')
+        self.database.connection.Execute('drop materialized view public.mvw_omnidb_test')
 
     def test_get_mviews_columns_postgresql_nosession(self):
         response = self.client_nosession.post('/get_mviews_columns_postgresql/')
         assert 401 == response.status_code
 
     def test_get_mviews_columns_postgresql_session(self):
-        self.database.v_connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
+        self.database.connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
         response = self.client_session.post('/get_mviews_columns_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "table": "mvw_omnidb_test"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
@@ -1378,14 +1378,14 @@ AS $function$begin new.categoryname := old.categoryname || ' modified'; end;$fun
             'lastname',
             'totalamount'
         ])
-        self.database.v_connection.Execute('drop materialized view public.mvw_omnidb_test')
+        self.database.connection.Execute('drop materialized view public.mvw_omnidb_test')
 
     def test_get_mview_definition_postgresql_nosession(self):
         response = self.client_nosession.post('/get_mview_definition_postgresql/')
         assert 401 == response.status_code
 
     def test_get_mview_definition_postgresql_session(self):
-        self.database.v_connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
+        self.database.connection.Execute('create materialized view if not exists public.mvw_omnidb_test as select c.customerid, c.firstname, c.lastname, sum(o.totalamount) as totalamount from customers c inner join orders o on o.customerid = c.customerid group by c.customerid, c.firstname, c.lastname')
         response = self.client_session.post('/get_mview_definition_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "schema": "public", "view": "mvw_omnidb_test"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
@@ -1400,7 +1400,7 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
      JOIN orders o ON ((o.customerid = c.customerid)))
   GROUP BY c.customerid, c.firstname, c.lastname;
 ''' in data['data']
-        self.database.v_connection.Execute('drop materialized view public.mvw_omnidb_test')
+        self.database.connection.Execute('drop materialized view public.mvw_omnidb_test')
 
     def test_get_extensions_postgresql_nosession(self):
         response = self.client_nosession.post('/get_extensions_postgresql/')
@@ -1417,24 +1417,24 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
         assert 401 == response.status_code
 
     def test_get_physicalreplicationslots_postgresql_session(self):
-        self.database.v_connection.Execute("select * from pg_create_physical_replication_slot('test_slot')")
+        self.database.connection.Execute("select * from pg_create_physical_replication_slot('test_slot')")
         response = self.client_session.post('/get_physicalreplicationslots_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a['name'] for a in data], ['test_slot'])
-        self.database.v_connection.Execute("select pg_drop_replication_slot('test_slot')")
+        self.database.connection.Execute("select pg_drop_replication_slot('test_slot')")
 
     def test_get_logicalreplicationslots_postgresql_nosession(self):
         response = self.client_nosession.post('/get_logicalreplicationslots_postgresql/')
         assert 401 == response.status_code
 
     def test_get_logicalreplicationslots_postgresql_session(self):
-        self.database.v_connection.Execute("select * from pg_create_logical_replication_slot('test_slot', 'pgoutput')")
+        self.database.connection.Execute("select * from pg_create_logical_replication_slot('test_slot', 'pgoutput')")
         response = self.client_session.post('/get_logicalreplicationslots_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert self.lists_equal([a['name'] for a in data], ['test_slot'])
-        self.database.v_connection.Execute("select pg_drop_replication_slot('test_slot')")
+        self.database.connection.Execute("select pg_drop_replication_slot('test_slot')")
 
     def test_get_extension_details_postgresql_nosession(self):
         response = self.client_nosession.post('/get_extension_details/')

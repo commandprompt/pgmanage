@@ -25,9 +25,8 @@ SOFTWARE.
 
 from enum import Enum
 from urllib.parse import urlparse
+
 import app.include.Spartacus as Spartacus
-import app.include.Spartacus.Database as Database
-import app.include.Spartacus.Utils as Utils
 
 from .sql_templates import get_template
 
@@ -41,9 +40,9 @@ class TemplateType(Enum):
     SCRIPT = 2
 
 class Template:
-    def __init__(self, p_text, p_type=TemplateType.EXECUTE):
-        self.v_text = p_text
-        self.v_type = p_type
+    def __init__(self, text, template_type=TemplateType.EXECUTE):
+        self.text = text
+        self.type = template_type
 
 '''
 ------------------------------------------------------------------------
@@ -51,128 +50,127 @@ Oracle
 ------------------------------------------------------------------------
 '''
 class Oracle:
-    def __init__(self, p_server, p_port, p_service, p_user, p_password, p_conn_id=0, p_alias='', p_conn_string='', p_parse_conn_string = False, connection_params=None):
+    def __init__(self, server, port, service, user, password, conn_id=0, alias='', conn_string='', parse_conn_string = False, connection_params=None):
         self.lock = None
         self.connection_params = connection_params if connection_params else {}
-        self.v_alias = p_alias
-        self.v_db_type = 'oracle'
-        self.v_conn_string = p_conn_string
-        self.v_conn_string_error = ''
-        self.v_password = p_password
-        self.v_conn_id = p_conn_id
+        self.alias = alias
+        self.db_type = 'oracle'
+        self.conn_string = conn_string
+        self.conn_string_error = ''
+        self.password = password
+        self.conn_id = conn_id
 
-        self.v_port = p_port
-        if p_port is None or p_port == '':
-            self.v_active_port = '1521'
+        self.port = port
+        if port is None or port == '':
+            self.active_port = '1521'
         else:
-            self.v_active_port = p_port
+            self.active_port = port
 
-        self.v_service = p_service.upper()
-        if p_service is None or p_service == '':
-            self.v_active_service = 'XE'
+        self.service = service.upper()
+        if service is None or service == '':
+            self.active_service = 'XE'
         else:
-            self.v_active_service = p_service.upper()
+            self.active_service = service.upper()
 
-        self.v_server = p_server
-        self.v_active_server = p_server
-        self.v_user = p_user.upper()
-        self.v_active_user = p_user.upper()
+        self.server = server
+        self.active_server = server
+        self.user = user.upper()
+        self.active_user = user.upper()
 
         #try to get info from connection string
-        if p_conn_string!='' and p_parse_conn_string:
+        if conn_string!='' and parse_conn_string:
             try:
-                parsed = urlparse(p_conn_string)
+                parsed = urlparse(conn_string)
                 if parsed.port!=None:
-                    self.v_active_port = str(parsed.port)
+                    self.active_port = str(parsed.port)
                 if parsed.hostname!=None:
-                    self.v_active_server = parsed.hostname
+                    self.active_server = parsed.hostname
                 if parsed.username!=None:
-                    self.v_active_user = parsed.username
-                if parsed.password!=None and p_password == '':
-                    self.v_password = parsed.password
+                    self.active_user = parsed.username
+                if parsed.password!=None and password == '':
+                    self.password = parsed.password
                 if parsed.query!=None:
-                    self.v_conn_string_query = parsed.query
+                    self.conn_string_query = parsed.query
                 parsed_database = parsed.path
                 if len(parsed_database)>1:
-                    self.v_active_service = parsed_database[1:]
+                    self.active_service = parsed_database[1:]
             except Exception as exc:
-                self.v_conn_string_error = 'Syntax error in the connection string.'
-                None
+                self.conn_string_error = 'Syntax error in the connection string.'
 
-        if self.v_user.replace(' ', '') != self.v_user:
-            self.v_schema = '"{0}"'.format(p_user)
+        if self.user.replace(' ', '') != self.user:
+            self.schema = '"{0}"'.format(user)
         else:
-            self.v_schema = self.v_user
-        self.v_connection = Spartacus.Database.Oracle(self.v_active_server, self.v_active_port, self.v_active_service, self.v_active_user, self.v_password, p_conn_string, connection_params=self.connection_params)
+            self.schema = self.user
+        self.connection = Spartacus.Database.Oracle(self.active_server, self.active_port, self.active_service, self.active_user, self.password, conn_string, connection_params=self.connection_params)
 
         self.has_schema = True
-        self.v_has_functions = True
-        self.v_has_procedures = True
-        self.v_has_packages = True
-        self.v_has_sequences = True
-        self.v_has_primary_keys = True
-        self.v_has_foreign_keys = True
-        self.v_has_uniques = True
-        self.v_has_indexes = True
-        self.v_has_checks = False
-        self.v_has_excludes = False
-        self.v_has_rules = False
-        self.v_has_triggers = False
-        self.v_has_partitions = False
-        self.v_has_statistics = False
+        self.has_functions = True
+        self.has_procedures = True
+        self.has_packages = True
+        self.has_sequences = True
+        self.has_primary_keys = True
+        self.has_foreign_keys = True
+        self.has_uniques = True
+        self.has_indexes = True
+        self.has_checks = False
+        self.has_excludes = False
+        self.has_rules = False
+        self.has_triggers = False
+        self.has_partitions = False
+        self.has_statistics = False
 
-        self.v_has_update_rule = False
-        self.v_can_rename_table = True
-        self.v_rename_table_command = "alter table #p_table_name# rename to #p_new_table_name#"
-        self.v_create_pk_command = "constraint #p_constraint_name# primary key (#p_columns#)"
-        self.v_create_fk_command = "constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
-        self.v_create_unique_command = "constraint #p_constraint_name# unique (#p_columns#)"
-        self.v_can_alter_type = True
-        self.v_alter_type_command = "alter table #p_table_name# modify #p_column_name# #p_new_data_type#"
-        self.v_can_alter_nullable = True
-        self.v_set_nullable_command = "alter table #p_table_name# modify #p_column_name# null"
-        self.v_drop_nullable_command = "alter table #p_table_name# modify #p_column_name# not null"
-        self.v_can_rename_column = True
-        self.v_rename_column_command = "alter table #p_table_name# rename column #p_column_name# to #p_new_column_name#"
-        self.v_can_add_column = True
-        self.v_add_column_command = "alter table #p_table_name# add #p_column_name# #p_data_type# #p_nullable#"
-        self.v_can_drop_column = True
-        self.v_drop_column_command = "alter table #p_table_name# drop column #p_column_name#"
-        self.v_can_add_constraint = True
-        self.v_add_pk_command = "alter table #p_table_name# add constraint #p_constraint_name# primary key (#p_columns#)"
-        self.v_add_fk_command = "alter table #p_table_name# add constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
-        self.v_add_unique_command = "alter table #p_table_name# add constraint #p_constraint_name# unique (#p_columns#)"
-        self.v_can_drop_constraint = True
-        self.v_drop_pk_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
-        self.v_drop_fk_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
-        self.v_drop_unique_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
-        self.v_create_index_command = "create index #p_index_name# on #p_table_name# (#p_columns#)";
-        self.v_create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
-        self.v_drop_index_command = "drop index #p_schema_name#.#p_index_name#"
+        self.has_update_rule = False
+        self.can_rename_table = True
+        self.rename_table_command = "alter table #p_table_name# rename to #p_new_table_name#"
+        self.create_pk_command = "constraint #p_constraint_name# primary key (#p_columns#)"
+        self.create_fk_command = "constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
+        self.create_unique_command = "constraint #p_constraint_name# unique (#p_columns#)"
+        self.can_alter_type = True
+        self.alter_type_command = "alter table #p_table_name# modify #p_column_name# #p_new_data_type#"
+        self.can_alter_nullable = True
+        self.set_nullable_command = "alter table #p_table_name# modify #p_column_name# null"
+        self.drop_nullable_command = "alter table #p_table_name# modify #p_column_name# not null"
+        self.can_rename_column = True
+        self.rename_column_command = "alter table #p_table_name# rename column #p_column_name# to #p_new_column_name#"
+        self.can_add_column = True
+        self.add_column_command = "alter table #p_table_name# add #p_column_name# #p_data_type# #p_nullable#"
+        self.can_drop_column = True
+        self.drop_column_command = "alter table #p_table_name# drop column #p_column_name#"
+        self.can_add_constraint = True
+        self.add_pk_command = "alter table #p_table_name# add constraint #p_constraint_name# primary key (#p_columns#)"
+        self.add_fk_command = "alter table #p_table_name# add constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
+        self.add_unique_command = "alter table #p_table_name# add constraint #p_constraint_name# unique (#p_columns#)"
+        self.can_drop_constraint = True
+        self.drop_pk_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
+        self.drop_fk_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
+        self.drop_unique_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
+        self.create_index_command = "create index #p_index_name# on #p_table_name# (#p_columns#)";
+        self.create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
+        self.drop_index_command = "drop index #p_schema_name#.#p_index_name#"
 
-        self.v_console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
-        self.v_use_server_cursor = False
+        self.console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
+        self.use_server_cursor = False
 
     # Decorator to acquire lock before performing action
     def lock_required(function):
         def wrap(self, *args, **kwargs):
             try:
-                if self.v_lock != None:
-                    self.v_lock.acquire()
+                if self.lock != None:
+                    self.lock.acquire()
             except:
                 None
             try:
                 r = function(self, *args, **kwargs)
             except:
                 try:
-                    if self.v_lock != None:
-                        self.v_lock.release()
+                    if self.lock != None:
+                        self.lock.release()
                 except:
                     None
                 raise
             try:
-                if self.v_lock != None:
-                    self.v_lock.release()
+                if self.lock != None:
+                    self.lock.release()
             except:
                 None
             return r
@@ -181,11 +179,11 @@ class Oracle:
         return wrap
 
     def GetName(self):
-        return self.v_service
+        return self.service
 
     @lock_required
     def GetVersion(self):
-        return self.v_connection.ExecuteScalar('''
+        return self.connection.ExecuteScalar('''
             select (case when product like '%Express%'
                          then 'Oracle XE '
                          else 'Oracle '
@@ -195,64 +193,64 @@ class Oracle:
         ''')
 
     def GetUserName(self):
-        return self.v_user
+        return self.user
 
     @lock_required
     def GetUserSuper(self):
         try:
-            v_sessions = self.v_connection.Query('select * from v$session where rownum <= 1')
+            sessions = self.connection.Query('select * from v$session where rownum <= 1')
             return True
         except Exception as exc:
             return False
 
     @lock_required
     def GetExpress(self):
-        v_express = self.v_connection.Query("select * from product_component_version where product like '%Express%'")
-        return (len(v_express.Rows) > 0)
+        express = self.connection.Query("select * from product_component_version where product like '%Express%'")
+        return (len(express.Rows) > 0)
 
     def PrintDatabaseInfo(self):
-        return self.v_user + '@' + self.v_service
+        return self.user + '@' + self.service
 
     def PrintDatabaseDetails(self):
-        return self.v_server + ':' + self.v_port
+        return self.server + ':' + self.port
 
-    def HandleUpdateDeleteRules(self, p_update_rule, p_delete_rule):
-        v_rules = ''
-        if p_delete_rule.strip() != '':
-            v_rules += ' on delete ' + p_delete_rule + ' '
-        return v_rules
+    def HandleUpdateDeleteRules(self, update_rule, delete_rule):
+        rules = ''
+        if delete_rule.strip() != '':
+            rules += ' on delete ' + delete_rule + ' '
+        return rules
 
     def TestConnection(self):
-        v_return = ''
-        if self.v_conn_string and self.v_conn_string_error!='':
-            return self.v_conn_string_error
+        return_data = ''
+        if self.conn_string and self.conn_string_error!='':
+            return self.conn_string_error
 
         try:
-            self.v_connection.Open()
-            self.v_connection.Close()
-            v_return = 'Connection successful.'
+            self.connection.Open()
+            self.connection.Close()
+            return_data = 'Connection successful.'
         except Exception as exc:
-            v_return = str(exc)
-        return v_return
+            return_data = str(exc)
+        return return_data
 
-    def GetErrorPosition(self, p_error_message, sql_cmd):
+    def GetErrorPosition(self, error_message, sql_cmd):
         return None
 
     @lock_required
-    def Query(self, p_sql, p_alltypesstr=False, p_simple=False):
-        return self.v_connection.Query(p_sql, p_alltypesstr, p_simple)
+    def Query(self, sql, alltypesstr=False, simple=False):
+        return self.connection.Query(sql, alltypesstr, simple)
 
     @lock_required
-    def ExecuteScalar(self, p_sql):
-        return self.v_connection.ExecuteScalar(p_sql)
+    def ExecuteScalar(self, sql):
+        return self.connection.ExecuteScalar(sql)
 
     @lock_required
-    def Terminate(self, p_type):
-        return self.v_connection.Terminate(p_type)
+    def Terminate(self, pid):
+        return self.connection.Terminate(pid)
 
     @lock_required
     def QueryRoles(self):
-        return self.v_connection.Query('''
+        return self.connection.Query('''
             select (case when upper(replace(username, ' ', '')) <> username then '"' || username || '"' else username end) as "role_name"
             from all_users
             order by username
@@ -260,21 +258,21 @@ class Oracle:
 
     @lock_required
     def QueryTablespaces(self):
-        return self.v_connection.Query('''
+        return self.connection.Query('''
             select (case when upper(replace(tablespace_name, ' ', '')) <> tablespace_name then '"' || tablespace_name || '"' else tablespace_name end) as "tablespace_name"
             from dba_tablespaces
             order by tablespace_name
         ''', True)
 
     @lock_required
-    def QueryTables(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(p_schema)
+    def QueryTables(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.v_schema)
-        return self.v_connection.Query('''
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
+        return self.connection.Query('''
             select (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "table_name",
                    (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "table_schema"
             from all_tables
@@ -282,24 +280,24 @@ class Oracle:
             {0}
             order by owner,
                      table_name
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryTablesFields(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(p_schema)
+    def QueryTablesFields(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and table_name = '{0}' ".format(p_table)
-        return self.v_connection.Query('''
+            if table:
+                query_filter = "and table_name = '{0}' ".format(table)
+        return self.connection.Query('''
             select (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "table_name",
                    (case when upper(replace(column_name, ' ', '')) <> column_name then '"' || column_name || '"' else column_name end) as "column_name",
                    case when data_type = 'NUMBER' and data_scale = '0' then 'INTEGER' else data_type end as "data_type",
@@ -312,24 +310,24 @@ class Oracle:
             {0}
             order by table_name,
                      column_id
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryTablesForeignKeys(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(p_schema)
+    def QueryTablesForeignKeys(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{0}' ".format(p_table)
-        return self.v_connection.Query('''
+            if table:
+                query_filter = "and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{0}' ".format(table)
+        return self.connection.Query('''
             select (case when upper(replace(constraint_info.constraint_name, ' ', '')) <> constraint_info.constraint_name then '"' || constraint_info.constraint_name || '"' else constraint_info.constraint_name end) as "constraint_name",
                    (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) as "table_name",
                    (case when upper(replace(constraint_info.r_constraint_name, ' ', '')) <> constraint_info.r_constraint_name then '"' || constraint_info.r_constraint_name || '"' else constraint_info.r_constraint_name end) as "r_constraint_name",
@@ -348,34 +346,34 @@ class Oracle:
             {0}
             order by constraint_info.constraint_name,
                      detail_table.table_name
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryTablesForeignKeysColumns(self, p_fkey, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(p_schema)
+    def QueryTablesForeignKeysColumns(self, fkey, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(constraint_info.owner, ' ', '')) <> constraint_info.owner then '"' || constraint_info.owner || '"' else constraint_info.owner end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{0}' ".format(p_table)
+            if table:
+                query_filter = "and (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) = '{0}' ".format(table)
 
-        if type(p_fkey) == list:
-            fkeys = p_fkey
+        if type(fkey) == list:
+            fkeys = fkey
         else:
-            fkeys = [p_fkey]
+            fkeys = [fkey]
 
         fkey_list = ', '.join(list(f'\'{str(e)}\'' for e in fkeys))
 
         if fkey_list:
-            v_filter = v_filter + "and (case when upper(replace(constraint_info.constraint_name, ' ', '')) <> constraint_info.constraint_name then '"' || constraint_info.constraint_name || '"' else constraint_info.constraint_name end) in ({0}) ".format(fkey_list)
-        return self.v_connection.Query('''
+            query_filter = query_filter + "and (case when upper(replace(constraint_info.constraint_name, ' ', '')) <> constraint_info.constraint_name then '"' || constraint_info.constraint_name || '"' else constraint_info.constraint_name end) in ({0}) ".format(fkey_list)
+        return self.connection.Query('''
             select (case when upper(replace(constraint_info.constraint_name, ' ', '')) <> constraint_info.constraint_name then '"' || constraint_info.constraint_name || '"' else constraint_info.constraint_name end) as "constraint_name",
                    (case when upper(replace(detail_table.table_name, ' ', '')) <> detail_table.table_name then '"' || detail_table.table_name || '"' else detail_table.table_name end) as "table_name",
                    (case when upper(replace(detail_table.column_name, ' ', '')) <> detail_table.column_name then '"' || detail_table.column_name || '"' else detail_table.column_name end) as "column_name",
@@ -398,24 +396,24 @@ class Oracle:
             order by constraint_info.constraint_name,
                      detail_table.table_name,
                      detail_table.position
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryTablesPrimaryKeys(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(p_schema)
+    def QueryTablesPrimaryKeys(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(p_table)
-        return self.v_connection.Query('''
+            if table:
+                query_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(table)
+        return self.connection.Query('''
             select distinct *
             from (
                 select (case when upper(replace(cons.constraint_name, ' ', '')) <> cons.constraint_name then '"' || cons.constraint_name || '"' else cons.constraint_name end) as "constraint_name",
@@ -434,25 +432,25 @@ class Oracle:
             )
             where 1 = 1
             {0}
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryTablesPrimaryKeysColumns(self, p_pkey, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(p_schema)
+    def QueryTablesPrimaryKeysColumns(self, pkey, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(p_table)
-        v_filter = v_filter + "and (case when upper(replace(\"constraint_name\", ' ', '')) <> \"constraint_name\" then '"' || \"constraint_name\" || '"' else \"constraint_name\" end) = '{0}' ".format(p_pkey)
-        return self.v_connection.Query('''
+            if table:
+                query_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(table)
+        query_filter = query_filter + "and (case when upper(replace(\"constraint_name\", ' ', '')) <> \"constraint_name\" then '"' || \"constraint_name\" || '"' else \"constraint_name\" end) = '{0}' ".format(pkey)
+        return self.connection.Query('''
             select "column_name"
             from (
                 select (case when upper(replace(cons.constraint_name, ' ', '')) <> cons.constraint_name then '"' || cons.constraint_name || '"' else cons.constraint_name end) as "constraint_name",
@@ -473,24 +471,24 @@ class Oracle:
             )
             where 1 = 1
             {0}
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryTablesUniques(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(p_schema)
+    def QueryTablesUniques(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(p_table)
-        return self.v_connection.Query('''
+            if table:
+                query_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(table)
+        return self.connection.Query('''
             select distinct *
             from (
                 select (case when upper(replace(cons.constraint_name, ' ', '')) <> cons.constraint_name then '"' || cons.constraint_name || '"' else cons.constraint_name end) as "constraint_name",
@@ -509,25 +507,25 @@ class Oracle:
             )
             where 1 = 1
             {0}
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryTablesUniquesColumns(self, p_unique, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(p_schema)
+    def QueryTablesUniquesColumns(self, unique_name, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(\"table_schema\", ' ', '')) <> \"table_schema\" then '"' || \"table_schema\" || '"' else \"table_schema\" end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(p_table)
-        v_filter = v_filter + "and (case when upper(replace(\"constraint_name\", ' ', '')) <> \"constraint_name\" then '"' || \"constraint_name\" || '"' else \"constraint_name\" end) = '{0}' ".format(p_unique)
-        return self.v_connection.Query('''
+            if table:
+                query_filter = "and (case when upper(replace(\"table_name\", ' ', '')) <> \"table_name\" then '"' || \"table_name\" || '"' else \"table_name\" end) = '{0}' ".format(table)
+        query_filter = query_filter + "and (case when upper(replace(\"constraint_name\", ' ', '')) <> \"constraint_name\" then '"' || \"constraint_name\" || '"' else \"constraint_name\" end) = '{0}' ".format(unique_name)
+        return self.connection.Query('''
             select "column_name"
             from (
                 select (case when upper(replace(cons.constraint_name, ' ', '')) <> cons.constraint_name then '"' || cons.constraint_name || '"' else cons.constraint_name end) as "constraint_name",
@@ -548,24 +546,24 @@ class Oracle:
             )
             where 1 = 1
             {0}
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryTablesIndexes(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(p_schema)
+    def QueryTablesIndexes(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{0}' ".format(p_table)
-        return self.v_connection.Query('''
+            if table:
+                query_filter = "and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{0}' ".format(table)
+        return self.connection.Query('''
             select (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "schema_name",
                    (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "table_name",
                    (case when upper(replace(index_name, ' ', '')) <> index_name then '"' || index_name || '"' else index_name end) as "index_name",
@@ -576,25 +574,25 @@ class Oracle:
             order by owner,
                      table_name,
                      index_name
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryTablesIndexesColumns(self, p_index, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' ".format(p_schema)
+    def QueryTablesIndexesColumns(self, index_name, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(t.owner, ' ', '')) <> t.owner then '"' || t.owner || '"' else t.owner end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{0}' ".format(p_table)
-        v_filter = v_filter + "and (case when upper(replace(t.index_name, ' ', '')) <> t.index_name then '"' || t.index_name || '"' else t.index_name end) = '{0}' ".format(p_index)
-        return self.v_connection.Query('''
+            if table:
+                query_filter = "and (case when upper(replace(t.table_name, ' ', '')) <> t.table_name then '"' || t.table_name || '"' else t.table_name end) = '{0}' ".format(table)
+        query_filter = query_filter + "and (case when upper(replace(t.index_name, ' ', '')) <> t.index_name then '"' || t.index_name || '"' else t.index_name end) = '{0}' ".format(index_name)
+        return self.connection.Query('''
             select (case when upper(replace(c.column_name, ' ', '')) <> c.column_name then '"' || c.column_name || '"' else c.column_name end) as "column_name"
             from all_indexes t,
                  all_ind_columns c
@@ -603,31 +601,31 @@ class Oracle:
               and t.owner = c.index_owner
             {0}
             order by c.column_position
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryDataLimited(self, p_query, p_count=-1):
-        if p_count != -1:
+    def QueryDataLimited(self, query, count=-1):
+        if count != -1:
             try:
-                self.v_connection.Open()
-                v_data = self.v_connection.QueryBlock('select * from ( {0} ) t where rownum <= {1}'.format(p_query, p_count), p_count, True, True)
-                self.v_connection.Close()
-                return v_data
+                self.connection.Open()
+                data = self.connection.QueryBlock('select * from ( {0} ) t where rownum <= {1}'.format(query, count), count, True, True)
+                self.connection.Close()
+                return data
             except Spartacus.Database.Exception as exc:
                 try:
-                    self.v_connection.Cancel()
+                    self.connection.Cancel()
                 except:
                     pass
                 raise exc
         else:
-            return self.v_connection.Query(p_query, True)
+            return self.connection.Query(query, True)
 
     @lock_required
-    def QueryTableRecords(self, p_column_list, p_table, p_schema, p_filter, p_count=-1):
-        v_limit = ''
-        if p_count != -1:
-            v_limit = ' where rownum <= ' + p_count
-        return self.v_connection.Query('''
+    def QueryTableRecords(self, column_list, table, schema, query_filter, count=-1):
+        limit = ''
+        if count != -1:
+            limit = ' where rownum <= ' + count
+        return self.connection.Query('''
             select *
             from (
             select {0}
@@ -636,22 +634,22 @@ class Oracle:
             )
             {3}
         '''.format(
-                p_column_list,
-                p_table,
-                p_filter,
-                v_limit
+                column_list,
+                table,
+                query_filter,
+                limit
             ), True
         )
 
     @lock_required
-    def QueryPackages(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(p_schema)
+    def QueryPackages(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.v_schema)
-        return self.v_connection.Query('''
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
+        return self.connection.Query('''
             select (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "schema_name",
                    (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) as "id",
                    (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) as "name"
@@ -659,18 +657,18 @@ class Oracle:
             where 1 = 1
             {0}
             order by 2
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
 
     @lock_required
-    def QueryFunctions(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(p_schema)
+    def QueryFunctions(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.v_schema)
-        return self.v_connection.Query('''
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
+        return self.connection.Query('''
             select (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "schema_name",
                    (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) as "id",
                    (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) as "name"
@@ -678,15 +676,15 @@ class Oracle:
             where object_type = 'FUNCTION'
             {0}
             order by 2
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryFunctionFields(self, p_function, p_schema):
-        if p_schema:
-            v_schema = p_schema
+    def QueryFunctionFields(self, function_name, schema):
+        if schema:
+            schema_name = schema
         else:
-            v_schema = self.v_schema
-        return self.v_connection.Query('''
+            schema_name = self.schema
+        return self.connection.Query('''
             select (case in_out
                       when 'IN' then 'I'
                       when 'OUT' then 'O'
@@ -701,23 +699,23 @@ class Oracle:
             where (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}'
               and (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) = '{1}'
             order by 3
-        '''.format(v_schema, p_function), True)
+        '''.format(schema_name, function_name), True)
 
     @lock_required
-    def GetFunctionDefinition(self, p_function):
-        v_body = '-- DROP FUNCTION {0};\n'.format(p_function)
-        v_body = v_body + self.v_connection.ExecuteScalar("select dbms_lob.substr(dbms_metadata.get_ddl('FUNCTION', '{0}'), 4000, 1) from dual".format(p_function))
-        return v_body
+    def GetFunctionDefinition(self, function_name):
+        body = '-- DROP FUNCTION {0};\n'.format(function_name)
+        body = body + self.connection.ExecuteScalar("select dbms_lob.substr(dbms_metadata.get_ddl('FUNCTION', '{0}'), 4000, 1) from dual".format(function_name))
+        return body
 
     @lock_required
-    def QueryProcedures(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(p_schema)
+    def QueryProcedures(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.v_schema)
-        return self.v_connection.Query('''
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
+        return self.connection.Query('''
             select (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "schema_name",
                    (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) as "id",
                    (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) as "name"
@@ -725,15 +723,15 @@ class Oracle:
             where object_type = 'PROCEDURE'
             {0}
             order by 2
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryProcedureFields(self, p_procedure, p_schema):
-        if p_schema:
-            v_schema = p_schema
+    def QueryProcedureFields(self, procedure, schema):
+        if schema:
+            schema_name = schema
         else:
-            v_schema = self.v_schema
-        return self.v_connection.Query('''
+            schema_name = self.schema
+        return self.connection.Query('''
             select (case in_out
                       when 'IN' then 'I'
                       when 'OUT' then 'O'
@@ -745,23 +743,23 @@ class Oracle:
             where (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}'
               and (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) = '{1}'
             order by 3
-        '''.format(v_schema, p_procedure), True)
+        '''.format(schema_name, procedure), True)
 
     @lock_required
-    def GetProcedureDefinition(self, p_procedure):
-        v_body = '-- DROP PROCEDURE {0};\n'.format(p_procedure)
-        v_body = v_body + self.v_connection.ExecuteScalar("select dbms_lob.substr(dbms_metadata.get_ddl('PROCEDURE', '{0}'), 4000, 1) from dual".format(p_procedure))
-        return v_body
+    def GetProcedureDefinition(self, procedure):
+        body = '-- DROP PROCEDURE {0};\n'.format(procedure)
+        body = body + self.connection.ExecuteScalar("select dbms_lob.substr(dbms_metadata.get_ddl('PROCEDURE', '{0}'), 4000, 1) from dual".format(procedure))
+        return body
 
     @lock_required
-    def QuerySequences(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and (case when upper(replace(sequence_owner, ' ', '')) <> sequence_owner then '"' || sequence_owner || '"' else sequence_owner end) = '{0}' ".format(p_schema)
+    def QuerySequences(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and (case when upper(replace(sequence_owner, ' ', '')) <> sequence_owner then '"' || sequence_owner || '"' else sequence_owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(sequence_owner, ' ', '')) <> sequence_owner then '"' || sequence_owner || '"' else sequence_owner end) = '{0}' ".format(self.v_schema)
-        v_table = self.v_connection.Query('''
+                query_filter = "and (case when upper(replace(sequence_owner, ' ', '')) <> sequence_owner then '"' || sequence_owner || '"' else sequence_owner end) = '{0}' ".format(self.schema)
+        table = self.connection.Query('''
             select (case when upper(replace(sequence_owner, ' ', '')) <> sequence_owner then '"' || sequence_owner || '"' else sequence_owner end) as "sequence_schema",
                    (case when upper(replace(sequence_name, ' ', '')) <> sequence_name then '"' || sequence_name || '"' else sequence_name end) as "sequence_name"
             from all_sequences
@@ -769,42 +767,42 @@ class Oracle:
             {0}
             order by sequence_owner,
                      sequence_name
-        '''.format(v_filter), True)
-        return v_table
+        '''.format(query_filter), True)
+        return table
 
     @lock_required
-    def QueryViews(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(p_schema)
+    def QueryViews(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.v_schema)
-        return self.v_connection.Query('''
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
+        return self.connection.Query('''
             select (case when upper(replace(view_name, ' ', '')) <> view_name then '"' || view_name || '"' else view_name end) as "table_name",
                    (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) as "table_schema"
             from all_views
             where 1 = 1
             {0}
             order by 2, 1
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def QueryViewFields(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(p_schema)
+    def QueryViewFields(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(schema)
             else:
-                v_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.v_schema)
+                query_filter = "and (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{0}' ".format(p_table)
-        return self.v_connection.Query('''
+            if table:
+                query_filter = "and (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) = '{0}' ".format(table)
+        return self.connection.Query('''
             select (case when upper(replace(table_name, ' ', '')) <> table_name then '"' || table_name || '"' else table_name end) as "table_name",
                    (case when upper(replace(column_name, ' ', '')) <> column_name then '"' || column_name || '"' else column_name end) as "column_name",
                    case when data_type = 'NUMBER' and data_scale = '0' then 'INTEGER' else data_type end as "data_type",
@@ -816,23 +814,23 @@ class Oracle:
             where 1 = 1
             {0}
             order by table_name, column_id
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
     @lock_required
-    def GetViewDefinition(self, p_view, p_schema):
-        if p_schema:
-            v_schema = p_schema
+    def GetViewDefinition(self, view, schema):
+        if schema:
+            schema_name = schema
         else:
-            v_schema = self.v_schema
+            schema_name = self.schema
         return '''CREATE OR REPLACE VIEW {0}.{1} AS
 {2}
-'''.format(p_schema, p_view,
-        self.v_connection.ExecuteScalar('''
+'''.format(schema, view,
+        self.connection.ExecuteScalar('''
                 select text
                 from all_views
                 where (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}'
                   and (case when upper(replace(view_name, ' ', '')) <> view_name then '"' || view_name || '"' else view_name end) = '{1}'
-            '''.format(v_schema, p_view)
+            '''.format(schema_name, view)
     ))
 
     def TemplateCreateRole(self):
@@ -955,127 +953,127 @@ class Oracle:
         template = get_template("oracle", "drop_view")
         return template.template
 
-    def TemplateSelect(self, p_schema, p_table):
-        v_sql = 'SELECT t.'
-        v_fields = self.QueryTablesFields(p_table, False, p_schema)
-        if len(v_fields.Rows) > 0:
-            v_sql += '\n     , t.'.join([r['column_name'] for r in v_fields.Rows])
-        v_sql += '\nFROM {0}.{1} t'.format(p_schema, p_table)
-        v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
-        if len(v_pk.Rows) > 0:
-            v_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
-            if len(v_fields.Rows) > 0:
-                v_sql += '\nORDER BY t.'
-                v_sql += '\n       , t.'.join([r['column_name'] for r in v_fields.Rows])
-        return Template(v_sql)
+    def TemplateSelect(self, schema, table):
+        sql = 'SELECT t.'
+        fields = self.QueryTablesFields(table, False, schema)
+        if len(fields.Rows) > 0:
+            sql += '\n     , t.'.join([r['column_name'] for r in fields.Rows])
+        sql += '\nFROM {0}.{1} t'.format(schema, table)
+        pk = self.QueryTablesPrimaryKeys(table, False, schema)
+        if len(pk.Rows) > 0:
+            fields = self.QueryTablesPrimaryKeysColumns(pk.Rows[0]['constraint_name'], table, False, schema)
+            if len(fields.Rows) > 0:
+                sql += '\nORDER BY t.'
+                sql += '\n       , t.'.join([r['column_name'] for r in fields.Rows])
+        return Template(sql)
 
-    def TemplateInsert(self, p_schema, p_table):
-        v_fields = self.QueryTablesFields(p_table, False, p_schema)
-        if len(v_fields.Rows) > 0:
-            v_sql = 'INSERT INTO {0}.{1} (\n'.format(p_schema, p_table)
-            v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
-            if len(v_pk.Rows) > 0:
-                v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
-                v_pk_fields = [r['column_name'] for r in v_table_pk_fields.Rows]
-                v_values = []
-                v_first = True
-                for r in v_fields.Rows:
-                    if v_first:
-                        v_sql += '      {0}'.format(r['column_name'])
-                        if r['column_name'] in v_pk_fields:
-                            v_values.append('      ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
+    def TemplateInsert(self, schema, table):
+        fields = self.QueryTablesFields(table, False, schema)
+        if len(fields.Rows) > 0:
+            sql = 'INSERT INTO {0}.{1} (\n'.format(schema, table)
+            pk = self.QueryTablesPrimaryKeys(table, False, schema)
+            if len(pk.Rows) > 0:
+                table_pk_fields = self.QueryTablesPrimaryKeysColumns(pk.Rows[0]['constraint_name'], table, False, schema)
+                pk_fields = [r['column_name'] for r in table_pk_fields.Rows]
+                values = []
+                first = True
+                for r in fields.Rows:
+                    if first:
+                        sql += '      {0}'.format(r['column_name'])
+                        if r['column_name'] in pk_fields:
+                            values.append('      ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
                         elif r['nullable'] == 'YES':
-                            v_values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
-                        v_first = False
+                            values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                        first = False
                     else:
-                        v_sql += '\n    , {0}'.format(r['column_name'])
-                        if r['column_name'] in v_pk_fields:
-                            v_values.append('\n    , ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
+                        sql += '\n    , {0}'.format(r['column_name'])
+                        if r['column_name'] in pk_fields:
+                            values.append('\n    , ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
                         elif r['nullable'] == 'YES':
-                            v_values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
             else:
-                v_values = []
-                v_first = True
-                for r in v_fields.Rows:
-                    if v_first:
-                        v_sql += '      {0}'.format(r['column_name'])
+                values = []
+                first = True
+                for r in fields.Rows:
+                    if first:
+                        sql += '      {0}'.format(r['column_name'])
                         if r['nullable'] == 'YES':
-                            v_values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
-                        v_first = False
+                            values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                        first = False
                     else:
-                        v_sql += '\n    , {0}'.format(r['column_name'])
+                        sql += '\n    , {0}'.format(r['column_name'])
                         if r['nullable'] == 'YES':
-                            v_values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
-            v_sql += '\n) VALUES (\n'
-            for v in v_values:
-                v_sql += v
-            v_sql += '\n)'
+                            values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+            sql += '\n) VALUES (\n'
+            for v in values:
+                sql += v
+            sql += '\n)'
         else:
-            v_sql = ''
-        return Template(v_sql)
+            sql = ''
+        return Template(sql)
 
-    def TemplateUpdate(self, p_schema, p_table):
-        v_fields = self.QueryTablesFields(p_table, False, p_schema)
-        if len(v_fields.Rows) > 0:
-            v_sql = 'UPDATE {0}.{1}\nSET '.format(p_schema, p_table)
-            v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
-            if len(v_pk.Rows) > 0:
-                v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
-                v_pk_fields = [r['column_name'] for r in v_table_pk_fields.Rows]
-                v_values = []
-                v_first = True
-                for r in v_fields.Rows:
-                    if v_first:
-                        if r['column_name'] in v_pk_fields:
-                            v_sql += '{0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
+    def TemplateUpdate(self, schema, table):
+        fields = self.QueryTablesFields(table, False, schema)
+        if len(fields.Rows) > 0:
+            sql = 'UPDATE {0}.{1}\nSET '.format(schema, table)
+            pk = self.QueryTablesPrimaryKeys(table, False, schema)
+            if len(pk.Rows) > 0:
+                table_pk_fields = self.QueryTablesPrimaryKeysColumns(pk.Rows[0]['constraint_name'], table, False, schema)
+                pk_fields = [r['column_name'] for r in table_pk_fields.Rows]
+                values = []
+                first = True
+                for r in fields.Rows:
+                    if first:
+                        if r['column_name'] in pk_fields:
+                            sql += '{0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
                         elif r['nullable'] == 'YES':
-                            v_sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
-                        v_first = False
+                            sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                        first = False
                     else:
-                        if r['column_name'] in v_pk_fields:
-                            v_sql += '\n    , {0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
+                        if r['column_name'] in pk_fields:
+                            sql += '\n    , {0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
                         elif r['nullable'] == 'YES':
-                            v_sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
             else:
-                v_values = []
-                v_first = True
-                for r in v_fields.Rows:
-                    if v_first:
+                values = []
+                first = True
+                for r in fields.Rows:
+                    if first:
                         if r['nullable'] == 'YES':
-                            v_sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
-                        v_first = False
+                            sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                        first = False
                     else:
                         if r['nullable'] == 'YES':
-                            v_sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
-            v_sql += '\nWHERE condition'
+                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+            sql += '\nWHERE condition'
         else:
-            v_sql = ''
-        return Template(v_sql)
+            sql = ''
+        return Template(sql)
 
     def TemplateDelete(self):
         template = get_template("oracle", "delete")
         return template.template
 
     @lock_required
-    def GetProperties(self, p_schema, p_object, p_type):
-        if p_type == 'role':
-            v_table1 = self.v_connection.Query('''
+    def GetProperties(self, schema, object_name, object_type):
+        if object_type == 'role':
+            table1 = self.connection.Query('''
                 select username as "User",
                        user_id as "ID",
                        account_status as "Status",
@@ -1088,9 +1086,9 @@ class Oracle:
                        authentication_type as "Authentication Type"
                 from dba_users
                 where (case when upper(replace(username, ' ', '')) <> username then '"' || username || '"' else username end) = '{0}'
-            '''.format(p_object), True, True).Transpose('Property', 'Value')
-        elif p_type == 'tablespace':
-            v_table1 = self.v_connection.Query('''
+            '''.format(object_name), True, True).Transpose('Property', 'Value')
+        elif object_type == 'tablespace':
+            table1 = self.connection.Query('''
                 select tablespace_name as "Tablespace",
                        block_size as "Block Size",
                        initial_extent as "Initial Extent",
@@ -1116,9 +1114,9 @@ class Oracle:
                        compress_for as "Compression Format"
                 from dba_tablespaces
                 where (case when upper(replace(tablespace_name, ' ', '')) <> tablespace_name then '"' || tablespace_name || '"' else tablespace_name end) = '{0}'
-            '''.format(p_object), True, True).Transpose('Property', 'Value')
+            '''.format(object_name), True, True).Transpose('Property', 'Value')
         else:
-            v_table1 = self.v_connection.Query('''
+            table1 = self.connection.Query('''
                 select owner as "Owner",
                        object_name as "Object Name",
                        object_id as "Object ID",
@@ -1134,9 +1132,9 @@ class Oracle:
                 where (case when upper(replace(owner, ' ', '')) <> owner then '"' || owner || '"' else owner end) = '{0}'
                   and (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) = '{1}'
                   and subobject_name is null
-            '''.format(self.v_schema, p_object), True, True).Transpose('Property', 'Value')
-            if p_type == 'sequence':
-                v_table2 = self.v_connection.Query('''
+            '''.format(self.schema, object_name), True, True).Transpose('Property', 'Value')
+            if object_type == 'sequence':
+                table2 = self.connection.Query('''
                     select last_number as "Last Value",
                            min_value as "Min Value",
                            max_value as "Max Value",
@@ -1147,24 +1145,23 @@ class Oracle:
                     from all_sequences
                     where (case when upper(replace(sequence_owner, ' ', '')) <> sequence_owner then '"' || sequence_owner || '"' else sequence_owner end) = '{0}'
                       and (case when upper(replace(sequence_name, ' ', '')) <> sequence_name then '"' || sequence_name || '"' else sequence_name end) = '{1}'
-                '''.format(self.v_schema, p_object), True, True).Transpose('Property', 'Value')
-                v_table1.Merge(v_table2)
-        return v_table1
+                '''.format(self.schema, object_name), True, True).Transpose('Property', 'Value')
+                table1.Merge(table2)
+        return table1
 
     @lock_required
-    def GetDDL(self, p_schema, p_table, p_object, p_type):
-        if p_type == 'role' or p_type == 'tablespace' or p_type == 'database':
+    def GetDDL(self, schema, table, object_name, object_type):
+        if object_type == 'role' or object_type == 'tablespace' or object_type == 'database':
             return ' '
         else:
-                return self.v_connection.ExecuteScalar(
+            return self.connection.ExecuteScalar(
                     '''
 select dbms_lob.substr(dbms_metadata.get_ddl(object_type, object_name), 4000, 1) as ddl
 from (
 select * from all_objects
                 where (SHARING is NULL OR SHARING <> 'METADATA LINK') and
-                 (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) = '{0}')'''.format(p_object)
+                 (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) = '{0}')'''.format(object_name)
                 )
-
 
     def GetAutocompleteValues(self, p_columns, p_filter):
         return None
