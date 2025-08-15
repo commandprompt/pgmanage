@@ -266,7 +266,7 @@ def get_indexes(request, database):
             index_data = {
                 "index_name": index["index_name"],
                 "unique": index["uniqueness"] == "Unique",
-                "is_primary": index["is_primary"] == "True",
+                "is_primary": index["is_primary"] == "TRUE",
                 "columns": ast.literal_eval(index["columns"]),
                 "type": index_type,
             }
