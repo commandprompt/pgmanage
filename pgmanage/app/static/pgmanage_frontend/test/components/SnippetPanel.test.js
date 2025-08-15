@@ -14,7 +14,7 @@ describe("SnippetPanel.vue", () => {
       shallow: true,
     });
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.find(".omnidb__panel").exists()).toBe(true);
+    expect(wrapper.find(".snippets").exists()).toBe(true);
   });
 
   it("toggles the panel visibility", async () => {
@@ -23,9 +23,9 @@ describe("SnippetPanel.vue", () => {
       shallow: true,
     });
     expect(wrapper.vm.isVisible).toBe(false);
-    await wrapper.find(".omnidb__panel__toggler").trigger("click");
+    await wrapper.find(".snippets__toggler").trigger("click");
     expect(wrapper.vm.isVisible).toBe(true);
-    await wrapper.find(".omnidb__panel__toggler").trigger("click");
+    await wrapper.find(".snippets__toggler").trigger("click");
     expect(wrapper.vm.isVisible).toBe(false);
   });
 
