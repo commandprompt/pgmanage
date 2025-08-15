@@ -32,10 +32,9 @@ import re
 import base64
 
 import app.include.Spartacus as Spartacus
-import app.include.Spartacus.prettytable as prettytable
 from urllib.parse import urlparse
 from pgmanage import settings
-
+from prettytable import from_db_cursor, PrettyTable
 v_supported_rdbms = []
 
 try:
@@ -104,30 +103,22 @@ class DataTable(object):
     def AddColumnTypeCode(self, typecode):
         self.ColumnTypeCodes.append(typecode)
     def AddRow(self, p_row):
-        if len(self.Columns) > 0 and len(p_row) > 0:
-            if len(self.Columns) == len(p_row):
-                if not isinstance(p_row, OrderedDict):
-                    v_rowtmp2 = p_row
-                    if self.AllTypesStr:
-                        for j in range(0, len(v_rowtmp2)):
-                            if v_rowtmp2[j] != None:
-                                v_rowtmp2[j] = str(v_rowtmp2[j])
-                            else:
-                                v_rowtmp2[j] = ''
-                    v_rowtmp = OrderedDict(zip(self.Columns, tuple(v_rowtmp2)))
-                    if self.Simple:
-                        v_row = []
-                        for c in self.Columns:
-                            v_row.append(v_rowtmp[c])
-                    else:
-                        v_row = v_rowtmp
-                else:
-                    v_row = p_row
-                self.Rows.append(v_row)
-            else:
-                raise Spartacus.Database.Exception('Can not add row to a table with different columns.')
-        else:
+        if not self.Columns and p_row:
             raise Spartacus.Database.Exception('Can not add row to a table with no columns.')
+
+        if len(self.Columns) != len(p_row):
+             raise Spartacus.Database.Exception('Can not add row to a table with different columns.')
+
+
+        if not isinstance(p_row, list):
+            p_row = list(p_row)
+
+        
+        if self.AllTypesStr:
+            p_row = [str(x) if x is not None else '' for x in p_row]
+
+        self.Rows.append(p_row if self.Simple else OrderedDict(zip(self.Columns, p_row)))
+
     def Select(self, p_key, p_value):
         if isinstance(p_key, list):
             v_key = p_key
@@ -406,7 +397,7 @@ class DataTable(object):
                             j = 0
                             for i in range(0, n):
                                 if v_first:
-                                    x = c.ljust(v_maxc)
+                                    x = self.Columns[c].ljust(v_maxc)
                                     v_first = False
                                 else:
                                     x = ' '.ljust(v_maxc)
@@ -419,15 +410,12 @@ class DataTable(object):
                     v_row = v_row + 1
                 return v_string
             else:
-                v_pretty = prettytable.PrettyTable()
-                v_pretty._set_field_names(self.Columns)
-                v_pretty._set_align('l')
-                for r in self.Rows:
-                    v_row = []
-                    for c in range(0, len(self.Columns)):
-                        v_row.append(r[c])
-                    v_pretty.add_row(v_row)
-                return v_pretty.get_string()
+                table = PrettyTable()
+                table.field_names = self.Columns
+                table.align = 'l'
+                table.add_rows(self.Rows)
+                table_string = table.get_string()
+                return table_string
         else:
             if p_transpose:
                 v_maxc = 0
@@ -481,15 +469,13 @@ class DataTable(object):
                     v_row = v_row + 1
                 return v_string
             else:
-                v_pretty = prettytable.PrettyTable()
-                v_pretty._set_field_names(self.Columns)
-                v_pretty._set_align('l')
-                for r in self.Rows:
-                    v_row = []
-                    for c in self.Columns:
-                        v_row.append(r[c])
-                    v_pretty.add_row(v_row)
-                return v_pretty.get_string()
+                table = PrettyTable()
+                table.field_names = self.Columns
+                table.align = 'l'
+                table.add_rows(self.Rows)
+                table_string = table.get_string()
+                return table_string
+
     def Transpose(self, p_column1, p_column2):
         if len(self.Rows) == 1:
             v_table = Spartacus.Database.DataTable()
@@ -1057,8 +1043,27 @@ class SQLite(Generic):
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
-    def Special(self, p_sql):
-        return self.Query(p_sql).Pretty()
+    def Special(self, p_sql):       
+        try:
+            v_keep = None
+            if self.v_con is None:
+                self.Open()
+                v_keep = False
+            else:
+                v_keep = True
+            self.v_cur.execute(p_sql)
+            table = from_db_cursor(self.v_cur)
+            table_string = table.get_formatted_string()
+            return table_string
+        except Spartacus.Database.Exception as exc:
+            raise exc
+        except sqlite3.Error as exc:
+            raise Spartacus.Database.Exception(str(exc))
+        except Exception as exc:
+            raise Spartacus.Database.Exception(str(exc))
+        finally:
+            if not v_keep:
+                self.Close()
 
 '''
 ------------------------------------------------------------------------
@@ -1310,7 +1315,7 @@ class PostgreSQL(Generic):
             self.v_autocommit = True
             self.v_last_fetched_size = 0
             self.v_special = PGSpecial()
-            self.v_help = Spartacus.Database.DataTable()
+            self.v_help = DataTable(p_simple=True)
             self.v_help.Columns = ['Command', 'Syntax', 'Description']
             self.v_help.AddRow(['\\?', '\\?', 'Show Commands.'])
             self.v_help.AddRow(['\\h', '\\h', 'Show SQL syntax and help.'])
@@ -1333,7 +1338,7 @@ class PostgreSQL(Generic):
             self.v_help.AddRow(['\\dT', '\\dT[+] [pattern]', 'List data types.'])
             self.v_help.AddRow(['\\x', '\\x', 'Toggle expanded output.'])
             self.v_help.AddRow(['\\timing', '\\timing', 'Toggle timing of commands.'])
-            self.v_helpcommands = Spartacus.Database.DataTable()
+            self.v_helpcommands = DataTable(p_simple=True)
             self.v_helpcommands.Columns = ['SQL Command']
             for s in list(HelpCommands.keys()):
                 self.v_helpcommands.AddRow([s])
@@ -1832,29 +1837,28 @@ class PostgreSQL(Generic):
             else:
                 v_aux = self.v_help.Select('Command', v_command)
                 if len(v_aux.Rows) > 0:
-                    for r in self.v_special.execute(self.v_cur, p_sql):
-                        v_result = r
-                    if v_result[0]:
-                        v_title = v_result[0]
-                    if v_result[1]:
-                        v_table = DataTable()
-                        v_table.Columns = v_result[2]
-                        if isinstance(v_result[1], type(self.v_cur)):
-                            if v_result[1].description:
-                                v_table.Rows = v_result[1].fetchall()
-                        else:
-                            for r in v_result[1]:
-                                v_table.AddRow(r)
-                    if v_result[3]:
-                        v_status = v_result[3]
-                        if v_status.strip() == 'Expanded display is on.':
-                            self.v_expanded = True
-                        elif v_status.strip() == 'Expanded display is off.':
-                            self.v_expanded = False
-                        elif v_status.strip() == 'Timing is on.':
-                            self.v_timing = True
-                        elif v_status.strip() == 'Timing is off.':
-                            self.v_timing = False
+                    for title, rows, headers, status in self.v_special.execute(self.v_cur, p_sql):
+                        if title:
+                            v_title = title
+                        if rows:
+                            v_table = DataTable()
+                            v_table.Columns = headers
+                            if isinstance(rows, type(self.v_cur)):
+                                if rows.description:
+                                    v_table.Rows = rows.fetchall()
+                            else:
+                                for r in rows:
+                                    v_table.AddRow(r)
+                        if status:
+                            v_status = status
+                            if v_status.strip() == 'Expanded display is on.':
+                                self.v_expanded = True
+                            elif v_status.strip() == 'Expanded display is off.':
+                                self.v_expanded = False
+                            elif v_status.strip() == 'Timing is on.':
+                                self.v_timing = True
+                            elif v_status.strip() == 'Timing is off.':
+                                self.v_timing = False
                 else:
                     if self.v_timing:
                         v_timestart = datetime.datetime.now()
@@ -1914,7 +1918,7 @@ class MySQL(Generic):
             self.v_password = p_password
             self.v_con = None
             self.v_cur = None
-            self.v_help = Spartacus.Database.DataTable()
+            self.v_help = DataTable(p_simple=True)
             self.v_help.Columns = ['Command', 'Syntax', 'Description']
             self.v_help.AddRow(['\\?', '\\?', 'Show Commands.'])
             self.v_help.AddRow(['\\x', '\\x', 'Toggle expanded output.'])
@@ -2253,7 +2257,7 @@ class MySQL(Generic):
                 else:
                     if self.v_timing:
                         v_timestart = datetime.datetime.now()
-                    v_table = self.Query(p_sql, True)
+                    v_table = self.Query(p_sql, True, True)
                     v_tmp = self.GetStatus()
                     if v_tmp == 1:
                         v_status = '1 row '
@@ -2315,7 +2319,7 @@ class MariaDB(Generic):
             self.v_password = p_password
             self.v_con = None
             self.v_cur = None
-            self.v_help = Spartacus.Database.DataTable()
+            self.v_help = DataTable(p_simple=True)
             self.v_help.Columns = ['Command', 'Syntax', 'Description']
             self.v_help.AddRow(['\\?', '\\?', 'Show Commands.'])
             self.v_help.AddRow(['\\x', '\\x', 'Toggle expanded output.'])
@@ -2654,7 +2658,7 @@ class MariaDB(Generic):
                 else:
                     if self.v_timing:
                         v_timestart = datetime.datetime.now()
-                    v_table = self.Query(p_sql, True)
+                    v_table = self.Query(p_sql, True, True)
                     v_tmp = self.GetStatus()
                     if v_tmp == 1:
                         v_status = '1 row '
@@ -2967,7 +2971,7 @@ class Oracle(Generic):
             self.v_con = None
             self.v_cur = None
             self.v_autocommit = True
-            self.v_help = Spartacus.Database.DataTable()
+            self.v_help = DataTable(p_simple=True)
             self.v_help.Columns = ['Command', 'Syntax', 'Description']
             self.v_help.AddRow(['\\?', '\\?', 'Show Commands.'])
             self.v_help.AddRow(['\\x', '\\x', 'Toggle expanded output.'])
@@ -3323,7 +3327,7 @@ class Oracle(Generic):
                 else:
                     if self.v_timing:
                         v_timestart = datetime.datetime.now()
-                    v_table = self.Query(p_sql, True)
+                    v_table = self.Query(p_sql, True, True)
                     v_tmp = self.GetStatus()
                     if v_tmp == 1:
                         v_status = '1 row '

@@ -23,6 +23,7 @@ sqlparse = "0.5.3"
 portend = "3.1"
 tempora = "5.6"
 paramiko = "3.5.1"
+prettytable = "3.16.0"
 
 [build-system]
 requires = ["poetry-core"]
