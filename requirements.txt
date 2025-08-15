@@ -11,6 +11,7 @@ pgspecial==1.13.0
 sshtunnel==0.4.0
 psutil==6.1.1
 django-vite==3.0.4
+prettytable==3.16.0
 # portend and tempora are indirect dependencies of cherrypy
 # pinned because newer versions caused pyinstaller issues with dateutil
 portend==3.1
