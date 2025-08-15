@@ -26,13 +26,9 @@ SOFTWARE.
 from enum import Enum
 from urllib.parse import urlparse
 
-from .sql_templates import get_template
-
-
-from .sql_templates import get_template
-
-
 import app.include.Spartacus as Spartacus
+
+from .sql_templates import get_template
 
 '''
 ------------------------------------------------------------------------

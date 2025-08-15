@@ -29,6 +29,7 @@ from collections import OrderedDict
 from enum import Enum
 
 import app.include.Spartacus as Spartacus
+
 from .sql_templates import get_template
 
 '''
