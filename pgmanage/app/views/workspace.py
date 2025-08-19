@@ -208,7 +208,7 @@ def renew_password(request, session):
 
     database_object = session.v_databases[database_index]
     if password_kind == "database":
-        database_object["database"].v_connection.v_password = password
+        database_object["database"].connection.password = password
     else:
         database_object["tunnel"]["password"] = password
 
@@ -297,7 +297,7 @@ def draw_graph(request, database):
 
 
         database_name = (
-            "sqlite3" if database.v_db_type == "sqlite" else database.v_service
+            "sqlite3" if database.db_type == "sqlite" else database.service
         )
         layout_name = f"{database_name}@{data.get('schema')}"
 

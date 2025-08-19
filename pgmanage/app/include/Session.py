@@ -122,7 +122,7 @@ class Session(object):
                                 ssh_username=self.v_databases[p_database_index]['tunnel']['user'],
                                 ssh_private_key_password=self.v_databases[p_database_index]['tunnel']['password'],
                                 ssh_pkey = key,
-                                remote_bind_address=(self.v_databases[p_database_index]['database'].v_active_server, int(self.v_databases[p_database_index]['database'].v_active_port)),
+                                remote_bind_address=(self.v_databases[p_database_index]['database'].active_server, int(self.v_databases[p_database_index]['database'].active_port)),
                                 logger=logger
                             )
                         else:
@@ -130,7 +130,7 @@ class Session(object):
                                 (self.v_databases[p_database_index]['tunnel']['server'], int(self.v_databases[p_database_index]['tunnel']['port'])),
                                 ssh_username=self.v_databases[p_database_index]['tunnel']['user'],
                                 ssh_password=self.v_databases[p_database_index]['tunnel']['password'],
-                                remote_bind_address=(self.v_databases[p_database_index]['database'].v_active_server, int(self.v_databases[p_database_index]['database'].v_active_port)),
+                                remote_bind_address=(self.v_databases[p_database_index]['database'].active_server, int(self.v_databases[p_database_index]['database'].active_port)),
                                 logger=logger
                             )
                         server.set_keepalive = 120
@@ -140,8 +140,8 @@ class Session(object):
                         tunnels[self.v_databases[p_database_index]['database'].conn_id] = server
 
                         self.v_databases[p_database_index]['tunnel_object'] = str(server.local_bind_port)
-                        self.v_databases[p_database_index]['database'].v_connection.v_host = '127.0.0.1'
-                        self.v_databases[p_database_index]['database'].v_connection.v_port = server.local_bind_port
+                        self.v_databases[p_database_index]['database'].connection.host = '127.0.0.1'
+                        self.v_databases[p_database_index]['database'].connection.port = server.local_bind_port
 
                         s['pgmanage_session'] = self
                         s.save()
@@ -158,13 +158,13 @@ class Session(object):
                 #Reached timeout, must request password
                 if not self.v_databases[p_database_index]['prompt_timeout'] or datetime.now() > self.v_databases[p_database_index]['prompt_timeout'] + timedelta(0,settings.PWD_TIMEOUT_TOTAL):
                     #Try passwordless connection
-                    self.v_databases[p_database_index]['database'].v_connection.v_password = ''
+                    self.v_databases[p_database_index]['database'].connection.password = ''
                     v_test = self.v_databases[p_database_index]['database'].TestConnection()
 
                     if v_test=='Connection successful.':
                         s = SessionStore(session_key=self.v_user_key)
                         s['pgmanage_session'].v_databases[p_database_index]['prompt_timeout'] = datetime.now()
-                        s['pgmanage_session'].v_databases[p_database_index]['database'].v_connection.v_password = ''
+                        s['pgmanage_session'].v_databases[p_database_index]['database'].connection.password = ''
                         s.save()
                         v_return = { 'timeout': False, 'message': '', 'kind':'database'}
                     else:

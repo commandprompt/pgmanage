@@ -44,7 +44,7 @@ class PostgreSQL(TestCase):
             0,
             self.test_connection.id
         )
-        self.database.connection.v_password = self.password
+        self.database.connection.password = self.password
         self.database.GetVersion()
         self.major_version = self.database.major_version
 

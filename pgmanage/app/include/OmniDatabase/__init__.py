@@ -52,7 +52,7 @@ class Generic:
                             p_password,
                             p_conn_id=0,
                             p_alias='',
-                            p_foreignkeys=True,
+                            foreign_keys=True,
                             p_application_name='PgManage',
                             p_conn_string='',
                             p_parse_conn_string = False,
@@ -67,4 +67,4 @@ class Generic:
         if p_db_type == 'mysql':
             return MySQL(p_server, p_port, p_service, p_user, p_password, p_conn_id, p_alias, p_conn_string, p_parse_conn_string, connection_params)
         if p_db_type == 'sqlite':
-            return SQLite(p_service, p_conn_id, p_alias, p_foreignkeys)
+            return SQLite(p_service, p_conn_id, p_alias, foreign_keys)

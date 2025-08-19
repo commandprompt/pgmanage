@@ -205,8 +205,8 @@ for attribute, value in pgmanage_settings.__dict__.items():
 import app.include.OmniDatabase as OmniDatabase
 import app.include.Spartacus as Spartacus
 
-if 'SQLite' in Spartacus.Database.v_supported_rdbms and not pgmanage.custom_settings.DESKTOP_MODE:
-    Spartacus.Database.v_supported_rdbms.remove('SQLite')
+if 'SQLite' in Spartacus.Database.supported_rdbms and not pgmanage.custom_settings.DESKTOP_MODE:
+    Spartacus.Database.supported_rdbms.remove('SQLite')
 
 import logging
 import logging.config
@@ -267,7 +267,7 @@ if options.reset:
 
 if options.listusers:
     from app.include.Spartacus.Database import DataTable
-    table = DataTable(p_simple=True)
+    table = DataTable(simple=True)
     table.AddColumn('id')
     table.AddColumn('username')
     table.AddColumn('superuser')
@@ -297,7 +297,7 @@ if options.listconnections:
     maintenance_action = True
 
     from app.include.Spartacus.Database import DataTable
-    table = DataTable(p_simple=True)
+    table = DataTable(simple=True)
     table.AddColumn('id')
     table.AddColumn('technology')
     table.AddColumn('alias')
