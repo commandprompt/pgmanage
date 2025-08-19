@@ -442,11 +442,22 @@ class PostgreSQL:
             GROUP BY x.oid, x.extname, n.nspname, x.extrelocatable, x.extversion, e.comment;
         ''' % (name,))
 
+    def QueryOptionNamesForCategory(self, catname):
+        return self.v_connection.Query('''
+        set local lc_messages to 'C';
+        SELECT name
+        FROM pg_settings
+        WHERE category = '{0}'
+        ORDER BY name;
+    '''.format(catname))
+
     @lock_required
     def QueryConfiguration(self, exclude_read_only=False):
+        namesQ = self.QueryOptionNamesForCategory('Preset Options')
+        names = [f"'{x[0]}'"  for x in namesQ.Rows]
         where = ''
         if exclude_read_only:
-            where = "WHERE category != 'Preset Options'"
+            where = "WHERE name NOT IN ({})".format(','.join(names))
 
         return self.connection.Query('''
         SELECT name, setting,
@@ -457,11 +468,12 @@ class PostgreSQL:
         context, category,
         short_desc || ' ' || coalesce(extra_desc, '') AS desc,
         boot_val, reset_val,
-        pending_restart
+        pending_restart,
+        (name IN ({1})) AS is_preset_option
         FROM pg_settings
         {0}
         ORDER BY category, name
-    '''.format(where), True)
+    '''.format(where, ','.join(names)), True)
 
     @lock_required
     def QueryConfigCategories(self):

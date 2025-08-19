@@ -22,7 +22,7 @@
                   <i :class="['fas', 'fa-2xl', { 'fa-folder': file.is_directory, 'fa-file': !file.is_directory }]"
                     :style="{ 'color': file.is_directory ? '#0ea5e9' : 'rgb(105 114 118)', }"></i>
                 </div>
-                <span class="text-dark">{{ file.file_name }}</span>
+                <span>{{ file.file_name }}</span>
               </div>
 
             </div>

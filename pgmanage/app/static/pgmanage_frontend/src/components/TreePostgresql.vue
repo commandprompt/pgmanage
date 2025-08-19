@@ -3221,7 +3221,7 @@ export default {
           }];
   
         this.templates = response.data.templates;
-        this.serverVersion = response.data.major_version;
+        this.templates['version'] = response.data.version
         this.featureFlags = response.data.feature_flags
 
         this.$refs.tree.updateNode(node.path, {

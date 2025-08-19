@@ -1154,7 +1154,7 @@ class Oracle:
         if object_type == 'role' or object_type == 'tablespace' or object_type == 'database':
             return ' '
         else:
-            return self.connection.ExecuteScalar(
+            return self.v_connection.ExecuteScalar(
                     '''
 select dbms_lob.substr(dbms_metadata.get_ddl(object_type, object_name), 4000, 1) as ddl
 from (

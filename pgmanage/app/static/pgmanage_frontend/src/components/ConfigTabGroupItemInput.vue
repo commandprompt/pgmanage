@@ -33,7 +33,7 @@
   <div class="col-5 d-flex align-items-center">
     <button v-if="
       setting.setting != setting.boot_val &&
-      setting.category != 'Preset Options'
+      setting.is_preset_option != 'True'
     " type="button" class="btn btn-link btn-sm" :id="buttonId" :title="`Reset to: ${setting.boot_val}`"
       ref="resetButton"
       @click.prevent="setDefault">
@@ -95,7 +95,7 @@ export default {
       return Object.assign({}, this.initialSetting);
     },
     isReadOnly() {
-      return this.initialSetting.category === "Preset Options";
+      return this.initialSetting.is_preset_option === 'True';
     }
   },
   validations() {
@@ -103,6 +103,10 @@ export default {
       setting: {
         setting: { required: required }
       }
+    }
+    const filePermissionValidator = function(value) {
+      const decVal = parseInt(value, 8)
+      return decVal >= this.setting.min_val && decVal <= this.setting.max_val;
     }
     if (this.setting.vartype === 'string') {
       localRules.setting.setting.required = requiredUnless(() => !this.setting.boot_val)
@@ -112,12 +116,24 @@ export default {
         this.validNumericSetting
       )
     } else {
-      let do_not_check_names = ["unix_socket_permissions", "log_file_mode"]
-      if (do_not_check_names.includes(this.setting.name)) {
-        return localRules
+      let may_be_octal = ["unix_socket_permissions", "log_file_mode", "data_directory_mode"]
+      if (may_be_octal.includes(this.setting.name)) {
+        const octalPattern = /^[0-7]{4}$/;
+        if(octalPattern.test(this.setting.setting)) {
+          localRules.setting.setting = {
+            filePermissionValidator: filePermissionValidator.bind(this)
+          }
+        } else {
+          localRules.setting.setting.minValue = minValue(this.setting.min_val)
+          localRules.setting.setting.maxValue = maxValue(this.setting.max_val)
+        }
+
+        // return localRules
+      } else {
+        localRules.setting.setting.minValue = minValue(this.setting.min_val)
+        localRules.setting.setting.maxValue = maxValue(this.setting.max_val)
       }
-      localRules.setting.setting.minValue = minValue(this.setting.min_val)
-      localRules.setting.setting.maxValue = maxValue(this.setting.max_val)
+
     }
     return localRules
   },

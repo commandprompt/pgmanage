@@ -144,6 +144,7 @@ def get_settings(conn, grouped=True, exclude_read_only=False):
             "context": row["context"],
             "desc": row["desc"],
             "pending_restart": row["pending_restart"],
+            "is_preset_option": row["is_preset_option"],
         }
         if grouped:
             rows.append(setting)
@@ -154,7 +155,7 @@ def get_settings(conn, grouped=True, exclude_read_only=False):
     return ret
 
 
-def validate_setting(setting_name, setting, current_settings):
+def validate_setting(setting_name, setting, current_settings, preset_setting_names, customized_setting_names):
     """
     Validate a setting value for a given setting name against a list of current settings.
 
@@ -178,7 +179,7 @@ def validate_setting(setting_name, setting, current_settings):
                 setting_val = setting["setting"]
                 if (
                     item["name"] in do_not_check_names
-                    or item["category"] == "Preset Options"
+                    or item["name"] in preset_setting_names
                 ):
                     return True, item
                 if item["vartype"] == "integer":
@@ -212,7 +213,7 @@ def validate_setting(setting_name, setting, current_settings):
                         return True, item
                 if item["vartype"] == "string":
                     return True, item
-    if setting["category"] == "Customized Options":
+    if setting_name in customized_setting_names:
         return True, setting
 
 
@@ -259,18 +260,23 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
         )
         config_history.save()
 
+    preset_setting_names = [row[0] for row in conn.QueryOptionNamesForCategory('Preset Options').Rows]
+    customized_setting_names = [row[0] for row in conn.QueryOptionNamesForCategory('Customized Options').Rows]
+
     for setting_name, setting in update.items():
         try:
             setting_val = setting["setting"]
             setting_valid, item = validate_setting(
-                setting_name, setting, current_settings
+                setting_name, setting, current_settings, preset_setting_names, customized_setting_names
             )
         except ValueError as exc:
             raise ValidationError(
                 code=400, message=f"{setting_name}: Invalid setting."
             ) from exc
-        if setting.get("category") == "Preset Options":
+
+        if setting_name in preset_setting_names:
             continue
+
         if setting_valid:
             if (
                 (item["vartype"] == "integer" and setting_val != item["setting"])
@@ -282,7 +288,7 @@ def post_settings(request, conn, update, commit_comment=None, new_config=True):
                     item["vartype"] not in ["integer", "real"]
                     and setting_val != item["setting"]
                 )
-                or item["category"] == "Customized Options"
+                or setting_name in customized_setting_names
             ):
                 # At this point, all incoming parameters have been checked.
                 if setting_val:

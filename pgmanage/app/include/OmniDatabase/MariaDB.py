@@ -1111,7 +1111,8 @@ class MariaDB:
                     WHERE index_name = '{0}'
                     AND table_schema = '{1}'
                     AND table_name = '{2}'
-                    GROUP BY table_schema, table_name, index_name'''.format(object_name, schema, table)).Transpose('Property', 'Value')
+                    GROUP BY table_schema, table_name, index_name
+                    '''.format(object_name, schema, table)).Transpose('Property', 'Value')
         else:
             return None
 
