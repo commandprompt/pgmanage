@@ -5,6 +5,7 @@ import os
 import threading
 import time
 import traceback
+from collections import defaultdict
 from datetime import datetime, timezone
 from enum import IntEnum
 from typing import Any, Optional
@@ -174,6 +175,17 @@ def export_data(
     file_name: str = f'${str(time.time()).replace(".", "_")}.{extension}'
 
     data = database.v_connection.QueryBlock(sql_cmd, 1000, False, True)
+
+    name_count = defaultdict(int)
+    columns = []
+    for column in data.Columns:
+        name_count[column] += 1
+        if name_count[column] > 1:
+            columns.append(f"{column}_{name_count[column]}")
+        else:
+            columns.append(column)
+
+    data.Columns = columns
 
     file_path: str = os.path.join(export_dir, file_name)
     skip_headers = cmd_type in ['export_xlsx-no_headers', 'export_csv-no_headers']
@@ -514,6 +526,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
             elif request_type == RequestType.SCHEMA_EDIT_DATA:
                 t = StoppableThread(thread_schema_edit_data, request_data)
                 workspace_context["thread"] = t
+                workspace_context["type"] = "schema_edit"
                 t.start()
 
         # Debugger

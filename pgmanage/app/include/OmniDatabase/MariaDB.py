@@ -272,8 +272,8 @@ class MariaDB:
             else:
                 v_filter = "and table_schema = '{0}' ".format(self.v_schema)
         return self.Query('''
-            select table_name,
-                   table_schema
+            select table_name as "table_name",
+                   table_schema as "table_schema"
             from information_schema.tables
             where table_type in ('BASE TABLE', 'SYSTEM VIEW')
             {0}
@@ -295,9 +295,9 @@ class MariaDB:
             if p_table:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct c.table_name as table_name,
-                   c.column_name,
-                   c.data_type,
+            select distinct c.table_name as "table_name",
+                   c.column_name as "column_name",
+                   c.data_type as "data_type",
                    c.is_nullable as nullable,
                    c.character_maximum_length as data_length,
                    c.numeric_precision as data_precision,
@@ -327,13 +327,13 @@ class MariaDB:
             if p_table:
                 v_filter = "and i.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct i.constraint_name,
-                   i.table_name,
+            select distinct i.constraint_name as "constraint_name",
+                   i.table_name as "table_name",
                    k.referenced_table_name as r_table_name,
-                   k.table_schema,
+                   k.table_schema as "table_schema",
                    k.referenced_table_schema as r_table_schema,
-                   r.update_rule,
-                   r.delete_rule
+                   r.update_rule as "update_rule",
+                   r.delete_rule as "delete_rule"
             from information_schema.table_constraints i
             left join information_schema.key_column_usage k on i.constraint_name = k.constraint_name
             left join information_schema.referential_constraints r on i.constraint_name = r.constraint_name
@@ -369,16 +369,16 @@ class MariaDB:
             v_filter = v_filter + "and i.constraint_name in ({0}) ".format(fkey_list)
 
         return self.Query('''
-            select distinct i.constraint_name,
-                   i.table_name,
+            select distinct i.constraint_name as "constraint_name",
+                   i.table_name as "table_name",
                    k.referenced_table_name as r_table_name,
-                   k.column_name,
+                   k.column_name as "column_name",
                    k.referenced_column_name as r_column_name,
-                   k.table_schema,
+                   k.table_schema as "table_schema",
                    k.referenced_table_schema as r_table_schema,
-                   r.update_rule,
-                   r.delete_rule,
-                   k.ordinal_position
+                   r.update_rule as "update_rule",
+                   r.delete_rule as "delete_rule",
+                   k.ordinal_position as "ordinal_position"
             from information_schema.table_constraints i
             left join information_schema.key_column_usage k on i.constraint_name = k.constraint_name
             left join information_schema.referential_constraints r on i.constraint_name = r.constraint_name
@@ -430,7 +430,7 @@ class MariaDB:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         v_filter = "and concat('pk_', t.table_name) = '{0}' ".format(p_pkey)
         return self.Query('''
-            select distinct k.column_name,
+            select distinct k.column_name as "column_name",
                    k.ordinal_position
             from information_schema.table_constraints t
             join information_schema.key_column_usage k
@@ -455,7 +455,7 @@ class MariaDB:
             if p_table:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct t.constraint_name,
+            select distinct t.constraint_name as "constraint_name",
                    t.table_name,
                    t.table_schema
             from information_schema.table_constraints t
@@ -481,7 +481,7 @@ class MariaDB:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         v_filter = "and t.constraint_name = '{0}' ".format(p_unique)
         return self.Query('''
-            select distinct k.column_name,
+            select distinct k.column_name as "column_name",
                    k.ordinal_position
             from information_schema.table_constraints t
             join information_schema.key_column_usage k
@@ -506,8 +506,8 @@ class MariaDB:
             if p_table:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct t.table_schema as schema_name,
-                   t.table_name,
+            select t.table_schema as "table_name",
+                   t.table_name as "table_name",
                    (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) as index_name,
                    case when t.non_unique = 1 then 'Non Unique' else 'Unique' end as uniqueness,
                     JSON_ARRAYAGG(t.column_name) as columns,
@@ -544,7 +544,7 @@ class MariaDB:
                 v_filter = "and t.table_name = '{0}' ".format(p_table)
         v_filter = "and (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) = '{0}' ".format(p_index)
         return self.Query('''
-            select distinct t.column_name,
+            select distinct t.column_name as "column_name",
                    t.seq_in_index
             from information_schema.statistics t
             where 1 = 1
@@ -703,8 +703,8 @@ class MariaDB:
             else:
                 v_filter = "and table_schema = '{0}' ".format(self.v_schema)
         return self.Query('''
-            select table_name,
-                   table_schema
+            select table_name as "table_name",
+                   table_schema as "table_schema"
             from information_schema.views
             where 1=1
             {0}
@@ -726,9 +726,9 @@ class MariaDB:
             if p_table:
                 v_filter = "and c.table_name = '{0}' ".format(p_table)
         return self.Query('''
-            select distinct c.table_name as table_name,
-                   c.column_name,
-                   c.data_type,
+            select distinct c.table_name as "table_name",
+                   c.column_name as "column_name",
+                   c.data_type as "data_type",
                    c.is_nullable as nullable,
                    c.character_maximum_length as data_length,
                    c.numeric_precision as data_precision,

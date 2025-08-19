@@ -20,7 +20,7 @@ class FileManager:
             otherwise None.
         """
         if not DESKTOP_MODE:
-            storage_dir = os.path.join(HOME_DIR, "storage", self.user.username)
+            storage_dir = os.path.join(HOME_DIR, "storage", str(self.user.id))
 
             if not os.path.exists(storage_dir):
                 os.makedirs(storage_dir)

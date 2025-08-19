@@ -213,10 +213,21 @@ export default {
 
       let headers = [];
       let headerIndexMap = {}; // Map header titles to their original indices
+      let nameCount = {}; // to track duplicates
+
 
       Object.keys(last(data)).forEach((key) => {
           const originalIndex = parseInt(key, 10);
-          const header = this.columns[originalIndex];
+          let  header = this.columns[originalIndex];
+
+          // Track duplicates
+          if (nameCount[header]) {
+            nameCount[header]++;
+            header = `${header}_${nameCount[header]}`;
+          } else {
+            nameCount[header] = 1;
+          }
+
           headers.push(header);
           headerIndexMap[header] = originalIndex;
       });
@@ -435,7 +446,7 @@ export default {
             action: () => this.copyTableData("csv"),
           },
           {
-            label: '<i class="fas fa-copy"></i><span>Copy as Mardown</span>',
+            label: '<i class="fas fa-copy"></i><span>Copy as Markdown</span>',
             action: () => this.copyTableData("markdown"),
           },
           {

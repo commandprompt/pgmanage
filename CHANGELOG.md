@@ -1,3 +1,35 @@
+# PgManage 1.3.1 Bugfix Release
+
+## Release Date: Aug 5 2025
+
+## Release Notes
+
+  - Bugs fixed:
+    - fixed error when loading foregin key information in DB Tree in SQLite3 (#682)
+    - fixed error when loading index information in DB Tree in Mariadb (#688)
+    - fixed incorrect stylesheets for password strength validation widget
+    - fixed erroneous "Discard Changes" warning when switching between conections in connection manager (#698)
+    - fixed issue with incorrect where clause generated when usingdata editor query filter in Oracle
+    - fixed erros when loading DDL for metadata link objects in DB tree
+    - fixed back-end issue with idle schema editor thread not always getting terminated
+    - fixed "autocommit" checkbox not working for Oracle DB connections
+    - fixed validation errors when entering octal file permissions in Server Configuration Tab (#705)
+    - fixed error when rolling back Postgres Server Configuration snapshots that have values not applicable to the current server setup
+    - fixed errors when restoreing Postgres Server Configuration for databases running with non-english locales (#707)
+    - fixed query result file export when query result have duplicate column names (#715)
+    - fixed query result copy as JSON when query result have duplicate column names (#712)
+    - fixed isssue with saving custom monitoring widgets without chart code block defined (#720)
+    
+  - Other changes
+    - updated restrictedpython from 7.4 to 8.0
+    - updated django from 4.2.19 to 4.2.23 
+    - updated oracledb from 2.5.1 to 3.2.0
+    - updated cryptography from 41.0.7 to 45.0.5
+    - updated nw.js from 0.69.1 to 0.77.0
+    - refactored database capability flags code in back-end
+    - removed unnecessary files from binary packages
+    - minor layout fixes and improvements
+
 # PgManage 1.3 Release
 
 ## Release Date: June 17 2025

@@ -1423,11 +1423,15 @@ WHERE condition
         if p_type == 'role' or p_type == 'tablespace' or p_type == 'database':
             return ' '
         else:
-            return self.v_connection.ExecuteScalar('''
-                select dbms_lob.substr(dbms_metadata.get_ddl(object_type, object_name), 4000, 1) as ddl
-                from user_objects
-                where (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) = '{0}'
-            '''.format(p_object))
+                return self.v_connection.ExecuteScalar(
+                    '''
+select dbms_lob.substr(dbms_metadata.get_ddl(object_type, object_name), 4000, 1) as ddl
+from (
+select * from all_objects
+                where (SHARING is NULL OR SHARING <> 'METADATA LINK') and
+                 (case when upper(replace(object_name, ' ', '')) <> object_name then '"' || object_name || '"' else object_name end) = '{0}')'''.format(p_object)
+                )
+
 
     def GetAutocompleteValues(self, p_columns, p_filter):
         return None

@@ -199,7 +199,7 @@ class GroupConnection(models.Model):
 class MonWidgets(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     technology = models.ForeignKey(Technology, on_delete=models.CASCADE)
-    script_chart = models.TextField(default="")
+    script_chart = models.TextField(default="", blank=True)
     script_data = models.TextField(default="")
     type = models.TextField(default="")
     title = models.TextField(default="")
