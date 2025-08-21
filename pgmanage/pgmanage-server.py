@@ -203,10 +203,10 @@ for attribute, value in pgmanage_settings.__dict__.items():
 # TODO: implement custom hooks and move any such imports there
 
 import app.include.OmniDatabase as OmniDatabase
-import app.include.Spartacus as Spartacus
+from app.include.Spartacus.Database import v_supported_rdbms
 
-if 'SQLite' in Spartacus.Database.v_supported_rdbms and not pgmanage.custom_settings.DESKTOP_MODE:
-    Spartacus.Database.v_supported_rdbms.remove('SQLite')
+if 'SQLite' in v_supported_rdbms and not pgmanage.custom_settings.DESKTOP_MODE:
+    v_supported_rdbms.remove('SQLite')
 
 import logging
 import logging.config
