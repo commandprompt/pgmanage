@@ -60,9 +60,9 @@ ALTER DATABASE #database_name#
 --CONNECTION LIMIT connlimit
 --IS_TEMPLATE istemplate
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET TABLESPACE new_tablespace
---SET configuration_parameter TO {{ value | DEFAULT }}
+--SET configuration_parameter TO { value | DEFAULT }
 --SET configuration_parameter FROM CURRENT
 --RESET configuration_parameter
 --RESET ALL
@@ -92,7 +92,7 @@ LOCATION 'directory'
         """-- https://www.postgresql.org/docs/$major_version/sql-altertablespace.html
 ALTER TABLESPACE #tablespace_name#
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET seq_page_cost = value
 --RESET seq_page_cost
 --SET random_page_cost = value
@@ -115,7 +115,7 @@ CREATE SCHEMA schema_name
         """-- https://www.postgresql.org/docs/$major_version/sql-alterschema.html
 ALTER SCHEMA #schema_name#
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 """
     ),
     "drop_schema": Template(
@@ -133,7 +133,7 @@ CREATE SEQUENCE #schema_name#.name
 --START WITH start
 --CACHE cache
 --CYCLE
---OWNED BY {{ table_name.column_name | NONE }}
+--OWNED BY { table_name.column_name | NONE }
 """
     ),
     "alter_sequence": Template(
@@ -148,8 +148,8 @@ ALTER SEQUENCE #sequence_name#
 --CACHE cache
 --CYCLE
 --NO CYCLE
---OWNED BY {{ table_name.column_name | NONE }}
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNED BY { table_name.column_name | NONE }
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME TO new_name
 --SET SCHEMA new_schema
 """
@@ -164,7 +164,7 @@ DROP SEQUENCE #sequence_name#
         """-- https://www.postgresql.org/docs/$major_version/sql-createfunction.html
 CREATE OR REPLACE FUNCTION #schema_name#.name
 --(
---    [ argmode ] [ argname ] argtype [ {{ DEFAULT | = }} default_expr ]
+--    [ argmode ] [ argname ] argtype [ { DEFAULT | = } default_expr ]
 --)
 --RETURNS rettype
 --RETURNS TABLE ( column_name column_type )
@@ -200,16 +200,16 @@ ALTER FUNCTION #function_name#
 --SECURITY INVOKER
 --EXTERNAL SECURITY DEFINER
 --SECURITY DEFINER
---PARALLEL {{ UNSAFE | RESTRICTED | SAFE }}
+--PARALLEL { UNSAFE | RESTRICTED | SAFE }
 --COST execution_cost
 --ROWS result_rows
 --SUPPORT support_function
---SET configuration_parameter {{ TO | = }} {{ value | DEFAULT }}
+--SET configuration_parameter { TO | = } { value | DEFAULT }
 --SET configuration_parameter FROM CURRENT
 --RESET configuration_parameter
 --RESET ALL
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET SCHEMA new_schema
 --DEPENDS ON EXTENSION extension_name
 """
@@ -229,16 +229,16 @@ ALTER FUNCTION #function_name#
 --SECURITY INVOKER
 --EXTERNAL SECURITY DEFINER
 --SECURITY DEFINER
---PARALLEL {{ UNSAFE | RESTRICTED | SAFE }}
+--PARALLEL { UNSAFE | RESTRICTED | SAFE }
 --COST execution_cost
 --ROWS result_rows
 --SUPPORT support_function
---SET configuration_parameter {{ TO | = }} {{ value | DEFAULT }}
+--SET configuration_parameter { TO | = } { value | DEFAULT }
 --SET configuration_parameter FROM CURRENT
 --RESET configuration_parameter
 --RESET ALL
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET SCHEMA new_schema
 --DEPENDS ON EXTENSION extension_name
 --NO DEPENDS ON EXTENSION extension_name
@@ -255,7 +255,7 @@ DROP FUNCTION #function_name#
         """-- https://www.postgresql.org/docs/$major_version/sql-createprocedure.html
 CREATE OR REPLACE PROCEDURE #schema_name#.name
 --(
---    [ argmode ] [ argname ] argtype [ {{ DEFAULT | = }} default_expr ]
+--    [ argmode ] [ argname ] argtype [ { DEFAULT | = } default_expr ]
 --)
 LANGUAGE plpgsql
 --SECURITY DEFINER
@@ -276,12 +276,12 @@ ALTER PROCEDURE #procedure_name#
 --SECURITY INVOKER
 --EXTERNAL SECURITY DEFINER
 --SECURITY DEFINER
---SET configuration_parameter {{ TO | = }} {{ value | DEFAULT }}
+--SET configuration_parameter { TO | = } { value | DEFAULT }
 --SET configuration_parameter FROM CURRENT
 --RESET configuration_parameter
 --RESET ALL
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET SCHEMA new_schema
 --DEPENDS ON EXTENSION extension_name
 """
@@ -325,16 +325,16 @@ ALTER FUNCTION #function_name#
 --SECURITY INVOKER
 --EXTERNAL SECURITY DEFINER
 --SECURITY DEFINER
---PARALLEL {{ UNSAFE | RESTRICTED | SAFE }}
+--PARALLEL { UNSAFE | RESTRICTED | SAFE }
 --COST execution_cost
 --ROWS result_rows
 --SUPPORT support_function
---SET configuration_parameter {{ TO | = }} {{ value | DEFAULT }}
+--SET configuration_parameter { TO | = } { value | DEFAULT }
 --SET configuration_parameter FROM CURRENT
 --RESET configuration_parameter
 --RESET ALL
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET SCHEMA new_schema
 --DEPENDS ON EXTENSION extension_name
 """
@@ -354,16 +354,16 @@ ALTER FUNCTION #function_name#
 --SECURITY INVOKER
 --EXTERNAL SECURITY DEFINER
 --SECURITY DEFINER
---PARALLEL {{ UNSAFE | RESTRICTED | SAFE }}
+--PARALLEL { UNSAFE | RESTRICTED | SAFE }
 --COST execution_cost
 --ROWS result_rows
 --SUPPORT support_function
---SET configuration_parameter {{ TO | = }} {{ value | DEFAULT }}
+--SET configuration_parameter { TO | = } { value | DEFAULT }
 --SET configuration_parameter FROM CURRENT
 --RESET configuration_parameter
 --RESET ALL
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET SCHEMA new_schema
 --DEPENDS ON EXTENSION extension_name
 --NO DEPENDS ON EXTENSION extension_name
@@ -409,16 +409,16 @@ ALTER FUNCTION #function_name#
 --SECURITY INVOKER
 --EXTERNAL SECURITY DEFINER
 --SECURITY DEFINER
---PARALLEL {{ UNSAFE | RESTRICTED | SAFE }}
+--PARALLEL { UNSAFE | RESTRICTED | SAFE }
 --COST execution_cost
 --ROWS result_rows
 --SUPPORT support_function
---SET configuration_parameter {{ TO | = }} {{ value | DEFAULT }}
+--SET configuration_parameter { TO | = } { value | DEFAULT }
 --SET configuration_parameter FROM CURRENT
 --RESET configuration_parameter
 --RESET ALL
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET SCHEMA new_schema
 --DEPENDS ON EXTENSION extension_name
 """
@@ -438,16 +438,16 @@ ALTER FUNCTION #function_name#
 --SECURITY INVOKER
 --EXTERNAL SECURITY DEFINER
 --SECURITY DEFINER
---PARALLEL {{ UNSAFE | RESTRICTED | SAFE }}
+--PARALLEL { UNSAFE | RESTRICTED | SAFE }
 --COST execution_cost
 --ROWS result_rows
 --SUPPORT support_function
---SET configuration_parameter {{ TO | = }} {{ value | DEFAULT }}
+--SET configuration_parameter { TO | = } { value | DEFAULT }
 --SET configuration_parameter FROM CURRENT
 --RESET configuration_parameter
 --RESET ALL
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET SCHEMA new_schema
 --DEPENDS ON EXTENSION extension_name
 --NO DEPENDS ON EXTENSION extension_name
@@ -471,7 +471,7 @@ STYPE = state_data_type
 --    , SSPACE = state_data_size
 --    , FINALFUNC = ffunc
 --    , FINALFUNC_EXTRA
---    , FINALFUNC_MODIFY = {{ READ_ONLY | SHAREABLE | READ_WRITE }}
+--    , FINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE }
 --    , COMBINEFUNC = combinefunc
 --    , SERIALFUNC = serialfunc
 --    , DESERIALFUNC = deserialfunc
@@ -482,10 +482,10 @@ STYPE = state_data_type
 --    , MSSPACE = mstate_data_size
 --    , MFINALFUNC = mffunc
 --    , MFINALFUNC_EXTRA
---    , MFINALFUNC_MODIFY = {{ READ_ONLY | SHAREABLE | READ_WRITE }}
+--    , MFINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE }
 --    , MINITCOND = minitial_condition
 --    , SORTOP = sort_operator
---    , PARALLEL = {{ SAFE | RESTRICTED | UNSAFE }}
+--    , PARALLEL = { SAFE | RESTRICTED | UNSAFE }
 )
 """
     ),
@@ -493,7 +493,7 @@ STYPE = state_data_type
         """-- https://www.postgresql.org/docs/$major_version/sql-alteraggregate.html
 ALTER AGGREGATE #aggregate_name#
 --RENAME TO new_name
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --SET SCHEMA new_schema
 """
     ),
@@ -519,11 +519,11 @@ SELECT ...
 ALTER VIEW #view_name#
 --ALTER COLUMN column_name SET DEFAULT expression
 --ALTER COLUMN column_name DROP DEFAULT
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME TO new_name
 --SET SCHEMA new_schema
 --SET ( check_option = value )
---SET ( security_barrier = {{ true | false }} )
+--SET ( security_barrier = { true | false } )
 --RESET ( check_option )
 --RESET ( security_barrier )
 
@@ -535,12 +535,12 @@ ALTER VIEW #view_name#
 ALTER VIEW #view_name#
 --ALTER COLUMN column_name SET DEFAULT expression
 --ALTER COLUMN column_name DROP DEFAULT
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME COLUMN column_name TO new_column_name
 --RENAME TO new_name
 --SET SCHEMA new_schema
 --SET ( check_option = value )
---SET ( security_barrier = {{ true | false }} )
+--SET ( security_barrier = { true | false } )
 --RESET ( check_option )
 --RESET ( security_barrier )
 """
@@ -573,12 +573,12 @@ ALTER MATERIALIZED VIEW #view_name#
 --ALTER COLUMN column_name SET STATISTICS integer
 --ALTER COLUMN column_name SET ( attribute_option = value )
 --ALTER COLUMN column_name RESET ( attribute_option )
---ALTER COLUMN column_name SET STORAGE {{ PLAIN | EXTERNAL | EXTENDED | MAIN }}
+--ALTER COLUMN column_name SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
 --CLUSTER ON index_name
 --SET WITHOUT CLUSTER
 --SET ( storage_parameter = value )
 --RESET ( storage_parameter )
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --DEPENDS ON EXTENSION extension_name
 --RENAME COLUMN column_name TO new_column_name
 --RENAME TO new_name
@@ -619,7 +619,7 @@ ALTER TABLE #table_name#
 --SET STATISTICS integer
 --SET ( attribute_option = value [, ... ] )
 --RESET ( attribute_option [, ... ] )
---SET STORAGE {{ PLAIN | EXTERNAL | EXTENDED | MAIN }}
+--SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
 """
     ),
     "drop_column": Template(
@@ -671,9 +671,9 @@ ALTER TABLE #table_name#
 ADD CONSTRAINT name
 FOREIGN KEY ( column_name [, ... ] )
 REFERENCES reftable [ ( refcolumn [, ... ] ) ]
---MATCH {{ FULL | PARTIAL | SIMPLE }}
---ON DELETE {{ NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT }}
---ON UPDATE {{ NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT }}
+--MATCH { FULL | PARTIAL | SIMPLE }
+--ON DELETE { NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT }
+--ON UPDATE { NO ACTION | RESTRICT | CASCADE | SET NULL | SET DEFAULT }
 --NOT VALID
 """
     ),
@@ -690,7 +690,7 @@ DROP CONSTRAINT #constraint_name#
 CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] name
 ON [ ONLY ] #table_name#
 --USING method
-( {{ column_name | ( expression ) }} [ COLLATE collation ] [ opclass ] [ ASC | DESC ] [ NULLS {{ FIRST | LAST }} ] [, ...] )
+( { column_name | ( expression ) } [ COLLATE collation ] [ opclass ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, ...] )
 --INCLUDE ( column_name [, ...] )
 --WITH ( storage_parameter = value [, ... ] )
 --WHERE predicate
@@ -701,7 +701,7 @@ ON [ ONLY ] #table_name#
 CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] name
 ON [ ONLY ] #table_name#
 --USING method
-( {{ column_name | ( expression ) }} [ COLLATE collation ] [ opclass [ ( opclass_parameter = value [, ... ] ) ] ] [ ASC | DESC ] [ NULLS {{ FIRST | LAST }} ] [, ...] )
+( { column_name | ( expression ) } [ COLLATE collation ] [ opclass [ ( opclass_parameter = value [, ... ] ) ] ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, ...] )
 --INCLUDE ( column_name [, ...] )
 --WITH ( storage_parameter = value [, ... ] )
 --WHERE predicate
@@ -792,11 +792,11 @@ DROP CONSTRAINT #constraint_name#
     "create_rule": Template(
         """-- https://www.postgresql.org/docs/$major_version/sql-createrule.html
 CREATE RULE name
-AS ON {{ SELECT | INSERT | UPDATE | DELETE }}
+AS ON { SELECT | INSERT | UPDATE | DELETE }
 TO #table_name#
 --WHERE condition
---DO ALSO {{ NOTHING | command | ( command ; command ... ) }}
---DO INSTEAD {{ NOTHING | command | ( command ; command ... ) }}
+--DO ALSO { NOTHING | command | ( command ; command ... ) }
+--DO INSTEAD { NOTHING | command | ( command ; command ... ) }
 """
     ),
     "alter_rule": Template(
@@ -810,11 +810,11 @@ TO #table_name#
     "create_trigger": Template(
         """-- https://www.postgresql.org/docs/$major_version/sql-createtrigger.html
 CREATE TRIGGER name
---BEFORE {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE [ OR ] | TRUNCATE }}
---AFTER {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE [ OR ] | TRUNCATE }}
+--BEFORE { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE [ OR ] | TRUNCATE }
+--AFTER { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE [ OR ] | TRUNCATE }
 ON #table_name#
 --FROM referenced_table_name
---NOT DEFERRABLE | [ DEFERRABLE ] {{ INITIALLY IMMEDIATE | INITIALLY DEFERRED }}
+--NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED }
 --FOR EACH ROW
 --FOR EACH STATEMENT
 --WHEN ( condition )
@@ -824,12 +824,12 @@ ON #table_name#
     "create_view_trigger": Template(
         """-- https://www.postgresql.org/docs/$major_version/sql-createtrigger.html
 CREATE TRIGGER name
---BEFORE {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }}
---AFTER {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }}
---INSTEAD OF {{ INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }}
+--BEFORE { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }
+--AFTER { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }
+--INSTEAD OF { INSERT [ OR ] | UPDATE [ OF column_name [, ... ] ] [ OR ] | DELETE }
 ON #table_name#
 --FROM referenced_table_name
---NOT DEFERRABLE | [ DEFERRABLE ] {{ INITIALLY IMMEDIATE | INITIALLY DEFERRED }}
+--NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED }
 --FOR EACH ROW
 --FOR EACH STATEMENT
 --WHEN ( condition )
@@ -1048,7 +1048,7 @@ ALTER PUBLICATION #pub_name#
 --SET TABLE [ ONLY ] table_name [ * ] [, ...]
 --DROP TABLE [ ONLY ] table_name [ * ] [, ...]
 --SET ( publish = 'insert, update, delete, truncate' )
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME TO new_name
 """
         ),
@@ -1060,7 +1060,7 @@ ALTER PUBLICATION #pub_name#
 --DROP TABLE [ ONLY ] table_name [ * ] [, ...]
 --SET ( publish = 'insert, update, delete, truncate' )
 --SET ( publish_via_partition_root = true | false )
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME TO new_name
 """
         ),
@@ -1082,12 +1082,12 @@ CREATE SUBSCRIPTION name
 CONNECTION 'conninfo'
 PUBLICATION pub_name [, ...]
 --WITH (
---copy_data = {{ true | false }}
---, create_slot = {{ true | false }}
---, enabled = {{ true | false }}
+--copy_data = { true | false }
+--, create_slot = { true | false }
+--, enabled = { true | false }
 --, slot_name = 'name'
---, synchronous_commit = {{ on | remote_apply | remote_write | local | off }}
---, connect = {{ true | false }}
+--, synchronous_commit = { on | remote_apply | remote_write | local | off }
+--, connect = { true | false }
 --)
 """
     ),
@@ -1095,15 +1095,15 @@ PUBLICATION pub_name [, ...]
         """-- https://www.postgresql.org/docs/$major_version/sql-altersubscription.html
 ALTER SUBSCRIPTION #sub_name#
 --CONNECTION 'conninfo'
---SET PUBLICATION pub_name [, ...] [ WITH ( refresh = {{ true | false }} ) ]
---REFRESH PUBLICATION [ WITH ( copy_data = {{ true | false }} ) ]
+--SET PUBLICATION pub_name [, ...] [ WITH ( refresh = { true | false } ) ]
+--REFRESH PUBLICATION [ WITH ( copy_data = { true | false } ) ]
 --ENABLE
 --DISABLE
 --SET (
 --slot_name = 'name'
---, synchronous_commit = {{ on | remote_apply | remote_write | local | off }}
+--, synchronous_commit = { on | remote_apply | remote_write | local | off }
 --)
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME TO new_name
 """
     ),
@@ -1132,7 +1132,7 @@ ALTER FOREIGN DATA WRAPPER #fdwname#
 --OPTIONS ( [ ADD ] option ['value'] [, ... ] )
 --OPTIONS ( SET option ['value'] )
 --OPTIONS ( DROP option )
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME TO new_name
 """
     ),
@@ -1157,7 +1157,7 @@ ALTER SERVER #srvname#
 --OPTIONS ( [ ADD ] option ['value'] [, ... ] )
 --OPTIONS ( SET option ['value'] )
 --OPTIONS ( DROP option )
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME TO new_name
 """
     ),
@@ -1205,11 +1205,11 @@ ALTER FOREIGN TABLE #table_name#
 --ALTER [ COLUMN column_name [ SET DATA ] TYPE data_type [ COLLATE collation ]
 --ALTER COLUMN column_name SET DEFAULT expression
 --ALTER COLUMN column_name DROP DEFAULT
---ALTER COLUMN column_name {{ SET | DROP }} NOT NULL
+--ALTER COLUMN column_name { SET | DROP } NOT NULL
 --ALTER COLUMN column_name SET STATISTICS integer
 --ALTER COLUMN column_name SET ( attribute_option = value [, ... ] )
 --ALTER COLUMN column_name RESET ( attribute_option [, ... ] )
---ALTER COLUMN column_name SET STORAGE {{ PLAIN | EXTERNAL | EXTENDED | MAIN }}
+--ALTER COLUMN column_name SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
 --ALTER COLUMN column_name OPTIONS ( [ ADD | SET | DROP ] option ['value'] [, ... ] )
 --ADD table_constraint [ NOT VALID ]
 --VALIDATE CONSTRAINT constraint_name
@@ -1222,7 +1222,7 @@ ALTER FOREIGN TABLE #table_name#
 --SET WITHOUT OIDS
 --INHERIT parent_table
 --NO INHERIT parent_table
---OWNER TO {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER TO { new_owner | CURRENT_USER | SESSION_USER }
 --OPTIONS ( [ ADD | SET | DROP ] option ['value'] [, ... ] )
 --RENAME COLUMN column_name TO new_column_name
 --RENAME TO new_name
@@ -1310,7 +1310,7 @@ CREATE TYPE #schema_name#.name
 --    , TYPMOD_IN = type_modifier_input_function
 --    , TYPMOD_OUT = type_modifier_output_function
 --    , ANALYZE = analyze_function
---    , INTERNALLENGTH = {{ internallength | VARIABLE }}
+--    , INTERNALLENGTH = { internallength | VARIABLE }
 --    , PASSEDBYVALUE
 --    , ALIGNMENT = alignment
 --    , STORAGE = storage
@@ -1336,7 +1336,7 @@ ALTER TYPE #type_name#
 --OWNER TO new_owner
 --RENAME TO new_name
 --SET SCHEMA new_schema
---ADD VALUE [ IF NOT EXISTS ] new_enum_value [ {{ BEFORE | AFTER }} existing_enum_value ]
+--ADD VALUE [ IF NOT EXISTS ] new_enum_value [ { BEFORE | AFTER } existing_enum_value ]
 --RENAME VALUE existing_enum_value TO new_enum_value
 """
         ),
@@ -1350,7 +1350,7 @@ ALTER TYPE #type_name#
 --OWNER TO new_owner
 --RENAME TO new_name
 --SET SCHEMA new_schema
---ADD VALUE [ IF NOT EXISTS ] new_enum_value [ {{ BEFORE | AFTER }} existing_enum_value ]
+--ADD VALUE [ IF NOT EXISTS ] new_enum_value [ { BEFORE | AFTER } existing_enum_value ]
 --RENAME VALUE existing_enum_value TO new_enum_value
 --SET ( RECEIVE = value )
 --SET ( SEND = value )
@@ -1411,7 +1411,7 @@ FROM #table_name#
         "<13": Template(
             """-- https://www.postgresql.org/docs/$major_version/sql-alterstatistics.html
 ALTER STATISTICS #statistics_name#
---OWNER to {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER to { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME TO new_name
 --SET SCHEMA new_schema
 """
@@ -1419,7 +1419,7 @@ ALTER STATISTICS #statistics_name#
         "default": Template(
             """-- https://www.postgresql.org/docs/$major_version/sql-alterstatistics.html
 ALTER STATISTICS #statistics_name#
---OWNER to {{ new_owner | CURRENT_USER | SESSION_USER }}
+--OWNER to { new_owner | CURRENT_USER | SESSION_USER }
 --RENAME TO new_name
 --SET SCHEMA new_schema
 --SET STATISTICS new_target
