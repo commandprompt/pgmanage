@@ -74,8 +74,6 @@ mv dist/* $HOME
 rm -rf build dist
 cd $HOME
 
-staticx -l /lib/x86_64-linux-gnu/libcrypt.so.1  ./pgmanage-server ./pgmanage-server-static
-
 # temporarily disabled, we do not distribute the server-only version yet
 # mkdir pgmanage-server_$VERSION
 # cp pgmanage-server pgmanage-server_$VERSION/
@@ -92,7 +90,7 @@ tar -xzvf /deploy/$NWJS_ARCHIVE
 mv $NWJS_DIR pgmanage-app_$VERSION
 cd pgmanage-app_$VERSION
 mkdir pgmanage-server
-cp $HOME/pgmanage-server-static ./pgmanage-server/pgmanage-server
+cp $HOME/pgmanage-server ./pgmanage-server/pgmanage-server
 cp $HOME/process_executor ./pgmanage-server/
 # copy index.html .desktop and pgmanage_icon.png to the output dir
 cp $HOME/pgmanage/deploy/app/* .
