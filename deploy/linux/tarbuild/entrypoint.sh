@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 # Checking environment
 echo "REPO=$REPO"
 echo "BRANCH=$BRANCH"
