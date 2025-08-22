@@ -303,7 +303,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                 workspace_id=request_data.get("workspace_id"),
             )
             if workspace_context:
-                if workspace_context["type"] == "advancedobjectsearch":
+                if workspace_context.get("type") == "advancedobjectsearch":
 
                     def callback(self):
                         try:
@@ -316,8 +316,13 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
 
                     workspace_context["thread_pool"].stop(p_callback=callback)
                 else:
-                    workspace_context["thread"].stop()
-                    workspace_context["omnidatabase"].connection.Cancel(False)
+                    if workspace_context["thread"]:
+                        workspace_context["thread"].stop()
+                    try:
+                        workspace_context["omnidatabase"].connection.Cancel(False)
+                    except Exception as exc:
+                        logger.error(exc)
+
                     response_data = {
                         "response_type": ResponseType.OPERATION_CANCELLED,
                         "context_code": context_code,
