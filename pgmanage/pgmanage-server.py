@@ -203,10 +203,10 @@ for attribute, value in pgmanage_settings.__dict__.items():
 # TODO: implement custom hooks and move any such imports there
 
 import app.include.OmniDatabase as OmniDatabase
-from app.include.Spartacus.Database import v_supported_rdbms
+from app.include.Spartacus.Database import supported_rdbms
 
-if 'SQLite' in v_supported_rdbms and not pgmanage.custom_settings.DESKTOP_MODE:
-    v_supported_rdbms.remove('SQLite')
+if 'SQLite' in supported_rdbms and not pgmanage.custom_settings.DESKTOP_MODE:
+    supported_rdbms.remove('SQLite')
 
 import logging
 import logging.config
@@ -267,7 +267,7 @@ if options.reset:
 
 if options.listusers:
     from app.include.Spartacus.Database import DataTable
-    table = DataTable(p_simple=True)
+    table = DataTable(simple=True)
     table.AddColumn('id')
     table.AddColumn('username')
     table.AddColumn('superuser')
@@ -297,7 +297,7 @@ if options.listconnections:
     maintenance_action = True
 
     from app.include.Spartacus.Database import DataTable
-    table = DataTable(p_simple=True)
+    table = DataTable(simple=True)
     table.AddColumn('id')
     table.AddColumn('technology')
     table.AddColumn('alias')

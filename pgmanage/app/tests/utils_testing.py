@@ -181,5 +181,5 @@ def get_omnidb_database_connection():
         p_password='',
         p_conn_id='0',
         p_alias='',
-        p_foreignkeys=True
+        foreign_keys=True
     )

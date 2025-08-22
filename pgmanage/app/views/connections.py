@@ -3,7 +3,7 @@ from typing import Optional
 
 import paramiko
 from app.include import OmniDatabase
-from app.include.Spartacus.Database import v_supported_rdbms
+from app.include.Spartacus.Database import supported_rdbms
 from app.models import Connection, Group, GroupConnection, Tab, Technology
 from app.utils.crypto import decrypt, encrypt
 from app.utils.decorators import session_required, user_authenticated
@@ -20,7 +20,7 @@ def get_connections(request, session):
 
     tech_list = list(
         Technology.objects.filter(
-            Q(name__in=[rdbms.lower() for rdbms in v_supported_rdbms])
+            Q(name__in=[rdbms.lower() for rdbms in supported_rdbms])
             | Q(name="terminal")
         ).values_list("name", flat=True)
     )
@@ -281,8 +281,8 @@ def test_connection(request):
                     )
                 server.start()
 
-                database.connection.v_host = '127.0.0.1'
-                database.connection.v_port = server.local_bind_port
+                database.connection.host = '127.0.0.1'
+                database.connection.port = server.local_bind_port
 
                 message = database.TestConnection()
                 server.close()

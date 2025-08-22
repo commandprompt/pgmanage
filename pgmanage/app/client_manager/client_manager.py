@@ -263,10 +263,10 @@ class Client:
         return (
             omni_database is None
             or main_tab_database.db_type != omni_database.db_type
-            or connection.v_host != omni_database.connection.v_host
-            or str(connection.v_port) != str(omni_database.connection.v_port)
+            or connection.host != omni_database.connection.host
+            or str(connection.port) != str(omni_database.connection.port)
             or current_tab_database != omni_database.active_service
-            or connection.v_password != omni_database.connection.v_password
+            or connection.password != omni_database.connection.password
         )
 
     def _replace_database(
@@ -296,11 +296,11 @@ class Client:
 
         database_new = OmniDatabase.Generic.InstantiateDatabase(
             p_db_type=main_tab_database.db_type,
-            p_server=main_tab_database.connection.v_host,
-            p_port=str(main_tab_database.connection.v_port),
+            p_server=main_tab_database.connection.host,
+            p_port=str(main_tab_database.connection.port),
             p_service=current_tab_database,
             p_user=main_tab_database.active_user,
-            p_password=main_tab_database.connection.v_password,
+            p_password=main_tab_database.connection.password,
             p_conn_id=main_tab_database.conn_id,
             p_alias=main_tab_database.alias,
             p_conn_string=main_tab_database.conn_string,
@@ -372,7 +372,7 @@ class Client:
 
         # Try to open connection if not opened yet
         if attempt_to_open_connection and (
-            not tab["omnidatabase"].connection.v_con
+            not tab["omnidatabase"].connection.con
             or tab["omnidatabase"].connection.GetConStatus() == 0
         ):
             tab["omnidatabase"].connection.Open()

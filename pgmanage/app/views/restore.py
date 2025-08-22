@@ -66,7 +66,7 @@ class RestoreMessage(IJobDesc):
 
 
 def get_args_param_values(data, conn, backup_file, listing_file=None):
-    host, port = (conn.v_server, str(conn.v_port))
+    host, port = (conn.server, str(conn.port))
 
     args = [
         "--host",
@@ -74,7 +74,7 @@ def get_args_param_values(data, conn, backup_file, listing_file=None):
         "--port",
         port,
         "--username",
-        conn.v_user,
+        conn.user,
         "--no-password",
     ]
 
