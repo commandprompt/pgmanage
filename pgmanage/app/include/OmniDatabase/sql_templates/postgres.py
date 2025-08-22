@@ -1442,6 +1442,6 @@ def get_template(key, version=None) -> Template:
         if version < 130000:
             return tpl.get("<13")
         if 140000 > version >= 130000:
-            return tpl.get("13-14")
+            return tpl.get("13-14") or tpl.get("default")
         return tpl.get("default")
     return tpl
