@@ -27,7 +27,7 @@ RUN strip --strip-unneeded /usr/local/lib/libpython3.11.so.1.0
 
 RUN apt-get update && apt-get install -y build-essential
 
-RUN pip3 install setuptools-rust staticx
+RUN pip3 install setuptools-rust
 
 FROM ubuntu:20.04
 

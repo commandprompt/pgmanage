@@ -33,6 +33,7 @@ data_files = [
 a = Analysis(['pgmanage-server.py'],
              pathex=['app/include/'],
              binaries=[],
+             binaries=[('/lib/x86_64-linux-gnu/libcrypt.so.1', '.')],
              datas=data_files,
              hiddenimports=['cheroot.ssl','cheroot.ssl.builtin','psycopg2','paramiko', 'pkg_resources.extern', 'cryptography.hazmat.primitives.kdf.pbkdf2'],
              hookspath=[],
