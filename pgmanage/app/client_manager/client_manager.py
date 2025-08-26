@@ -182,7 +182,7 @@ class Client:
         else:
             del self._connection_sessions[workspace_id]
 
-        if tab["type"] in ["query", "console", "connection", "edit", "schema_edit"]:
+        if tab.get("type") in ["query", "console", "connection", "edit", "schema_edit"]:
             try:
                 tab["thread"].stop()
                 tab["omnidatabase"].connection.Cancel(False)
@@ -193,10 +193,10 @@ class Client:
             except Exception:
                 pass
 
-        elif tab["type"] == "debug":
+        elif tab.get("type") == "debug":
             self._close_debug_tab(tab)
 
-        elif tab["type"] == "terminal":
+        elif tab.get("type") == "terminal":
             self._close_terminal_tab(tab)
 
     def _close_debug_tab(self, tab: Dict[str, Any]) -> None:
