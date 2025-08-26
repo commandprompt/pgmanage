@@ -19,7 +19,7 @@
               :aria-controls="`nav_messages_${tabId}`" aria-selected="true">
               <span class="omnidb__tab-menu__link-name">
                 Messages
-                <span v-if="noticesCount" class="badge badge-pill badge-primary">{{ noticesCount }}</span>
+                <span v-if="noticesCount" class="badge rounded-pill badge-primary">{{ noticesCount }}</span>
               </span>
             </a>
             <a v-if="postgresqlDialect" ref="explainTab" class="nav-item nav-link omnidb__tab-menu__link" :id="`nav_explain_tab_${tabId}`"
@@ -51,7 +51,13 @@
                 <div class="query_info">
                 {{ queryInfoText }}
               </div>
-                <p v-for="notice in notices">{{ notice }}</p>
+              <div v-for="notice in notices">
+                <span
+                  class="badge rounded-pill"
+                  :class="noticeClass(notice)"
+                  >{{ notice[0] }}</span>
+                <pre>{{ notice[1] }}</pre>
+              </div>
               </div>
             </div>
           </div>
@@ -405,7 +411,10 @@ export default {
       Tab.getOrCreateInstance(this.$refs.dataTab).show()
 
       if (data.notices.length) {
-        this.notices = data.notices;
+        const noticeSplitRegex = /^(\w+):\s*([\s\S]*)$/
+        this.notices = data.notices.map((n) =>
+          n.match(noticeSplitRegex).slice(1,3)
+        );
       }
 
       if (
@@ -703,6 +712,17 @@ export default {
 
         targetElement.dispatchEvent(clickEvent);
       });
+    },
+    noticeClass(notice){
+      const NOTICE_MAP = {
+        'NOTICE': 'badge-primary',
+        'INFO': 'badge-secondary',
+        'LOG': 'badge-secondary',
+        'WARNING': 'badge-warning',
+        'EXCEPTION': 'badge-danger',
+        'ERROR': 'badge-danger',
+      }
+      return NOTICE_MAP[notice[0]] || 'badge-secondary';
     }
   },
 };

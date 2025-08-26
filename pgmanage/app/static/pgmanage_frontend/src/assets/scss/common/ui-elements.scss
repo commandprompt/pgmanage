@@ -62,6 +62,15 @@
     &-primary {
         background-color: $primaryBlue;
     }
+    &-secondary {
+        background-color: $secondaryGrey;
+    }
+    &-warning {
+        background-color: $warningColor;
+    }
+    &-danger {
+        background-color: $dangerColor;
+    }
 }
 
 :root{
