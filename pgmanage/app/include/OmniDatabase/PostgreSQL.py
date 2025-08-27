@@ -443,7 +443,7 @@ class PostgreSQL:
         ''' % (name,))
 
     def QueryOptionNamesForCategory(self, catname):
-        return self.v_connection.Query('''
+        return self.connection.Query('''
         set local lc_messages to 'C';
         SELECT name
         FROM pg_settings
