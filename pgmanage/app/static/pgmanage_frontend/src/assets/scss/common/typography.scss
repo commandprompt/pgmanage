@@ -32,6 +32,11 @@ span.text-muted {
     font-size: .75rem;
 }
 
+pre {
+    font-family: $fontFamilyMonospace;
+    font-size: inherit;
+}
+
 .muted-text {
     color: $primaryMutedColor;
 }
