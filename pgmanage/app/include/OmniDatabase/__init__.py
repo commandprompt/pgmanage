@@ -27,6 +27,7 @@ from app.include.OmniDatabase.SQLite import SQLite
 from app.include.OmniDatabase.Oracle import Oracle
 from app.include.OmniDatabase.MariaDB import MariaDB
 from app.include.OmniDatabase.MySQL import MySQL
+from app.include.OmniDatabase.MSSQL import MSSQL
 
 
 from pgmanage.settings import ENTERPRISE_EDITION
@@ -68,3 +69,5 @@ class Generic:
             return MySQL(p_server, p_port, p_service, p_user, p_password, p_conn_id, p_alias, p_conn_string, p_parse_conn_string, connection_params)
         if p_db_type == 'sqlite':
             return SQLite(p_service, p_conn_id, p_alias, foreign_keys)
+        if p_db_type == 'mssql':
+            return MSSQL(p_server, p_port, p_service, p_user, p_password, p_conn_id, p_alias, p_application_name, p_conn_string)
