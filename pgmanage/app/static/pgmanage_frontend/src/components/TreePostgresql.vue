@@ -149,20 +149,6 @@ export default {
               );
             },
           },
-          COMMENT_MENUITEM,
-          {
-            label: "Drop Database",
-            icon: "fas fa-times",
-            onClick: () => {
-              tabSQLTemplate(
-                "Drop Database",
-                this.templates.drop_database.replace(
-                  "#database_name#",
-                  this.selectedNode.data.raw_value ?? this.selectedNode.title
-                )
-              );
-            },
-          },
           {
             label: "Backup",
             icon: "fa-solid fa-download ",
@@ -175,6 +161,21 @@ export default {
             icon: "fa-solid fa-upload ",
             onClick: () => {
               tabsStore.createUtilityTab(this.selectedNode, 'Restore')
+            },
+          },
+          COMMENT_MENUITEM,
+          {
+            label: "Drop Database",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Database",
+                this.templates.drop_database.replace(
+                  "#database_name#",
+                  this.selectedNode.data.raw_value ?? this.selectedNode.title
+                )
+              );
             },
           },
         ],
@@ -206,6 +207,19 @@ export default {
             },
           },
           {
+            label: "Alter Schema",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Schema",
+                this.templates.alter_schema.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema_raw
+                )
+              );
+            },
+          },
+          {
             label: "Backup",
             icon: "fa-solid fa-download ",
             onClick: () => {
@@ -219,23 +233,11 @@ export default {
               tabsStore.createUtilityTab(this.selectedNode, 'Restore')
             },
           },
-          {
-            label: "Alter Schema",
-            icon: "fas fa-edit",
-            onClick: () => {
-              tabSQLTemplate(
-                "Alter Schema",
-                this.templates.alter_schema.replace(
-                  "#schema_name#",
-                  this.selectedNode.data.schema_raw
-                )
-              );
-            },
-          },
           COMMENT_MENUITEM,
           {
             label: "Drop Schema",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Schema",
@@ -287,27 +289,48 @@ export default {
         cm_table: [
           this.cmRefreshObject,
           {
-            label: "Data Actions",
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectPostgresql(
+                this.selectedNode.data.schema_raw,
+                this.selectedNode.data.raw_value,
+                "t"
+              );
+            },
+          },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw)
+            },
+          },
+          {
+            label: "Alter Table",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "postgres")
+            },
+          },
+          {
+            label: "Backup",
+            icon: "fa-solid fa-download ",
+            onClick: () => {
+              tabsStore.createUtilityTab(this.selectedNode, 'Backup')
+            },
+          },
+          {
+            label: "Restore",
+            icon: "fa-solid fa-upload ",
+            onClick: () => {
+              tabsStore.createUtilityTab(this.selectedNode, 'Restore')
+            },
+          },
+          {
+            label: "Templates",
             icon: "fas fa-list",
             children: [
-              {
-                label: "Query Data",
-                icon: "fas fa-search",
-                onClick: () => {
-                  TemplateSelectPostgresql(
-                    this.selectedNode.data.schema_raw,
-                    this.selectedNode.data.raw_value,
-                    "t"
-                  );
-                },
-              },
-              {
-                label: "Edit Data",
-                icon: "fas fa-table",
-                onClick: () => {
-                  tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw)
-                },
-              },
               {
                 label: "Insert Record",
                 icon: "fas fa-edit",
@@ -354,12 +377,6 @@ export default {
                   );
                 },
               },
-            ],
-          },
-          {
-            label: "Table Actions",
-            icon: "fas fa-list",
-            children: [
               {
                 label: "Vacuum Table",
                 icon: "fas fa-broom",
@@ -386,42 +403,22 @@ export default {
                   );
                 },
               },
-              {
-                label: "Alter Table",
-                icon: "fas fa-edit",
-                onClick: () => {
-                  tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "postgres")
-                },
-              },
-              COMMENT_MENUITEM,
-              {
-                label: "Drop Table",
-                icon: "fas fa-times",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Drop Table",
-                    this.templates.drop_table.replace(
-                      "#table_name#",
-                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-                    )
-                  );
-                },
-              },
-              {
-                label: "Backup",
-                icon: "fa-solid fa-download ",
-                onClick: () => {
-                  tabsStore.createUtilityTab(this.selectedNode, 'Backup')
-                },
-              },
-              {
-                label: "Restore",
-                icon: "fa-solid fa-upload ",
-                onClick: () => {
-                  tabsStore.createUtilityTab(this.selectedNode, 'Restore')
-                },
-              },
             ],
+          },
+          COMMENT_MENUITEM,
+          {
+            label: "Drop Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Table",
+                this.templates.drop_table.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+                )
+              );
+            },
           },
         ],
         cm_columns: [
@@ -463,6 +460,7 @@ export default {
           {
             label: "Drop Column",
             icon: "fas fa-edit",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Column",
@@ -501,6 +499,7 @@ export default {
           {
             label: "Drop Primary Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Primary Key",
@@ -542,6 +541,7 @@ export default {
           {
             label: "Drop Foreign Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Foreign Key",
@@ -583,6 +583,7 @@ export default {
           {
             label: "Drop Unique",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Unique",
@@ -623,6 +624,7 @@ export default {
           {
             label: "Drop Check",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Check",
@@ -663,6 +665,7 @@ export default {
           {
             label: "Drop Exclude",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Exclude",
@@ -739,6 +742,7 @@ export default {
           {
             label: "Drop Index",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Index",
@@ -805,6 +809,7 @@ export default {
           {
             label: "Drop Rule",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Rule",
@@ -902,6 +907,7 @@ export default {
           {
             label: "Drop Trigger",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Trigger",
@@ -950,6 +956,7 @@ export default {
           {
             label: "Drop Trigger Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Trigger Function",
@@ -1007,6 +1014,7 @@ export default {
           {
             label: "Drop Inherited",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Partition",
@@ -1065,6 +1073,7 @@ export default {
           {
             label: "Drop Partition",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Partition",
@@ -1123,6 +1132,7 @@ export default {
           {
             label: "Drop Statistics",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Statistics",
@@ -1269,6 +1279,7 @@ export default {
               {
                 label: "Drop Foreign Table",
                 icon: "fas fa-times",
+                divided: "up",
                 onClick: () => {
                   tabSQLTemplate(
                     "Drop Foreign Table",
@@ -1319,6 +1330,7 @@ export default {
           {
             label: "Drop Foreign Column",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Foreign Column",
@@ -1377,6 +1389,7 @@ export default {
           {
             label: "Drop Sequence",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Sequence",
@@ -1450,6 +1463,7 @@ export default {
           {
             label: "Drop View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop View",
@@ -1575,6 +1589,7 @@ export default {
           {
             label: "Drop Mat. View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Materialized View",
@@ -1646,7 +1661,7 @@ export default {
           },
           {
             label: "Restore",
-            icon: "fa-solid fa-upload ",
+            icon: "fa-solid fa-upload",
             onClick: () => {
               tabsStore.createUtilityTab(this.selectedNode, 'Restore')
             },
@@ -1655,6 +1670,7 @@ export default {
           {
             label: "Drop Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Function",
@@ -1716,6 +1732,7 @@ export default {
           {
             label: "Drop Trigger Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Trigger Function",
@@ -1779,6 +1796,7 @@ export default {
           {
             label: "Drop Event Trigger Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Event Trigger Function",
@@ -1852,6 +1870,7 @@ export default {
           {
             label: "Drop Procedure",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Procedure",
@@ -1907,6 +1926,7 @@ export default {
           {
             label: "Drop Aggregate",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Aggregate",
@@ -1961,6 +1981,7 @@ export default {
           {
             label: "Drop Type",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Type",
@@ -2015,6 +2036,7 @@ export default {
           {
             label: "Drop Domain",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Domain",
@@ -2057,6 +2079,7 @@ export default {
           {
             label: "Drop Extension",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               createExtensionModal(this.selectedNode, operationModes.DELETE);
             },
@@ -2102,6 +2125,7 @@ export default {
           {
             label: "Drop Foreign Data Wrapper",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Foreign Data Wrapper",
@@ -2160,6 +2184,7 @@ export default {
           {
             label: "Drop Foreign Server",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Foreign Server",
@@ -2206,6 +2231,7 @@ export default {
           {
             label: "Drop User Mapping",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop User Mapping",
@@ -2285,6 +2311,7 @@ export default {
           {
             label: "Drop Event Trigger",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Event Trigger",
@@ -2323,6 +2350,7 @@ export default {
           {
             label: "Drop Event Trigger Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Event Trigger Function",
@@ -2374,6 +2402,7 @@ export default {
           {
             label: "Drop Publication",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Publication",
@@ -2458,6 +2487,7 @@ export default {
           {
             label: "Drop Subscription",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Subscription",
@@ -2509,6 +2539,7 @@ export default {
           {
             label: "Drop Tablespace",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Tablespace",
@@ -2551,6 +2582,7 @@ export default {
           {
             label: "Drop Role",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Role",
