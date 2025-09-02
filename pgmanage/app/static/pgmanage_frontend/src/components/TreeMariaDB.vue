@@ -747,14 +747,7 @@ export default {
       e.preventDefault();
       if (!!node.data.contextMenu) {
         this.checkCurrentDatabase(node, true, () => {
-          ContextMenu.showContextMenu({
-            theme: "pgmanage",
-            x: e.x,
-            y: e.y,
-            zIndex: 1000,
-            minWidth: 230,
-            items: this.contextMenu[node.data.contextMenu],
-          });
+          this.showContextMenu(node, e)
         });
       }
     },
