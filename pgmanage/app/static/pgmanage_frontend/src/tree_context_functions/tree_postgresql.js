@@ -83,10 +83,29 @@ function TemplateSelectFunctionPostgresql(schema, func, functionid) {
     });
 }
 
+function TemplateCallProcedurePostgresql(schema, procedure, procedureid) {
+  axios
+    .post("/template_call_procedure_postgresql/", {
+      database_index:
+        tabsStore.selectedPrimaryTab.metaData.selectedDatabaseIndex,
+      workspace_id: tabsStore.selectedPrimaryTab.id,
+      procedure: procedure,
+      procedureid: procedureid,
+      schema: schema,
+    })
+    .then((resp) => {
+      tabSQLTemplate(`Call ${schema}.${procedure}`, resp.data.template);
+    })
+    .catch((error) => {
+      handleError(error);
+    });
+}
+
 export {
   tabSQLTemplate,
   TemplateSelectPostgresql,
   TemplateUpdatePostgresql,
   TemplateInsertPostgresql,
   TemplateSelectFunctionPostgresql,
+  TemplateCallProcedurePostgresql
 };

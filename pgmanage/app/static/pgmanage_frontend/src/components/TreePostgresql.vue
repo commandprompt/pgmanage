@@ -50,6 +50,7 @@ import {
   TemplateUpdatePostgresql,
   TemplateInsertPostgresql,
   TemplateSelectFunctionPostgresql,
+  TemplateCallProcedurePostgresql,
 } from "../tree_context_functions/tree_postgresql";
 import { createExtensionModal, createPgCronModal, createRoleModal } from "./postgresql_modals";
 import { operationModes } from "../constants";
