@@ -79,40 +79,47 @@ export default {
         cm_tables: [
           this.cmRefreshObject,
           {
-            label: "ER Diagram",
-            icon: "fab fa-hubspot",
-            onClick: () => {
-              tabsStore.createERDTab()
-            },
-          },
-          {
             label: "Create Table",
             icon: "fas fa-plus",
             onClick: () => {
               tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE, "sqlite3")
             },
           },
+          {
+            label: "ER Diagram",
+            icon: "fab fa-hubspot",
+            onClick: () => {
+              tabsStore.createERDTab()
+            },
+          },
         ],
         cm_table: [
           this.cmRefreshObject,
           {
-            label: "Data Actions",
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectSqlite(this.selectedNode.title, "t");
+            },
+          },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.title, null)
+            },
+          },
+          {
+            label: "Alter Table",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "sqlite3")
+            },
+          },
+          {
+            label: "Templates",
             icon: "fas fa-list",
             children: [
-              {
-                label: "Query Data",
-                icon: "fas fa-search",
-                onClick: () => {
-                  TemplateSelectSqlite(this.selectedNode.title, "t");
-                },
-              },
-              {
-                label: "Edit Data",
-                icon: "fas fa-table",
-                onClick: () => {
-                  tabsStore.createDataEditorTab(this.selectedNode.title, null)
-                },
-              },
               {
                 label: "Insert Record",
                 icon: "fas fa-edit",
@@ -143,30 +150,18 @@ export default {
             ],
           },
           {
-            label: "Table Actions",
-            icon: "fas fa-list",
-            children: [
-              {
-                label: "Alter Table",
-                icon: "fas fa-edit",
-                onClick: () => {
-                  tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "sqlite3")
-                },
-              },
-              {
-                label: "Drop Table",
-                icon: "fas fa-times",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Drop Table",
-                    this.templates.drop_table.replace(
-                      "#table_name#",
-                      this.selectedNode.data.raw_value
-                    )
-                  );
-                },
-              },
-            ],
+            label: "Drop Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Table",
+                this.templates.drop_table.replace(
+                  "#table_name#",
+                  this.selectedNode.data.raw_value
+                )
+              );
+            },
           },
         ],
         cm_columns: [
@@ -225,6 +220,7 @@ export default {
           {
             label: "Drop Index",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Index",
@@ -271,6 +267,7 @@ export default {
           {
             label: "Drop Trigger",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Trigger",
@@ -311,6 +308,7 @@ export default {
           {
             label: "Drop View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop View",

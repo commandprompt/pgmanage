@@ -56,4 +56,16 @@
             font-size: inherit;
         }
     }
+
+    .mx-context-menu-item-sperator {
+        @include themify() {
+            background-color: themed($popupBg);
+        }
+        &::after {
+            // background-color: red;
+            @include themify() {
+                background-color: themed($borderColor);
+            }
+        }
+    }
 }
