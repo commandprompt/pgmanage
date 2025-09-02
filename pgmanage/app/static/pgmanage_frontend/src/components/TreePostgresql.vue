@@ -2803,20 +2803,6 @@ export default {
     emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
-    onContextMenu(node, e) {
-      this.$refs.tree.select(node.path);
-      e.preventDefault();
-      if (!!node.data.contextMenu) {
-        ContextMenu.showContextMenu({
-            theme: "pgmanage",
-            x: e.x,
-            y: e.y,
-            zIndex: 1000,
-            minWidth: 230,
-            items: this.contextMenu[node.data.contextMenu],
-        });
-      }
-    },
     refreshTreePostgresqlConfirm(node) {
       if (node.data.type == "server") {
         return this.getTreeDetailsPostgresql(node)
