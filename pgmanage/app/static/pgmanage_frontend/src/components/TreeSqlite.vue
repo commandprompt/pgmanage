@@ -220,6 +220,7 @@ export default {
           {
             label: "Drop Index",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Index",
@@ -266,6 +267,7 @@ export default {
           {
             label: "Drop Trigger",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Trigger",
@@ -306,6 +308,7 @@ export default {
           {
             label: "Drop View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop View",

@@ -459,7 +459,7 @@ export default {
           COMMENT_MENUITEM,
           {
             label: "Drop Column",
-            icon: "fas fa-edit",
+            icon: "fas fa-times",
             divided: "up",
             onClick: () => {
               tabSQLTemplate(
@@ -903,6 +903,13 @@ export default {
               );
             },
           },
+          {
+            label: "Restore",
+            icon: "fa-solid fa-upload ",
+            onClick: () => {
+              tabsStore.createUtilityTab(this.selectedNode, 'Restore')
+            },
+          },
           COMMENT_MENUITEM,
           {
             label: "Drop Trigger",
@@ -920,13 +927,6 @@ export default {
                   )
                   .replace("#trigger_name#", this.selectedNode.data.raw_value)
               );
-            },
-          },
-          {
-            label: "Restore",
-            icon: "fa-solid fa-upload ",
-            onClick: () => {
-              tabsStore.createUtilityTab(this.selectedNode, 'Restore')
             },
           },
         ],
@@ -1189,28 +1189,41 @@ export default {
         cm_foreign_table: [
           this.cmRefreshObject,
           {
-            label: "Data Actions",
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectPostgresql(
+                this.selectedNode.data.schema_raw,
+                this.selectedNode.data.raw_value,
+                "f"
+              );
+            },
+          },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw)
+            },
+          },
+          {
+            label: "Alter Foreign Table",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Foreign Table",
+                this.templates.alter_foreign_table.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+                )
+              );
+            },
+          },
+          {
+            label: "Templates",
             icon: "fas fa-list",
             children: [
-              {
-                label: "Query Data",
-                icon: "fas fa-search",
-                onClick: () => {
-                  TemplateSelectPostgresql(
-                    this.selectedNode.data.schema_raw,
-                    this.selectedNode.data.raw_value,
-                    "f"
-                  );
-                },
-              },
-              {
-                label: "Edit Data",
-                icon: "fas fa-table",
-                onClick: () => {
-                  tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw)
-                },
-              },
-              {
+            {
                 label: "Insert Record",
                 icon: "fas fa-edit",
                 onClick: () => {
@@ -1243,12 +1256,6 @@ export default {
                   );
                 },
               },
-            ],
-          },
-          {
-            label: "Table Actions",
-            icon: "fas fa-list",
-            children: [
               {
                 label: "Analyze Foreign Table",
                 icon: "fas fa-table",
@@ -1262,20 +1269,9 @@ export default {
                   );
                 },
               },
-              {
-                label: "Alter Foreign Table",
-                icon: "fas fa-edit",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Alter Foreign Table",
-                    this.templates.alter_foreign_table.replace(
-                      "#table_name#",
-                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-                    )
-                  );
-                },
-              },
-              COMMENT_MENUITEM,
+            ],
+          },
+          COMMENT_MENUITEM,
               {
                 label: "Drop Foreign Table",
                 icon: "fas fa-times",
@@ -1290,8 +1286,6 @@ export default {
                   );
                 },
               },
-            ],
-          },
         ],
         cm_foreign_columns: [
           {
