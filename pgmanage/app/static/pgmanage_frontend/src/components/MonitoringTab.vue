@@ -320,7 +320,7 @@ export default {
               {
                 icon: "fas fa-times text-danger",
                 title: "Terminate",
-                action: this.terminateBackend,
+                action: this.terminate,
               },
             ];
           });
@@ -351,19 +351,20 @@ export default {
           this.showLoading = false;
         });
     },
-    terminateBackend(row) {
+    terminate(row) {
       let pid;
+      let entityName = "backend";
       switch (this.dialect) {
         case "postgresql":
           pid = row.Pid;
           break;
         case "mysql":
-          pid = row.ID;
-          break;
         case "mariadb":
+          entityName = "process";
           pid = row.ID;
           break;
         case "oracle":
+          entityName = "session";
           pid = `${row.SID},${row["SERIAL#"]}`;
           break;
         default:
@@ -371,14 +372,14 @@ export default {
       }
       if (!!pid) {
         messageModalStore.showModal(
-          `Are you sure you want to terminate backend ${pid}?`,
+          `Are you sure you want to terminate ${entityName} ${pid}?`,
           () => {
-            this.terminateBackendConfirm(pid);
+            this.terminateConfirm(pid);
           }
         );
       }
     },
-    terminateBackendConfirm(pid) {
+    terminateConfirm(pid) {
       axios
         .post(`/kill_backend_${this.dialect}/`, {
           database_index: this.databaseIndex,
@@ -393,7 +394,7 @@ export default {
             emitter.emit("show_password_prompt", {
               databaseIndex: this.databaseIndex,
               successCallback: () => {
-                this.terminateBackendConfirm(pid);
+                this.terminateConfirm(pid);
               },
               message: error.response.data.data,
             });
