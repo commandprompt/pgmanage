@@ -810,7 +810,7 @@ export default {
             children: [
               {
                 label: "Sessions",
-                icon: "fas fa-chart-line",
+                icon: "fas fa-tasks",
                 onClick: () => {
                   tabsStore.createMonitoringTab("Sessions", `
                   /*pgmanage-dash*/ 
