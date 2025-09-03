@@ -245,7 +245,10 @@ export default {
       return !this.editorContent;
     },
     hasChanges() {
-      return this.activeTransaction || this.executingState || (!!this.lastQuery && this.lastQuery !== this.editorContent);
+      let lastQueryModified = (!!this.lastQuery && this.lastQuery !== this.editorContent)
+      let initialQueryModified = (!this.initialQuery && !!this.editorContent && this.lastQuery !== this.editorContent)
+      let runningQuery = this.activeTransaction || this.executingState
+      return initialQueryModified || lastQueryModified || runningQuery
     },
     showStartTimeAndDuration() {
       return !this.cancelled && this.queryStartTime && this.queryDuration;
