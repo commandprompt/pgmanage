@@ -4115,7 +4115,7 @@ CREATE MATERIALIZED VIEW {0}.{1} AS
         return template.safe_substitute(major_version=self.major_version)
 
     def TemplateCreateDatabase(self):
-        template = get_template("postgres", "create_database")
+        template = get_template("postgres", "create_database", self.version_num)
         return template.safe_substitute(major_version=self.major_version)
 
     def TemplateAlterDatabase(self):

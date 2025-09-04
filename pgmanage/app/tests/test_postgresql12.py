@@ -837,7 +837,7 @@ SELECT pg_drop_replication_slot('#slot_name#')''' == template_data['drop_physica
         assert 200 == response.status_code
         data = response.json()
         template_data = data['templates']
-        assert f''' -- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE 
+        assert f'''-- https://www.postgresql.org/docs/{self.major_version}/functions-admin.html#FUNCTIONS-REPLICATION-TABLE 
 SELECT * FROM pg_create_logical_replication_slot('slot_name', 'pgoutput')''' == template_data['create_logicalreplicationslot']
 
     def test_template_drop_logicalreplicationslot(self):
