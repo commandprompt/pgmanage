@@ -371,6 +371,35 @@ export default {
           },
         });
       }
+      else if (
+        tabsStore.selectedPrimaryTab.metaData.selectedDBMS === 'oracle'
+      ) {
+        optionList.push({
+          label: "Sessions",
+          icon: "fas fa-tasks",
+          onClick: () => {
+            tabsStore.createMonitoringTab(
+              "Sessions",
+              `/*pgmanage-dash*/ 
+              select sid,
+              serial#,
+              username,
+              service_name,
+              status,
+              state,
+              osuser,
+              machine,
+              program,
+              module,
+              action,
+              type,
+              logon_time 
+              from v$session 
+              WHERE username IS NOT NULL`
+            );
+          },
+        });
+      }
 
       ContextMenu.showContextMenu({
         theme: "pgmanage",

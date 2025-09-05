@@ -41,7 +41,7 @@
     }
 
     &-thumb {
-        background-color: rgba($secondaryGrey, 0.4);
+        background-color: rgba($secondaryGrey, 0.25);
         border-radius: 2px;
 
         &:hover {
@@ -61,6 +61,15 @@
 .badge {
     &-primary {
         background-color: $primaryBlue;
+    }
+    &-secondary {
+        background-color: $secondaryGrey;
+    }
+    &-warning {
+        background-color: $warningColor;
+    }
+    &-danger {
+        background-color: $dangerColor;
     }
 }
 

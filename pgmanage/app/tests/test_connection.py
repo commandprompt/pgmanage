@@ -46,14 +46,14 @@ class ConnectionsTests(TestCase):
         )
 
         cls.database = OmniDatabase.Generic.InstantiateDatabase(
-            p_db_type=cls.db_type,
-            p_server=cls.host,
-            p_port=cls.port,
-            p_service=cls.service,
-            p_user=cls.role,
-            p_password=cls.password,
-            p_conn_id=cls.test_connection.id,
-            p_application_name="Pgmanage Tests",
+            db_type=cls.db_type,
+            server=cls.host,
+            port=cls.port,
+            service=cls.service,
+            user=cls.role,
+            password=cls.password,
+            conn_id=cls.test_connection.id,
+            application_name="Pgmanage Tests",
         )
         cls.test_group1 = Group.objects.create(user=cls.admin_user, name="test group 1")
         cls.test_group2 = Group.objects.create(user=cls.admin_user, name="test group 2")
@@ -117,7 +117,7 @@ class ConnectionsTests(TestCase):
         )
         session = self.client.session
 
-        session["pgmanage_session"].v_databases = {
+        session["pgmanage_session"].databases = {
             self.test_connection.id: {
                 "database": self.database,
                 "prompt_password": False,
@@ -125,7 +125,7 @@ class ConnectionsTests(TestCase):
                 "tunnel": {"enabled": False},
             }
         }
-        session["pgmanage_session"].v_tabs_databases = {0: "dellstore"}
+        session["pgmanage_session"].tabs_databases = {0: "dellstore"}
         session.save()
 
         self.client.post = partial(self.client.post, content_type="application/json")

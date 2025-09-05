@@ -6,6 +6,7 @@ import {
   TemplateUpdatePostgresql,
   TemplateInsertPostgresql,
   TemplateSelectFunctionPostgresql,
+  TemplateCallProcedurePostgresql,
 } from "@src/tree_context_functions/tree_postgresql";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { flushPromises } from "@vue/test-utils";
@@ -196,6 +197,46 @@ describe("TemplatePostgresql Functions", () => {
       axios.post.mockRejectedValue(errorResponse);
 
       TemplateSelectFunctionPostgresql("schema", "func", "functionid");
+      await flushPromises();
+
+      expect(handleError).toHaveBeenCalledWith(errorResponse);
+    });
+  });
+
+  describe("TemplateCallProcedurePostgresql", () => {
+    it("should call axios.post and handle success response", async () => {
+      const response = {
+        data: {
+          template: "CALL schema.procedure()",
+        },
+      };
+      axios.post.mockResolvedValue(response);
+
+      TemplateCallProcedurePostgresql("schema", "procedure", "procedureid");
+      await flushPromises();
+
+      expect(axios.post).toHaveBeenCalledWith(
+        "/template_call_procedure_postgresql/",
+        {
+          database_index: 1,
+          workspace_id: "primary-tab-id",
+          procedure: "procedure",
+          procedureid: "procedureid",
+          schema: "schema",
+        }
+      );
+      expect(tabsStore.createQueryTab).toHaveBeenCalledWith(
+        "Call schema.procedure",
+        null,
+        null,
+        "CALL schema.procedure()"
+      );
+    });
+
+    it("should call axios.post and handle error response", async () => {
+      axios.post.mockRejectedValue(errorResponse);
+
+      TemplateSelectFunctionPostgresql("schema", "procedure", "procedureid");
       await flushPromises();
 
       expect(handleError).toHaveBeenCalledWith(errorResponse);

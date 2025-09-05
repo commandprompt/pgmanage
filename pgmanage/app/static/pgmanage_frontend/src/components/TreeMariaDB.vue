@@ -125,6 +125,7 @@ export default {
           {
             label: "Drop Database",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Database",
@@ -149,26 +150,33 @@ export default {
         cm_table: [
           this.cmRefreshObject,
           {
-            label: "Data Actions",
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectMariadb(
+                this.getParentNodeDeep(this.selectedNode, 2).title,
+                this.selectedNode.title
+              );
+            },
+          },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.title, null)
+            },
+          },
+          {
+            label: "Alter Table",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "mysql")
+            },
+          },
+          {
+            label: "Templates",
             icon: "fas fa-list",
             children: [
-              {
-                label: "Query Data",
-                icon: "fas fa-search",
-                onClick: () => {
-                  TemplateSelectMariadb(
-                    this.getParentNodeDeep(this.selectedNode, 2).title,
-                    this.selectedNode.title
-                  );
-                },
-              },
-              {
-                label: "Edit Data",
-                icon: "fas fa-table",
-                onClick: () => {
-                  tabsStore.createDataEditorTab(this.selectedNode.title, null)
-                },
-              },
               {
                 label: "Insert Record",
                 icon: "fas fa-edit",
@@ -206,31 +214,19 @@ export default {
             ],
           },
           {
-            label: "Table Actions",
-            icon: "fas fa-list",
-            children: [
-              {
-                label: "Alter Table",
-                icon: "fas fa-edit",
-                onClick: () => {
-                  tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "mysql")
-                },
-              },
-              {
-                label: "Drop Table",
-                icon: "fas fa-times",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Drop Table",
-                    this.templates.drop_table.replace(
-                      "#table_name#",
-                      `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
-                      }`
-                    )
-                  );
-                },
-              },
-            ],
+            label: "Drop Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Table",
+                this.templates.drop_table.replace(
+                  "#table_name#",
+                  `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
+                  }`
+                )
+              );
+            },
           },
         ],
         cm_columns: [
@@ -269,6 +265,7 @@ export default {
           {
             label: "Drop Column",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Column",
@@ -305,6 +302,7 @@ export default {
           {
             label: "Drop Primary Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Primary Key",
@@ -341,6 +339,7 @@ export default {
           {
             label: "Drop Foreign Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Foreign Key",
@@ -377,6 +376,7 @@ export default {
           {
             label: "Drop Unique",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Unique",
@@ -413,6 +413,7 @@ export default {
           {
             label: "Drop Index",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Index",
@@ -459,6 +460,7 @@ export default {
           {
             label: "Drop Sequence",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Sequence",
@@ -514,6 +516,7 @@ export default {
           {
             label: "Drop View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop View",
@@ -554,6 +557,7 @@ export default {
           {
             label: "Drop Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Function",
@@ -593,6 +597,7 @@ export default {
           {
             label: "Drop Procedure",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Procedure",
@@ -631,6 +636,7 @@ export default {
           {
             label: "Drop Role",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Role",
@@ -747,14 +753,7 @@ export default {
       e.preventDefault();
       if (!!node.data.contextMenu) {
         this.checkCurrentDatabase(node, true, () => {
-          ContextMenu.showContextMenu({
-            theme: "pgmanage",
-            x: e.x,
-            y: e.y,
-            zIndex: 1000,
-            minWidth: 230,
-            items: this.contextMenu[node.data.contextMenu],
-          });
+          this.showContextMenu(node, e)
         });
       }
     },

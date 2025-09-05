@@ -97,26 +97,40 @@ export default {
         cm_table: [
           this.cmRefreshObject,
           {
-            label: "Data Actions",
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectOracle(
+                this.templates.username,
+                this.selectedNode.title
+              );
+            },
+          },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.title, this.templates.username)
+            },
+          },
+          {
+            label: "Alter Table (SQL)",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Table",
+                this.templates.alter_table.replace(
+                  "#table_name#",
+                  `${this.templates.username}.${this.selectedNode.title}`
+                )
+              );
+            },
+          },
+          {
+            label: "Templates",
             icon: "fas fa-list",
             children: [
-              {
-                label: "Query Data",
-                icon: "fas fa-search",
-                onClick: () => {
-                  TemplateSelectOracle(
-                    this.templates.username,
-                    this.selectedNode.title
-                  );
-                },
-              },
-              {
-                label: "Edit Data",
-                icon: "fas fa-table",
-                onClick: () => {
-                  tabsStore.createDataEditorTab(this.selectedNode.title, this.templates.username)
-                },
-              },
+
               {
                 label: "Insert Record",
                 icon: "fas fa-edit",
@@ -153,36 +167,18 @@ export default {
             ],
           },
           {
-            label: "Table Actions",
-            icon: "fas fa-list",
-            children: [
-              {
-                label: "Alter Table (SQL)",
-                icon: "fas fa-edit",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Alter Table",
-                    this.templates.alter_table.replace(
-                      "#table_name#",
-                      `${this.templates.username}.${this.selectedNode.title}`
-                    )
-                  );
-                },
-              },
-              {
-                label: "Drop Table",
-                icon: "fas fa-times",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Drop Table",
-                    this.templates.drop_table.replace(
-                      "#table_name#",
-                      `${this.templates.username}.${this.selectedNode.title}`
-                    )
-                  );
-                },
-              },
-            ],
+            label: "Drop Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Table",
+                this.templates.drop_table.replace(
+                  "#table_name#",
+                  `${this.templates.username}.${this.selectedNode.title}`
+                )
+              );
+            },
           },
         ],
         cm_columns: [
@@ -221,6 +217,7 @@ export default {
           {
             label: "Drop Column",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Column",
@@ -257,6 +254,7 @@ export default {
           {
             label: "Drop Primary Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Primary Key",
@@ -293,6 +291,7 @@ export default {
           {
             label: "Drop Foreign Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Foreign Key",
@@ -329,6 +328,7 @@ export default {
           {
             label: "Drop Unique",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Unique",
@@ -378,6 +378,7 @@ export default {
           {
             label: "Drop Index",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Index",
@@ -422,6 +423,7 @@ export default {
           {
             label: "Drop Sequence",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Sequence",
@@ -477,6 +479,7 @@ export default {
           {
             label: "Drop View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop View",
@@ -516,6 +519,7 @@ export default {
           {
             label: "Drop Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Function",
@@ -555,6 +559,7 @@ export default {
           {
             label: "Drop Procedure",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Procedure",
@@ -596,6 +601,7 @@ export default {
           {
             label: "Drop Tablespace",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Tablespace",
@@ -634,6 +640,7 @@ export default {
           {
             label: "Drop Role",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               tabSQLTemplate(
                 "Drop Role",
@@ -803,9 +810,25 @@ export default {
             children: [
               {
                 label: "Sessions",
-                icon: "fas fa-chart-line",
+                icon: "fas fa-tasks",
                 onClick: () => {
-                  tabsStore.createMonitoringTab("Sessions", "/*pgmanage-dash*/ select * from v$session")
+                  tabsStore.createMonitoringTab("Sessions", `
+                  /*pgmanage-dash*/ 
+                  select sid,
+                  serial#,
+                  username,
+                  service_name,
+                  status,
+                  state,
+                  osuser,
+                  machine,
+                  program,
+                  module,
+                  action,
+                  type,
+                  logon_time 
+                  from v$session 
+                  WHERE username IS NOT NULL`)
                 },
               },
             ],

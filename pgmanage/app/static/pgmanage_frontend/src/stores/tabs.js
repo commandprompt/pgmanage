@@ -208,26 +208,7 @@ const useTabsStore = defineStore("tabs", {
             confirmFunction();
           });
         } else {
-          ContextMenu.showContextMenu({
-            theme: "pgmanage",
-            x: e.x,
-            y: e.y,
-            zIndex: 1000,
-            minWidth: 230,
-            items: [
-              {
-                label: "Confirm",
-                icon: "fas fa-check",
-                onClick: function () {
-                  confirmFunction();
-                },
-              },
-              {
-                label: "Cancel",
-                icon: "fas fa-times",
-              },
-            ],
-          });
+          confirmFunction();
         }
       } else {
         confirmFunction();

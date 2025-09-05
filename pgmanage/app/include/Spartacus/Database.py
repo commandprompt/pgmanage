@@ -1836,9 +1836,11 @@ class PostgreSQL(Generic):
                 if usesameconn:
                     current_con.cancel()
                 else:
+                    self.connection_params.setdefault("connect_timeout", 10)
                     con2 = psycopg2.connect(
                         self.GetConnectionString(),
                         cursor_factory=psycopg2.extras.DictCursor,
+                        **self.connection_params
                     )
                     cur2 = con2.cursor()
                     pid = current_con.get_backend_pid()

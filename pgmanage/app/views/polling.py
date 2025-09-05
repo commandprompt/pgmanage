@@ -303,7 +303,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                 workspace_id=request_data.get("workspace_id"),
             )
             if workspace_context:
-                if workspace_context["type"] == "advancedobjectsearch":
+                if workspace_context.get("type") == "advancedobjectsearch":
 
                     def callback(self):
                         try:
@@ -316,8 +316,13 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
 
                     workspace_context["thread_pool"].stop(p_callback=callback)
                 else:
-                    workspace_context["thread"].stop()
-                    workspace_context["omnidatabase"].connection.Cancel(False)
+                    if workspace_context["thread"]:
+                        workspace_context["thread"].stop()
+                    try:
+                        workspace_context["omnidatabase"].connection.Cancel(False)
+                    except Exception as exc:
+                        logger.error(exc)
+
                     response_data = {
                         "response_type": ResponseType.OPERATION_CANCELLED,
                         "context_code": context_code,
@@ -375,7 +380,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                 conn.save()
 
                 try:
-                    conn_object: dict[str, Any] = session.v_databases[
+                    conn_object: dict[str, Any] = session.databases[
                         request_data["ssh_id"]
                     ]
 
@@ -557,7 +562,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
             # New debugger, create connections
             if request_data["v_state"] == DebugState.STARTING:
                 try:
-                    v_conn_tab_connection = session.v_databases[
+                    v_conn_tab_connection = session.databases[
                         request_data["v_db_index"]
                     ]["database"]
 
@@ -570,8 +575,8 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                         v_conn_tab_connection.connection.password,
                         v_conn_tab_connection.conn_id,
                         v_conn_tab_connection.alias,
-                        p_conn_string=v_conn_tab_connection.conn_string,
-                        p_parse_conn_string=False,
+                        conn_string=v_conn_tab_connection.conn_string,
+                        parse_conn_string=False,
                     )
                     v_database_control = OmniDatabase.Generic.InstantiateDatabase(
                         v_conn_tab_connection.db_type,
@@ -582,8 +587,8 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                         v_conn_tab_connection.connection.password,
                         v_conn_tab_connection.conn_id,
                         v_conn_tab_connection.alias,
-                        p_conn_string=v_conn_tab_connection.conn_string,
-                        p_parse_conn_string=False,
+                        conn_string=v_conn_tab_connection.conn_string,
+                        parse_conn_string=False,
                     )
                     workspace_context["omnidatabase_debug"] = v_database_debug
                     workspace_context["cancelled"] = False
@@ -1017,7 +1022,7 @@ def thread_query(self, args) -> None:
             and log_query
         ):
             db_tab = Tab(
-                user=User.objects.get(id=session.v_user_id),
+                user=User.objects.get(id=session.user_id),
                 connection=Connection.objects.get(id=database.conn_id),
                 title=tab_title,
                 snippet=workspace_context.get("sql_save"),
@@ -1040,8 +1045,8 @@ def thread_query(self, args) -> None:
             file_name, extension = export_data(
                 sql_cmd=sql_cmd,
                 database=database,
-                encoding=session.v_csv_encoding,
-                delimiter=session.v_csv_delimiter,
+                encoding=session.csv_encoding,
+                delimiter=session.csv_delimiter,
                 cmd_type=cmd_type,
             )
 
@@ -1213,7 +1218,7 @@ def thread_query(self, args) -> None:
 
     if mode == QueryModes.DATA_OPERATION and log_query:
         log_history(
-            user_id=session.v_user_id,
+            user_id=session.user_id,
             sql=sql_cmd,
             start=log_start_time,
             end=log_end_time,
@@ -1445,7 +1450,7 @@ def thread_console(self, args) -> None:
         if mode == ConsoleModes.DATA_OPERATION:
             # logging to console history
             query_object = ConsoleHistory(
-                user=User.objects.get(id=session.v_user_id),
+                user=User.objects.get(id=session.user_id),
                 connection=Connection.objects.get(id=database.conn_id),
                 start_time=datetime.now(timezone.utc),
                 snippet=sql_cmd.replace("'", "''"),
