@@ -62,8 +62,8 @@ def index(request):
 
 @user_authenticated
 def logout(request):
-    pgmanage_session = request.session.get("pgmanage_session")
-    logger.info('User "%s" logged out.', pgmanage_session.v_user_name)
+    pgmanage_session: Session = request.session.get("pgmanage_session")
+    logger.info('User "%s" logged out.', pgmanage_session.user_name)
     key_manager.remove(request.user)
     logout_django(request)
 

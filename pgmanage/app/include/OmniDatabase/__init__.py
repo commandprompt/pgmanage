@@ -44,27 +44,27 @@ Generic
 '''
 class Generic:
     @staticmethod
-    def InstantiateDatabase(p_db_type,
-                            p_server,
-                            p_port,
-                            p_service,
-                            p_user,
-                            p_password,
-                            p_conn_id=0,
-                            p_alias='',
+    def InstantiateDatabase(db_type,
+                            server,
+                            port,
+                            service,
+                            user,
+                            password,
+                            conn_id=0,
+                            alias='',
                             foreign_keys=True,
-                            p_application_name='PgManage',
-                            p_conn_string='',
-                            p_parse_conn_string = False,
+                            application_name='PgManage',
+                            conn_string='',
+                            parse_conn_string = False,
                             connection_params=None):
 
-        if p_db_type == 'postgresql':
-            return PostgreSQL(p_server, p_port, p_service, p_user, p_password, p_conn_id, p_alias, p_application_name, p_conn_string, p_parse_conn_string, connection_params)
-        if p_db_type == 'oracle':
-            return Oracle(p_server, p_port, p_service, p_user, p_password, p_conn_id, p_alias, p_conn_string, p_parse_conn_string, connection_params)
-        if p_db_type == 'mariadb':
-            return MariaDB(p_server, p_port, p_service, p_user, p_password, p_conn_id, p_alias, p_conn_string, p_parse_conn_string, connection_params)
-        if p_db_type == 'mysql':
-            return MySQL(p_server, p_port, p_service, p_user, p_password, p_conn_id, p_alias, p_conn_string, p_parse_conn_string, connection_params)
-        if p_db_type == 'sqlite':
-            return SQLite(p_service, p_conn_id, p_alias, foreign_keys)
+        if db_type == 'postgresql':
+            return PostgreSQL(server, port, service, user, password, conn_id, alias, application_name, conn_string, parse_conn_string, connection_params)
+        if db_type == 'oracle':
+            return Oracle(server, port, service, user, password, conn_id, alias, conn_string, parse_conn_string, connection_params)
+        if db_type == 'mariadb':
+            return MariaDB(server, port, service, user, password, conn_id, alias, conn_string, parse_conn_string, connection_params)
+        if db_type == 'mysql':
+            return MySQL(server, port, service, user, password, conn_id, alias, conn_string, parse_conn_string, connection_params)
+        if db_type == 'sqlite':
+            return SQLite(service, conn_id, alias, foreign_keys)

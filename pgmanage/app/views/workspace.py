@@ -5,7 +5,8 @@ import sys
 from datetime import datetime, timezone
 
 from app.client_manager import client_manager
-from app.models.main import Connection, Shortcut, Tab, UserDetails, ERDLayout
+from app.include.Session import Session
+from app.models.main import Connection, ERDLayout, Shortcut, Tab, UserDetails
 from app.utils.crypto import make_hash
 from app.utils.decorators import database_required, user_authenticated
 from app.utils.key_manager import key_manager
@@ -37,7 +38,7 @@ def index(request):
     if not request.session.get("pgmanage_session"):
         return redirect(settings.LOGIN_REDIRECT_URL)
 
-    session = request.session.get("pgmanage_session")
+    session: Session = request.session.get("pgmanage_session")
 
     if not settings.MASTER_PASSWORD_REQUIRED and user_details.masterpass_check == '':
 
@@ -61,7 +62,7 @@ def index(request):
     }
 
     # wiping saved tabs databases list
-    session.v_tabs_databases = dict([])
+    session.tabs_databases = {}
     request.session["pgmanage_session"] = session
 
     client_manager.clear_client(client_id=request.session.session_key)
@@ -109,15 +110,15 @@ class SettingsView(View):
         )
 
     def post(self, request, *args, **kwargs):
-        session = kwargs.get("session")
+        session: Session = kwargs.get("session")
         settings_data = request.data.get("settings")
         shortcut_list = request.data.get("shortcuts")
         current_os = request.data.get("current_os")
 
-        session.v_theme_id = settings_data.get("theme")
-        session.v_font_size = settings_data.get("font_size")
-        session.v_csv_encoding = settings_data.get("csv_encoding")
-        session.v_csv_delimiter = settings_data.get("csv_delimiter")
+        session.theme = settings_data.get("theme")
+        session.font_size = settings_data.get("font_size")
+        session.csv_encoding = settings_data.get("csv_encoding")
+        session.csv_delimiter = settings_data.get("csv_delimiter")
         try:
             user_details = UserDetails.objects.get(user=request.user)
             restore_tabs = settings_data.get('restore_tabs', None)
@@ -180,13 +181,13 @@ def save_user_password(request):
 
 @user_authenticated
 @session_required
-def change_active_database(request, session):
+def change_active_database(request, session: Session):
     data = request.data
     workspace_id = data["workspace_id"]
     new_database = data["database"]
     conn_id = data["database_index"]
 
-    session.v_tabs_databases[workspace_id] = new_database
+    session.tabs_databases[workspace_id] = new_database
 
     conn = Connection.objects.get(id=conn_id)
     conn.last_used_database = new_database
@@ -200,13 +201,13 @@ def change_active_database(request, session):
 
 @user_authenticated
 @session_required
-def renew_password(request, session):
+def renew_password(request, session: Session):
     data = request.data
     database_index = data.get("database_index")
     password = data.get("password")
     password_kind = data.get("password_kind", "database")
 
-    database_object = session.v_databases[database_index]
+    database_object = session.databases[database_index]
     if password_kind == "database":
         database_object["database"].connection.password = password
     else:
@@ -515,7 +516,7 @@ def refresh_monitoring(request, database):
 
 @user_authenticated
 @session_required
-def master_password(request, session):
+def master_password(request, session: Session):
     """
     Set the master password and store in the memory
     This password will be used to encrypt/decrypt saved server passwords

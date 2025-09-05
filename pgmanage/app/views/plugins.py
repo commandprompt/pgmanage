@@ -287,7 +287,7 @@ def upload_view(request, session):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
 
-            if not session.v_super_user:
+            if not session.super_user:
                 return_object = {
                     'v_error': True,
                     'v_message': 'You must be superuser to upload a plugin.'
@@ -492,8 +492,8 @@ def exec_plugin_function(request, database):
     else:
         p_data = json_object['p_data']
 
-    p_data['omnidb_user'] = v_session.v_user_name
-    p_data['omnidb_user_superuser'] = v_session.v_super_user
+    p_data['omnidb_user'] = v_session.user_name
+    p_data['omnidb_user_superuser'] = v_session.super_user
     p_data['request'] = request
     p_check_database_connection = json_object['p_check_database_connection']
     p_database_index = json_object['p_database_index']

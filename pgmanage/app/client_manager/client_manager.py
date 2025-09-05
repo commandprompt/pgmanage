@@ -295,16 +295,16 @@ class Client:
         )
 
         database_new = OmniDatabase.Generic.InstantiateDatabase(
-            p_db_type=main_tab_database.db_type,
-            p_server=main_tab_database.connection.host,
-            p_port=str(main_tab_database.connection.port),
-            p_service=current_tab_database,
-            p_user=main_tab_database.active_user,
-            p_password=main_tab_database.connection.password,
-            p_conn_id=main_tab_database.conn_id,
-            p_alias=main_tab_database.alias,
-            p_conn_string=main_tab_database.conn_string,
-            p_parse_conn_string=False,
+            db_type=main_tab_database.db_type,
+            server=main_tab_database.connection.host,
+            port=str(main_tab_database.connection.port),
+            service=current_tab_database,
+            user=main_tab_database.active_user,
+            password=main_tab_database.connection.password,
+            conn_id=main_tab_database.conn_id,
+            alias=main_tab_database.alias,
+            conn_string=main_tab_database.conn_string,
+            parse_conn_string=False,
             connection_params=connection_params,
         )
 
@@ -350,8 +350,8 @@ class Client:
         Returns:
             The tab's database object.
         """
-        main_tab_database = session.v_databases[database_index]["database"]
-        current_tab_database = current_database or session.v_tabs_databases.get(
+        main_tab_database = session.databases[database_index]["database"]
+        current_tab_database = current_database or session.tabs_databases.get(
             workspace_id
         )
 
