@@ -490,6 +490,12 @@ import { handleError } from '../logging/utils';
             'user': '',
             'conn_string': ''
           },
+          'mssql': {
+            'server': 'ex: 127.0.0.1',
+            'port': 'ex: 1433',
+            'service': 'ex: master',
+            'user': 'ex: sa',
+          },
         }
         let current_db = this.connectionLocal.technology || 'postgresql'
         return placeholderMap[current_db]

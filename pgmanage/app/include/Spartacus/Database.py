@@ -3967,7 +3967,7 @@ class MSSQL(Generic):
         try:
             self.con = pymssql.connect(
                 host=self.host,
-                port=int(self.port),
+                port=self.port,
                 database=self.service,
                 user=self.user,
                 password=self.password,

@@ -12,6 +12,7 @@ safe_modules = [
     "app.include.OmniDatabase.MySQL",
     "app.include.OmniDatabase.Oracle",
     "app.include.OmniDatabase.SQLite",
+    "app.include.OmniDatabase.MSSQL",
     "app.include.Spartacus.Database",
     "app.include.Session",
     "enterprise.include.OmniDatabase.PostgreSQL",
