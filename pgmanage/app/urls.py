@@ -292,6 +292,9 @@ base_urlpatterns = [
     path('template_update_sqlite/', views.tree_sqlite.template_update, name='template_update'),
     path('get_table_definition_sqlite/', views.tree_sqlite.get_table_definition, name="get_table_definition_sqlite"),
 
+    #TREE_MSSQL
+    path('get_tree_info_mssql/', views.tree_mssql.get_tree_info,),
+
     # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
     path("monitoring-widgets/list", views.monitoring_dashboard.monitoring_widgets_list, name="monitoring-widgets-list"),
