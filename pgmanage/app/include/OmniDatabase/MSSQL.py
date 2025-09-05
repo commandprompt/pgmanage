@@ -3,21 +3,15 @@ import app.include.Spartacus as Spartacus
 
 
 class MSSQL:
-    def __init__(self, server, port, service, user, password, conn_id=0, alias='', conn_string='', parse_conn_string = False, connection_params=None):
+    def __init__(self, server, port, service, user, password):
             self.lock = None
-            self.connection_params = connection_params if connection_params else {}
-            self.alias = alias
             self.db_type = 'mysql'
-            self.conn_string = conn_string
-            self.conn_string_error = ''
             self.password = password
-            self.conn_id = conn_id
 
             self.server = server
             self.active_server = server
             self.user = user
             self.active_user = user
-            self.schema = service
             self.service = service
             self.active_service = service
 
