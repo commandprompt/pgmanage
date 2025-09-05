@@ -3,6 +3,7 @@ from typing import Optional
 
 import paramiko
 from app.include import OmniDatabase
+from app.include.Session import Session
 from app.include.Spartacus.Database import supported_rdbms
 from app.models import Connection, Group, GroupConnection, Tab, Technology
 from app.utils.crypto import decrypt, encrypt
@@ -15,7 +16,7 @@ from sshtunnel import SSHTunnelForwarder
 
 @user_authenticated
 @session_required
-def get_connections(request, session):
+def get_connections(request, session: Session):
     response_data = {'data': [], 'status': 'success'}
 
     tech_list = list(
@@ -65,7 +66,7 @@ def get_connections(request, session):
                 'last_access_date': conn.last_access_date,
                 'autocomplete': conn.autocomplete,
             }
-            database_object = session.v_databases.get(conn.id)
+            database_object = session.databases.get(conn.id)
 
             if conn.technology.name == 'terminal':
                 details = (
@@ -250,8 +251,8 @@ def test_connection(request):
             password,
             -1,
             '',
-            p_conn_string=conn_object['conn_string'],
-            p_parse_conn_string=True,
+            conn_string=conn_object['conn_string'],
+            parse_conn_string=True,
             connection_params=conn_params
         )
 
@@ -305,7 +306,7 @@ def test_connection(request):
 
 @user_authenticated
 @session_required
-def save_connection(request, session):
+def save_connection(request, session: Session):
     response_data = {'data': '', 'status': 'success'}
     key = key_manager.get(request.user)
 
@@ -428,8 +429,8 @@ def save_connection(request, session):
             password,
             conn.id,
             conn.alias,
-            p_conn_string=conn.conn_string,
-            p_parse_conn_string=True,
+            conn_string=conn.conn_string,
+            parse_conn_string=True,
             connection_params=conn.connection_params
         )
 
@@ -450,7 +451,7 @@ def save_connection(request, session):
 
 @user_authenticated
 @session_required
-def delete_connection(request, session):
+def delete_connection(request, session: Session):
     conn_id: Optional[int] = request.data.get('id')
 
     conn = Connection.objects.filter(id=conn_id).first()
@@ -467,7 +468,7 @@ def delete_connection(request, session):
 
 @user_authenticated
 @session_required
-def get_existing_tabs(request, session):
+def get_existing_tabs(request, session: Session):
 
     existing_tabs = []
     for tab in Tab.objects.filter(user=request.user).order_by("connection"):

@@ -58,15 +58,15 @@ class PostgreSQL(TestCase):
         data = json.loads(response.content.decode())
         assert 0 <= data['data']
         session = self.client_session.session
-        assert 'admin' == session['pgmanage_session'].v_user_name
+        assert 'admin' == session['pgmanage_session'].user_name
 
-        session['pgmanage_session'].v_databases = [{
+        session['pgmanage_session'].databases = [{
             'database': self.database,
             'prompt_password': False,
             'prompt_timeout': datetime.now() + timedelta(0,60000)
         }]
-        session['pgmanage_session'].v_tab_connections = {0: self.database}
-        session['pgmanage_session'].v_tabs_databases = {0: 'dellstore'}
+        session['pgmanage_session'].tab_connections = {0: self.database}
+        session['pgmanage_session'].tabs_databases = {0: 'dellstore'}
         session.save()
 
     @classmethod
