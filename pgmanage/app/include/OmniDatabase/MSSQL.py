@@ -1,3 +1,5 @@
+import re
+
 import app.include.Spartacus as Spartacus
 
 
@@ -79,6 +81,19 @@ class MSSQL:
         except Exception as exc:
             return_data = str(exc)
         return return_data
+
+    
+    def GetErrorPosition(self, error_message, sql_cmd):
+        ret = None
+        try:
+            err_token = re.search(".*near '(.*)'.*", error_message).group(1)
+            if err_token:
+                row = sql_cmd.count('\n', 0, sql_cmd.find(err_token)) + 1
+                ret = {'row': row, 'col': 0}
+        except AttributeError:
+            pass
+
+        return ret
 
     @lock_required
     def Query(self, sql, alltypesstr=False, simple=False):
