@@ -2,19 +2,24 @@ import app.include.Spartacus as Spartacus
 
 
 class MSSQL:
-    def __init__(self, server, port, service, user, password):
+    def __init__(self, server, port, service, user, password, conn_id, alias):
         self.lock = None
-        self.db_type = "mysql"
+        self.alias = alias
+        self.db_type = "mssql"
         self.password = password
+        self.conn_id = conn_id
 
         self.server = server
         self.active_server = server
         self.user = user
         self.active_user = user
+        self.schema = service
         self.service = service
         self.active_service = service
 
         self.port = port
+
+        self.conn_string = ""  # added just to avoid errors, because it is required
 
         if port is None or port == "":
             self.active_port = "1433"
@@ -58,9 +63,11 @@ class MSSQL:
     def GetVersion(self):
         return self.ExecuteScalar("SELECT @@VERSION;")
 
-    @lock_required
-    def ExecuteScalar(self, sql):
-        return self.connection.ExecuteScalar(sql)
+    def PrintDatabaseDetails(self):
+        return self.active_server + ":" + self.active_port
+
+    def PrintDatabaseInfo(self):
+        return self.active_user + "@" + self.active_service
 
     def TestConnection(self):
         return_data = ""
@@ -73,8 +80,46 @@ class MSSQL:
             return_data = str(exc)
         return return_data
 
-    def PrintDatabaseDetails(self):
-        return self.active_server + ":" + self.active_port
+    @lock_required
+    def Query(self, sql, alltypesstr=False, simple=False):
+        return self.connection.Query(sql, alltypesstr, simple)
 
-    def PrintDatabaseInfo(self):
-        return self.active_user + "@" + self.active_service
+    @lock_required
+    def ExecuteScalar(self, sql):
+        return self.connection.ExecuteScalar(sql)
+
+    def QueryDatabases(self):
+        return self.Query(
+            """SELECT name, database_id
+FROM sys.databases; """,
+            True,
+        )
+
+    def QuerySchemas(self):
+        return self.Query(
+            """
+ SELECT schema_name
+      FROM INFORMATION_SCHEMA.SCHEMATA
+      ORDER BY schema_name
+"""
+        )
+
+    def QueryTables(self, all_schemas=False, schema=None):
+        query_filter = ""
+        if not all_schemas:
+            if schema:
+                query_filter = "and table_schema = '{0}' ".format(schema)
+            else:
+                query_filter = "and table_schema = '{0}' ".format(self.schema)
+        return self.Query(
+            """
+            select table_name,
+                   table_schema
+            from information_schema.tables
+            where table_type != 'VIEW'
+            {0}
+        """.format(
+                query_filter
+            ),
+            True,
+        )

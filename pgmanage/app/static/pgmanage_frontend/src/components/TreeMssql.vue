@@ -27,14 +27,22 @@
 
 <script>
 import TreeMixin from "../mixins/power_tree.js";
+import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
+
+import { checkBeforeChangeDatabase } from "../workspace";
+import {
+  connectionsStore,
+  tabsStore,
+  dbMetadataStore,
+} from "../stores/stores_initializer";
 
 export default {
   name: "TreeMssql",
   components: {
     PowerTree: PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, PinDatabaseMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -62,7 +70,12 @@ export default {
       serverVersion: null,
     };
   },
-  mounted() {},
+  mounted() {
+    this.$hooks?.add_tree_context_menu_item?.forEach((hook) => {
+      hook.call(this);
+    });
+    this.doubleClickNode(this.getRootNode());
+  },
   unmounted() {},
   methods: {
     refreshTree(node, force = false) {
@@ -147,6 +160,18 @@ export default {
     refreshTreeConfirm(node) {
       if (node.data.type == "server") {
         return this.getTreeDetails(node);
+      } else if (node.data.type == "database_list") {
+        return this.getDatabases(node);
+      } else if (node.data.type == "database") {
+        return this.getDatabaseObjects(node);
+      } else if (node.data.type == "schema_list") {
+        return this.getSchemas(node);
+      } else if (node.data.type == "schema") {
+        return this.getSchemasObjects(node);
+      } else if (node.data.type == "table_list") {
+        return this.getTables(node);
+      } else if (node.data.type == "table") {
+        return this.getColumns(node);
       }
     },
     async getTreeDetails(node) {
@@ -169,6 +194,128 @@ export default {
       } catch (error) {
         throw error;
       }
+    },
+    async getDatabases(node) {
+      try {
+        const response = await this.api.post("/get_databases_mssql/");
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Databases (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-database node-database",
+            type: "database",
+            contextMenu: "cm_database",
+            database: el.name,
+            database_id: el.database_id,
+            pinned: el.pinned,
+          });
+        }, null);
+        const databasesNode = this.$refs.tree.getNode(node.path);
+        this.sortPinnedNodes(databasesNode);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getDatabaseObjects(node) {
+      this.removeChildNodes(node);
+      return new Promise((resolve, reject) => {
+        try {
+          this.insertNode(node, "Schemas", {
+            icon: "fas node-all fa-layer-group node-schema-list",
+            type: "schema_list",
+            contextMenu: "cm_schemas",
+          });
+          resolve("success");
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+    async getSchemas(node) {
+      try {
+        const response = await this.api.post("/get_schemas_mssql/");
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Schemas (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-layer-group node-schema",
+            type: "schema",
+            contextMenu: "cm_schema",
+            schema: el.name,
+          });
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getSchemasObjects(node) {
+      this.removeChildNodes(node);
+      return new Promise((resolve, reject) => {
+        try {
+          this.insertNode(node, "Procedures", {
+            icon: "fas node-all fa-cog node-procedure-list",
+            type: "procedure_list",
+            contextMenu: "cm_procedures",
+            schema: node.data.schema,
+          });
+
+          this.insertNode(node, "Views", {
+            icon: "fas node-all fa-eye node-view-list",
+            type: "view_list",
+            contextMenu: "cm_views",
+            schema: node.data.schema,
+          });
+
+          this.insertNode(node, "Tables", {
+            icon: "fas node-all fa-th node-table-list",
+            type: "table_list",
+            contextMenu: "cm_tables",
+            schema: node.data.schema,
+          });
+          resolve("success");
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+    async getTables(node) {
+      try {
+        const response = await this.api.post("/get_tables_mssql/", {
+          schema: node.data.schema,
+        });
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Tables (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el, {
+            icon: "fas node-all fa-table node-table",
+            type: "table",
+            contextMenu: "cm_table",
+            database: node.data.database,
+          });
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getColumns(node) {
+      console.log("Not implemented");
+    },
+    getProperties(node) {
+      console.log("Not implemented");
     },
   },
 };

@@ -70,4 +70,4 @@ class Generic:
         if db_type == 'sqlite':
             return SQLite(service, conn_id, alias, foreign_keys)
         if db_type == 'mssql':
-            return MSSQL(server, port, service, user, password)
+            return MSSQL(server, port, service, user, password, conn_id, alias)

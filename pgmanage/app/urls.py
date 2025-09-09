@@ -294,6 +294,9 @@ base_urlpatterns = [
 
     #TREE_MSSQL
     path('get_tree_info_mssql/', views.tree_mssql.get_tree_info,),
+    path('get_databases_mssql/', views.tree_mssql.get_databases,),
+    path('get_schemas_mssql/', views.tree_mssql.get_schemas,),
+    path('get_tables_mssql/', views.tree_mssql.get_tables,),
 
     # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
