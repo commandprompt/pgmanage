@@ -14,13 +14,36 @@
     </template>
 
     <template v-slot:title="{ node }">
-      <span class="item-icon">
-        <i :class="['icon_tree', node.data.icon]"></i>
-      </span>
-      <span v-if="node.data.raw_html" v-html="node.title"> </span>
-      <span v-else>
-        {{ formatTitle(node) }}
-      </span>
+      <div class="d-flex flex-grow-1 justify-content-between">
+        <div>
+          <span class="item-icon">
+            <i :class="['icon_tree', node.data.icon]"></i>
+          </span>
+
+          <span v-if="node.data.raw_html" v-html="node.title"> </span>
+          <span
+            v-else-if="
+              node.data.type === 'database' && node.title === selectedDatabase
+            "
+          >
+            <b>{{ node.title }}</b>
+          </span>
+          <span v-else>
+            {{ formatTitle(node) }}
+          </span>
+        </div>
+
+        <!-- Pin icon for database nodes -->
+        <span>
+          <i
+            v-if="node.data.type === 'database'"
+            class="fas fa-thumbtack database-pin-icon me-2"
+            :class="node.data.pinned ? 'text-primary pinned' : 'text-muted'"
+            @click.stop="pinDatabase(node)"
+            title="Pin this database"
+          ></i>
+        </span>
+      </div>
     </template>
   </PowerTree>
 </template>
@@ -172,6 +195,10 @@ export default {
         return this.getTables(node);
       } else if (node.data.type == "table") {
         return this.getColumns(node);
+      } else if (node.data.type == "view_list") {
+        return this.getViews(node);
+      } else if (node.data.type == "view") {
+        return this.getViewsColumns(node);
       }
     },
     async getTreeDetails(node) {
@@ -305,6 +332,7 @@ export default {
             type: "table",
             contextMenu: "cm_table",
             database: node.data.database,
+            schema: node.data.schema,
           });
         }, null);
       } catch (error) {
@@ -312,7 +340,218 @@ export default {
       }
     },
     async getColumns(node) {
-      console.log("Not implemented");
+      try {
+        const response = await this.api.post("/get_columns_mssql/", {
+          table: node.title,
+          schema: node.data.schema,
+        });
+        this.removeChildNodes(node);
+
+        this.insertNode(node, "Statistics", {
+          icon: "fas node-all fa-chart-bar node-statistics",
+          type: "statistics_list",
+          contextMenu: "cm_statistics",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Partitions", {
+          icon: "fas node-all fa-table node-partition",
+          type: "partition_list",
+          contextMenu: "cm_partitions",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Inherited Tables", {
+          icon: "fas node-all fa-table node-inherited",
+          type: "inherited_list",
+          contextMenu: "cm_inheriteds",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Triggers", {
+          icon: "fas node-all fa-bolt node-trigger",
+          type: "trigger_list",
+          contextMenu: "cm_triggers",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Rules", {
+          icon: "fas node-all fa-lightbulb node-rule",
+          type: "rule_list",
+          contextMenu: "cm_rules",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Indexes", {
+          icon: "fas node-all fa-thumbtack node-index",
+          type: "indexes",
+          contextMenu: "cm_indexes",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Excludes", {
+          icon: "fas node-all fa-times-circle node-exclude",
+          type: "exclude_list",
+          contextMenu: "cm_excludes",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Checks", {
+          icon: "fas node-all fa-check-square node-check",
+          type: "check_list",
+          contextMenu: "cm_checks",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Uniques", {
+          icon: "fas node-all fa-key node-unique",
+          type: "uniques",
+          contextMenu: "cm_uniques",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Foreign Keys", {
+          icon: "fas node-all fa-key node-fkey",
+          type: "foreign_keys",
+          contextMenu: "cm_fks",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Primary Key", {
+          icon: "fas node-all fa-key node-pkey",
+          type: "primary_key",
+          contextMenu: "cm_pks",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, `Columns (${response.data.length})`, {
+          icon: "fas node-all fa-columns node-column",
+          type: "column_list",
+          contextMenu: "cm_columns",
+          schema: node.data.schema,
+        });
+
+        const columns_node = this.getFirstChildNode(node);
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            columns_node,
+            el.column_name,
+            {
+              icon: "fas node-all fa-columns node-column",
+              type: "table_field",
+              contextMenu: "cm_column",
+              schema: node.data.schema,
+              position: el.position,
+            },
+            null
+          );
+          const table_field = this.getFirstChildNode(columns_node);
+
+          this.insertNode(
+            table_field,
+            `Nullable: ${el.nullable}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+            },
+            true
+          );
+          this.insertNode(
+            table_field,
+            `Type: ${el.data_type}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+            },
+            true
+          );
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getViews(node) {
+      try {
+        const response = await this.api.post("/get_views_mssql/", {
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Views (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-eye node-view",
+            type: "view",
+            contextMenu: "cm_view",
+            schema: node.data.schema,
+          });
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getViewsColumns(node) {
+      try {
+        const response = await this.api.post("/get_views_columns_mssql/", {
+          table: node.title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        this.insertNode(node, "Triggers", {
+          icon: "fas node-all fa-bolt node-trigger",
+          type: "trigger_list",
+          contextMenu: "cm_view_triggers",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, "Rules", {
+          icon: "fas node-all fa-lightbulb node-rule",
+          type: "rule_list",
+          contextMenu: "cm_rules",
+          schema: node.data.schema,
+        });
+
+        this.insertNode(node, `Columns (${response.data.length})`, {
+          icon: "fas node-all fa-columns node-column",
+          schema: node.data.schema,
+        });
+
+        const columns_node = this.getFirstChildNode(node);
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            columns_node,
+            el.column_name,
+            {
+              icon: "fas node-all fa-columns node-column",
+              type: "table_field",
+              schema: node.data.schema,
+            },
+            null
+          );
+          const table_field = this.getFirstChildNode(columns_node);
+
+          this.insertNode(
+            table_field,
+            `Type: ${el.data_type}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        }, null);
+      } catch (error) {
+        throw error;
+      }
     },
     getProperties(node) {
       console.log("Not implemented");

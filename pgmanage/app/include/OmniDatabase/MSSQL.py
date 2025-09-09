@@ -82,14 +82,13 @@ class MSSQL:
             return_data = str(exc)
         return return_data
 
-    
     def GetErrorPosition(self, error_message, sql_cmd):
         ret = None
         try:
             err_token = re.search(".*near '(.*)'.*", error_message).group(1)
             if err_token:
-                row = sql_cmd.count('\n', 0, sql_cmd.find(err_token)) + 1
-                ret = {'row': row, 'col': 0}
+                row = sql_cmd.count("\n", 0, sql_cmd.find(err_token)) + 1
+                ret = {"row": row, "col": 0}
         except AttributeError:
             pass
 
@@ -122,17 +121,52 @@ FROM sys.databases; """,
     def QueryTables(self, all_schemas=False, schema=None):
         query_filter = ""
         if not all_schemas:
-            if schema:
-                query_filter = "and table_schema = '{0}' ".format(schema)
-            else:
-                query_filter = "and table_schema = '{0}' ".format(self.schema)
+            query_filter = f"WHERE table_schema = '{schema or self.schema}'"
         return self.Query(
             """
-            select table_name,
+            SELECT table_name,
                    table_schema
-            from information_schema.tables
-            where table_type != 'VIEW'
+            FROM information_schema.tables
+            WHERE table_type != 'VIEW'
             {0}
+        """.format(
+                query_filter
+            ),
+            True,
+        )
+
+    def QueryTablesFields(self, table=None, all_schemas=False, schema=None):
+        query_filter = f"WHERE c.object_id = OBJECT_ID('{schema}.{table}')"
+        return self.Query(
+            """
+SELECT 
+    c.name       AS column_name,
+    t.name       AS data_type,
+    c.max_length,
+    c.precision,
+    c.scale,
+    c.is_nullable,
+    c.is_identity
+FROM sys.columns c
+JOIN sys.types t ON c.user_type_id = t.user_type_id
+{0}
+ORDER BY c.column_id;
+""".format(
+                query_filter
+            ),
+            True,
+        )
+
+    def QueryViews(self, all_schemas=False, schema=None):
+        query_filter = ""
+        if not all_schemas:
+            query_filter = f"WHERE table_schema = '{schema or self.schema}'"
+        return self.Query(
+            """
+            SELECT table_name
+FROM INFORMATION_SCHEMA.VIEWS
+{0}
+ORDER BY table_name;
         """.format(
                 query_filter
             ),

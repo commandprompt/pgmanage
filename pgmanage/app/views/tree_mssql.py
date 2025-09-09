@@ -65,3 +65,71 @@ def get_tables(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data=list_tables, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_columns(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    list_columns = []
+
+    try:
+        columns = database.QueryTablesFields(table, False, schema)
+        for column in columns.Rows:
+            column_data = {
+                "column_name": column["column_name"],
+                "data_type": column["data_type"],
+                "data_length": column["max_length"],
+                "nullable": column["is_nullable"],
+            }
+            list_columns.append(column_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_columns, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_views(request, database):
+    schema = request.data["schema"]
+
+    list_tables = []
+
+    try:
+        tables = database.QueryViews(False, schema)
+        for table in tables.Rows:
+            table_data = {
+                "name": table["table_name"],
+            }
+            list_tables.append(table_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_tables, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_views_columns(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    list_columns = []
+
+    try:
+        columns = database.QueryTablesFields(table, False, schema)
+        for column in columns.Rows:
+            column_data = {
+                "column_name": column["column_name"],
+                "data_type": column["data_type"],
+            }
+            list_columns.append(column_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_columns, safe=False)

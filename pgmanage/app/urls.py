@@ -297,6 +297,9 @@ base_urlpatterns = [
     path('get_databases_mssql/', views.tree_mssql.get_databases,),
     path('get_schemas_mssql/', views.tree_mssql.get_schemas,),
     path('get_tables_mssql/', views.tree_mssql.get_tables,),
+    path('get_columns_mssql/', views.tree_mssql.get_columns,),
+    path('get_views_mssql/', views.tree_mssql.get_views,),
+    path('get_views_columns_mssql/', views.tree_mssql.get_views_columns,),
 
     # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
