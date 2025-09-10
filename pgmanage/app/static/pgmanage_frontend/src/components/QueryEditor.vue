@@ -205,6 +205,7 @@ export default {
     },
     contextMenu(event) {
       const hasSelectedContent = !!this.editor.getSelectedText()
+
       let option_list = [
         {
           label: "Run selection",
@@ -212,22 +213,6 @@ export default {
           disabled: !hasSelectedContent,
           onClick: () => {
             this.$emit("run-selection");
-          },
-        },
-        {
-          label: "Explain selection",
-          icon: "fas fa-chart-simple",
-          disabled: !hasSelectedContent,
-          onClick: () => {
-            this.$emit("run-selection-explain");
-          },
-        },
-        {
-          label: "Explain Analyze selection",
-          icon: "fas fa-magnifying-glass-chart",
-          disabled: !hasSelectedContent,
-          onClick: () => {
-            this.$emit("run-selection-explain-analyze");
           },
         },
         {
@@ -248,6 +233,29 @@ export default {
           ),
         },
       ];
+
+      let postgres_options = [
+        {
+          label: "Explain selection",
+          icon: "fas fa-chart-simple",
+          disabled: !hasSelectedContent,
+          onClick: () => {
+            this.$emit("run-selection-explain");
+          },
+        },
+        {
+          label: "Explain Analyze selection",
+          icon: "fas fa-magnifying-glass-chart",
+          disabled: !hasSelectedContent,
+          onClick: () => {
+            this.$emit("run-selection-explain-analyze");
+          },
+        },
+      ];
+
+      if (this.dialect === "postgresql") {
+        option_list.splice(1, 0, ...postgres_options);
+      };
 
       if (snippetsStore.files.length != 0 || snippetsStore.folders.length != 0)
         option_list.push({
