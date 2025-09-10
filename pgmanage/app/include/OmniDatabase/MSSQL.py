@@ -121,7 +121,7 @@ FROM sys.databases; """,
     def QueryTables(self, all_schemas=False, schema=None):
         query_filter = ""
         if not all_schemas:
-            query_filter = f"WHERE table_schema = '{schema or self.schema}'"
+            query_filter = f"AND table_schema = '{schema or self.schema}'"
         return self.Query(
             """
             SELECT table_name,
@@ -171,4 +171,57 @@ ORDER BY table_name;
                 query_filter
             ),
             True,
+        )
+
+    def QueryProcedures(self, all_schemas=False, schema=None):
+        query_filter = ""
+        if not all_schemas:
+            query_filter = f"WHERE s.name = '{schema or self.schema}'"
+        return self.Query(
+            """
+SELECT p.name, p.object_id
+FROM sys.procedures p
+JOIN sys.schemas s ON p.schema_id = s.schema_id
+{0}
+ORDER BY s.name, p.name;
+""".format(
+                query_filter
+            ),
+            True,
+        )
+
+    def QueryFunctionFields(self, function, schema):
+        query_filter = f"WHERE specific_schema = '{schema or self.schema}' AND specific_name = '{function}'"
+        return self.Query(
+            """
+            SELECT parameter_name,
+            data_type,
+            CASE parameter_mode
+                WHEN 'OUT' THEN 'O'
+                WHEN 'INOUT' THEN 'X'
+                ELSE 'I'
+            END AS param_type
+FROM INFORMATION_SCHEMA.PARAMETERS
+                          {0}
+ORDER BY ORDINAL_POSITION;
+""".format(
+                query_filter
+            ),
+            True,
+        )
+
+    def QueryFunctions(self, all_schemas=False, schema=None):
+        query_filter = ""
+        if not all_schemas:
+            query_filter = f"AND routine_schema = '{schema or self.schema}'"
+        return self.Query(
+            """
+SELECT routine_name
+FROM INFORMATION_SCHEMA.ROUTINES
+WHERE routine_type = 'FUNCTION'
+{}
+ORDER BY routine_name;
+""".format(
+                query_filter
+            )
         )

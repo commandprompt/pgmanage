@@ -199,6 +199,14 @@ export default {
         return this.getViews(node);
       } else if (node.data.type == "view") {
         return this.getViewsColumns(node);
+      } else if (node.data.type == "procedure_list") {
+        return this.getProcedures(node);
+      } else if (node.data.type == "procedure") {
+        return this.getProcedureFields(node);
+      } else if (node.data.type == "function_list") {
+        return this.getFunctions(node);
+      } else if (node.data.type == "function") {
+        return this.getFunctionFields(node);
       }
     },
     async getTreeDetails(node) {
@@ -293,6 +301,13 @@ export default {
             icon: "fas node-all fa-cog node-procedure-list",
             type: "procedure_list",
             contextMenu: "cm_procedures",
+            schema: node.data.schema,
+          });
+
+          this.insertNode(node, "Functions", {
+            icon: "fas node-all fa-cog node-function-list",
+            type: "function_list",
+            contextMenu: "cm_functions",
             schema: node.data.schema,
           });
 
@@ -548,6 +563,156 @@ export default {
             },
             true
           );
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getProcedures(node) {
+      try {
+        const response = await this.api.post("/get_procedures_mssql/", {
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Procedures (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-cog node-procedure",
+            type: "procedure",
+            contextMenu: "cm_procedure",
+            schema: node.data.schema,
+            id: el.oid,
+          });
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getProcedureFields(node) {
+      try {
+        const response = await this.api.post("/get_procedure_fields_mssql/", {
+          procedure: node.title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        response.data.reduceRight((_, el) => {
+          if (el.type === "O") {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-arrow-right node-function-field",
+                schema: node.data.schema,
+              },
+              true
+            );
+          } else if (el.type === "I") {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-arrow-left node-function-field",
+                schema: node.data.schema,
+              },
+              true
+            );
+          } else {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-exchange-alt node-function-field",
+                schema: node.data.schema,
+              },
+              true
+            );
+          }
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getFunctions(node) {
+      try {
+        const response = await this.api.post("/get_functions_mssql/", {
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Functions (${response.data.length})`,
+        });
+
+        let childNodes = response.data.map((el) => {
+          return {
+            title: el.name,
+            isLeaf: false,
+            isExpanded: false,
+            isDraggable: false,
+            data: {
+              database: this.selectedDatabase,
+              icon: "fas node-all fa-cog node-function",
+              type: "function",
+              contextMenu: "cm_function",
+              schema: node.data.schema,
+            },
+          };
+        });
+
+        this.insertNodes(node, childNodes);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getFunctionFields(node) {
+      try {
+        const response = await this.api.post("/get_function_fields_mssql/", {
+          function: node.title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        response.data.reduceRight((_, el) => {
+          if (el.type === "O") {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-arrow-right node-function-field",
+                schema: node.data.schema,
+              },
+              true
+            );
+          } else if (el.type === "I") {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-arrow-left node-function-field",
+                schema: node.data.schema,
+              },
+              true
+            );
+          } else {
+            this.insertNode(
+              node,
+              el.name,
+              {
+                icon: "fas node-all fa-exchange-alt node-function-field",
+                schema: node.data.schema,
+              },
+              true
+            );
+          }
         }, null);
       } catch (error) {
         throw error;

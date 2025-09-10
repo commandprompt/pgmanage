@@ -133,3 +133,86 @@ def get_views_columns(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data=list_columns, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_procedures(request, database):
+    schema = request.data["schema"]
+
+    list_functions = []
+
+    try:
+        functions = database.QueryProcedures(False, schema)
+        for function in functions.Rows:
+            function_data = {
+                "name": function["name"],
+                "oid": function["object_id"],
+            }
+            list_functions.append(function_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_functions, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_procedure_fields(request, database):
+    data = request.data
+    function = data["procedure"]
+    schema = data["schema"]
+
+    list_fields = []
+
+    try:
+        fields = database.QueryFunctionFields(function, schema)
+        for field in fields.Rows:
+            field_name = f'{field["parameter_name"]} {field["data_type"]}'
+            field_data = {"name": field_name, "type": field["param_type"]}
+            list_fields.append(field_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_fields, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_functions(request, database):
+    schema = request.data["schema"]
+
+    list_functions = []
+
+    try:
+        functions = database.QueryFunctions(False, schema)
+        for function in functions.Rows:
+            function_data = {
+                "name": function["routine_name"],
+            }
+            list_functions.append(function_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_functions, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_function_fields(request, database):
+    data = request.data
+    function = data["function"]
+    schema = data["schema"]
+
+    list_fields = []
+
+    try:
+        fields = database.QueryFunctionFields(function, schema)
+        for field in fields.Rows:
+            field_name = f'{field["parameter_name"]} {field["data_type"]}'
+            field_data = {"name": field_name, "type": field["param_type"]}
+            list_fields.append(field_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_fields, safe=False)
