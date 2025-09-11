@@ -342,3 +342,86 @@ ORDER BY fk.table_schema, fk.table_name, fk.constraint_name, fk.ordinal_position
             ),
             True,
         )
+
+    def QueryTablesUniques(self, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+
+        if not all_schemas:
+            table_filter_part = f"AND table_name = '{table}' " if table else " "
+            schema_filter_part = f"AND table_schema = '{schema or self.schema}'"
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND table_name = '{table}'" if table else ""
+
+        return self.Query(
+            """
+
+    SELECT table_schema,
+        table_name,
+        constraint_name
+    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
+    WHERE constraint_type = 'UNIQUE'
+            {0}
+    ORDER BY table_schema, table_name;
+    """.format(
+                query_filter
+            )
+        )
+
+    def QueryTablesUniquesColumns(self, unique_name, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+        if not all_schemas:
+            table_filter_part = f"AND kc.table_name = '{table}' " if table else " "
+            schema_filter_part = f"AND kc.table_schema = '{schema or self.schema}' "
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND kc.table_name = '{table}'" if table else ""
+
+        query_filter = query_filter + f"AND kc.constraint_name = '{unique_name}' "
+        return self.Query(
+            """
+    SELECT kc.table_schema,
+        kc.table_name,
+        kc.constraint_name,
+        kc.column_name,
+        kc.ordinal_position
+    FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc
+    JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+    ON kc.constraint_name = tc.constraint_name
+    AND kc.table_schema = tc.table_schema
+    WHERE tc.constraint_type = 'UNIQUE'
+    {0}
+    ORDER BY kc.table_schema, kc.table_name, kc.ordinal_position;
+    """.format(
+                query_filter
+            ),
+            True,
+        )
+
+    def QueryTablesChecks(self, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+
+        if not all_schemas:
+            table_filter_part = f"AND ctu.table_name = '{table}' " if table else " "
+            schema_filter_part = f"AND cc.constraint_schema = '{schema or self.schema}'"
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND ctu.table_name = '{table}'" if table else ""
+
+        return self.Query(
+            """
+        SELECT cc.constraint_schema,
+       ctu.table_name,
+       cc.constraint_name,
+       cc.check_clause
+        FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc
+        JOIN INFORMATION_SCHEMA.CONSTRAINT_TABLE_USAGE ctu
+        ON cc.constraint_name = ctu.constraint_name
+        WHERE 1=1
+                                {0}
+        ORDER BY cc.constraint_name;
+""".format(
+                query_filter
+            ),
+            True,
+        )

@@ -203,6 +203,12 @@ export default {
         return this.getFKs(node);
       } else if (node.data.type == "foreign_key") {
         return this.getFKsColumns(node);
+      } else if (node.data.type == "uniques") {
+        return this.getUniques(node);
+      } else if (node.data.type == "unique") {
+        return this.getUniquesColumns(node);
+      } else if (node.data.type == "check_list") {
+        return this.getChecks(node);
       } else if (node.data.type == "view_list") {
         return this.getViews(node);
       } else if (node.data.type == "view") {
@@ -615,6 +621,91 @@ export default {
               icon: "fas node-all fa-table node-table",
               schema: node.data.schema,
               schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getUniques(node) {
+      try {
+        const response = await this.api.post("/get_uniques_mssql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        });
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Uniques (${response.data.length})`,
+        });
+
+        response.data.forEach((el) => {
+          this.insertNode(node, el.constraint_name, {
+            icon: "fas node-all fa-key node-unique",
+            type: "unique",
+            contextMenu: "cm_unique",
+            schema: node.data.schema,
+          });
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getUniquesColumns(node) {
+      try {
+        const response = await this.api.post("/get_uniques_columns_mssql/", {
+          unique: node.title,
+          table: this.getParentNodeDeep(node, 2).title,
+          schema: node.data.schema,
+        });
+        this.removeChildNodes(node);
+
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el,
+            {
+              icon: "fas node-all fa-columns node-column",
+              schema: node.data.schema,
+            },
+            true
+          );
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getChecks(node) {
+      try {
+        const response = await this.api.post("/get_checks_mssql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Checks (${response.data.length})`,
+        });
+
+        response.data.forEach((el) => {
+          this.insertNode(node, el.constraint_name, {
+            icon: "fas node-all fa-check-square node-check",
+            type: "check",
+            contextMenu: "cm_check",
+            schema: node.data.schema,
+          });
+
+          const check_node = this.getFirstChildNode(node);
+
+          this.insertNode(
+            check_node,
+            el.check_clause,
+            {
+              icon: "fas node-all fa-edit node-check-value",
+              schema: node.data.schema,
             },
             true
           );

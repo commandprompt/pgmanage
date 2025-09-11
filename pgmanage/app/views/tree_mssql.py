@@ -304,3 +304,65 @@ def get_fks_columns(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data=list_fk, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_uniques(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    list_uniques = []
+
+    try:
+        uniques = database.QueryTablesUniques(table, False, schema)
+        for unique in uniques.Rows:
+            v_unique_data = {
+                "constraint_name": unique["constraint_name"],
+            }
+            list_uniques.append(v_unique_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_uniques, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_uniques_columns(request, database):
+    data = request.data
+    unique = data["unique"]
+    table = data["table"]
+    schema = data["schema"]
+
+    try:
+        uniques = database.QueryTablesUniquesColumns(unique, table, False, schema)
+        list_uniques = [unique["column_name"] for unique in uniques.Rows]
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_uniques, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_checks(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    list_checks = []
+
+    try:
+        checks = database.QueryTablesChecks(table, False, schema)
+        for check in checks.Rows:
+            check_data = {
+                "constraint_name": check["constraint_name"],
+                "check_clause": check["check_clause"],
+            }
+            list_checks.append(check_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_checks, safe=False)
