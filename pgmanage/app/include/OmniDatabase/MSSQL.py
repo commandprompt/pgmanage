@@ -225,3 +225,120 @@ ORDER BY routine_name;
                 query_filter
             )
         )
+
+    def QueryTablesPrimaryKeys(self, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+
+        if not all_schemas:
+            table_filter_part = f"AND table_name = '{table}' " if table else " "
+            schema_filter_part = f"AND table_schema = '{schema or self.schema}'"
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND table_name = '{table}'" if table else ""
+
+        return self.Query(
+            """
+
+SELECT table_schema,
+       table_name,
+       constraint_name
+FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
+WHERE constraint_type = 'PRIMARY KEY'
+        {0}
+ORDER BY table_schema, table_name;
+""".format(
+                query_filter
+            )
+        )
+
+    def QueryTablesPrimaryKeysColumns(self, pkey, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+        if not all_schemas:
+            table_filter_part = f"AND kc.table_name = '{table}' " if table else " "
+            schema_filter_part = f"AND kc.table_schema = '{schema or self.schema}' "
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND kc.table_name = '{table}'" if table else ""
+
+        query_filter = query_filter + f"AND kc.constraint_name = '{pkey}' "
+        return self.Query(
+            """
+            SELECT kc.table_schema,
+       kc.table_name,
+       kc.constraint_name,
+       kc.column_name,
+       kc.ordinal_position
+FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc
+JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+  ON kc.constraint_name = tc.constraint_name
+  AND kc.table_schema = tc.table_schema
+WHERE tc.CONSTRAINT_TYPE = 'PRIMARY KEY'
+  {0}
+ORDER BY kc.table_schema, kc.table_name, kc.ordinal_position;
+        """.format(
+                query_filter
+            ),
+            True,
+        )
+
+    def QueryTablesForeignKeys(self, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+
+        if not all_schemas:
+            table_filter_part = f"AND table_name = '{table}' " if table else " "
+            schema_filter_part = f"AND table_schema = '{schema or self.schema}'"
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND table_name = '{table}'" if table else ""
+
+        return self.Query(
+            """
+
+    SELECT table_schema,
+        table_name,
+        constraint_name
+    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
+    WHERE constraint_type = 'FOREIGN KEY'
+            {0}
+    ORDER BY table_schema, table_name;
+    """.format(
+                query_filter
+            )
+        )
+
+    def QueryTablesForeignKeysColumns(self, fkey, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+        if not all_schemas:
+            table_filter_part = f"AND fk.table_name = '{table}' " if table else " "
+            schema_filter_part = f"AND fk.table_schema = '{schema or self.schema}' "
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND fk.table_name = '{table}'" if table else ""
+
+        query_filter = query_filter + f"AND fk.constraint_name = '{fkey}' "
+
+        return self.Query(
+            """
+        SELECT fk.table_schema,
+       fk.table_name,
+       fk.constraint_name,
+       fk.column_name,
+       pk.table_schema AS r_schema_name,
+       pk.table_name   AS r_table_name,
+       pk.column_name  AS r_column_name,
+        update_rule,
+        delete_rule
+FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
+JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE fk
+  ON rc.constraint_name = fk.constraint_name
+JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE pk
+  ON rc.unique_constraint_name = pk.constraint_name
+  AND fk.ordinal_position = pk.ordinal_position
+WHERE 1=1
+                          {0}
+ORDER BY fk.table_schema, fk.table_name, fk.constraint_name, fk.ordinal_position;
+""".format(
+                query_filter
+            ),
+            True,
+        )

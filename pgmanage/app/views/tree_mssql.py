@@ -216,3 +216,91 @@ def get_function_fields(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data=list_fields, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_pk(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    list_pk = []
+
+    try:
+        pks = database.QueryTablesPrimaryKeys(table, False, schema)
+        for pk in pks.Rows:
+            pk_data = {
+                "constraint_name": pk["constraint_name"],
+            }
+            list_pk.append(pk_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_pk, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_pk_columns(request, database):
+    data = request.data
+    pkey = data["key"]
+    table = data["table"]
+    schema = data["schema"]
+
+    try:
+        pks = database.QueryTablesPrimaryKeysColumns(pkey, table, False, schema)
+        list_pk = [pk["column_name"] for pk in pks.Rows]
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_pk, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_fks(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    list_fk = []
+
+    try:
+        fks = database.QueryTablesForeignKeys(table, False, schema)
+        for fk in fks.Rows:
+            fk_data = {
+                "constraint_name": fk["constraint_name"],
+            }
+            list_fk.append(fk_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_fk, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_fks_columns(request, database):
+    data = request.data
+    fkey = data["fkey"]
+    table = data["table"]
+    schema = data["schema"]
+
+    list_fk = []
+
+    try:
+        fks = database.QueryTablesForeignKeysColumns(fkey, table, False, schema)
+        for fk in fks.Rows:
+            fk_data = {
+                "r_table_name": fk["r_table_name"],
+                "delete_rule": fk["delete_rule"],
+                "update_rule": fk["update_rule"],
+                "column_name": fk["column_name"],
+                "r_column_name": fk["r_column_name"],
+            }
+            list_fk.append(fk_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_fk, safe=False)

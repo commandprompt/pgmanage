@@ -195,6 +195,14 @@ export default {
         return this.getTables(node);
       } else if (node.data.type == "table") {
         return this.getColumns(node);
+      } else if (node.data.type == "primary_keys") {
+        return this.getPKs(node);
+      } else if (node.data.type == "primary_key") {
+        return this.getPKsColumns(node);
+      } else if (node.data.type == "foreign_keys") {
+        return this.getFKs(node);
+      } else if (node.data.type == "foreign_key") {
+        return this.getFKsColumns(node);
       } else if (node.data.type == "view_list") {
         return this.getViews(node);
       } else if (node.data.type == "view") {
@@ -434,7 +442,7 @@ export default {
 
         this.insertNode(node, "Primary Key", {
           icon: "fas node-all fa-key node-pkey",
-          type: "primary_key",
+          type: "primary_keys",
           contextMenu: "cm_pks",
           schema: node.data.schema,
         });
@@ -482,6 +490,135 @@ export default {
             true
           );
         }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getPKs(node) {
+      try {
+        const response = await this.api.post("/get_pk_mssql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Primary Key (${response.data.length})`,
+        });
+
+        response.data.forEach((el) => {
+          this.insertNode(node, el.constraint_name, {
+            icon: "fas node-all fa-key node-pkey",
+            type: "primary_key",
+            contextMenu: "cm_pk",
+            schema: node.data.schema,
+          });
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getPKsColumns(node) {
+      try {
+        const response = await this.api.post("/get_pk_columns_mssql/", {
+          key: node.title,
+          table: this.getParentNodeDeep(node, 2).title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el,
+            {
+              icon: "fas node-all fa-columns node-column",
+              schema: node.data.schema,
+            },
+            true
+          );
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getFKs(node) {
+      try {
+        const response = await this.api.post("/get_fks_mssql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        });
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Foreign Keys (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.constraint_name, {
+            icon: "fas node-all fa-key node-fkey",
+            type: "foreign_key",
+            contextMenu: "cm_fk",
+            schema: node.data.schema,
+          });
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getFKsColumns(node) {
+      try {
+        const response = await this.api.post("/get_fks_columns_mssql/", {
+          fkey: node.title,
+          table: this.getParentNodeDeep(node, 2).title,
+          schema: node.data.schema,
+        });
+        this.removeChildNodes(node);
+
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            `${el.column_name} <i class='fas node-all fa-arrow-right'></i> ${el.r_column_name}`,
+            {
+              icon: "fas node-all fa-columns node-column",
+              raw_html: true,
+              schema: node.data.schema,
+            },
+            true
+          );
+          this.insertNode(
+            node,
+            `Update Rule: ${el.update_rule}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+          this.insertNode(
+            node,
+            `Delete Rule: ${el.delete_rule}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+          this.insertNode(
+            node,
+            `Referenced Table: ${el.r_table_name}`,
+            {
+              icon: "fas node-all fa-table node-table",
+              schema: node.data.schema,
+              schema_raw: node.data.schema_raw,
+            },
+            true
+          );
+        });
       } catch (error) {
         throw error;
       }
