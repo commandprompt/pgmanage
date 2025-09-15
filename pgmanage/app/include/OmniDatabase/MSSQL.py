@@ -63,7 +63,9 @@ class MSSQL:
         return wrap
 
     def GetVersion(self):
-        return self.ExecuteScalar("SELECT @@VERSION;")
+        result = self.ExecuteScalar("SELECT @@VERSION;")
+        match = re.search(r"^(.*?)Copyright", result, flags=re.S)
+        return match.group(1).strip() if match else result
 
     def PrintDatabaseDetails(self):
         return self.active_server + ":" + self.active_port
@@ -398,6 +400,60 @@ ORDER BY fk.table_schema, fk.table_name, fk.constraint_name, fk.ordinal_position
             True,
         )
 
+    def QueryTablesIndexes(self, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+
+        if not all_schemas:
+            table_filter_part = f"AND t.name = '{table}' " if table else " "
+            schema_filter_part = f"AND s.name = '{schema or self.schema}'"
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND t.name = '{table}'" if table else ""
+        return self.Query(
+            """
+SELECT 
+i.name AS index_name,
+i.is_unique
+FROM sys.indexes i
+JOIN sys.tables t  ON i.object_id = t.object_id
+JOIN sys.schemas s ON t.schema_id = s.schema_id
+WHERE i.is_hypothetical = 0 
+  AND i.index_id > 0 
+        {0}
+ORDER BY i.name;
+""".format(
+                query_filter
+            ),
+            True,
+        )
+
+    def QueryTablesIndexesColumns(self, index_name, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+        if not all_schemas:
+            table_filter_part = f"AND t.name = '{table}' " if table else " "
+            schema_filter_part = f"AND s.name = '{schema or self.schema}' "
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND t.name = '{table}'" if table else ""
+
+        query_filter = query_filter + f"AND i.name = '{index_name}' "
+        return self.Query(
+            """
+SELECT c.name AS column_name
+FROM sys.indexes i
+JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+JOIN sys.columns c        ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+JOIN sys.tables t         ON i.object_id = t.object_id
+JOIN sys.schemas s        ON t.schema_id = s.schema_id
+WHERE i.is_hypothetical = 0
+  AND i.index_id > 0
+{0}
+;
+""".format(
+                query_filter
+            )
+        )
+
     def QueryTablesChecks(self, table=None, all_schemas=False, schema=None):
         query_filter = ""
 
@@ -420,6 +476,36 @@ ORDER BY fk.table_schema, fk.table_name, fk.constraint_name, fk.ordinal_position
         WHERE 1=1
                                 {0}
         ORDER BY cc.constraint_name;
+""".format(
+                query_filter
+            ),
+            True,
+        )
+
+    def QueryTablesTriggers(self, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+
+        if not all_schemas:
+            table_filter_part = f"AND t.name = '{table}' " if table else " "
+            schema_filter_part = f"AND s.name = '{schema or self.schema}'"
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND t.name = '{table}'" if table else ""
+
+        return self.Query(
+            """
+SELECT 
+    s.name AS schema_name,
+    t.name AS table_name,
+    tr.name AS trigger_name,
+    tr.is_disabled AS is_disabled
+FROM sys.triggers tr
+JOIN sys.tables t 
+    ON tr.parent_id = t.object_id
+JOIN sys.schemas s 
+    ON t.schema_id = s.schema_id
+WHERE 1=1
+    {0}
 """.format(
                 query_filter
             ),

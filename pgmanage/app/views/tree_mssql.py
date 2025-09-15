@@ -347,6 +347,46 @@ def get_uniques_columns(request, database):
 
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
+def get_indexes(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    list_indexes = []
+
+    try:
+        indexes = database.QueryTablesIndexes(table, False, schema)
+        for index in indexes.Rows:
+            index_data = {
+                "index_name": index["index_name"],
+                "unique": index["is_unique"] == "True",
+            }
+            list_indexes.append(index_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_indexes, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_indexes_columns(request, database):
+    data = request.data
+    index = data["index"]
+    table = data["table"]
+    schema = data["schema"]
+
+    try:
+        indexes = database.QueryTablesIndexesColumns(index, table, False, schema)
+        list_indexes = [index["column_name"] for index in indexes.Rows]
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_indexes, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
 def get_checks(request, database):
     data = request.data
     table = data["table"]
@@ -366,3 +406,26 @@ def get_checks(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data=list_checks, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_triggers(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    list_triggers = []
+
+    try:
+        triggers = database.QueryTablesTriggers(table, False, schema)
+        for trigger in triggers.Rows:
+            trigger_data = {
+                "trigger_name": trigger["trigger_name"],
+                "enabled": trigger["is_disabled"] == "False",
+            }
+            list_triggers.append(trigger_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_triggers, safe=False)

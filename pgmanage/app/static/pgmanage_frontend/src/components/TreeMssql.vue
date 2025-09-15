@@ -209,6 +209,12 @@ export default {
         return this.getUniquesColumns(node);
       } else if (node.data.type == "check_list") {
         return this.getChecks(node);
+      } else if (node.data.type == "indexes") {
+        return this.getIndexes(node);
+      } else if (node.data.type == "index") {
+        return this.getIndexesColumns(node);
+      } else if (node.data.type == "trigger_list") {
+        return this.getTriggers(node);
       } else if (node.data.type == "view_list") {
         return this.getViews(node);
       } else if (node.data.type == "view") {
@@ -376,26 +382,23 @@ export default {
         });
         this.removeChildNodes(node);
 
-        this.insertNode(node, "Statistics", {
-          icon: "fas node-all fa-chart-bar node-statistics",
-          type: "statistics_list",
-          contextMenu: "cm_statistics",
-          schema: node.data.schema,
-        });
+        //TODO: add proper statistics handling
 
-        this.insertNode(node, "Partitions", {
-          icon: "fas node-all fa-table node-partition",
-          type: "partition_list",
-          contextMenu: "cm_partitions",
-          schema: node.data.schema,
-        });
+        // this.insertNode(node, "Statistics", {
+        //   icon: "fas node-all fa-chart-bar node-statistics",
+        //   type: "statistics_list",
+        //   contextMenu: "cm_statistics",
+        //   schema: node.data.schema,
+        // });
 
-        this.insertNode(node, "Inherited Tables", {
-          icon: "fas node-all fa-table node-inherited",
-          type: "inherited_list",
-          contextMenu: "cm_inheriteds",
-          schema: node.data.schema,
-        });
+        //TODO: add proper partition handling
+
+        // this.insertNode(node, "Partitions", {
+        //   icon: "fas node-all fa-table node-partition",
+        //   type: "partition_list",
+        //   contextMenu: "cm_partitions",
+        //   schema: node.data.schema,
+        // });
 
         this.insertNode(node, "Triggers", {
           icon: "fas node-all fa-bolt node-trigger",
@@ -404,24 +407,10 @@ export default {
           schema: node.data.schema,
         });
 
-        this.insertNode(node, "Rules", {
-          icon: "fas node-all fa-lightbulb node-rule",
-          type: "rule_list",
-          contextMenu: "cm_rules",
-          schema: node.data.schema,
-        });
-
         this.insertNode(node, "Indexes", {
           icon: "fas node-all fa-thumbtack node-index",
           type: "indexes",
           contextMenu: "cm_indexes",
-          schema: node.data.schema,
-        });
-
-        this.insertNode(node, "Excludes", {
-          icon: "fas node-all fa-times-circle node-exclude",
-          type: "exclude_list",
-          contextMenu: "cm_excludes",
           schema: node.data.schema,
         });
 
@@ -714,6 +703,94 @@ export default {
         throw error;
       }
     },
+    async getIndexes(node) {
+      try {
+        const response = await this.api.post("/get_indexes_mssql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Indexes (${response.data.length})`,
+        });
+
+        response.data.forEach((el) => {
+          this.insertNode(node, el.index_name, {
+            icon: "fas node-all fa-thumbtack node-index",
+            type: "index",
+            contextMenu: "cm_index",
+            schema: node.data.schema,
+            unique: el.unique ? "Unique" : "Non unique",
+          });
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getIndexesColumns(node) {
+      try {
+        const response = await this.api.post("/get_indexes_columns_mssql/", {
+          index: node.title,
+          table: this.getParentNodeDeep(node, 2).title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el,
+            {
+              icon: "fas node-all fa-columns node-column",
+              schema: node.data.schema,
+            },
+            true
+          );
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getTriggers(node) {
+      try {
+        const response = await this.api.post("/get_triggers_mssql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Triggers (${response.data.length})`,
+        });
+
+        response.data.forEach((el) => {
+          this.insertNode(node, el.trigger_name, {
+            icon: "fas node-all fa-bolt node-trigger",
+            type: "trigger",
+            contextMenu: "cm_trigger",
+            schema: node.data.schema,
+          });
+
+          const trigger_node = this.getFirstChildNode(node);
+
+          this.insertNode(
+            trigger_node,
+            `Enabled: ${el.enabled}`,
+            {
+              icon: "fas node-all fa-ellipsis-h node-bullet",
+              schema: node.data.schema,
+            },
+            true
+          );
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
     async getViews(node) {
       try {
         const response = await this.api.post("/get_views_mssql/", {
@@ -751,13 +828,6 @@ export default {
           icon: "fas node-all fa-bolt node-trigger",
           type: "trigger_list",
           contextMenu: "cm_view_triggers",
-          schema: node.data.schema,
-        });
-
-        this.insertNode(node, "Rules", {
-          icon: "fas node-all fa-lightbulb node-rule",
-          type: "rule_list",
-          contextMenu: "cm_rules",
           schema: node.data.schema,
         });
 

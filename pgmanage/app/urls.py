@@ -311,6 +311,10 @@ base_urlpatterns = [
     path('get_procedure_fields_mssql/', views.tree_mssql.get_procedure_fields,),
     path('get_functions_mssql/', views.tree_mssql.get_functions,),
     path('get_function_fields_mssql/', views.tree_mssql.get_function_fields,),
+    path('get_indexes_mssql/', views.tree_mssql.get_indexes,),
+    path('get_indexes_columns_mssql/', views.tree_mssql.get_indexes_columns,),
+    path('get_triggers_mssql/', views.tree_mssql.get_triggers,),
+
 
     # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
