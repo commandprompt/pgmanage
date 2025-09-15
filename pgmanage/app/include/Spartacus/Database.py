@@ -4217,7 +4217,7 @@ class MSSQL(Generic):
             raise Spartacus.Database.Exception(str(exc))
 
     def Special(self, sql):
-        return self.Query(sql).Pretty()
+        return self.Query(sql, True, True).Pretty()
 
 
 """

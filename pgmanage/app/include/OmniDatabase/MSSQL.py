@@ -34,6 +34,8 @@ class MSSQL:
 
         self.console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
 
+        self.use_server_cursor = False
+
     # Decorator to acquire lock before performing action
     def lock_required(function):
         def wrap(self, *args, **kwargs):
