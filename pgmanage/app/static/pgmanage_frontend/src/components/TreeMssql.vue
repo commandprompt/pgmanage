@@ -215,6 +215,8 @@ export default {
         return this.getIndexesColumns(node);
       } else if (node.data.type == "trigger_list") {
         return this.getTriggers(node);
+      } else if (node.data.type == "statistics_list") {
+        return this.getStatistics(node);
       } else if (node.data.type == "view_list") {
         return this.getViews(node);
       } else if (node.data.type == "view") {
@@ -227,6 +229,14 @@ export default {
         return this.getFunctions(node);
       } else if (node.data.type == "function") {
         return this.getFunctionFields(node);
+      } else if (node.data.type == "server_role_list") {
+        return this.getServerRoles(node);
+      } else if (node.data.type == "logins_list") {
+        return this.getLogins(node);
+      } else if (node.data.type == "users_list") {
+        return this.getUsers(node);
+      } else if (node.data.type == "database_role_list") {
+        return this.getDatabaseRoles(node);
       }
     },
     async getTreeDetails(node) {
@@ -240,6 +250,19 @@ export default {
           title: response.data.version,
         });
 
+        this.insertNode(node, "Server Roles", {
+          icon: "fas node-all fa-users node-user-list",
+          type: "server_role_list",
+          contextMenu: "cm_server_roles",
+          database: false,
+        });
+
+        this.insertNode(node, "Logins", {
+          icon: "fas node-all fa-users node-user-list",
+          type: "logins_list",
+          contextMenu: "cm_logins",
+          database: false,
+        });
         this.insertNode(node, "Databases", {
           icon: "fas node-all fa-database node-database-list",
           type: "database_list",
@@ -280,6 +303,19 @@ export default {
       this.removeChildNodes(node);
       return new Promise((resolve, reject) => {
         try {
+          this.insertNode(node, "Database Roles", {
+            icon: "fas node-all fa-users node-user-list",
+            type: "database_role_list",
+            contextMenu: "cm_database_roles",
+            database: false,
+          });
+
+          this.insertNode(node, "Users", {
+            icon: "fas node-all fa-users node-user-list",
+            type: "users_list",
+            contextMenu: "cm_users",
+            database: false,
+          });
           this.insertNode(node, "Schemas", {
             icon: "fas node-all fa-layer-group node-schema-list",
             type: "schema_list",
@@ -382,14 +418,12 @@ export default {
         });
         this.removeChildNodes(node);
 
-        //TODO: add proper statistics handling
-
-        // this.insertNode(node, "Statistics", {
-        //   icon: "fas node-all fa-chart-bar node-statistics",
-        //   type: "statistics_list",
-        //   contextMenu: "cm_statistics",
-        //   schema: node.data.schema,
-        // });
+        this.insertNode(node, "Statistics", {
+          icon: "fas node-all fa-chart-bar node-statistics",
+          type: "statistics_list",
+          contextMenu: "cm_statistics",
+          schema: node.data.schema,
+        });
 
         //TODO: add proper partition handling
 
@@ -791,6 +825,37 @@ export default {
         throw error;
       }
     },
+    async getStatistics(node) {
+      try {
+        const response = await this.api.post("/get_statistics_mssql/", {
+          table: this.getParentNode(node).title,
+          schema: node.data.schema,
+        });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Statistics (${response.data.length})`,
+        });
+
+        response.data.forEach((el) => {
+          this.insertNode(
+            node,
+            el.statistic_name,
+            {
+              icon: "fas node-all fa-chart-bar node-statistic",
+              type: "statistic",
+              contextMenu: "cm_statistic",
+              schema: el.schema_name,
+              statistics: el.statistic_name,
+            },
+            true
+          );
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
     async getViews(node) {
       try {
         const response = await this.api.post("/get_views_mssql/", {
@@ -1011,6 +1076,110 @@ export default {
               true
             );
           }
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getServerRoles(node) {
+      try {
+        const response = await this.api.post("/get_server_roles_mssql/");
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Server Roles (${response.data.data.length})`,
+        });
+
+        response.data.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-user node-user",
+              type: "server_role",
+              contextMenu: "cm_server_role",
+            },
+            true
+          );
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getDatabaseRoles(node) {
+      try {
+        const response = await this.api.post("/get_database_roles_mssql/");
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Database Roles (${response.data.data.length})`,
+        });
+
+        response.data.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-user node-user",
+              type: "database_role",
+              contextMenu: "cm_database_role",
+            },
+            true
+          );
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getLogins(node) {
+      try {
+        const response = await this.api.post("/get_logins_mssql/");
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Logins (${response.data.data.length})`,
+        });
+
+        response.data.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-user node-user",
+              type: "login",
+              contextMenu: "cm_login",
+            },
+            true
+          );
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getUsers(node) {
+      try {
+        const response = await this.api.post("/get_users_mssql/");
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Users (${response.data.data.length})`,
+        });
+
+        response.data.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.name,
+            {
+              icon: "fas node-all fa-user node-user",
+              type: "user",
+              contextMenu: "cm_user",
+            },
+            true
+          );
         }, null);
       } catch (error) {
         throw error;

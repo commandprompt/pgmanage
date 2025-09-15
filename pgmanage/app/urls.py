@@ -309,11 +309,16 @@ base_urlpatterns = [
     path('get_views_columns_mssql/', views.tree_mssql.get_views_columns,),
     path('get_procedures_mssql/', views.tree_mssql.get_procedures),
     path('get_procedure_fields_mssql/', views.tree_mssql.get_procedure_fields,),
+    path('get_statistics_mssql/', views.tree_mssql.get_statistics,),
     path('get_functions_mssql/', views.tree_mssql.get_functions,),
     path('get_function_fields_mssql/', views.tree_mssql.get_function_fields,),
     path('get_indexes_mssql/', views.tree_mssql.get_indexes,),
     path('get_indexes_columns_mssql/', views.tree_mssql.get_indexes_columns,),
     path('get_triggers_mssql/', views.tree_mssql.get_triggers,),
+    path('get_server_roles_mssql/', views.tree_mssql.get_server_roles,),
+    path('get_database_roles_mssql/', views.tree_mssql.get_database_roles,),
+    path('get_logins_mssql/', views.tree_mssql.get_logins,),
+    path('get_users_mssql/', views.tree_mssql.get_users,),
 
 
     # Monitoring Dashboard

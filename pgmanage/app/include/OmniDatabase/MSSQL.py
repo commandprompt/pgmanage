@@ -159,6 +159,35 @@ ORDER BY c.column_id;
             True,
         )
 
+    def QueryTablesStatistics(self, table=None, all_schemas=False, schema=None):
+        query_filter = ""
+        if not all_schemas:
+            table_filter_part = f"AND t.name = '{table}' " if table else " "
+            schema_filter_part = f"AND s.name = '{schema or self.schema}' "
+            query_filter += table_filter_part + schema_filter_part
+        else:
+            query_filter = f"AND t.name = '{table}'" if table else ""
+
+        return self.Query(
+            """
+SELECT 
+    s.name AS schema_name,
+    t.name AS table_name,
+    st.name AS statistic_name
+FROM sys.stats st
+JOIN sys.tables t 
+    ON st.object_id = t.object_id
+JOIN sys.schemas s 
+    ON t.schema_id = s.schema_id
+WHERE 1=1
+        {0}
+        
+""".format(
+                query_filter
+            ),
+            True,
+        )
+
     def QueryViews(self, all_schemas=False, schema=None):
         query_filter = ""
         if not all_schemas:
@@ -510,4 +539,49 @@ WHERE 1=1
                 query_filter
             ),
             True,
+        )
+
+    def QueryServerRoles(self):
+        return self.Query(
+            """
+    SELECT 
+    sp.name AS role_name
+FROM sys.server_principals sp
+WHERE sp.type = 'R'
+ORDER BY sp.name;
+"""
+        )
+
+    def QueryDatabaseRoles(self):
+        return self.Query(
+            """
+SELECT 
+    dp.name       AS role_name
+FROM sys.database_principals dp
+WHERE dp.type = 'R'
+ORDER BY dp.name;
+"""
+        )
+
+    def QueryLogins(self):
+        return self.Query(
+            """
+    SELECT 
+    sp.name AS login_name
+FROM sys.server_principals sp
+WHERE sp.type IN ('S', 'U', 'G')
+ORDER BY sp.name;
+"""
+        )
+
+    def QueryUsers(self):
+        return self.Query(
+            """
+                          SELECT 
+    dp.name  AS user_name
+FROM sys.database_principals dp
+WHERE dp.type IN ('S', 'U', 'G')  
+  AND dp.sid IS NOT NULL 
+ORDER BY dp.name;
+                          """
         )

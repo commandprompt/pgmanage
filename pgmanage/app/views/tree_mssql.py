@@ -94,6 +94,29 @@ def get_columns(request, database):
 
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
+def get_statistics(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    list_statistics = []
+
+    try:
+        statistics = database.QueryTablesStatistics(table, False, schema)
+        for statistic in statistics.Rows:
+            statistic_data = {
+                "statistic_name": statistic["statistic_name"],
+                "schema_name": statistic["schema_name"],
+            }
+            list_statistics.append(statistic_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_statistics, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
 def get_views(request, database):
     schema = request.data["schema"]
 
@@ -429,3 +452,67 @@ def get_triggers(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data=list_triggers, safe=False)
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_server_roles(request, database):
+    list_roles = []
+    try:
+        roles = database.QueryServerRoles()
+        for role in roles.Rows:
+            role_data = {
+                "name": role["role_name"],
+            }
+            list_roles.append(role_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data={"data": list_roles})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_database_roles(request, database):
+    list_roles = []
+    try:
+        roles = database.QueryDatabaseRoles()
+        for role in roles.Rows:
+            role_data = {
+                "name": role["role_name"],
+            }
+            list_roles.append(role_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data={"data": list_roles})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_logins(request, database):
+    list_roles = []
+    try:
+        roles = database.QueryLogins()
+        for role in roles.Rows:
+            role_data = {
+                "name": role["login_name"],
+            }
+            list_roles.append(role_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data={"data": list_roles})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_users(request, database):
+    list_roles = []
+    try:
+        roles = database.QueryUsers()
+        for role in roles.Rows:
+            role_data = {
+                "name": role["user_name"],
+            }
+            list_roles.append(role_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data={"data": list_roles})
