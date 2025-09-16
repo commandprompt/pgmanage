@@ -428,8 +428,6 @@ def get_database_meta(request, database):
     }
 
     schema_list = []
-    if database.db_type == 'mssql':
-        return JsonResponse(response_data)
 
     try:
         if hasattr(database, "QueryDatabases"):

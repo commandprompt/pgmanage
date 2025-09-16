@@ -9,6 +9,7 @@ def get_tree_info(request, database):
     try:
         data = {
             "version": database.GetVersion(),
+            "major_version": database.major_version,
         }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -25,9 +26,8 @@ def get_databases(request, database):
         databases = database.QueryDatabases()
         for database_object in databases.Rows:
             database_data = {
-                "name": database_object["name"],
-                "database_id": database_object["database_id"],
-                "pinned": database_object["name"] in conn_object.pinned_databases,
+                "name": database_object[0],
+                "pinned": database_object[0] in conn_object.pinned_databases,
             }
             list_databases.append(database_data)
     except Exception as exc:
@@ -145,7 +145,7 @@ def get_views_columns(request, database):
     list_columns = []
 
     try:
-        columns = database.QueryTablesFields(table, False, schema)
+        columns = database.QueryViewFields(table, False, schema)
         for column in columns.Rows:
             column_data = {
                 "column_name": column["column_name"],

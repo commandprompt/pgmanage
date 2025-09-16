@@ -49,6 +49,7 @@
 </template>
 
 <script>
+import { emitter } from "../emitter";
 import TreeMixin from "../mixins/power_tree.js";
 import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
@@ -61,6 +62,8 @@ import {
 } from "../stores/stores_initializer";
 
 import { TemplateSelectMssql } from "../tree_context_functions/tree_mssql";
+
+import { findNode, findChild } from "../utils.js";
 
 export default {
   name: "TreeMssql",
@@ -107,7 +110,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                "https://learn.microsoft.com/sql/relational-databases/databases/databases"
+                `https://learn.microsoft.com/sql/relational-databases/databases/databases?view=sql-server-ver${this.serverVersion}`
               );
             },
           },
@@ -202,8 +205,102 @@ export default {
       hook.call(this);
     });
     this.doubleClickNode(this.getRootNode());
+
+    emitter.on(
+      `goToNode_${this.workspaceId}`,
+      async ({ name, type, schema, database }) => {
+        const rootNode = this.getRootNode();
+        // Step 1: Find "Databases" node
+        const databasesRoot = rootNode.children.find(
+          (child) => child.data.type === "database_list"
+        );
+        if (!databasesRoot) return;
+
+        await this.expandAndRefreshIfNeeded(databasesRoot);
+        const updatedDatabasesRoot = this.$refs.tree.getNode(
+          databasesRoot.path
+        );
+
+        // Step 2: Find the specific database node
+        const databaseNode = findNode(
+          updatedDatabasesRoot,
+          (node) =>
+            node.data?.database === database && node.data.type === "database"
+        );
+        if (!databaseNode) return;
+
+        await this.expandAndRefreshIfNeeded(databaseNode);
+        const updatedDatabaseNode = this.$refs.tree.getNode(databaseNode.path);
+
+        // If target is a database, stop here
+        if (type === "database") {
+          this.$refs.tree.select(updatedDatabaseNode.path);
+          this.getNodeEl(updatedDatabaseNode.path).scrollIntoView({
+            block: "start",
+            inline: "end",
+          });
+          return;
+        }
+
+        // Step 3: Find "schemas_node"
+        const schemasNode = findChild(updatedDatabaseNode, "schema_list");
+        if (!schemasNode) return;
+        await this.expandAndRefreshIfNeeded(schemasNode);
+
+        const updatedSchemasNode = this.$refs.tree.getNode(schemasNode.path);
+
+        const schemaNode = findNode(
+          updatedSchemasNode,
+          (node) => node.title === schema && node.data.type === "schema"
+        );
+        if (!schemaNode) return;
+        await this.expandAndRefreshIfNeeded(schemaNode);
+
+        const updatedSchemaNode = this.$refs.tree.getNode(schemaNode.path);
+
+        // If target is a schema, stop here
+        if (type === "schema") {
+          this.$refs.tree.select(updatedSchemaNode.path);
+          this.getNodeEl(updatedSchemaNode.path).scrollIntoView({
+            block: "start",
+            inline: "end",
+          });
+          return;
+        }
+
+        // Step 3: Find '_list' that we need
+        const containerType = `${type}_list`;
+        const containerNode = findChild(updatedSchemaNode, containerType);
+        if (!containerNode) return;
+        await this.expandAndRefreshIfNeeded(containerNode);
+
+        const updatedContainerNode = this.$refs.tree.getNode(
+          containerNode.path
+        );
+
+        // Step 4: Find the target node
+        const targetNode = findNode(
+          updatedContainerNode,
+          (node) => node.title === name && node.data.type === type
+        );
+        if (!targetNode) return;
+
+        // Step 5: Select and scroll to it
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            this.$refs.tree.select(targetNode.path);
+            this.getNodeEl(targetNode.path).scrollIntoView({
+              block: "start",
+              inline: "end",
+            });
+          });
+        });
+      }
+    );
   },
-  unmounted() {},
+  unmounted() {
+    emitter.all.delete(`goToNode_${this.workspaceId}`);
+  },
   methods: {
     refreshTree(node, force = false) {
       return new Promise((resolve, reject) => {
@@ -355,7 +452,9 @@ export default {
             label: "Doc: SQL Server",
             icon: "fas fa-globe-americas",
             onClick: () => {
-              this.openWebSite("https://learn.microsoft.com/sql/sql-server/");
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/sql-server/?view=sql-server-ver${this.serverVersion}`
+              );
             },
           },
           {
@@ -363,7 +462,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                "https://learn.microsoft.com/sql/t-sql/language-reference"
+                `https://learn.microsoft.com/sql/t-sql/language-reference/?view=sql-server-ver${this.serverVersion}`
               );
             },
           },
@@ -372,13 +471,13 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                "https://learn.microsoft.com/sql/t-sql/statements/statements"
+                `https://learn.microsoft.com/sql/t-sql/statements/statements/?view=sql-server-ver${this.serverVersion}`
               );
             },
           },
         ];
 
-        this.serverVersion = response.data.version;
+        this.serverVersion = response.data.major_version;
 
         this.$refs.tree.updateNode(node.path, {
           title: response.data.version,

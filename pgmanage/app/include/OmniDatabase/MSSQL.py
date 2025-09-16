@@ -1,8 +1,8 @@
 import re
 from enum import Enum
-from sqlparse import format
 
 import app.include.Spartacus as Spartacus
+from sqlparse import format
 
 
 class TemplateType(Enum):
@@ -44,10 +44,26 @@ class MSSQL:
         self.connection = Spartacus.Database.MSSQL(
             self.active_server, self.active_port, self.active_service, self.active_user, self.password
         )
+        self.has_schema = True
 
         self.console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
 
         self.use_server_cursor = False
+
+        self._version = None
+        self._major_version = None
+
+    @property
+    def version(self):
+        if self._version is None:
+            self._fetch_version()
+        return self._version
+
+    @property
+    def major_version(self):
+        if self._major_version is None:
+            self._fetch_version()
+        return self._major_version
 
     # Decorator to acquire lock before performing action
     def lock_required(function):
@@ -77,10 +93,16 @@ class MSSQL:
         wrap.__name__ = function.__name__
         return wrap
 
+    def _fetch_version(self):
+        try:
+            self._version = self.ExecuteScalar("SELECT CAST(SERVERPROPERTY('productversion') AS VARCHAR);")
+            self._major_version = self.ExecuteScalar("SELECT CAST(SERVERPROPERTY('ProductMajorVersion') AS INT);")
+        except Exception:
+            self._version = None
+            self._major_version = None
+
     def GetVersion(self):
-        result = self.ExecuteScalar("SELECT @@VERSION;")
-        match = re.search(r"^(.*?)Copyright", result, flags=re.S)
-        return match.group(1).strip() if match else result
+        return f"MSSQL {self.version}"
 
     def PrintDatabaseDetails(self):
         return self.active_server + ":" + self.active_port
@@ -88,6 +110,7 @@ class MSSQL:
     def PrintDatabaseInfo(self):
         return self.active_user + "@" + self.active_service
 
+    @lock_required
     def TestConnection(self):
         return_data = ""
 
@@ -123,6 +146,7 @@ class MSSQL:
         return self.Query(
             """SELECT name, database_id
 FROM sys.databases; """,
+            True,
             True,
         )
 
@@ -214,6 +238,28 @@ FROM INFORMATION_SCHEMA.VIEWS
 {0}
 ORDER BY table_name;
         """.format(
+                query_filter
+            ),
+            True,
+        )
+
+    def QueryViewFields(self, table=None, all_schemas=False, schema=None):
+        query_filter = f"WHERE c.object_id = OBJECT_ID('{schema}.{table}')"
+        return self.Query(
+            """
+SELECT 
+    c.name       AS column_name,
+    t.name       AS data_type,
+    c.max_length,
+    c.precision,
+    c.scale,
+    c.is_nullable,
+    c.is_identity
+FROM sys.columns c
+JOIN sys.types t ON c.user_type_id = t.user_type_id
+{0}
+ORDER BY c.column_id;
+""".format(
                 query_filter
             ),
             True,
@@ -629,7 +675,7 @@ ORDER BY dp.name;
                     sql += "\nORDER BY " + ", ".join(f"t.{r['column_name']}" for r in fields.Rows)
         elif object_type == "v":
             sql = "SELECT "
-            fields = self.QueryTablesFields(table, False, schema)
+            fields = self.QueryViewFields(table, False, schema)
             if fields.Rows:
                 sql += ", ".join([f"t.{r['column_name']}" for r in fields.Rows])
             sql += f"\nFROM [{schema}].[{table}] t"
