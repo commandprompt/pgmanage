@@ -516,3 +516,19 @@ def get_users(request, database):
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data={"data": list_roles})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def template_select(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+    kind = data["kind"]
+
+    try:
+        template = database.TemplateSelect(schema, table, kind).text
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data={"template": template})

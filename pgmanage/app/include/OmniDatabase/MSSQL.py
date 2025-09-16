@@ -1,6 +1,19 @@
 import re
+from enum import Enum
+from sqlparse import format
 
 import app.include.Spartacus as Spartacus
+
+
+class TemplateType(Enum):
+    EXECUTE = 1
+    SCRIPT = 2
+
+
+class Template:
+    def __init__(self, text, template_type=TemplateType.EXECUTE):
+        self.text = text
+        self.type = template_type
 
 
 class MSSQL:
@@ -587,3 +600,26 @@ WHERE dp.type IN ('S', 'U', 'G')
 ORDER BY dp.name;
                           """
         )
+
+    def TemplateSelect(self, schema, table, object_type):
+        if object_type == "t":
+            sql = "SELECT "
+            fields = self.QueryTablesFields(table, False, schema)
+            if fields.Rows:
+                sql += ", ".join([f"t.{r['column_name']}" for r in fields.Rows])
+            sql += f"\nFROM [{schema}].[{table}] t"
+            pk = self.QueryTablesPrimaryKeys(table, False, schema)
+            if pk.Rows:
+                fields = self.QueryTablesPrimaryKeysColumns(pk.Rows[0]["constraint_name"], table, False, schema)
+                if fields.Rows:
+                    sql += "\nORDER BY " + ", ".join(f"t.{r['column_name']}" for r in fields.Rows)
+        elif object_type == "v":
+            sql = "SELECT "
+            fields = self.QueryTablesFields(table, False, schema)
+            if fields.Rows:
+                sql += ", ".join([f"t.{r['column_name']}" for r in fields.Rows])
+            sql += f"\nFROM [{schema}].[{table}] t"
+        else:
+            sql = f"SELECT t.*\nFROM [{schema}].[{table}] t"
+        formatted_sql = format(sql, keyword_case="upper", reindent=True)
+        return Template(formatted_sql)

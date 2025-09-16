@@ -60,6 +60,8 @@ import {
   dbMetadataStore,
 } from "../stores/stores_initializer";
 
+import { TemplateSelectMssql } from "../tree_context_functions/tree_mssql";
+
 export default {
   name: "TreeMssql",
   components: {
@@ -92,6 +94,86 @@ export default {
       ],
       serverVersion: null,
     };
+  },
+  computed: {
+    contextMenu() {
+      return {
+        cm_server: [this.cmRefreshObject],
+        cm_table: [
+          this.cmRefreshObject,
+          {
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectMssql(
+                this.selectedNode.data.schema,
+                this.selectedNode.title,
+                "t"
+              );
+            },
+          },
+        ],
+        cm_views: [
+          this.cmRefreshObject,
+          // {
+          //   label: "Create View",
+          //   icon: "fas fa-plus",
+          //   onClick: () => {
+          //     tabSQLTemplate(
+          //       "Create View",
+          //       this.templates.create_view.replace(
+          //         "#schema_name#",
+          //         this.selectedNode.data.schema_raw
+          //       )
+          //     );
+          //   },
+          // },
+          // {
+          //   label: "Doc: Views",
+          //   icon: "fas fa-globe-americas",
+          //   onClick: () => {
+          //     this.openWebSite(
+          //       `https://www.postgresql.org/docs/${this.serverVersion}/sql-createview.html`
+          //     );
+          //   },
+          // },
+        ],
+        cm_view: [
+          this.cmRefreshObject,
+          {
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectMssql(
+                this.selectedNode.data.schema,
+                this.selectedNode.title,
+                "v"
+              );
+            },
+          },
+          // {
+          //   label: "Edit View",
+          //   icon: "fas fa-edit",
+          //   onClick: () => {
+          //     this.getViewDefinitionPostgresql(this.selectedNode);
+          //   },
+          // },
+          // {
+          //   label: "Alter View",
+          //   icon: "fas fa-edit",
+          //   onClick: () => {
+          //     tabSQLTemplate(
+          //       "Alter View",
+          //       this.templates.alter_view.replace(
+          //         /#view_name#/g,
+          //         `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+          //       )
+          //     );
+          //   },
+          // },
+        ],
+      };
+    },
   },
   mounted() {
     this.$hooks?.add_tree_context_menu_item?.forEach((hook) => {
@@ -237,6 +319,8 @@ export default {
         return this.getUsers(node);
       } else if (node.data.type == "database_role_list") {
         return this.getDatabaseRoles(node);
+      } else {
+        return Promise.resolve("success");
       }
     },
     async getTreeDetails(node) {
@@ -623,7 +707,6 @@ export default {
             {
               icon: "fas node-all fa-ellipsis-h node-bullet",
               schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
             },
             true
           );
@@ -633,7 +716,6 @@ export default {
             {
               icon: "fas node-all fa-ellipsis-h node-bullet",
               schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
             },
             true
           );
@@ -643,7 +725,6 @@ export default {
             {
               icon: "fas node-all fa-table node-table",
               schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
             },
             true
           );
@@ -922,7 +1003,6 @@ export default {
             {
               icon: "fas node-all fa-ellipsis-h node-bullet",
               schema: node.data.schema,
-              schema_raw: node.data.schema_raw,
             },
             true
           );
