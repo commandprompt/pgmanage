@@ -112,6 +112,13 @@ const dataEditorFilterModes = {
   BUILDER: "builder",
 };
 
+//sql-formatter uses 'plsql' for oracle and tsql for mssql sql flavor
+//otherwise - our db technology names match perfectly
+const sqlFormatterDialectMap = {
+  oracle: "plsql",
+  mssql: "tsql"
+}
+
 export {
   requestState,
   tabStatusMap,
@@ -128,4 +135,5 @@ export {
   operationModes,
   editorModeMap,
   dataEditorFilterModes,
+  sqlFormatterDialectMap,
 };
