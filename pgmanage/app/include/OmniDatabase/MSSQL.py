@@ -331,22 +331,31 @@ ORDER BY kc.table_schema, kc.table_name, kc.ordinal_position;
         query_filter = ""
 
         if not all_schemas:
-            table_filter_part = f"AND table_name = '{table}' " if table else " "
-            schema_filter_part = f"AND table_schema = '{schema or self.schema}'"
+            table_filter_part = f"AND fk.table_name = '{table}' " if table else " "
+            schema_filter_part = f"AND fk.table_schema = '{schema or self.schema}'"
             query_filter += table_filter_part + schema_filter_part
         else:
-            query_filter = f"AND table_name = '{table}'" if table else ""
+            query_filter = f"AND fk.table_name = '{table}'" if table else ""
 
         return self.Query(
             """
-
-    SELECT table_schema,
-        table_name,
-        constraint_name
-    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
-    WHERE constraint_type = 'FOREIGN KEY'
+SELECT 
+    fk.table_schema,
+    fk.table_name,
+    fk.constraint_name,
+    pk.table_schema AS r_table_schema,
+    pk.TABLE_NAME   AS r_table_name,
+    rc.unique_constraint_name AS r_constraint_name
+FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
+JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS fk
+    ON rc.constraint_name = fk.constraint_name
+    AND rc.constraint_schema = fk.constraint_schema
+JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS pk
+    ON rc.unique_constraint_name = pk.constraint_name
+    AND rc.unique_constraint_schema = pk.constraint_schema
+WHERE fk.constraint_type = 'FOREIGN KEY'
             {0}
-    ORDER BY table_schema, table_name;
+    ORDER BY fk.table_schema, fk.table_name;;
     """.format(
                 query_filter
             )
@@ -361,7 +370,12 @@ ORDER BY kc.table_schema, kc.table_name, kc.ordinal_position;
         else:
             query_filter = f"AND fk.table_name = '{table}'" if table else ""
 
-        query_filter = query_filter + f"AND fk.constraint_name = '{fkey}' "
+        fkeys = fkey if isinstance(fkey, list) else [fkey]
+
+        fkeys_list = ", ".join([f"'{str(e)}'" for e in fkeys])
+
+        if fkeys_list:
+            query_filter = query_filter + f"AND fk.constraint_name in ({fkeys_list}) "
 
         return self.Query(
             """

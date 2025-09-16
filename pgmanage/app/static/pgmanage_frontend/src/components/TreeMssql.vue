@@ -93,12 +93,47 @@ export default {
         },
       ],
       serverVersion: null,
+      cm_server_extra: [],
     };
   },
   computed: {
     contextMenu() {
       return {
-        cm_server: [this.cmRefreshObject],
+        cm_server: [this.cmRefreshObject, ...this.cm_server_extra],
+        cm_databases: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Databases",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                "https://learn.microsoft.com/sql/relational-databases/databases/databases"
+              );
+            },
+          },
+        ],
+        cm_database: [
+          {
+            label: "Query Database",
+            icon: "fas fa-search",
+            onClick: () => {
+              this.checkCurrentDatabase(this.selectedNode, true, () => {
+                let tab_name = `Query: ${tabsStore.selectedPrimaryTab.metaData.selectedDatabase}`;
+                tabsStore.createQueryTab(tab_name);
+              });
+            },
+          },
+        ],
+        cm_schemas: [this.cmRefreshObject],
+        cm_schema: [
+          {
+            label: "ER Diagram",
+            icon: "fab fa-hubspot",
+            onClick: () => {
+              tabsStore.createERDTab(this.selectedNode.data.schema);
+            },
+          },
+        ],
         cm_table: [
           this.cmRefreshObject,
           {
@@ -115,19 +150,6 @@ export default {
         ],
         cm_views: [
           this.cmRefreshObject,
-          // {
-          //   label: "Create View",
-          //   icon: "fas fa-plus",
-          //   onClick: () => {
-          //     tabSQLTemplate(
-          //       "Create View",
-          //       this.templates.create_view.replace(
-          //         "#schema_name#",
-          //         this.selectedNode.data.schema_raw
-          //       )
-          //     );
-          //   },
-          // },
           // {
           //   label: "Doc: Views",
           //   icon: "fas fa-globe-americas",
@@ -327,6 +349,34 @@ export default {
       try {
         const response = await this.api.post("/get_tree_info_mssql/");
         this.removeChildNodes(node);
+
+        this.cm_server_extra = [
+          {
+            label: "Doc: SQL Server",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite("https://learn.microsoft.com/sql/sql-server/");
+            },
+          },
+          {
+            label: "Doc: T-SQL Language",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                "https://learn.microsoft.com/sql/t-sql/language-reference"
+              );
+            },
+          },
+          {
+            label: "Doc: T-SQL Statements",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                "https://learn.microsoft.com/sql/t-sql/statements/statements"
+              );
+            },
+          },
+        ];
 
         this.serverVersion = response.data.version;
 
@@ -1267,6 +1317,9 @@ export default {
     },
     getProperties(node) {
       console.log("Not implemented");
+    },
+    openWebSite(site) {
+      window.open(site, "_blank");
     },
   },
 };
