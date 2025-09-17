@@ -3940,6 +3940,7 @@ class MSSQL(Generic):
         password,
         conn_string="",
         encoding=None,
+        connection_params=None,
     ):
         if "MSSQL" in supported_rdbms:
             self.host = host
@@ -3955,6 +3956,7 @@ class MSSQL(Generic):
             self.con = None
             self.cur = None
             self.encoding = encoding
+            self.connection_params = connection_params if connection_params else {}
         else:
             raise Spartacus.Database.Exception(
                 "MSSQL is not supported. Please install it with 'pip install Spartacus[mssql]'."
@@ -3971,7 +3973,9 @@ class MSSQL(Generic):
                 database=self.service,
                 user=self.user,
                 password=self.password,
+                **self.connection_params
             )
+            self.con.autocommit(autocommit)
             self.cur = self.con.cursor()
             self.start = True
         except pymssql.Error as exc:

@@ -17,8 +17,9 @@ class Template:
 
 
 class MSSQL:
-    def __init__(self, server, port, service, user, password, conn_id, alias):
+    def __init__(self, server, port, service, user, password, conn_id, alias, connection_params):
         self.lock = None
+        self.connection_params = connection_params if connection_params else {}
         self.alias = alias
         self.db_type = "mssql"
         self.password = password
@@ -42,7 +43,12 @@ class MSSQL:
             self.active_port = port
 
         self.connection = Spartacus.Database.MSSQL(
-            self.active_server, self.active_port, self.active_service, self.active_user, self.password
+            self.active_server,
+            self.active_port,
+            self.active_service,
+            self.active_user,
+            self.password,
+            connection_params=self.connection_params,
         )
         self.has_schema = True
 
