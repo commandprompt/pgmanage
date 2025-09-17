@@ -234,7 +234,7 @@ base_urlpatterns = [
     path('template_insert_mysql/', views.tree_mysql.template_insert, name='template_insert'),
     path('template_update_mysql/', views.tree_mysql.template_update, name='template_update'),
     path('get_table_definition_mysql/', views.tree_mysql.get_table_definition, name='get_table_definition'),
-
+    path('execute_query_mysql/', views.tree_mysql.execute_query, name="execute_query"),
     #TREE_MARIADB
     path('get_tree_info_mariadb/', views.tree_mariadb.get_tree_info, name='get_tree_info'),
     path('get_tables_mariadb/', views.tree_mariadb.get_tables, name='get_tables'),
@@ -269,7 +269,7 @@ base_urlpatterns = [
     path('template_select_mariadb/', views.tree_mariadb.template_select, name='template_select'),
     path('template_insert_mariadb/', views.tree_mariadb.template_insert, name='template_insert'),
     path('template_update_mariadb/', views.tree_mariadb.template_update, name='template_update'),
-
+    path('execute_query_mariadb/', views.tree_mariadb.execute_query, name="execute_query"),
     #TREE_SQLITE
     path('get_tree_info_sqlite/', views.tree_sqlite.get_tree_info, name='get_tree_info'),
     path('get_tables_sqlite/', views.tree_sqlite.get_tables, name='get_tables'),

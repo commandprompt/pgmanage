@@ -810,7 +810,7 @@ class MySQL:
         return template.template
 
     def TemplateCreateUnique(self):
-        template = get_template("mysql", "drop_primarykey")
+        template = get_template("mysql", "create_unique")
         return template.template
 
     def TemplateDropUnique(self):
