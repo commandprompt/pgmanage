@@ -127,13 +127,36 @@ export default {
             },
           },
         ],
-        cm_schemas: [this.cmRefreshObject],
+        cm_schemas: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Schemas",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/security/authentication-access/create-a-database-schema?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
         cm_schema: [
           {
             label: "ER Diagram",
             icon: "fab fa-hubspot",
             onClick: () => {
               tabsStore.createERDTab(this.selectedNode.data.schema);
+            },
+          },
+        ],
+        cm_tables: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Tables",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/tables/tables?view=sql-server-ver${this.serverVersion}`
+              );
             },
           },
         ],
@@ -151,17 +174,66 @@ export default {
             },
           },
         ],
+        cm_columns: [],
+        cm_column: [],
+        cm_pks: [this.cmRefreshObject],
+        cm_pk: [this.cmRefreshObject],
+        cm_fks: [this.cmRefreshObject],
+        cm_fk: [this.cmRefreshObject],
+        cm_uniques: [this.cmRefreshObject],
+        cm_unique: [this.cmRefreshObject],
+        cm_checks: [this.cmRefreshObject],
+        cm_check: [],
+        cm_indexes: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Indexes",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/indexes/indexes?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_index: [this.cmRefreshObject],
+        cm_triggers: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Triggers",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/triggers/dml-triggers?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_trigger: [],
+        cm_statistics: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Statistics",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/statistics/statistics?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_statistic: [this.cmRefreshObject],
         cm_views: [
           this.cmRefreshObject,
-          // {
-          //   label: "Doc: Views",
-          //   icon: "fas fa-globe-americas",
-          //   onClick: () => {
-          //     this.openWebSite(
-          //       `https://www.postgresql.org/docs/${this.serverVersion}/sql-createview.html`
-          //     );
-          //   },
-          // },
+          {
+            label: "Doc: Views",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/views/views?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
         ],
         cm_view: [
           this.cmRefreshObject,
@@ -176,27 +248,85 @@ export default {
               );
             },
           },
-          // {
-          //   label: "Edit View",
-          //   icon: "fas fa-edit",
-          //   onClick: () => {
-          //     this.getViewDefinitionPostgresql(this.selectedNode);
-          //   },
-          // },
-          // {
-          //   label: "Alter View",
-          //   icon: "fas fa-edit",
-          //   onClick: () => {
-          //     tabSQLTemplate(
-          //       "Alter View",
-          //       this.templates.alter_view.replace(
-          //         /#view_name#/g,
-          //         `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-          //       )
-          //     );
-          //   },
-          // },
         ],
+        cm_functions: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Functions",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/t-sql/functions/functions?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_function: [this.cmRefreshObject],
+        cm_procedures: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Procedures",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/stored-procedures/stored-procedures-database-engine?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_procedure: [this.cmRefreshObject],
+        cm_users: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Database Users",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/security/authentication-access/create-a-database-user?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_user: [],
+        cm_database_roles: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Database Roles",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/security/authentication-access/database-level-roles?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_database_role: [],
+        cm_logins: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Logins",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/security/authentication-access/principals-database-engine?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_login: [],
+        cm_server_roles: [
+          this.cmRefreshObject,
+          {
+            label: "Doc: Server Roles",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/relational-databases/security/authentication-access/server-level-roles?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_server_role: [],
       };
     },
   },
@@ -422,22 +552,22 @@ export default {
         return this.getViews(node);
       } else if (node.data.type == "view") {
         return this.getViewsColumns(node);
-      } else if (node.data.type == "procedure_list") {
-        return this.getProcedures(node);
-      } else if (node.data.type == "procedure") {
-        return this.getProcedureFields(node);
       } else if (node.data.type == "function_list") {
         return this.getFunctions(node);
       } else if (node.data.type == "function") {
         return this.getFunctionFields(node);
-      } else if (node.data.type == "server_role_list") {
-        return this.getServerRoles(node);
-      } else if (node.data.type == "logins_list") {
-        return this.getLogins(node);
+      } else if (node.data.type == "procedure_list") {
+        return this.getProcedures(node);
+      } else if (node.data.type == "procedure") {
+        return this.getProcedureFields(node);
       } else if (node.data.type == "users_list") {
         return this.getUsers(node);
       } else if (node.data.type == "database_role_list") {
         return this.getDatabaseRoles(node);
+      } else if (node.data.type == "server_role_list") {
+        return this.getServerRoles(node);
+      } else if (node.data.type == "logins_list") {
+        return this.getLogins(node);
       } else {
         return Promise.resolve("success");
       }
