@@ -52,7 +52,7 @@ class MSSQL:
         )
         self.has_schema = True
 
-        self.console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
+        self.console_help = "Console tab. Type the commands in the editor below this box."
 
         self.use_server_cursor = False
 

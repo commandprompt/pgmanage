@@ -788,15 +788,6 @@ export default {
           schema: node.data.schema,
         });
 
-        //TODO: add proper partition handling
-
-        // this.insertNode(node, "Partitions", {
-        //   icon: "fas node-all fa-table node-partition",
-        //   type: "partition_list",
-        //   contextMenu: "cm_partitions",
-        //   schema: node.data.schema,
-        // });
-
         this.insertNode(node, "Triggers", {
           icon: "fas node-all fa-bolt node-trigger",
           type: "trigger_list",
