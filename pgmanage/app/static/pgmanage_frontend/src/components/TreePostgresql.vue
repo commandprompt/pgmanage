@@ -42,6 +42,8 @@
 import { emitter } from "../emitter";
 import TreeMixin from "../mixins/power_tree.js";
 import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
+import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
+import { handleError } from '../logging/utils';
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import { checkBeforeChangeDatabase } from "../workspace";
 import {
@@ -55,7 +57,6 @@ import {
 import { createExtensionModal, createPgCronModal, createRoleModal } from "./postgresql_modals";
 import { operationModes } from "../constants";
 import { connectionsStore, messageModalStore, tabsStore, dbMetadataStore } from "../stores/stores_initializer";
-import ContextMenu from "@imengyu/vue3-context-menu";
 import { findNode, findChild } from "../utils.js";
 
 
@@ -64,7 +65,7 @@ export default {
   components: {
     PowerTree,
   },
-  mixins: [TreeMixin, PinDatabaseMixin],
+  mixins: [TreeMixin, PinDatabaseMixin, DropDbObjectMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -170,13 +171,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Database",
-                this.templates.drop_database.replace(
+              let template = this.templates.drop_database.replace(
                   "#database_name#",
                   this.selectedNode.data.raw_value ?? this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -240,13 +239,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Schema",
-                this.templates.drop_schema.replace(
+            let template = this.templates.drop_schema.replace(
                   "#schema_name#",
                   this.selectedNode.data.schema_raw
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -412,13 +409,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Table",
-                this.templates.drop_table.replace(
-                  "#table_name#",
-                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-                )
-              );
+              let template = this.templates.drop_table.replace(
+                "#table_name#",
+                `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+              )
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -458,22 +453,19 @@ export default {
             },
           },
           COMMENT_MENUITEM,
+
           {
             label: "Drop Column",
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Column",
-                this.templates.drop_column
-                  .replace(
-                    "#table_name#",
-                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
-                      .raw_value
-                    }`
-                  )
-                  .replace(/#column_name#/g, this.selectedNode.data.raw_value)
-              );
+              let template = this.templates.drop_column.replace(
+                "#table_name#",
+                `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                  .raw_value
+                }`
+              ).replace(/#column_name#/g, this.selectedNode.data.raw_value)
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -502,9 +494,7 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Primary Key",
-                this.templates.drop_primarykey
+              let template = this.templates.drop_primarykey
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -515,7 +505,7 @@ export default {
                     "#constraint_name#",
                     this.selectedNode.data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -544,9 +534,7 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Key",
-                this.templates.drop_foreignkey
+              let template = this.templates.drop_foreignkey
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -557,7 +545,7 @@ export default {
                     "#constraint_name#",
                     this.selectedNode.data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -586,9 +574,7 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Unique",
-                this.templates.drop_unique
+              let template = this.templates.drop_unique
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -599,7 +585,7 @@ export default {
                     "#constraint_name#",
                     this.selectedNode.data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -627,20 +613,18 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Check",
-                this.templates.drop_check
-                  .replace(
-                    "#table_name#",
-                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
-                      .raw_value
-                    }`
-                  )
-                  .replace(
-                    "#constraint_name#",
-                    this.selectedNode.data.raw_value
-                  )
-              );
+              let template = this.templates.drop_check
+                .replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                    .raw_value
+                  }`
+                )
+                .replace(
+                  "#constraint_name#",
+                  this.selectedNode.data.raw_value
+                )
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -668,9 +652,7 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Exclude",
-                this.templates.drop_exclude
+              let template = this.templates.drop_exclude
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -681,7 +663,7 @@ export default {
                     "#constraint_name#",
                     this.selectedNode.data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -745,13 +727,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Index",
-                this.templates.drop_index.replace(
-                  "#index_name#",
-                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-                )
-              );
+              let template = this.templates.drop_index.replace(
+                "#index_name#",
+                `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+              )
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -812,9 +792,7 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Rule",
-                this.templates.drop_rule
+              let template = this.templates.drop_rule
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -822,7 +800,7 @@ export default {
                     }`
                   )
                   .replace("#rule_name#", this.selectedNode.data.raw_value)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -917,9 +895,7 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Trigger",
-                this.templates.drop_trigger
+              let template = this.templates.drop_trigger
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -927,9 +903,9 @@ export default {
                     }`
                   )
                   .replace("#trigger_name#", this.selectedNode.data.raw_value)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_direct_trigger_function: [
           this.cmRefreshObject,
@@ -959,15 +935,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Trigger Function",
-                this.templates.drop_triggerfunction.replace(
+              let template = this.templates.drop_triggerfunction.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_inheriteds: [
           this.cmRefreshObject,
@@ -1017,15 +991,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Partition",
-                this.templates.drop_partition.replace(
+              let template = this.templates.drop_partition.replace(
                   "#partition_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_partitions: [
           this.cmRefreshObject,
@@ -1076,15 +1048,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Partition",
-                this.templates.drop_partition.replace(
+              let template = this.templates.drop_partition.replace(
                   "#partition_name#",
-                  this.selectedNode.data.raw_value
+                  this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_statistics: [
           this.cmRefreshObject,
@@ -1135,15 +1105,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Statistics",
-                this.templates.drop_statistics.replace(
+              let template = this.templates.drop_statistics.replace(
                   "#statistics_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_partitioned_tables: [
           this.cmRefreshObject,
@@ -1273,20 +1241,18 @@ export default {
             ],
           },
           COMMENT_MENUITEM,
-              {
-                label: "Drop Foreign Table",
-                icon: "fas fa-times",
-                divided: "up",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Drop Foreign Table",
-                    this.templates.drop_foreign_table.replace(
-                      "#table_name#",
-                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-                    )
-                  );
-                },
-              },
+          {
+            label: "Drop Foreign Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              let template = this.templates.drop_foreign_table.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+                )
+              this.prepareDropModal(this.selectedNode, template)
+            },
+          }
         ],
         cm_foreign_columns: [
           {
@@ -1327,19 +1293,17 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Column",
-                this.templates.drop_foreign_column
-                  .replace(
-                    "#table_name#",
-                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
-                      .raw_value
-                    }`
-                  )
-                  .replace(/#column_name#/g, this.selectedNode.data.raw_value)
-              );
+              let template = this.templates.drop_foreign_column
+                    .replace(
+                      "#table_name#",
+                      `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                        .raw_value
+                      }`
+                    )
+                    .replace(/#column_name#/g, this.selectedNode.data.raw_value)
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_sequences: [
           this.cmRefreshObject,
@@ -1386,15 +1350,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Sequence",
-                this.templates.drop_sequence.replace(
+              let template = this.templates.drop_sequence.replace(
                   "#sequence_name#",
                   `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_views: [
           this.cmRefreshObject,
@@ -1460,15 +1422,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop View",
-                this.templates.drop_view.replace(
+              let template = this.templates.drop_view.replace(
                   "#view_name#",
                   `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_view_triggers: [
           this.cmRefreshObject,
@@ -1586,15 +1546,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Materialized View",
-                this.templates.drop_mview.replace(
+              let template = this.templates.drop_mview.replace(
                   "#view_name#",
                   `${this.selectedNode.data.schema}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_functions: [
           this.cmRefreshObject,
@@ -1667,15 +1625,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Function",
-                this.templates.drop_function.replace(
+              let template = this.templates.drop_function.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_trigger_functions: [
           this.cmRefreshObject,
@@ -1729,15 +1685,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Trigger Function",
-                this.templates.drop_triggerfunction.replace(
+              let template = this.templates.drop_triggerfunction.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_event_trigger_functions: [
           this.cmRefreshObject,
@@ -1793,15 +1747,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Event Trigger Function",
-                this.templates.drop_eventtriggerfunction.replace(
+              let template = this.templates.drop_eventtriggerfunction.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_procedures: [
           this.cmRefreshObject,
@@ -1867,15 +1819,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Procedure",
-                this.templates.drop_procedure.replace(
+              let template = this.templates.drop_procedure.replace(
                   "#procedure_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_aggregates: [
           this.cmRefreshObject,
@@ -1923,13 +1873,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Aggregate",
-                this.templates.drop_aggregate.replace(
+              let template = this.templates.drop_aggregate.replace(
                   "#aggregate_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -1978,13 +1926,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Type",
-                this.templates.drop_type.replace(
+              let template = this.templates.drop_type.replace(
                   "#type_name#",
                   `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2033,13 +1979,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Domain",
-                this.templates.drop_domain.replace(
+              let template = this.templates.drop_domain.replace(
                   "#domain_name#",
                   `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2122,13 +2066,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Data Wrapper",
-                this.templates.drop_fdw.replace(
+              let template = this.templates.drop_fdw.replace(
                   "#fdwname#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2181,13 +2123,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Server",
-                this.templates.drop_foreign_server.replace(
+              let template = this.templates.drop_foreign_server.replace(
                   "#srvname#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2228,15 +2168,13 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop User Mapping",
-                this.templates.drop_user_mapping
+              let template = this.templates.drop_user_mapping
                   .replace("#user_name#", this.selectedNode.data.raw_value)
                   .replace(
                     "#srvname#",
                     this.getParentNodeDeep(this.selectedNode, 2).data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2308,13 +2246,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Event Trigger",
-                this.templates.drop_eventtrigger.replace(
+              let template = this.templates.drop_eventtrigger.replace(
                   "#trigger_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2347,13 +2283,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Event Trigger Function",
-                this.templates.drop_eventtriggerfunction.replace(
+              let template = this.templates.drop_eventtriggerfunction.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2399,13 +2333,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Publication",
-                this.templates.drop_publication.replace(
+              let template = this.templates.drop_publication.replace(
                   "#pub_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2427,18 +2359,17 @@ export default {
         ],
         cm_pubtable: [
           {
-            label: "Drop Table",
+            label: "Drop Publication Table",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Table",
-                this.templates.drop_pubtable
+              let template = this.templates.drop_pubtable
                   .replace(
                     "#pub_name#",
                     this.getParentNodeDeep(this.selectedNode, 2).title
                   )
-                  .replace("#table_name#", this.selectedNode.data.raw_value)
-              );
+                  .replace("#table_name#", this.selectedNode.title)
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2484,13 +2415,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Subscription",
-                this.templates.drop_subscription.replace(
+              let template = this.templates.drop_subscription.replace(
                   "#sub_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2536,13 +2465,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Tablespace",
-                this.templates.drop_tablespace.replace(
+              let template = this.templates.drop_tablespace.replace(
                   "#tablespace_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2579,13 +2506,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Role",
-                this.templates.drop_role.replace(
+              let template = this.templates.drop_role.replace(
                   "#role_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2615,14 +2540,13 @@ export default {
           {
             label: "Drop Slot",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Physical Replication Slot",
-                this.templates.drop_physicalreplicationslot.replace(
+              let template = this.templates.drop_physicalreplicationslot.replace(
                   "#slot_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2652,14 +2576,13 @@ export default {
           {
             label: "Drop Slot",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Logical Replication Slot",
-                this.templates.drop_logicalreplicationslot.replace(
+              let template = this.templates.drop_logicalreplicationslot.replace(
                   "#slot_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -5208,8 +5131,8 @@ export default {
             type: "user_mapping_list",
             contextMenu: "cm_user_mappings",
           });
-  
-          let options = el.options.split(",");
+
+          let options = el.options?.split(",") || [];
           options.forEach((option_el) => {
             this.insertNode(
               foreign_server_node,
@@ -5266,7 +5189,7 @@ export default {
   
           const user_mapping_node = this.getFirstChildNode(node);
   
-          let options = el.options.split(",");
+          let options = el.options?.split(",") || [];
   
           options.forEach((option_el) => {
             this.insertNode(
@@ -5683,6 +5606,31 @@ export default {
         .catch((error) => {
           this.nodeOpenError(error, node);
         });
+    },
+    dropDbObject() {
+      let options = messageModalStore.checkboxes.map((o) => o.checked ? o.label : null)
+      let query = this.buildQueryWithOptions(this.dropTemplate.query, options)
+      this.api.post('/execute_query_postgresql/', {
+        database_index: this.databaseIndex,
+        workspace_id: this.workspaceId,
+        query: query
+      })
+      .then((resp) => {
+        if(options.includes('CASCADE')) {
+          this.refreshTree(this.getRootNode, true);
+        } else {
+          let parentNode = this.getParentNode(this.dropNode)
+          let childrenCount = parentNode.children.length
+
+          this.removeNode(this.dropNode)
+          this.$refs.tree.updateNode(parentNode.path, {
+            title: parentNode.title.replace(/\(\d+\)$/, `(${childrenCount - 1})`)
+          });
+        }
+      })
+      .catch((error) => {
+        handleError(error)
+      })
     },
     openWebSite(site) {
       window.open(site, "_blank");
