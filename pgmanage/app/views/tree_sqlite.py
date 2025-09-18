@@ -367,3 +367,13 @@ def get_view_definition(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data={"data": view_definition})
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def execute_query(request, database):
+    data = request.data
+    try:
+        database.Execute(data.get("query"))
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse({"status": "success"})

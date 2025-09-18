@@ -291,7 +291,7 @@ base_urlpatterns = [
     path('template_insert_sqlite/', views.tree_sqlite.template_insert, name='template_insert'),
     path('template_update_sqlite/', views.tree_sqlite.template_update, name='template_update'),
     path('get_table_definition_sqlite/', views.tree_sqlite.get_table_definition, name="get_table_definition_sqlite"),
-
+    path('execute_query_sqlite/', views.tree_sqlite.execute_query, name="execute_query"),
     # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
     path("monitoring-widgets/list", views.monitoring_dashboard.monitoring_widgets_list, name="monitoring-widgets-list"),

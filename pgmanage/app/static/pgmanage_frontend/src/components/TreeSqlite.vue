@@ -28,6 +28,7 @@
 <script>
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
+import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
 import {
   TemplateSelectSqlite,
   TemplateInsertSqlite,
@@ -36,16 +37,17 @@ import {
 
 import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import { emitter } from "../emitter";
-import { tabsStore } from "../stores/stores_initializer";
+import { tabsStore, messageModalStore } from "../stores/stores_initializer";
 import { operationModes } from "../constants";
 import { findNode, findChild } from "../utils.js";
+import { handleError } from '../logging/utils';
 
 export default {
   name: "TreeSqlite",
   components: {
     PowerTree: PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, DropDbObjectMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -154,13 +156,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Table",
-                this.templates.drop_table.replace(
+              let template = this.templates.drop_table.replace(
                   "#table_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -222,13 +222,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Index",
-                this.templates.drop_index.replace(
+              let template = this.templates.drop_index.replace(
                   "#index_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -269,13 +267,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Trigger",
-                this.templates.drop_trigger.replace(
+              let template = this.templates.drop_trigger.replace(
                   "#trigger_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -310,13 +306,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop View",
-                this.templates.drop_view.replace(
+              let template = this.templates.drop_view.replace(
                   "#view_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -858,6 +852,30 @@ export default {
         .catch((error) => {
           this.nodeOpenError(error, node);
         });
+    },
+    dropDbObject() {
+      let options = messageModalStore.checkboxes.map((o) => o.checked ? o.label : null)
+      let query = this.buildQueryWithOptions(this.dropTemplate.query, options)
+      this.api.post('/execute_query_sqlite/', {
+        database_index: this.databaseIndex,
+        workspace_id: this.workspaceId,
+        query: query
+      })
+      .then((resp) => {
+        if(options.includes('CASCADE')) {
+          this.refreshTree(this.getRootNode, true);
+        } else {
+          let parentNode = this.getParentNode(this.dropNode)
+          let childrenCount = parentNode.children.length
+          this.removeNode(this.dropNode)
+          this.$refs.tree.updateNode(parentNode.path, {
+            title: parentNode.title.replace(/\(\d+\)$/, `(${childrenCount - 1})`)
+          });
+        }
+      })
+      .catch((error) => {
+        handleError(error)
+      })
     },
   },
 };
