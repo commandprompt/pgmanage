@@ -320,6 +320,7 @@ base_urlpatterns = [
     path('get_logins_mssql/', views.tree_mssql.get_logins,),
     path('get_users_mssql/', views.tree_mssql.get_users,),
     path('template_select_mssql/', views.tree_mssql.template_select,),
+    path('get_properties_mssql/', views.tree_mssql.get_properties,),
 
 
     # Monitoring Dashboard

@@ -532,3 +532,28 @@ def template_select(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data={"template": template})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_properties(request, database):
+    data = request.data["data"]
+
+    list_properties = []
+    ddl = ""
+
+    try:
+        properties = database.GetProperties(
+            data["schema"], data["table"], data["object"], data["type"]
+        )
+        for property_object in properties.Rows:
+            list_properties.append(
+                [property_object["Property"], property_object["Value"]]
+            )
+        # ddl = database.GetDDL(
+        #     data["schema"], data["table"], data["object"], data["type"]
+        # )
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data={"properties": list_properties, "ddl": ddl})

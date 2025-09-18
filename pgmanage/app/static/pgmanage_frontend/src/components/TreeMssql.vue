@@ -1536,7 +1536,60 @@ export default {
       }
     },
     getProperties(node) {
-      console.log("Not implemented");
+      this.checkCurrentDatabase(node, true, () => {
+        this.getPropertiesConfirm(node);
+      });
+    },
+    getPropertiesConfirm(node) {
+      let schema = node.data.schema ? node.data.schema : null;
+      let table = null;
+      let object = node.title;
+      let handledTypes = [
+        "database",
+        "login",
+        "server_role",
+        "database_role",
+        "user",
+        "schema",
+        "table",
+        "view",
+        "table_field",
+        "primary_key",
+        "foreign_key",
+        "unique",
+        "check",
+        "trigger",
+        "index",
+        "function",
+        "procedure",
+        "statistic",
+      ];
+
+      switch (node.data.type) {
+        case "table_field":
+        case "primary_key":
+        case "foreign_key":
+        case "unique":
+        case "check":
+        case "trigger":
+        case "index":
+          table = this.getParentNodeDeep(node, 2).title;
+          break;
+      }
+
+      if (handledTypes.includes(node.data.type)) {
+        this.$emit("treeTabsUpdate", {
+          data: {
+            schema: schema,
+            table: table,
+            object: object,
+            type: node.data.type,
+          },
+          view: "/get_properties_mssql/",
+        });
+      } else {
+        this.$emit("clearTabs");
+      }
     },
     openWebSite(site) {
       window.open(site, "_blank");

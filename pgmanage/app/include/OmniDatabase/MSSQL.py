@@ -689,3 +689,194 @@ ORDER BY dp.name;
             sql = f"SELECT t.*\nFROM [{schema}].[{table}] t"
         formatted_sql = format(sql, keyword_case="upper", reindent=True)
         return Template(formatted_sql)
+
+    def GetPropertiesDatabase(self, database_name):
+        return self.Query(
+            f"""
+SELECT 
+    d.name AS "Database",
+    suser_sname(d.owner_sid) AS "Owner",
+    d.state_desc  AS "State",
+    d.is_encrypted AS "Encrypted",
+    d.collation_name AS "Collation",
+    d.user_access_desc AS "User Access",
+    MIN(mf.physical_name) AS "File Path",
+    CAST(SUM(mf.size) * 8. / 1024 AS DECIMAL(18, 2)) AS "SizeMB"               
+FROM sys.databases d
+JOIN sys.master_files mf
+    ON d.database_id = mf.database_id        
+    WHERE d.name = '{database_name}'
+GROUP BY d.name, d.owner_sid, d.state_desc, d.is_encrypted, d.collation_name, d.user_access_desc
+"""
+        )
+
+    def GetPropertiesLogin(self, login_name):
+        return self.Query(
+            f"""
+SELECT 
+    sp.name                  AS "Login Name",
+    sp.type_desc             AS "Principal Type",
+    sp.default_database_name AS "Default Database",
+    sp.default_language_name AS "Default Language",
+    sp.create_date           AS "Create Date",
+    sp.modify_date           AS "Modify Date",
+    sp.is_disabled           AS "Disabled",
+    sl.is_policy_checked     AS "Policy Checked",
+    sl.is_expiration_checked AS "Expiration Checked",
+    sp.credential_id         AS "Credential ID"
+FROM sys.server_principals sp
+LEFT JOIN sys.sql_logins sl ON sp.principal_id = sl.principal_id
+WHERE sp.type IN ('S', 'U', 'G') 
+AND sp.name = '{login_name}'
+"""
+        )
+
+    def GetPropertiesServerRole(self, role_name):
+        return self.Query(
+            f"""
+        SELECT 
+    r.name AS "Role Name",
+    r.type_desc AS "Role Type",              
+    r.create_date AS "Create Date",
+    r.modify_date AS "Modify Date",
+    r.is_fixed_role AS "Is Fixed Role"
+    FROM sys.server_principals r
+    WHERE r.type = 'R' AND r.name = '{role_name}'
+"""
+        )
+
+    def GetPropertiesDatabaseRole(self, role_name):
+        return self.Query(
+            f"""
+SELECT 
+    r.name AS "Role Name",
+    r.type_desc AS "Role Type",
+    r.create_date AS "Create Date",
+    r.modify_date AS "Modify Date",
+    r.is_fixed_role AS "Is Fixed Role"
+FROM sys.database_principals r
+WHERE r.type = 'R' AND r.name = '{role_name}' 
+"""
+        )
+
+    def GetPropertiesUser(self, user_name):
+        return self.Query(
+            f"""
+SELECT 
+    dp.name              AS "User Name",
+    dp.type_desc         AS "User Type",
+    dp.authentication_type_desc AS "Authentication Type",
+    dp.default_schema_name AS "Default Schema",
+    dp.create_date       AS "Create Date",
+    dp.modify_date       AS "Modify Date",
+    dp.owning_principal_id AS "Owning Principal Id",
+    dp.principal_id      AS "Principal Id",
+    dp.is_fixed_role     AS "Is Fixed Role"
+FROM sys.database_principals dp
+WHERE dp.type IN ('S', 'U', 'G')
+  AND dp.sid IS NOT NULL
+  AND dp.name = '{user_name}'
+"""
+        )
+
+    def GetPropertiesSchema(self, schema_name):
+        return self.Query(
+            f"""
+SELECT 
+    s.name              AS "Schema Name",
+    dp.name             AS "Owner Name",
+    dp.type_desc        AS "Owner Type",
+    s.schema_id         AS "Schema Id",
+    s.principal_id      AS "Principal Id",
+    dp.create_date       AS "Create Date",
+    dp.modify_date       AS "Modify Date"
+FROM sys.schemas s
+JOIN sys.database_principals dp 
+     ON s.principal_id = dp.principal_id
+WHERE s.name = '{schema_name}'
+"""
+        )
+
+    def GetPropertiesTable(self, schema, table_name):
+        return self.Query(
+            f"""
+SELECT 
+    s.name          AS "Schema Name",
+    t.name          AS "Table Name",
+    t.object_id     AS "Object Id",
+    t.create_date   AS "Create Date",
+    t.modify_date   AS "Modify Date",
+    t.is_ms_shipped AS "Is System Table"
+FROM sys.tables t
+JOIN sys.schemas s ON t.schema_id = s.schema_id
+    WHERE t.name = '{table_name}' AND s.name = '{schema}'
+"""
+        )
+
+    def GetPropertiesView(self, schema, view_name):
+        return self.Query(
+            f"""
+SELECT 
+    s.name          AS "Schema Name",
+    v.name          AS "View Name",
+    v.object_id     AS "Object Id",
+    v.create_date   AS "Create Date",
+    v.modify_date   AS "Modify Date"
+FROM sys.views v
+JOIN sys.schemas s ON v.schema_id = s.schema_id
+WHERE v.name = '{view_name}' AND s.name = '{schema}'
+"""
+        )
+
+    def GetPropertiesFunction(self, schema, function_name):
+        return self.Query(
+            f"""
+SELECT 
+    s.name        AS "Schema Name",
+    f.name        AS "Function Name",
+    f.object_id   AS "Object Id",
+    f.type_desc   AS "Function Type",
+    f.create_date AS "Create Date",
+    f.modify_date AS "Modify Date"
+FROM sys.objects f
+JOIN sys.schemas s ON f.schema_id = s.schema_id
+WHERE f.type IN ('FN', 'IF', 'TF') AND s.name = '{schema}' AND f.name = '{function_name}'
+"""
+        )
+
+    def GetPropertiesProcedure(self, schema, procedure_name):
+        return self.Query(
+            f"""
+SELECT 
+    s.name        AS "Schema Name",
+    p.name        AS "Procedure Name",
+    p.object_id   AS "Object Id",
+    p.create_date AS "Create Date",
+    p.modify_date AS "Modify Date"
+FROM sys.procedures p
+JOIN sys.schemas s ON p.schema_id = s.schema_id
+WHERE s.name = '{schema}' AND p.name = '{procedure_name}'
+"""
+        )
+
+    def GetProperties(self, schema, table, object_name, object_type):
+        if object_type == "database":
+            return self.GetPropertiesDatabase(object_name).Transpose("Property", "Value")
+        if object_type == "login":
+            return self.GetPropertiesLogin(object_name).Transpose("Property", "Value")
+        if object_type == "server_role":
+            return self.GetPropertiesServerRole(object_name).Transpose("Property", "Value")
+        if object_type == "database_role":
+            return self.GetPropertiesDatabaseRole(object_name).Transpose("Property", "Value")
+        if object_type == "user":
+            return self.GetPropertiesUser(object_name).Transpose("Property", "Value")
+        if object_type == "schema":
+            return self.GetPropertiesSchema(object_name).Transpose("Property", "Value")
+        if object_type == "table":
+            return self.GetPropertiesTable(schema, object_name).Transpose("Property", "Value")
+        if object_type == "view":
+            return self.GetPropertiesView(schema, object_name).Transpose("Property", "Value")
+        if object_type == "function":
+            return self.GetPropertiesFunction(schema, object_name).Transpose("Property", "Value")
+        if object_type == "procedure":
+            return self.GetPropertiesProcedure(schema, object_name).Transpose("Property", "Value")
