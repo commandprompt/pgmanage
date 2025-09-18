@@ -21,6 +21,7 @@
 <script>
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
+import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
 import {
   TemplateUpdateOracle,
   TemplateInsertOracle,
@@ -28,15 +29,16 @@ import {
 } from "../tree_context_functions/tree_oracle";
 import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import { emitter } from "../emitter";
-import { tabsStore } from "../stores/stores_initializer";
+import { tabsStore, messageModalStore } from "../stores/stores_initializer";
 import { findNode, findChild } from "../utils.js";
+import { handleError } from '../logging/utils';
 
 export default {
   name: "TreeOracle",
   components: {
     PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, DropDbObjectMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -171,13 +173,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Table",
-                this.templates.drop_table.replace(
+              let template = this.templates.drop_table.replace(
                   "#table_name#",
                   `${this.templates.username}.${this.selectedNode.title}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -219,16 +219,14 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Column",
-                this.templates.drop_column
+              let template = this.templates.drop_column
                   .replace(
                     "#table_name#",
                     `${this.templates.username}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace(/#column_name#/g, this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -256,16 +254,14 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Primary Key",
-                this.templates.drop_primarykey
+              let template = this.templates.drop_primarykey
                   .replace(
                     "#table_name#",
                     `${this.templates.username}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace("#constraint_name#", this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -293,16 +289,14 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Key",
-                this.templates.drop_foreignkey
+              let template = this.templates.drop_foreignkey
                   .replace(
                     "#table_name#",
                     `${this.templates.username}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace("#constraint_name#", this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -330,16 +324,14 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Unique",
-                this.templates.drop_unique
+              let template = this.templates.drop_unique
                   .replace(
                     "#table_name#",
                     `${this.templates.username}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace("#constraint_name#", this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -380,13 +372,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Index",
-                this.templates.drop_index.replace(
+              let template = this.templates.drop_index.replace(
                   "#index_name#",
                   `${this.templates.username}.${this.selectedNode.title}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -425,13 +415,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Sequence",
-                this.templates.drop_sequence.replace(
+              let template = this.templates.drop_sequence.replace(
                   "#sequence_name#",
                   `${this.templates.username}.${this.selectedNode.title}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -481,13 +469,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop View",
-                this.templates.drop_view.replace(
+              let template = this.templates.drop_view.replace(
                   "#view_name#",
                   `${this.templates.username}.${this.selectedNode.title}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -521,13 +507,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Function",
-                this.templates.drop_function.replace(
+              let template = this.templates.drop_function.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -557,17 +541,15 @@ export default {
             },
           },
           {
-            label: "Drop Procedure",
+            label: "Drop Prodecure",
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Procedure",
-                this.templates.drop_procedure.replace(
+              let template = this.templates.drop_procedure.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -603,13 +585,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Tablespace",
-                this.templates.drop_tablespace.replace(
+              let template = this.templates.drop_tablespace.replace(
                   "#tablespace_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -642,13 +622,12 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Role",
-                this.templates.drop_role.replace(
+              // FIXME: this does not work, we need to differentiate users and roles
+              let template = this.templates.drop_role.replace(
                   "#role_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -1511,6 +1490,30 @@ export default {
         .catch((error) => {
           this.nodeOpenError(error, node);
         });
+    },
+    dropDbObject() {
+      let options = messageModalStore.checkboxes.map((o) => o.checked ? o.label : null)
+      let query = this.buildQueryWithOptions(this.dropTemplate.query, options)
+      this.api.post('/execute_query_oracle/', {
+        database_index: this.databaseIndex,
+        workspace_id: this.workspaceId,
+        query: query
+      })
+      .then((resp) => {
+        if(options.includes('CASCADE')) {
+          this.refreshTree(this.getRootNode, true);
+        } else {
+          let parentNode = this.getParentNode(this.dropNode)
+          let childrenCount = parentNode.children.length
+          this.removeNode(this.dropNode)
+          this.$refs.tree.updateNode(parentNode.path, {
+            title: parentNode.title.replace(/\(\d+\)$/, `(${childrenCount - 1})`)
+          });
+        }
+      })
+      .catch((error) => {
+        handleError(error)
+      })
     },
   },
 };

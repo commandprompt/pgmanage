@@ -241,6 +241,10 @@ class Oracle:
         return self.connection.Query(sql, alltypesstr, simple)
 
     @lock_required
+    def Execute(self, sql):
+        return self.connection.Execute(sql)
+
+    @lock_required
     def ExecuteScalar(self, sql):
         return self.connection.ExecuteScalar(sql)
 
