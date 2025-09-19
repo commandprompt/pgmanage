@@ -43,7 +43,6 @@ import { emitter } from "../emitter";
 import TreeMixin from "../mixins/power_tree.js";
 import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
 import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
-import { handleError } from '../logging/utils';
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import { checkBeforeChangeDatabase } from "../workspace";
 import {
@@ -5606,31 +5605,6 @@ export default {
         .catch((error) => {
           this.nodeOpenError(error, node);
         });
-    },
-    dropDbObject() {
-      let options = messageModalStore.checkboxes.map((o) => o.checked ? o.label : null)
-      let query = this.buildQueryWithOptions(this.dropTemplate.query, options)
-      this.api.post('/execute_query_postgresql/', {
-        database_index: this.databaseIndex,
-        workspace_id: this.workspaceId,
-        query: query
-      })
-      .then((resp) => {
-        if(options.includes('CASCADE')) {
-          this.refreshTree(this.getRootNode, true);
-        } else {
-          let parentNode = this.getParentNode(this.dropNode)
-          let childrenCount = parentNode.children.length
-
-          this.removeNode(this.dropNode)
-          this.$refs.tree.updateNode(parentNode.path, {
-            title: parentNode.title.replace(/\(\d+\)$/, `(${childrenCount - 1})`)
-          });
-        }
-      })
-      .catch((error) => {
-        handleError(error)
-      })
     },
     openWebSite(site) {
       window.open(site, "_blank");

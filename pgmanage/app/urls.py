@@ -44,6 +44,7 @@ base_urlpatterns = [
     path('refresh_monitoring/', views.workspace.refresh_monitoring, name='refresh_monitoring'),
     # path('delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),
     path('get_database_meta/', views.workspace.get_database_meta, name='get_database_meta'),
+    path('execute_query/', views.workspace.execute_query, name="execute_query"),
 
     #SETINGS
     path('settings/', views.workspace.SettingsView.as_view(), name="settings"),
@@ -123,7 +124,6 @@ base_urlpatterns = [
     path('get_role_details/', views.tree_postgresql.get_role_details, name='get_role_details'),
     path('get_extensions_postgresql/', views.tree_postgresql.get_extensions, name='get_extensions'),
     path('get_extension_details/', views.tree_postgresql.get_extension_details, name='get_extension_details'),
-    path('execute_query_postgresql/', views.tree_postgresql.execute_query, name="execute_query"),
     path('get_available_extensions_postgresql/', views.tree_postgresql.get_available_extensions, name='get_available_extensions'),
     path('get_physicalreplicationslots_postgresql/', views.tree_postgresql.get_physicalreplicationslots, name='get_physicalreplicationslots'),
     path('get_logicalreplicationslots_postgresql/', views.tree_postgresql.get_logicalreplicationslots, name='get_logicalreplicationslots'),
@@ -198,7 +198,6 @@ base_urlpatterns = [
     path('template_select_oracle/', views.tree_oracle.template_select, name='template_select'),
     path('template_insert_oracle/', views.tree_oracle.template_insert, name='template_insert'),
     path('template_update_oracle/', views.tree_oracle.template_update, name='template_update'),
-    path('execute_query_oracle/', views.tree_oracle.execute_query, name="execute_query"),
 
     #TREE_MYSQL
     path('get_tree_info_mysql/', views.tree_mysql.get_tree_info, name='get_tree_info'),
@@ -235,7 +234,7 @@ base_urlpatterns = [
     path('template_insert_mysql/', views.tree_mysql.template_insert, name='template_insert'),
     path('template_update_mysql/', views.tree_mysql.template_update, name='template_update'),
     path('get_table_definition_mysql/', views.tree_mysql.get_table_definition, name='get_table_definition'),
-    path('execute_query_mysql/', views.tree_mysql.execute_query, name="execute_query"),
+
     #TREE_MARIADB
     path('get_tree_info_mariadb/', views.tree_mariadb.get_tree_info, name='get_tree_info'),
     path('get_tables_mariadb/', views.tree_mariadb.get_tables, name='get_tables'),
@@ -270,7 +269,7 @@ base_urlpatterns = [
     path('template_select_mariadb/', views.tree_mariadb.template_select, name='template_select'),
     path('template_insert_mariadb/', views.tree_mariadb.template_insert, name='template_insert'),
     path('template_update_mariadb/', views.tree_mariadb.template_update, name='template_update'),
-    path('execute_query_mariadb/', views.tree_mariadb.execute_query, name="execute_query"),
+
     #TREE_SQLITE
     path('get_tree_info_sqlite/', views.tree_sqlite.get_tree_info, name='get_tree_info'),
     path('get_tables_sqlite/', views.tree_sqlite.get_tables, name='get_tables'),
@@ -292,7 +291,7 @@ base_urlpatterns = [
     path('template_insert_sqlite/', views.tree_sqlite.template_insert, name='template_insert'),
     path('template_update_sqlite/', views.tree_sqlite.template_update, name='template_update'),
     path('get_table_definition_sqlite/', views.tree_sqlite.get_table_definition, name="get_table_definition_sqlite"),
-    path('execute_query_sqlite/', views.tree_sqlite.execute_query, name="execute_query"),
+
     # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
     path("monitoring-widgets/list", views.monitoring_dashboard.monitoring_widgets_list, name="monitoring-widgets-list"),

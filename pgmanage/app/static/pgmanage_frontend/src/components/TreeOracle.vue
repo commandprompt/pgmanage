@@ -29,9 +29,8 @@ import {
 } from "../tree_context_functions/tree_oracle";
 import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import { emitter } from "../emitter";
-import { tabsStore, messageModalStore } from "../stores/stores_initializer";
+import { tabsStore } from "../stores/stores_initializer";
 import { findNode, findChild } from "../utils.js";
-import { handleError } from '../logging/utils';
 
 export default {
   name: "TreeOracle",
@@ -1490,30 +1489,6 @@ export default {
         .catch((error) => {
           this.nodeOpenError(error, node);
         });
-    },
-    dropDbObject() {
-      let options = messageModalStore.checkboxes.map((o) => o.checked ? o.label : null)
-      let query = this.buildQueryWithOptions(this.dropTemplate.query, options)
-      this.api.post('/execute_query_oracle/', {
-        database_index: this.databaseIndex,
-        workspace_id: this.workspaceId,
-        query: query
-      })
-      .then((resp) => {
-        if(options.includes('CASCADE')) {
-          this.refreshTree(this.getRootNode, true);
-        } else {
-          let parentNode = this.getParentNode(this.dropNode)
-          let childrenCount = parentNode.children.length
-          this.removeNode(this.dropNode)
-          this.$refs.tree.updateNode(parentNode.path, {
-            title: parentNode.title.replace(/\(\d+\)$/, `(${childrenCount - 1})`)
-          });
-        }
-      })
-      .catch((error) => {
-        handleError(error)
-      })
     },
   },
 };

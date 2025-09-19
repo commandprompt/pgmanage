@@ -1,4 +1,5 @@
 import { messageModalStore } from "../stores/stores_initializer";
+import { handleError } from '../logging/utils';
 
 export default {
   data() {
@@ -37,6 +38,30 @@ export default {
 
       let checkboxes = this.dropTemplate.options.map((option) => ({ 'label': option, 'checked': false }))
       messageModalStore.showModal(message, this.dropDbObject, null, true, checkboxes)
+    },
+    dropDbObject() {
+      let options = messageModalStore.checkboxes.map((o) => o.checked ? o.label : null)
+      let query = this.buildQueryWithOptions(this.dropTemplate.query, options)
+      this.api.post('/execute_query/', {
+        database_index: this.databaseIndex,
+        workspace_id: this.workspaceId,
+        query: query
+      })
+      .then((resp) => {
+        if(options.includes('CASCADE')) {
+          this.refreshTree(this.getRootNode, true);
+        } else {
+          let parentNode = this.getParentNode(this.dropNode)
+          let childrenCount = parentNode.children.length
+          this.removeNode(this.dropNode)
+          this.$refs.tree.updateNode(parentNode.path, {
+            title: parentNode.title.replace(/\(\d+\)$/, `(${childrenCount - 1})`)
+          });
+        }
+      })
+      .catch((error) => {
+        handleError(error)
+      })
     },
   },
 };

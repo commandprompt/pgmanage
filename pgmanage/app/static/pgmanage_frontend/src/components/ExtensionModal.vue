@@ -183,6 +183,7 @@ export default {
         })
     },
     saveExtension() {
+      // TODO: change this to execute_query
       axios.post('/execute_query_postgresql/', {
         database_index: this.databaseIndex,
         workspace_id: this.workspaceId,
@@ -216,6 +217,7 @@ export default {
       const checkedValues = messageModalStore.checkboxes
       const cascade = checkedValues[0].checked ? 'CASCADE' : ''
       const query = `DROP EXTENSION IF EXISTS "${this.treeNode.title}" ${cascade};`
+      // TODO: change this to execute_query
       axios.post('/execute_query_postgresql/', {
         database_index: this.databaseIndex,
         workspace_id: this.workspaceId,

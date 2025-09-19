@@ -50,11 +50,10 @@ import {
   TemplateUpdateMysql,
 } from "../tree_context_functions/tree_mysql";
 import { emitter } from "../emitter";
-import { tabsStore, connectionsStore, dbMetadataStore, messageModalStore } from "../stores/stores_initializer";
+import { tabsStore, connectionsStore, dbMetadataStore } from "../stores/stores_initializer";
 import { checkBeforeChangeDatabase } from "../workspace";
 import { operationModes } from "../constants";
 import { findNode, findChild } from "../utils.js";
-import { handleError } from '../logging/utils';
 
 export default {
   name: "TreeMySQL",
@@ -1524,30 +1523,6 @@ export default {
         .catch((error) => {
           this.nodeOpenError(error, node);
         });
-    },
-    dropDbObject() {
-      let options = messageModalStore.checkboxes.map((o) => o.checked ? o.label : null)
-      let query = this.buildQueryWithOptions(this.dropTemplate.query, options)
-      this.api.post('/execute_query_mysql/', {
-        database_index: this.databaseIndex,
-        workspace_id: this.workspaceId,
-        query: query
-      })
-      .then((resp) => {
-        if(options.includes('CASCADE')) {
-          this.refreshTree(this.getRootNode, true);
-        } else {
-          let parentNode = this.getParentNode(this.dropNode)
-          let childrenCount = parentNode.children.length
-          this.removeNode(this.dropNode)
-          this.$refs.tree.updateNode(parentNode.path, {
-            title: parentNode.title.replace(/\(\d+\)$/, `(${childrenCount - 1})`)
-          });
-        }
-      })
-      .catch((error) => {
-        handleError(error)
-      })
     },
   },
 };
