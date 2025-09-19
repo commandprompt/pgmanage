@@ -1531,13 +1531,20 @@ def thread_save_edit_data(self, args) -> None:
         database = args["database"]
         client_object: Client = args["client_object"]
         command: str = args["sql_cmd"]
-
         if database.db_type in ["sqlite","mysql"] and len(command.split(";\n")) >= 2:
             try:
                 database.connection.Open(False)
                 database.connection.Execute("BEGIN")
                 for sql in command.split(";\n"):
                     database.connection.Execute(sql)
+                database.connection.Commit()
+            except Exception as exc:
+                database.connection.con.rollback()
+                raise DatabaseError(str(exc)) from exc
+        if database.db_type == "oracle" and len(command.split(";\n")) >= 2:
+            try:
+                database.connection.Open(False)
+                database.connection.Execute(f"BEGIN\n{command};\nEND;")
                 database.connection.Commit()
             except Exception as exc:
                 database.connection.con.rollback()
