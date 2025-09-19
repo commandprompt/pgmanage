@@ -1260,15 +1260,15 @@ export default {
             el.column_name,
             {
               icon: "fas node-all fa-columns node-column",
-              type: "table_field",
+              type: "view_field",
               schema: node.data.schema,
             },
             null
           );
-          const table_field = this.getFirstChildNode(columns_node);
+          const view_field = this.getFirstChildNode(columns_node);
 
           this.insertNode(
-            table_field,
+            view_field,
             `Type: ${el.data_type}`,
             {
               icon: "fas node-all fa-ellipsis-h node-bullet",
@@ -1554,6 +1554,7 @@ export default {
         "table",
         "view",
         "table_field",
+        "view_field",
         "primary_key",
         "foreign_key",
         "unique",
@@ -1567,12 +1568,14 @@ export default {
 
       switch (node.data.type) {
         case "table_field":
+        case "view_field":
         case "primary_key":
         case "foreign_key":
         case "unique":
         case "check":
         case "trigger":
         case "index":
+        case "statistic":
           table = this.getParentNodeDeep(node, 2).title;
           break;
       }

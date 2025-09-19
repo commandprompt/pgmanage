@@ -859,6 +859,202 @@ WHERE s.name = '{schema}' AND p.name = '{procedure_name}'
 """
         )
 
+    def GetPropertiesTableField(self, schema, table, table_field):
+        return self.Query(
+            f"""
+SELECT 
+    s.name              AS "Schema Name",
+    t.name              AS "Table Name",
+    c.name              AS "Column Name",
+    c.column_id         AS "Column Id",
+    ty.name             AS "Data Type",
+    c.max_length        AS "Max Length",
+    c.precision         AS "Precision",
+    c.scale             AS "Scale",
+    c.is_nullable       AS "Is Nullable",
+    c.is_identity       AS "Is Identity",
+    dc.definition       AS "Default Definition",
+    c.collation_name    AS "Collation"
+FROM sys.columns c
+JOIN sys.tables t         ON c.object_id = t.object_id
+JOIN sys.schemas s        ON t.schema_id = s.schema_id
+JOIN sys.types ty         ON c.user_type_id = ty.user_type_id
+LEFT JOIN sys.default_constraints dc 
+       ON c.default_object_id = dc.object_id
+WHERE s.name = '{schema}'
+  AND t.name = '{table}'
+  AND c.name = '{table_field}'
+ORDER BY c.column_id;
+"""
+        )
+
+    def GetPropertiesPK(self, schema, table, constraint_name):
+        return self.Query(
+            f"""
+SELECT 
+    kc.table_schema     AS "Schema Name",
+    kc.table_name       AS "Table Name",
+    kc.constraint_name  AS "Constraint Name",
+    kc.COLUMN_NAME      AS "Column Name",
+    kc.ORDINAL_POSITION AS "Column Order"
+FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc
+    ON kc.constraint_name = tc.constraint_name
+   AND kc.table_schema = tc.table_schema
+WHERE tc.constraint_type = 'PRIMARY KEY'
+  AND kc.table_schema = '{schema}'
+  AND kc.table_name   = '{table}'
+  AND kc.constraint_name = '{constraint_name}'
+"""
+        )
+
+    def GetPropertiesFK(self, schema, table, constraint_name):
+        return self.Query(
+            f"""
+       SELECT fk.table_schema AS "Table Schema",
+       fk.table_name AS "TABLE NAME",
+       fk.constraint_name AS "Constraint Name",
+       fk.column_name AS "Column Name",
+       pk.table_schema AS "Referenced Schema",
+       pk.table_name   AS "Referenced Table",
+       pk.column_name  AS "Referenced Column",
+       update_rule AS "Update Rule",
+       delete_rule AS "Delete Rule"
+FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
+JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE fk
+  ON rc.constraint_name = fk.constraint_name
+JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE pk
+  ON rc.unique_constraint_name = pk.constraint_name
+  AND fk.ordinal_position = pk.ordinal_position
+WHERE fk.table_schema = '{schema}'
+  AND fk.table_name   = '{table}'
+  AND fk.constraint_name = '{constraint_name}'
+"""
+        )
+
+    def GetPropertiesCheck(self, schema, table, constraint_name):
+        return self.Query(
+            f"""
+SELECT 
+    s.name             AS "Schema Name",
+    t.name             AS "Table Name",
+    cc.name            AS "Constraint Name",
+    cc.definition      AS "Check Definition",
+    cc.is_disabled     AS "Is Disabled",
+    cc.is_not_for_replication AS "Is Not For Replication",
+    cc.create_date     AS "Create Date",
+    cc.modify_date     AS "Modify Date"
+FROM sys.check_constraints cc
+JOIN sys.tables t   ON cc.parent_object_id = t.object_id
+JOIN sys.schemas s  ON t.schema_id = s.schema_id
+WHERE s.name = '{schema}'
+  AND t.name = '{table}'
+  AND cc.name = '{constraint_name}'
+"""
+        )
+
+    def GetPropertiesUnique(self, schema, table, constraint_name):
+        return self.Query(
+            f"""
+SELECT 
+    kc.table_schema     AS "Schema Name",
+    kc.table_name       AS "Table Name",
+    kc.constraint_name  AS "Constraint Name",
+    kc.column_name      AS "Column Name",
+    kc.ordinal_position AS "Column Order"
+FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc
+    ON kc.constraint_name = tc.constraint_name
+   AND kc.table_schema = tc.table_schema
+WHERE tc.constraint_type = 'UNIQUE'
+  AND kc.table_schema = '{schema}'
+  AND kc.table_name   = '{table}'
+  AND kc.constraint_name = '{constraint_name}'
+"""
+        )
+
+    def GetPropertiesIndex(self, schema, table, index_name):
+        return self.Query(
+            f""" 
+    SELECT 
+    s.name          AS "Schema Name",
+    t.name          AS "Table Name",
+    i.name          AS "Index Name",
+    i.index_id      AS "Index Id",
+    i.type_desc     AS "Index Type",
+    i.is_unique     AS "Is Unique",
+    i.is_primary_key AS "Is Primary Key",
+    i.is_unique_constraint AS "Is Unique Constraint",
+    i.is_disabled   AS "Is Disabled",
+    i.fill_factor   AS "Fill Factor",
+    i.allow_row_locks AS "Allow Row Locks",
+    i.allow_page_locks AS "Allow Page Locks",
+    STRING_AGG(
+        CASE 
+            WHEN ic.is_included_column = 1 
+                THEN c.name + ' (INCLUDE)'
+            ELSE c.name + CASE WHEN ic.is_descending_key = 1 THEN ' DESC' ELSE ' ASC' END
+        END, ', '
+    ) WITHIN GROUP (ORDER BY ic.key_ordinal) AS "Columns"
+FROM sys.indexes i
+JOIN sys.tables t ON i.object_id = t.object_id
+JOIN sys.schemas s ON t.schema_id = s.schema_id
+JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+JOIN sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+WHERE s.name = '{schema}'
+  AND t.name = '{table}'
+  AND i.name = '{index_name}'
+GROUP BY 
+    s.name, t.name, i.name, i.index_id, i.type_desc,
+    i.is_unique, i.is_primary_key, i.is_unique_constraint,
+    i.is_disabled, i.fill_factor, i.allow_row_locks, i.allow_page_locks;
+"""
+        )
+
+    def GetPropertiesStatistic(self, schema, table, statistic_name):
+        return self.Query(
+            f"""
+SELECT 
+    s.name        AS "Schema Name",
+    t.name        AS "Table Name",
+    st.name       AS "Statistic Name",
+    st.stats_id   AS "Stats Id",
+    st.auto_created AS "Auto Created",
+    st.user_created AS "User Created",
+    STRING_AGG(c.name, ', ') WITHIN GROUP (ORDER BY sc.stats_column_id) AS "Columns"
+FROM sys.stats st
+JOIN sys.stats_columns sc 
+     ON st.object_id = sc.object_id AND st.stats_id = sc.stats_id
+JOIN sys.columns c 
+     ON sc.object_id = c.object_id AND sc.column_id = c.column_id
+JOIN sys.tables t 
+     ON st.object_id = t.object_id
+JOIN sys.schemas s 
+     ON t.schema_id = s.schema_id
+WHERE s.name = '{schema}'
+  AND t.name = '{table}'
+  AND st.name = '{statistic_name}'
+  GROUP BY s.name, t.name, st.name, st.stats_id, st.auto_created, st.user_created
+"""
+        )
+
+    def GetPropertiesViewField(self, schema, view, view_field):
+        return self.Query(
+            f"""
+SELECT 
+    c.name       AS "Column Name",
+    t.name       AS "Data Type",
+    c.max_length AS "Max Length",
+    c.precision  AS "Precision",
+    c.scale AS "Scale",
+    c.is_nullable AS "Is Nullable",
+    c.is_identity AS "Is Identity"
+FROM sys.columns c
+JOIN sys.types t ON c.user_type_id = t.user_type_id
+WHERE c.object_id = OBJECT_ID('{schema}.{view}') AND c.name = '{view_field}'
+"""
+        )
+
     def GetProperties(self, schema, table, object_name, object_type):
         if object_type == "database":
             return self.GetPropertiesDatabase(object_name).Transpose("Property", "Value")
@@ -874,8 +1070,24 @@ WHERE s.name = '{schema}' AND p.name = '{procedure_name}'
             return self.GetPropertiesSchema(object_name).Transpose("Property", "Value")
         if object_type == "table":
             return self.GetPropertiesTable(schema, object_name).Transpose("Property", "Value")
+        if object_type == "table_field":
+            return self.GetPropertiesTableField(schema, table, object_name).Transpose("Property", "Value")
+        if object_type == "index":
+            return self.GetPropertiesIndex(schema, table, object_name).Transpose("Property", "Value")
+        if object_type == "primary_key":
+            return self.GetPropertiesPK(schema, table, object_name).Transpose("Property", "Value")
+        if object_type == "foreign_key":
+            return self.GetPropertiesFK(schema, table, object_name).Transpose("Property", "Value")
+        if object_type == "unique":
+            return self.GetPropertiesUnique(schema, table, object_name).Transpose("Property", "Value")
+        if object_type == "check":
+            return self.GetPropertiesCheck(schema, table, object_name).Transpose("Property", "Value")
+        if object_type == "statistic":
+            return self.GetPropertiesStatistic(schema, table, object_name).Transpose("Property", "Value")
         if object_type == "view":
             return self.GetPropertiesView(schema, object_name).Transpose("Property", "Value")
+        if object_type == "view_field":
+            return self.GetPropertiesViewField(schema, table, object_name).Transpose("Property", "Value")
         if object_type == "function":
             return self.GetPropertiesFunction(schema, object_name).Transpose("Property", "Value")
         if object_type == "procedure":
