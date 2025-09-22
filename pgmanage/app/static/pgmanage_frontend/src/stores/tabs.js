@@ -13,6 +13,7 @@ import { h } from "vue";
 import postgresqlIcon from '@src/assets/images/db_icons/postgresql.svg'
 import mysqlIcon from '@src/assets/images/db_icons/mysql.svg'
 import mariadbIcon from '@src/assets/images/db_icons/mariadb.svg'
+import mssqlIcon from '@src/assets/images/db_icons/mssql.svg'
 import oracleIcon from '@src/assets/images/db_icons/oracle.svg'
 import sqliteIcon from '@src/assets/images/db_icons/sqlite.svg'
 
@@ -306,6 +307,7 @@ const useTabsStore = defineStore("tabs", {
             'mariadb': mariadbIcon,
             'oracle': oracleIcon,
             'sqlite': sqliteIcon,
+            'mssql': mssqlIcon,
           }
 
           let imgPath = dbIcons[connection.technology];
