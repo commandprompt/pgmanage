@@ -1080,7 +1080,12 @@ def thread_query(self, args) -> None:
                 and not all_data
             ):
                 block_size = block_size if mode == QueryModes.FETCH_MORE else 50
-                data = database.connection.QueryBlock(sql_cmd, block_size, True, True)
+                if database.db_type == "oracle" and len(sql_cmd.split(";\n")) >= 2:
+                    list_sql: list[str] = sqlparse.split(sql_cmd,  strip_semicolon=True)
+                    for el in list_sql:
+                        data = database.connection.QueryBlock(el, block_size, True, True)
+                else:
+                    data = database.connection.QueryBlock(sql_cmd, block_size, True, True)
 
                 notices = database.connection.GetNotices()[:]
 
