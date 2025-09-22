@@ -263,7 +263,8 @@ export default {
         mysql: 'MySQL',
         mariadb: 'MariaDB',
         postgresql: 'PostgreSQL',
-        oracle: 'Oracle'
+        oracle: 'Oracle',
+        mssql: 'SQL Server'
       }
 
       let techname = TECHMAP[connection.technology]
