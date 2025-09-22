@@ -541,18 +541,12 @@ def get_properties(request, database):
 
     list_properties = []
     ddl = ""
-
     try:
-        properties = database.GetProperties(
-            data["schema"], data["table"], data["object"], data["type"]
-        )
-        for property_object in properties.Rows:
-            list_properties.append(
-                [property_object["Property"], property_object["Value"]]
-            )
-        # ddl = database.GetDDL(
-        #     data["schema"], data["table"], data["object"], data["type"]
-        # )
+        properties = database.GetProperties(data["schema"], data["table"], data["object"], data["type"])
+        if properties:
+            for property_object in properties.Rows:
+                list_properties.append([property_object["Property"], property_object["Value"]])
+        ddl = database.GetDDL(data["schema"], data["table"], data["object"], data["type"])
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

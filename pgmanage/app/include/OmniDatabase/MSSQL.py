@@ -1055,6 +1055,32 @@ WHERE c.object_id = OBJECT_ID('{schema}.{view}') AND c.name = '{view_field}'
 """
         )
 
+    def GetPropertiesTrigger(self, schema, table, trigger):
+        return self.Query(
+            f"""
+SELECT 
+    sch.name        AS "Schema Name",
+    tbl.name        AS "Table Name",
+    tr.name         AS "Trigger Name",
+    tr.object_id    AS "Object Id",
+    tr.is_disabled  AS "Is Disabled",
+    tr.is_instead_of_trigger AS "Is Instead Of",
+    tr.create_date  AS "Create Date",
+    tr.modify_date  AS "Modify Date"
+FROM sys.triggers tr
+JOIN sys.tables tbl
+     ON tr.parent_id = tbl.object_id
+JOIN sys.schemas sch
+     ON tbl.schema_id = sch.schema_id
+LEFT JOIN sys.sql_modules m
+     ON tr.object_id = m.object_id
+WHERE sch.name = '{schema}'
+  AND tbl.name = '{table}'
+  AND tr.name = '{trigger}';
+
+"""
+        )
+
     def GetProperties(self, schema, table, object_name, object_type):
         if object_type == "database":
             return self.GetPropertiesDatabase(object_name).Transpose("Property", "Value")
@@ -1092,3 +1118,141 @@ WHERE c.object_id = OBJECT_ID('{schema}.{view}') AND c.name = '{view_field}'
             return self.GetPropertiesFunction(schema, object_name).Transpose("Property", "Value")
         if object_type == "procedure":
             return self.GetPropertiesProcedure(schema, object_name).Transpose("Property", "Value")
+        if object_type == "trigger":
+            return self.GetPropertiesTrigger(schema, table, object_name).Transpose("Property", "Value")
+
+    def GetDDLTable(self, table):
+        return self.ExecuteScalar(
+            f"""
+SELECT
+  'CREATE TABLE ' + so.name + ' (' + o.list + ')' + CASE
+    WHEN tc.Constraint_Name IS NULL THEN ''
+    ELSE '\n\nALTER TABLE ' + so.Name + ' ADD CONSTRAINT ' + tc.Constraint_Name + ' PRIMARY KEY ' + ' (' + LEFT(j.List, Len(j.List) -1) + ')'
+  END
+FROM
+  sysobjects so
+  CROSS APPLY (
+    SELECT
+        '\n\t' + column_name + ' ' + data_type + CASE data_type
+        WHEN 'sql_variant' THEN ''
+        WHEN 'text' THEN ''
+        WHEN 'ntext' THEN ''
+        WHEN 'xml' THEN ''
+        WHEN 'decimal' THEN '(' + cast(numeric_precision AS varchar) + ', ' + cast(numeric_scale AS varchar) + ')'
+        ELSE coalesce(
+          '(' + CASE
+            WHEN character_maximum_length = -1 THEN 'MAX'
+            ELSE cast(character_maximum_length AS varchar)
+          END + ')',
+          ''
+        )
+      END + ' ' + CASE
+        WHEN EXISTS (
+          SELECT
+            id
+          FROM
+            syscolumns
+          WHERE
+            object_name(id) = so.name
+            AND name = column_name
+            AND columnproperty(id, name, 'IsIdentity') = 1
+        ) THEN 'IDENTITY(' + cast(ident_seed(so.name) AS varchar) + ',' + cast(ident_incr(so.name) AS varchar) + ')'
+        ELSE ''
+      END + ' ' + (
+        CASE
+          WHEN UPPER(IS_NULLABLE) = 'NO' THEN 'NOT '
+          ELSE ''
+        END
+      ) + 'NULL' + CASE
+        WHEN information_schema.columns.COLUMN_DEFAULT IS NOT NULL THEN ' DEFAULT ' + information_schema.columns.COLUMN_DEFAULT
+        ELSE ''
+      END + ', '
+    FROM
+      information_schema.columns
+    WHERE
+      table_name = so.name
+    ORDER BY
+      ordinal_position
+    FOR XML
+      PATH ('')
+  ) o (list)
+  LEFT JOIN information_schema.table_constraints tc ON tc.Table_name = so.Name
+  AND tc.Constraint_Type = 'PRIMARY KEY'
+  CROSS APPLY (
+    SELECT
+      Column_Name + ', '
+    FROM
+      information_schema.key_column_usage kcu
+    WHERE
+      kcu.Constraint_Name = tc.Constraint_Name
+    ORDER BY
+      ORDINAL_POSITION
+    FOR XML
+      PATH ('')
+  ) j (list)
+WHERE
+  xtype = 'U'
+  AND name NOT IN ('dtproperties')
+  AND so.name = '{table}'
+"""
+        )
+
+    def GetDDLProcedure(self, schema, procedure):
+        return self.ExecuteScalar(
+            f"""
+    SELECT OBJECT_DEFINITION(p.object_id) AS [Definition]
+FROM sys.procedures p
+JOIN sys.schemas s ON p.schema_id = s.schema_id
+WHERE s.name = '{schema}'
+AND p.name = '{procedure}'
+"""
+        )
+
+    def GetDDLView(self, schema, view):
+        return self.ExecuteScalar(
+            f"""
+SELECT OBJECT_DEFINITION(v.object_id) AS [Definition]
+FROM sys.views v
+JOIN sys.schemas s ON v.schema_id = s.schema_id
+WHERE s.name = '{schema}'
+AND v.name = '{view}'
+"""
+        )
+
+    def GetDDLFunction(self, schema, function):
+        return self.ExecuteScalar(
+            f"""
+SELECT OBJECT_DEFINITION(f.object_id) AS [Definition]
+FROM sys.objects f
+JOIN sys.schemas s ON f.schema_id = s.schema_id
+WHERE f.type in ('FN', 'IF', 'TF')
+AND s.name = '{schema}'
+AND f.name = '{function}'
+"""
+        )
+
+    def GetDDLTrigger(self, schema, trigger):
+        return self.ExecuteScalar(
+            f"""
+SELECT OBJECT_DEFINITION(tr.object_id) AS [Definition]
+FROM sys.triggers tr
+JOIN sys.tables tbl
+     ON tr.parent_id = tbl.object_id
+JOIN sys.schemas s ON tbl.schema_id = s.schema_id
+WHERE s.name = '{schema}'
+AND tr.name = '{trigger}'
+"""
+        )
+
+    def GetDDL(self, schema, table, object_name, object_type):
+        if object_type == "table":
+            return self.GetDDLTable(object_name)
+        if object_type == "view":
+            return self.GetDDLView(schema, object_name)
+        if object_type == "function":
+            return self.GetDDLFunction(schema, object_name)
+        if object_type == "procedure":
+            return self.GetDDLProcedure(schema, object_name)
+        if object_type == "trigger":
+            return self.GetDDLTrigger(schema, object_name)
+        return ""
