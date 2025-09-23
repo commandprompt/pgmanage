@@ -1,4 +1,5 @@
 import io
+import logging
 from typing import Optional
 
 import paramiko
@@ -13,6 +14,7 @@ from django.db.models import Q, Prefetch
 from django.http import HttpResponse, JsonResponse
 from sshtunnel import SSHTunnelForwarder
 
+logger = logging.getLogger(__name__)
 
 @user_authenticated
 @session_required
@@ -80,6 +82,12 @@ def get_connections(request, session: Session):
 
             if conn.technology.name != 'terminal':
                 database = database_object.get('database')
+                # don't crash when omnidatabase interface is not available
+                # this may happen if previously created db connection
+                # is not supported in the current variant of pgmanage
+                if database is None:
+                    logger.error(f"Failed to initialize obtain OmniDatabase instance for {conn.technology.name}")
+                    continue
 
                 details = database.PrintDatabaseDetails()
                 if database_object["tunnel"]["enabled"]:
