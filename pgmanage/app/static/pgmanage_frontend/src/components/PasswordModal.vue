@@ -21,7 +21,11 @@
         </div>
 
         <div class="modal-body">
-          <div class="mb-3">{{ message }}</div>
+          <div class="mb-3">
+            <p v-for="line in messageLines">
+              {{line}}
+            </p>
+          </div>
           <div class="form-group">
             <input
               ref="passwordInput"
@@ -151,5 +155,10 @@ export default {
       this.resetToDefault = false;
     },
   },
+  computed: {
+    messageLines() {
+      return this.message.split("\n").filter(l => l.trim())
+    }
+  }
 };
 </script>
