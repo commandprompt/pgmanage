@@ -4,7 +4,7 @@ from django.http import JsonResponse
 
 
 @user_authenticated
-@database_required(check_timeout=False, open_connection=True)
+@database_required(check_timeout=True, open_connection=True)
 def get_tree_info(request, database):
     try:
         data = {
