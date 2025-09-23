@@ -1,5 +1,6 @@
 import re
 from enum import Enum
+from urllib.parse import urlparse
 
 import app.include.Spartacus as Spartacus
 from sqlparse import format
@@ -17,11 +18,13 @@ class Template:
 
 
 class MSSQL:
-    def __init__(self, server, port, service, user, password, conn_id, alias, connection_params):
+    def __init__(self, server, port, service, user, password, conn_id, alias, conn_string='', parse_conn_string = False, connection_params = None):
         self.lock = None
         self.connection_params = connection_params if connection_params else {}
         self.alias = alias
         self.db_type = "mssql"
+        self.conn_string = ""
+        self.conn_string_error = ""
         self.password = password
         self.conn_id = conn_id
 
@@ -35,12 +38,32 @@ class MSSQL:
 
         self.port = port
 
-        self.conn_string = ""  # added just to avoid errors, because it is required
-
         if port is None or port == "":
             self.active_port = "1433"
         else:
             self.active_port = port
+
+        #try to get info from connection string
+        # FIXME: move connection string parsing into some common place
+        if conn_string!='' and parse_conn_string:
+            try:
+                parsed = urlparse(conn_string)
+                if parsed.port!=None:
+                    self.active_port = str(parsed.port)
+                if parsed.hostname!=None:
+                    self.active_server = parsed.hostname
+                if parsed.username!=None:
+                    self.active_user = parsed.username
+                if parsed.password!=None and password == '':
+                    self.password = parsed.password
+                if parsed.query!=None:
+                    self.conn_string_query = parsed.query
+                parsed_database = parsed.path
+                if len(parsed_database)>1:
+                    self.active_service = parsed_database[1:]
+            except Exception as exc:
+                # FIXME: this is naiive since urlparse rarely returns any exceptions for weird strings
+                self.conn_string_error = 'Syntax error in the connection string.'
 
         self.connection = Spartacus.Database.MSSQL(
             self.active_server,
@@ -119,6 +142,8 @@ class MSSQL:
     @lock_required
     def TestConnection(self):
         return_data = ""
+        if self.conn_string and self.conn_string_error!='':
+            return self.conn_string_error
 
         try:
             self.connection.Open()

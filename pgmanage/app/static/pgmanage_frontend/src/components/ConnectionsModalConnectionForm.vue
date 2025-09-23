@@ -499,6 +499,7 @@ import { handleError } from '../logging/utils';
             'port': 'ex: 1433',
             'service': 'ex: master',
             'user': 'ex: sa',
+            'conn_string': 'ex: mssql://sa@localhost:1433/master'
           },
         }
         let current_db = this.connectionLocal.technology || 'postgresql'
