@@ -150,7 +150,11 @@ export default {
           headerSort: false,
           maxInitialWidth: this.maxInitialWidth,
         },
-      selectableRows: false,
+      selectableRangeAutoFocus:false,
+      selectableRange:1,
+      selectableRangeColumns:true,
+      selectableRangeRows:true,
+      editTriggerEvent:"dblclick",
       rowFormatter: this.rowFormatter,
       sortMode: 'remote',
       headerSortClickElement:"icon",
@@ -268,7 +272,6 @@ export default {
               field: (idx).toString(),
               title: title,
               editor: "input",
-              editable: true,
               headerSort: true,
               headerDblClick: (e, column) => {
                 if (column.getWidth() > this.maxInitialWidth) {
