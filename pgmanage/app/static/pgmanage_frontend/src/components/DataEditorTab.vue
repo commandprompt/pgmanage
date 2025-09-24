@@ -41,6 +41,7 @@
 </template>
 
 <script>
+import { markRaw } from "vue";
 import axios from 'axios'
 import Knex from 'knex'
 import isEqualWith from 'lodash/isEqualWith';
@@ -48,6 +49,8 @@ import zipObject from 'lodash/zipObject';
 import forIn from 'lodash/forIn';
 import isArray from 'lodash/isArray'
 import escape from 'lodash/escape';
+import isNil from 'lodash/isNil';
+import isEmpty from 'lodash/isEmpty';
 import { showToast } from "../notification_control";
 import { queryRequestCodes, requestState } from '../constants'
 import { createRequest } from '../long_polling'
@@ -147,7 +150,11 @@ export default {
           headerSort: false,
           maxInitialWidth: this.maxInitialWidth,
         },
-      selectableRows: false,
+      selectableRangeAutoFocus:false,
+      selectableRange:1,
+      selectableRangeColumns:true,
+      selectableRangeRows:true,
+      editTriggerEvent:"dblclick",
       rowFormatter: this.rowFormatter,
       sortMode: 'remote',
       headerSortClickElement:"icon",
@@ -156,7 +163,7 @@ export default {
     })
 
     table.on("tableBuilt", () => {
-      this.tabulator = table;
+      this.tabulator = markRaw(table); // markRaw fixes problem with making tabulator proxy, that we don't need
       this.tabulator.on("cellEdited", this.cellEdited);
       this.knex = Knex({ client: this.dialect || 'postgres'})
       this.getTableColumns().then(() => {this.tabulator.setSort("0", "asc")});
@@ -265,11 +272,7 @@ export default {
               field: (idx).toString(),
               title: title,
               editor: "input",
-              editable: false,
               headerSort: true,
-              cellDblClick: function (e, cell) {
-                cell.edit(true);
-              },
               headerDblClick: (e, column) => {
                 if (column.getWidth() > this.maxInitialWidth) {
                   column.setWidth(this.maxInitialWidth);
@@ -492,8 +495,10 @@ export default {
       if (!this.hasPK)
         return
       // workaround when empty cell with initial null value is changed to empty string when starting editing
-      if (cell.getOldValue() === null && cell.getValue() === '')
-        cell.setValue(null)
+      if (cell.getOldValue() === null && cell.getValue() === '') {
+        cell.restoreOldValue() // prevents from triggering cellEdited handler again
+        return
+      }
 
       let rowData = cell.getRow().getData()
       let rowMeta = rowData["rowMeta"]
@@ -505,7 +510,16 @@ export default {
             return true
           }
         }) && !rowMeta.is_new
-        cell.getRow().reformat()
+
+        const row = cell.getRow();
+
+        row.update({}); // triggers row formatter without wiping everything like with reformat()
+
+        const actionsCell = row.getCell("rowMeta");
+        if (actionsCell) {
+            const val = actionsCell.getValue();
+            actionsCell.setValue(val);  // re-triggers the actionsCell formatter
+        }
       }
 
     },
@@ -705,6 +719,14 @@ export default {
           let filtered = escape(cellVal.slice(0, 1000).toString().replace(/\n/g, ' ↲ '))
           return `${filtered}...`;
         }
+
+      if (isNil(cellVal)) {
+        return '<span class="text-muted">[null]</span>'
+      }
+
+      if(isEmpty(cellVal)) {
+        return '<span class="text-muted">[empty]</span>'
+      }
       return cellVal
     }
   },
