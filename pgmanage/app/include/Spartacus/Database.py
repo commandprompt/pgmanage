@@ -4182,6 +4182,8 @@ class MSSQL(Generic):
                             row = self.cur.fetchone()
                 if self.start:
                     self.start = False
+                if len(table.Rows) < blocksize:
+                    self.start = True
                 return table
         except Spartacus.Database.Exception as exc:
             raise exc
