@@ -501,6 +501,8 @@ export default {
           title: formatTitle(col, idx),
           field: idx.toString(),
           resizable: "header",
+          editor: "input",
+          editable: false,
           formatter: this.cellFormatter,
           contextMenu: cellContextMenu,
           hozAlign: colHozAlign(idx),
