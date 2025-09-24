@@ -43,8 +43,6 @@ export default {
       let options = messageModalStore.checkboxes.map((o) => o.checked ? o.label : null)
       let query = this.buildQueryWithOptions(this.dropTemplate.query, options)
       this.api.post('/execute_query/', {
-        database_index: this.databaseIndex,
-        workspace_id: this.workspaceId,
         query: query
       })
       .then((resp) => {
