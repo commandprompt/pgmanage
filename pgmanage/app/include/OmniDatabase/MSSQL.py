@@ -1281,3 +1281,20 @@ AND tr.name = '{trigger}'
         if object_type == "trigger":
             return self.GetDDLTrigger(schema, object_name)
         return ""
+
+    def QueryTableRecords(self, column_list, table, schema, query_filter, count=-1):
+        table_name = "{0}.{1}".format(schema, table) if schema else table
+
+        limit = ""
+        if count != -1:
+            limit = f" TOP {count}"
+        return self.Query(
+            """
+            select {3} {0}
+            from {1} t
+            {2}
+        """.format(
+                column_list, table_name, query_filter, limit
+            ),
+            False,
+        )

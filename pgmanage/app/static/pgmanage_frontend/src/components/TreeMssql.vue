@@ -173,6 +173,13 @@ export default {
               );
             },
           },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.title, this.selectedNode.data.schema)
+            },
+          },
         ],
         cm_columns: [],
         cm_column: [],
