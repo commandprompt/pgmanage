@@ -174,7 +174,10 @@ export default {
       this.tabulator = markRaw(table); // markRaw fixes problem with making tabulator proxy, that we don't need
       this.tabulator.on("cellEdited", this.cellEdited);
       this.knex = Knex({ client: this.dialect || 'postgres'})
-      this.getTableColumns().then(() => {this.tabulator.setSort("0", "asc")});
+      this.getTableColumns().then(() => {
+        this.addHeaderMenuOverlayElement();
+        this.tabulator.setSort("0", "asc");
+      });
     })
 
     emitter.on(`${this.tabId}_query_edit`, () => {
@@ -652,6 +655,16 @@ export default {
       const newRowObject = { rowMeta: rowMeta, id: newRowId, ...newRow };
       this.tabulator.addData(newRowObject, true);
       this.tableDataLocal.unshift(this.tabulator.getRow(newRowId).getData());
+
+      const firstRow = this.tabulator.getRows()[0];
+      if (!firstRow) return;
+
+      const firstCell = firstRow.getCells()[0];
+      if (!firstCell) return;
+
+      let currentRange = last(this.tabulator.getRanges())
+
+      currentRange.setBounds(firstCell, firstCell)
     },
     revertRow(rowMeta, rowNum) {
       let sourceRow = this.tableData.find(
@@ -796,7 +809,22 @@ export default {
         return '<span class="text-muted">[empty]</span>'
       }
       return cellVal
-    }
+    },
+    addHeaderMenuOverlayElement() {
+      const targetElement = document.querySelector(`#${this.tabId}_content .tabulator-frozen-left .tabulator-col-title-holder`)
+      const overlay = document.createElement("div");
+      overlay.className =  "position-absolute w-100 h-100";
+      overlay.style.zIndex = "1000"; 
+      overlay.style.cursor = "pointer"
+      overlay.style.backgroundColor = "rgba(0, 0, 0, 0)";
+
+      targetElement.appendChild(overlay)
+
+      targetElement.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      });
+    },
   },
   watch: {
     hasChanges() {
