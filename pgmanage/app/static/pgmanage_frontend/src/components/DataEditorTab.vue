@@ -276,23 +276,6 @@ export default {
           let cellContextMenu = (e, cellComponent) => {
             return [
               {
-                label: '<span>Set Null</span>',
-                action: () => {
-                  contextEdits.add(cellComponent);
-                  cellComponent.setValue(null)
-                }
-              },
-              {
-                label: '<span>Set Empty</span>',
-                action: () => {
-                  contextEdits.add(cellComponent);
-                  cellComponent.setValue("")
-                } 
-              },
-              {
-                separator:true,
-              },
-              {
                 label: '<i class="fas fa-copy"></i><span>Copy</span>',
                 action: function (e, cell) {
                   cell.getTable().copyToClipboard();
@@ -301,23 +284,46 @@ export default {
               {
                 label: '<i class="fas fa-copy"></i><span>Copy as JSON</span>',
                 action: () => {
-                  const data = last(this.table.getRangesData());
+                  const data = last(this.tabulator.getRangesData());
                   this.copyTableData(data, "json", this.columnNames);
                 },
               },
               {
                 label: '<i class="fas fa-copy"></i><span>Copy as CSV</span>',
                 action: () => {
-                  const data = last(this.table.getRangesData());
+                  const data = last(this.tabulator.getRangesData());
                   this.copyTableData(data, "csv", this.columnNames);
                 },
               },
               {
                 label: '<i class="fas fa-copy"></i><span>Copy as Markdown</span>',
                 action: () => {
-                  const data = last(this.table.getRangesData());
+                  const data = last(this.tabulator.getRangesData());
                   this.copyTableData(data, "markdown", this.columnNames);
                 },
+              },
+              {
+                separator:true,
+              },
+              {
+                label: '<span>Set Null</span>',
+                action: () => {
+                  const range = last(this.tabulator.getRanges());
+                  range.getCells().flat().forEach((cell) => {
+                    contextEdits.add(cell);
+                    cell.setValue(null);
+                  })
+                }
+              },
+              {
+                label: '<span>Set Empty</span>',
+                action: () => {
+                  const range = last(this.tabulator.getRanges());
+                  range.getCells().flat().forEach((cell) => {
+                    contextEdits.add(cell);
+                    cell.setValue("");
+                  })
+                } 
               },
             ];
           } 
