@@ -41,6 +41,7 @@
 </template>
 
 <script>
+import ClipboardMixin from "../mixins/table_clipboard_copy_mixin";
 import { markRaw } from "vue";
 import axios from 'axios'
 import Knex from 'knex'
@@ -51,6 +52,7 @@ import isArray from 'lodash/isArray'
 import escape from 'lodash/escape';
 import isNil from 'lodash/isNil';
 import isEmpty from 'lodash/isEmpty';
+import last from 'lodash/last';
 import { showToast } from "../notification_control";
 import { queryRequestCodes, requestState } from '../constants'
 import { createRequest } from '../long_polling'
@@ -80,6 +82,7 @@ export default {
   components: {
     DataEditorTabFilter: DataEditorTabFilterList
   },
+  mixins: [ClipboardMixin,],
   props: {
     dialect: String,
     schema: String,
@@ -160,6 +163,11 @@ export default {
       headerSortClickElement:"icon",
       ajaxURL: "http://fake",
       ajaxRequestFunc: this.getTableData,
+      clipboard: "copy",
+      clipboardCopyRowRange: "range",
+      clipboardCopyConfig: {
+        columnHeaders: false, //do not include column headers in clipboard output
+      },
     })
 
     table.on("tableBuilt", () => {
@@ -264,6 +272,38 @@ export default {
             cellClick: this.handleClick,
             headerClick: this.addRow,
           }
+
+          let cellContextMenu = (e, cellComponent) => {
+            return [
+              {
+                label: '<i class="fas fa-copy"></i><span>Copy</span>',
+                action: function (e, cell) {
+                  cell.getTable().copyToClipboard();
+                },
+              },
+              {
+                label: '<i class="fas fa-copy"></i><span>Copy as JSON</span>',
+                action: () => {
+                  const data = last(this.table.getRangesData());
+                  this.copyTableData(data, "json", this.columnNames);
+                },
+              },
+              {
+                label: '<i class="fas fa-copy"></i><span>Copy as CSV</span>',
+                action: () => {
+                  const data = last(this.table.getRangesData());
+                  this.copyTableData(data, "csv", this.columnNames);
+                },
+              },
+              {
+                label: '<i class="fas fa-copy"></i><span>Copy as Markdown</span>',
+                action: () => {
+                  const data = last(this.table.getRangesData());
+                  this.copyTableData(data, "markdown", this.columnNames);
+                },
+              },
+            ];
+          } 
           let columns = this.tableColumns.map((col, idx) => {
             let prepend = col.is_primary ? '<i class="fas fa-key action-key text-secondary me-1"></i>' : ''
             let title = `${prepend}<span>${col.name}</span><div class='fw-light'>${col.data_type}</div>`
@@ -273,6 +313,7 @@ export default {
               title: title,
               editor: "input",
               headerSort: true,
+              contextMenu: cellContextMenu,
               headerDblClick: (e, column) => {
                 if (column.getWidth() > this.maxInitialWidth) {
                   column.setWidth(this.maxInitialWidth);
