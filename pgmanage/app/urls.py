@@ -44,6 +44,7 @@ base_urlpatterns = [
     path('refresh_monitoring/', views.workspace.refresh_monitoring, name='refresh_monitoring'),
     # path('delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),
     path('get_database_meta/', views.workspace.get_database_meta, name='get_database_meta'),
+    path('execute_query/', views.workspace.execute_query, name="execute_query"),
 
     #SETINGS
     path('settings/', views.workspace.SettingsView.as_view(), name="settings"),
@@ -123,7 +124,6 @@ base_urlpatterns = [
     path('get_role_details/', views.tree_postgresql.get_role_details, name='get_role_details'),
     path('get_extensions_postgresql/', views.tree_postgresql.get_extensions, name='get_extensions'),
     path('get_extension_details/', views.tree_postgresql.get_extension_details, name='get_extension_details'),
-    path('execute_query_postgresql/', views.tree_postgresql.execute_query, name="execute_query"),
     path('get_available_extensions_postgresql/', views.tree_postgresql.get_available_extensions, name='get_available_extensions'),
     path('get_physicalreplicationslots_postgresql/', views.tree_postgresql.get_physicalreplicationslots, name='get_physicalreplicationslots'),
     path('get_logicalreplicationslots_postgresql/', views.tree_postgresql.get_logicalreplicationslots, name='get_logicalreplicationslots'),

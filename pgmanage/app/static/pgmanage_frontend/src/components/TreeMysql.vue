@@ -41,6 +41,7 @@
 <script>
 import TreeMixin from "../mixins/power_tree.js";
 import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
+import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import {
@@ -51,7 +52,6 @@ import {
 import { emitter } from "../emitter";
 import { tabsStore, connectionsStore, dbMetadataStore } from "../stores/stores_initializer";
 import { checkBeforeChangeDatabase } from "../workspace";
-import ContextMenu from "@imengyu/vue3-context-menu";
 import { operationModes } from "../constants";
 import { findNode, findChild } from "../utils.js";
 
@@ -60,7 +60,7 @@ export default {
   components: {
     PowerTree,
   },
-  mixins: [TreeMixin, PinDatabaseMixin],
+  mixins: [TreeMixin, PinDatabaseMixin, DropDbObjectMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -129,13 +129,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Database",
-                this.templates.drop_database.replace(
+              let template = this.templates.drop_database.replace(
                   "#database_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -220,14 +218,12 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Table",
-                this.templates.drop_table.replace(
+              let template = this.templates.drop_table.replace(
                   "#table_name#",
                   `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
                   }`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -269,16 +265,14 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Column",
-                this.templates.drop_column
+              let template = this.templates.drop_column
                   .replace(
                     "#table_name#",
                     `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace(/#column_name#/g, this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -306,16 +300,14 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Primary Key",
-                this.templates.drop_primarykey
+              let template = this.templates.drop_primarykey
                   .replace(
                     "#table_name#",
                     `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace("#constraint_name#", this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -343,16 +335,14 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Key",
-                this.templates.drop_foreignkey
+              let template = this.templates.drop_foreignkey
                   .replace(
                     "#table_name#",
                     `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace("#constraint_name#", this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -380,16 +370,14 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Unique",
-                this.templates.drop_unique
+              let template = this.templates.drop_unique
                   .replace(
                     "#table_name#",
                     `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace("#constraint_name#", this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -417,14 +405,12 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Index",
-                this.templates.drop_index.replace(
+              let template = this.templates.drop_index.replace(
                   "#index_name#",
-                  `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.selectedNode.title
-                  }`
+                  this.selectedNode.title
                 )
-              );
+                .replace("#table_name#", `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title}`)
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -474,14 +460,12 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop View",
-                this.templates.drop_view.replace(
+              let template = this.templates.drop_view.replace(
                   "#view_name#",
                   `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
                   }`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -515,13 +499,12 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Function",
-                this.templates.drop_function.replace(
+              let template = this.templates.drop_function.replace(
                   "#function_name#",
-                  this.selectedNode.data.id
+                  `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
+                  }`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -555,13 +538,12 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Procedure",
-                this.templates.drop_procedure.replace(
+              let template = this.templates.drop_procedure.replace(
                   "#function_name#",
-                  this.selectedNode.data.id
+                  `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
+                  }`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -594,13 +576,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Role",
-                this.templates.drop_role.replace(
+              let template = this.templates.drop_role.replace(
                   "#role_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],

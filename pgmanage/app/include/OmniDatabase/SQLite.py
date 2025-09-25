@@ -712,6 +712,10 @@ class SQLite:
             p_table
         ), True)
 
+    @lock_required
+    def Execute(self, sql):
+        return self.connection.Execute(sql)
+
     def TemplateSelect(self, p_table, p_kind):
         # table
         if p_kind == 't':

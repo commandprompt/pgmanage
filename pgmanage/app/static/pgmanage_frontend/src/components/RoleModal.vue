@@ -575,7 +575,7 @@
       saveRole() {
         this.v$.$validate()
         if(!this.v$.$invalid) {
-          axios.post('/execute_query_postgresql/', {
+          axios.post('/execute_query/', {
             database_index: this.databaseIndex,
             workspace_id: this.workspaceId,
             query: this.generatedSQL

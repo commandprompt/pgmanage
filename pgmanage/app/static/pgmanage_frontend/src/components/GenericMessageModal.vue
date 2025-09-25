@@ -22,7 +22,7 @@
           <div
             id="generic_modal_message_content"
             class="modal-body"
-            style="white-space: pre-line; word-break: break-all"
+            style="white-space: pre-line; word-break: break-word"
           >
             {{ store.message }}
             <div

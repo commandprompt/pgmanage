@@ -171,7 +171,7 @@ describe("ExtensionModal.vue", () => {
       .find('[data-testid="save-extension-button"]')
       .trigger("click");
     expect(axios.post).toHaveBeenCalledWith(
-      "/execute_query_postgresql/",
+      "/execute_query/",
       expect.any(Object)
     );
   });
