@@ -75,7 +75,7 @@ function escapeColumnName(name) {
     : `"${name.replace(/"/g, '""')}"`;
 }
 
-
+const contextEdits = new WeakSet();
 
 export default {
   name: "DataEditorTab",
@@ -275,6 +275,23 @@ export default {
 
           let cellContextMenu = (e, cellComponent) => {
             return [
+              {
+                label: '<span>Set Null</span>',
+                action: () => {
+                  contextEdits.add(cellComponent);
+                  cellComponent.setValue(null)
+                }
+              },
+              {
+                label: '<span>Set Empty</span>',
+                action: () => {
+                  contextEdits.add(cellComponent);
+                  cellComponent.setValue("")
+                } 
+              },
+              {
+                separator:true,
+              },
               {
                 label: '<i class="fas fa-copy"></i><span>Copy</span>',
                 action: function (e, cell) {
@@ -535,8 +552,12 @@ export default {
     cellEdited(cell) {
       if (!this.hasPK)
         return
+
+      const fromContext = contextEdits.has(cell);
+      contextEdits.delete(cell);
+
       // workaround when empty cell with initial null value is changed to empty string when starting editing
-      if (cell.getOldValue() === null && cell.getValue() === '') {
+      if (cell.getOldValue() === null && cell.getValue() === '' && !fromContext) {
         cell.restoreOldValue() // prevents from triggering cellEdited handler again
         return
       }
