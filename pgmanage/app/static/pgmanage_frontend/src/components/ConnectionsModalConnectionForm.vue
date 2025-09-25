@@ -56,7 +56,7 @@
                   <option v-for="(technology, index) in technologies"
                     :key=index
                     :value="technology">
-                      {{technology}}
+                      {{ techName(technology) }}
                   </option>
               </select>
             </div>
@@ -273,6 +273,7 @@ import isEmpty from 'lodash/isEmpty';
 import { showToast } from '../notification_control';
 import { Modal } from 'bootstrap';
 import { handleError } from '../logging/utils';
+import { dbTechNames } from '../constants'
 
   export default {
     name: 'ConnectionsModalConnectionForm',
@@ -584,6 +585,9 @@ import { handleError } from '../logging/utils';
             handleError(error);
           })
         }
+      },
+      techName(technology) {
+        return dbTechNames[technology]
       },
       updateConnectionKey(event) {
         let file = (event.target.files) ? event.target.files[0] : false;

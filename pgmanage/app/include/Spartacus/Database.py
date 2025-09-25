@@ -1655,14 +1655,23 @@ class PostgreSQL(Generic):
                     self.application_name.replace("'", "\\'"),
                 )
         else:
-            return """host='{0}' port={1} dbname='{2}' user='{3}' password='{4}' application_name='{5}'""".format(
-                self.host.replace("'", "\\'"),
-                self.port,
-                self.service.replace("'", "\\'"),
-                self.user.replace("'", "\\'"),
-                self.password.replace("'", "\\'"),
-                self.application_name.replace("'", "\\'"),
-            )
+            if self.password is None or self.password == "":
+                return """host='{0}' port={1} dbname='{2}' user='{3}' application_name='{4}'""".format(
+                    self.host.replace("'", "\\'"),
+                    self.port,
+                    self.service.replace("'", "\\'"),
+                    self.user.replace("'", "\\'"),
+                    self.application_name.replace("'", "\\'"),
+                )
+            else:
+                return """host='{0}' port={1} dbname='{2}' user='{3}' password='{4}' application_name='{5}'""".format(
+                    self.host.replace("'", "\\'"),
+                    self.port,
+                    self.service.replace("'", "\\'"),
+                    self.user.replace("'", "\\'"),
+                    self.password.replace("'", "\\'"),
+                    self.application_name.replace("'", "\\'"),
+                )
 
     def Handler(self, value, cursor):
         return value

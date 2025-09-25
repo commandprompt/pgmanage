@@ -112,6 +112,16 @@ const dataEditorFilterModes = {
   BUILDER: "builder",
 };
 
+const dbTechNames = {
+  sqlite: 'SQLite3',
+  terminal: 'Terminal',
+  mysql: 'MySQL',
+  mariadb: 'MariaDB',
+  postgresql: 'PostgreSQL',
+  oracle: 'Oracle',
+  mssql: 'SQL Server'
+}
+
 export {
   requestState,
   tabStatusMap,
@@ -128,4 +138,5 @@ export {
   operationModes,
   editorModeMap,
   dataEditorFilterModes,
+  dbTechNames,
 };
