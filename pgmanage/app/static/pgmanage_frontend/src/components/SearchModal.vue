@@ -3,10 +3,8 @@
     <div
       v-if="isOpen"
       id="searchPalette"
-      class="search-modal position-absolute top-0 start-50 translate-middle-x w-100"
-      style="max-width: 700px; z-index: 1050"
-    >
-      <div class="search-modal__container p-3">
+      class="search-modal position-absolute top-0 left-0 right-0">
+      <div class="search-modal__container p-3 position-absolute start-50 translate-middle-x">
         <div class="form-group mb-0">
           <input
             :id="`${workspaceId}_search_input`"
