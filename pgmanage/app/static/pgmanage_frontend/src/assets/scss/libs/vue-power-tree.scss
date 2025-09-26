@@ -18,7 +18,13 @@
   }
 
   &-toggle {
-    width: 15px;
+    // aligns toggle icon to the center of container
+    // makes it easier to click
+    width: 20px;
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    align-items: center;
   }
 
   &-selected {
