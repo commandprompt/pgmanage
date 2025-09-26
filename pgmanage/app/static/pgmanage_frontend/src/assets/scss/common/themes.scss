@@ -22,6 +22,7 @@ $buttonOutlinePrimaryBg: 'buttonOutlinePrimaryBg';
 $buttonOutlineSecondaryBg: 'buttonOutlineSecondaryBg';
 $buttonOutlineSuccessBg: 'buttonOutlineSuccessBg';
 $buttonOutlineDangerBg: 'buttonOutlineDangerBg';
+$buttonIconSecondaryColor: 'buttonIconSecondaryColor';
 $fileItemBgActive: 'fileItemBgActive';
 $cronLightInputColor: 'cronLightInputColor';
 $cronLightInputBg: 'cronLightInputBg';
@@ -67,6 +68,7 @@ $themes: (
         buttonOutlineSecondaryBg: transparent,
         buttonOutlineSuccessBg: transparent,
         buttonOutlineDangerBg: transparent,
+        buttonIconSecondaryColor: $secondaryGrey,
         fileItemBgActive: $bgSurfaceBlueLight,
         cronLightInputColor: $primaryBlue,
         cronLightInputBg: transparent,
@@ -110,6 +112,7 @@ $themes: (
         buttonOutlineSecondaryBg: rgba($secondaryGrey, 0.15),
         buttonOutlineSuccessBg: rgba($successColor, 0.15),
         buttonOutlineDangerBg: rgba($dangerColor, 0.15),
+        buttonIconSecondaryColor: $primaryLight,
         fileItemBgActive: $bgSurfaceSecondaryDark,
         cronLightInputColor: $white,
         cronLightInputBg: rgba($primaryBlue, 0.15),

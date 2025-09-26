@@ -1,6 +1,8 @@
 <template>
   <div class="position-relative">
     <div class="floating-toolbar floating-toolbar--filled floating-toolbar--right-top">
+      <span class="floating-toolbar__content">
+
       <button class="btn btn-icon-secondary" @click="resetToDefault" title="Reset to default">
         <i class="fa-solid fa-rotate-left"></i>
       </button>
@@ -15,6 +17,7 @@
       <button class="btn btn-icon-secondary" @click="zoomIn" title="Zoom In">
         <i class="fas fa-search-plus"></i>
       </button>
+      </span>
     </div>
   <div class="pt-3" style="width: 100%; height: calc(100vh - 70px); visibility: hidden" ref="cyContainer"></div>
 
