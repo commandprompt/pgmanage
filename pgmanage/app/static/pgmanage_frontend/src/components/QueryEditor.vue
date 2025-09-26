@@ -186,6 +186,7 @@ export default {
         'mariadb': SQLDialect.MYSQL,
         'oracle': SQLDialect.PLSQL,
         'sqlite': SQLDialect.SQLITE,
+        'mssql': SQLDialect.TSQL,
       }
 
       this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, filteredMeta);
