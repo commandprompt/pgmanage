@@ -920,8 +920,10 @@ SELECT
     kc.table_schema     AS "Schema Name",
     kc.table_name       AS "Table Name",
     kc.constraint_name  AS "Constraint Name",
-    kc.COLUMN_NAME      AS "Column Name",
-    kc.ORDINAL_POSITION AS "Column Order"
+    STRING_AGG(
+        QUOTENAME(kc.column_name) ,
+        ', '
+    ) WITHIN GROUP (ORDER BY kc.ordinal_position) AS "Columns"
 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
 JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc
     ON kc.constraint_name = tc.constraint_name
@@ -930,6 +932,7 @@ WHERE tc.constraint_type = 'PRIMARY KEY'
   AND kc.table_schema = '{schema}'
   AND kc.table_name   = '{table}'
   AND kc.constraint_name = '{constraint_name}'
+  GROUP BY kc.table_schema, kc.table_name, kc.constraint_name;
 """
         )
 
