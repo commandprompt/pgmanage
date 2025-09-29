@@ -1146,79 +1146,70 @@ WHERE sch.name = '{schema}'
         if object_type == "trigger":
             return self.GetPropertiesTrigger(schema, table, object_name).Transpose("Property", "Value")
 
-    def GetDDLTable(self, table):
+    def GetDDLTable(self, schema, table):
         return self.ExecuteScalar(
             f"""
-SELECT
-  'CREATE TABLE ' + so.name + ' (' + o.list + ')' + CASE
-    WHEN tc.Constraint_Name IS NULL THEN ''
-    ELSE '\n\nALTER TABLE ' + so.Name + ' ADD CONSTRAINT ' + tc.Constraint_Name + ' PRIMARY KEY ' + ' (' + LEFT(j.List, Len(j.List) -1) + ')'
-  END
-FROM
-  sysobjects so
-  CROSS APPLY (
-    SELECT
-        '\n\t' + column_name + ' ' + data_type + CASE data_type
-        WHEN 'sql_variant' THEN ''
-        WHEN 'text' THEN ''
-        WHEN 'ntext' THEN ''
-        WHEN 'xml' THEN ''
-        WHEN 'decimal' THEN '(' + cast(numeric_precision AS varchar) + ', ' + cast(numeric_scale AS varchar) + ')'
-        ELSE coalesce(
-          '(' + CASE
-            WHEN character_maximum_length = -1 THEN 'MAX'
-            ELSE cast(character_maximum_length AS varchar)
-          END + ')',
-          ''
-        )
-      END + ' ' + CASE
-        WHEN EXISTS (
-          SELECT
-            id
-          FROM
-            syscolumns
-          WHERE
-            object_name(id) = so.name
-            AND name = column_name
-            AND columnproperty(id, name, 'IsIdentity') = 1
-        ) THEN 'IDENTITY(' + cast(ident_seed(so.name) AS varchar) + ',' + cast(ident_incr(so.name) AS varchar) + ')'
-        ELSE ''
-      END + ' ' + (
-        CASE
-          WHEN UPPER(IS_NULLABLE) = 'NO' THEN 'NOT '
-          ELSE ''
-        END
-      ) + 'NULL' + CASE
-        WHEN information_schema.columns.COLUMN_DEFAULT IS NOT NULL THEN ' DEFAULT ' + information_schema.columns.COLUMN_DEFAULT
-        ELSE ''
-      END + ', '
-    FROM
-      information_schema.columns
-    WHERE
-      table_name = so.name
-    ORDER BY
-      ordinal_position
-    FOR XML
-      PATH ('')
-  ) o (list)
-  LEFT JOIN information_schema.table_constraints tc ON tc.Table_name = so.Name
-  AND tc.Constraint_Type = 'PRIMARY KEY'
-  CROSS APPLY (
-    SELECT
-      Column_Name + ', '
-    FROM
-      information_schema.key_column_usage kcu
-    WHERE
-      kcu.Constraint_Name = tc.Constraint_Name
-    ORDER BY
-      ORDINAL_POSITION
-    FOR XML
-      PATH ('')
-  ) j (list)
-WHERE
-  xtype = 'U'
-  AND name NOT IN ('dtproperties')
-  AND so.name = '{table}'
+WITH ColumnDefs AS (
+    SELECT 
+        TABLE_SCHEMA,
+        TABLE_NAME,
+        STRING_AGG(
+            CAST(
+                '  ' + QUOTENAME(COLUMN_NAME) + ' ' + DATA_TYPE +
+                CASE 
+                    WHEN CHARACTER_MAXIMUM_LENGTH IS NOT NULL 
+                         AND DATA_TYPE LIKE '%char%' 
+                         THEN '(' + 
+                              CASE WHEN CHARACTER_MAXIMUM_LENGTH = -1 
+                                   THEN 'MAX' 
+                                   ELSE CAST(
+                                       CASE WHEN DATA_TYPE LIKE 'n%' 
+                                            THEN CHARACTER_MAXIMUM_LENGTH/2 
+                                            ELSE CHARACTER_MAXIMUM_LENGTH 
+                                       END AS NVARCHAR(10)
+                                   ) 
+                              END + ')'
+                    WHEN DATA_TYPE IN ('decimal','numeric') 
+                         THEN '(' + CAST(NUMERIC_PRECISION AS NVARCHAR(10)) + ',' + CAST(NUMERIC_SCALE AS NVARCHAR(10)) + ')'
+                    ELSE ''
+                END +
+                CASE WHEN COLLATION_NAME IS NOT NULL 
+                          AND DATA_TYPE LIKE '%char%' 
+                     THEN ' COLLATE ' + COLLATION_NAME 
+                     ELSE '' END +
+                CASE WHEN IS_NULLABLE = 'YES' THEN ' NULL' ELSE ' NOT NULL' END
+                AS NVARCHAR(MAX)
+            ), ',' + CHAR(10)
+        ) WITHIN GROUP (ORDER BY ORDINAL_POSITION) AS ColumnList
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = '{schema}' AND TABLE_NAME = '{table}'
+    GROUP BY TABLE_SCHEMA, TABLE_NAME
+)
+SELECT 
+    'CREATE TABLE ' + QUOTENAME(c.TABLE_SCHEMA) + '.' + QUOTENAME(c.TABLE_NAME) + ' (' + CHAR(10) +
+    c.ColumnList + CHAR(10) +
+    ');' + CHAR(10) +
+    ISNULL(pk.PKScript, '') AS [CreateTableScript]
+FROM ColumnDefs c
+LEFT JOIN (
+    SELECT 
+        kc.TABLE_SCHEMA,
+        kc.TABLE_NAME,
+        'ALTER TABLE ' + QUOTENAME(kc.TABLE_SCHEMA) + '.' + QUOTENAME(kc.TABLE_NAME) + 
+        ' ADD CONSTRAINT ' + QUOTENAME(tc.CONSTRAINT_NAME) +
+        ' PRIMARY KEY (' + 
+        STRING_AGG(QUOTENAME(kc.COLUMN_NAME), ', ') WITHIN GROUP (ORDER BY kc.ORDINAL_POSITION) +
+        ');' AS PKScript
+    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+    JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc
+      ON tc.CONSTRAINT_NAME = kc.CONSTRAINT_NAME
+     AND tc.TABLE_SCHEMA = kc.TABLE_SCHEMA
+    WHERE tc.CONSTRAINT_TYPE = 'PRIMARY KEY'
+      AND kc.TABLE_SCHEMA = '{schema}'
+      AND kc.TABLE_NAME = '{table}'
+    GROUP BY kc.TABLE_SCHEMA, kc.TABLE_NAME, tc.CONSTRAINT_NAME
+) pk
+  ON pk.TABLE_SCHEMA = c.TABLE_SCHEMA AND pk.TABLE_NAME = c.TABLE_NAME;
 """
         )
 
@@ -1271,7 +1262,7 @@ AND tr.name = '{trigger}'
 
     def GetDDL(self, schema, table, object_name, object_type):
         if object_type == "table":
-            return self.GetDDLTable(object_name)
+            return self.GetDDLTable(schema, object_name)
         if object_type == "view":
             return self.GetDDLView(schema, object_name)
         if object_type == "function":
