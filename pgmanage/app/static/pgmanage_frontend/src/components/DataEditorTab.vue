@@ -136,6 +136,9 @@ export default {
     columnNames() {
       return this.tableColumns.map(col => col.name)
     },
+    primaryKeys() {
+      return this.tableColumns.filter(col => col.is_primary).map(col => col.name)
+    },
     dialectOperators() {
       return this.dialectData?.operators ?? [];
     }
@@ -706,7 +709,17 @@ export default {
         let rowMeta = change["rowMeta"]
         let {rowMeta:_, ...changeWitNoRowmeta} = change
         if(rowMeta.is_new) {
-          inserts.push(zipObject(colNames, Object.values(change)))
+          let zippedChange = zipObject(colNames, Object.values(change))
+          let insert = Object.entries(zippedChange).reduce((acc, [columnName, value]) => {
+            // skip primary keys if no value
+            if (this.primaryKeys.includes(columnName) && !value) {
+              return acc;
+            }
+            acc[columnName] = value;
+            return acc;
+          }, {});
+
+          inserts.push(insert)
         }
         if(rowMeta.is_dirty){
           
