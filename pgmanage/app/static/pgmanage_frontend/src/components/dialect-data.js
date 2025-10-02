@@ -1,6 +1,7 @@
 import TableCompiler_SQLite3 from 'knex/lib/dialects/sqlite3/schema/sqlite-tablecompiler'
 import TableCompiler_MySQL from 'knex/lib/dialects/mysql/schema/mysql-tablecompiler'
 import TableCompiler_PG from 'knex/lib/dialects/postgres/schema/pg-tablecompiler';
+import TableCompiler_MSSQL from 'knex/lib/dialects/mssql/schema/mssql-tablecompiler'
 import knex from 'knex';
 import identity from 'lodash/identity';
 import flatten from 'lodash/flatten';
@@ -128,7 +129,7 @@ export default Object.freeze({
           indexPredicate: true,
           indexMethod: true,
           renameIndex: true,
-      },
+        },
         overrides: [
           () => {
               TableCompiler_MySQL.prototype._setNullableState = function (
@@ -158,4 +159,79 @@ export default Object.freeze({
           },
         ],
     },
+    'mssql': {
+      dataTypes: [
+        'int', 'bigint', 'binary', 'bit', 'char', 'date', 'datetime', 'datetime2', 'datetimeoffset', 'decimal',
+        'float','ntext', 'numeric', 'nvarchar', 'real', 'smalldatetime', 'smallint', 'smallmoney', 
+        'text', 'time', 'timestamp', 'tinyint', 'uniqueidentifier', 'varbinary', 'varchar', 'xml',
+        'sql_variant', 'hierarchyid', 'geography', 'geometry', 'rowversion', 'money', 'image', 'nchar'
+      ],
+      numericTypes: [
+        'bigint', 'int', 'smallint', 'tinyint', 'decimal', 'numeric', 'float', 'real', 'money', 'smallmoney'
+      ],
+      hasSchema: true,
+      hasComments: false,
+      formatterDialect: 'transactsql',
+      api_endpoints: {
+          schemas_url: "/get_schemas_mssql/",
+          // TODO: implement custom types endpoint for mssql
+          // types_url: "/get_types_mssql/",
+          indexes_url: "/get_indexes_mssql/",
+          table_definition_url: "/get_table_definition_mssql/",
+          foreign_keys_url: "/get_fks_mssql/",
+      },
+      disabledFeatures: {
+        indexPredicate: true,
+        indexMethod: true,
+        renameIndex: true,
+      },
+      overrides: [
+        () => {
+          // tweakes alterColumns that:
+          //   includes schema name in drop constraint statement
+          //   uses unique names for constrain check variables
+          TableCompiler_MSSQL.prototype.alterColumns = function(columns, colBuilder) {
+            for (let i = 0, l = colBuilder.length; i < l; i++) {
+              const builder = colBuilder[i];
+              if (builder.modified.defaultTo) {
+                const schema = this.schemaNameRaw || 'dbo';
+                const baseQuery = `
+                      DECLARE @constraint${i} varchar(100) = (SELECT default_constraints.name
+                                                          FROM sys.all_columns
+                                                          INNER JOIN sys.tables
+                                                            ON all_columns.object_id = tables.object_id
+                                                          INNER JOIN sys.schemas
+                                                            ON tables.schema_id = schemas.schema_id
+                                                          INNER JOIN sys.default_constraints
+                                                            ON all_columns.default_object_id = default_constraints.object_id
+                                                          WHERE schemas.name = '${schema}'
+                                                          AND tables.name = '${
+                                                            this.tableNameRaw
+                                                          }'
+                                                          AND all_columns.name = '${builder.getColumnName()}')
+
+                      IF @constraint${i} IS NOT NULL EXEC('ALTER TABLE ${this.schemaNameRaw}.${
+                        this.tableNameRaw
+                      } DROP CONSTRAINT ' + @constraint${i})`;
+                this.pushQuery(baseQuery);
+              }
+            }
+            // in SQL server only one column can be altered at a time
+            columns.sql.forEach((sql) => {
+              this.pushQuery({
+                sql:
+                  (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') +
+                  this.tableName() +
+                  ' ' +
+                  (this.lowerCase
+                    ? this.alterColumnPrefix.toLowerCase()
+                    : this.alterColumnPrefix) +
+                  sql,
+                bindings: columns.bindings,
+              });
+            });
+          }
+        },
+      ],
+  },
 });
