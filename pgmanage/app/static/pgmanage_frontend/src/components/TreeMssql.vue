@@ -55,6 +55,7 @@ import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 
 import { checkBeforeChangeDatabase } from "../workspace";
+import { operationModes } from "../constants";
 import {
   connectionsStore,
   tabsStore,
@@ -151,6 +152,13 @@ export default {
         cm_tables: [
           this.cmRefreshObject,
           {
+            label: "Create Table",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE, "mssql")
+            },
+          },
+          {
             label: "Doc: Tables",
             icon: "fas fa-globe-americas",
             onClick: () => {
@@ -178,6 +186,13 @@ export default {
             icon: "fas fa-table",
             onClick: () => {
               tabsStore.createDataEditorTab(this.selectedNode.title, this.selectedNode.data.schema)
+            },
+          },
+          {
+            label: "Alter Table",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "mssql")
             },
           },
         ],
@@ -343,6 +358,23 @@ export default {
     });
     this.doubleClickNode(this.getRootNode());
 
+    emitter.on(`schemaChanged_${this.workspaceId}`, ({ schema_name, database_name }) => {
+      const tree = this.$refs.tree;
+      let db_node = tree.getNextNode([0], (node) => {
+        return (
+          node.data.type === "database" && node.data.database === database_name
+        );
+      });
+      let schema_node = tree.getNextNode(db_node.path, (node) => {
+        return node.data.type === "schema" && node.data.schema === schema_name;
+      });
+      let tables_node = tree.getNextNode(schema_node.path, (node) => {
+        return node.data.type === "table_list";
+      });
+      // this is to handle cases when tables_node is absent because schema_node is not expanded and therefore empty
+      this.refreshTree(tables_node || schema_node, true);
+    });
+
     emitter.on(
       `goToNode_${this.workspaceId}`,
       async ({ name, type, schema, database }) => {
@@ -436,6 +468,7 @@ export default {
     );
   },
   unmounted() {
+    emitter.all.delete(`schemaChanged_${this.workspaceId}`);
     emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
