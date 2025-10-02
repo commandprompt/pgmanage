@@ -551,3 +551,29 @@ def get_properties(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data={"properties": list_properties, "ddl": ddl})
+
+
+@user_authenticated
+@database_required(check_timeout=False, open_connection=True)
+def get_table_definition(request, database):
+    data = request.data
+    table = data["table"]
+    schema = data["schema"]
+
+    columns = []
+    try:
+        q_definition = database.QueryTableDefinition(table, schema)
+        for col in q_definition.Rows:
+            print(col)
+            column_data = {
+                "name": col["column_name"],
+                "data_type": col["data_type"],
+                "default_value": col["column_default"],
+                "nullable": col["is_nullable"],
+                "is_primary": col["is_primary"],
+            }
+            columns.append(column_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data={"data": columns})

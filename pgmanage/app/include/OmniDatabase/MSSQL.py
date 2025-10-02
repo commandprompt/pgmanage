@@ -1292,3 +1292,66 @@ AND tr.name = '{trigger}'
             ),
             False,
         )
+
+    @lock_required
+    def QueryTableDefinition(self, table=None, schema=None):
+        in_schema = schema if schema else self.schema
+
+        return self.connection.Query('''
+SELECT
+  s.name AS SCHEMA_NAME,
+  t.name AS table_name,
+  c.name AS column_name,
+  /* ---------- Full data type (incl. length/precision/scale) ---------- */
+  CASE
+    WHEN ty.name IN ('char', 'varchar', 'nchar', 'nvarchar') THEN ty.name + '(' + CASE
+      WHEN c.max_length = -1 THEN 'MAX'
+      ELSE CAST(
+        c.max_length / CASE
+          WHEN ty.name LIKE 'n%' THEN 2
+          ELSE 1
+        END AS varchar(10)
+      )
+    END + ')'
+    WHEN ty.name IN ('binary', 'varbinary') THEN ty.name + '(' + CASE
+      WHEN c.max_length = -1 THEN 'MAX'
+      ELSE CAST(c.max_length AS varchar(10))
+    END + ')'
+    WHEN ty.name IN ('decimal', 'numeric') THEN ty.name + '(' + CAST(c.precision AS varchar(5)) + ',' + CAST(c.scale AS varchar(5)) + ')'
+    ELSE ty.name
+  END AS data_type,
+  dc.definition AS column_default,
+  c.is_nullable AS is_nullable,
+  /* ---------- Primary‑key flag ---------- */
+  CAST(
+    CASE
+      WHEN pkc.column_id IS NOT NULL THEN 1
+      ELSE 0
+    END AS BIT
+  ) AS is_primary
+FROM
+  sys.schemas AS s
+  JOIN sys.tables AS t ON t.schema_id = s.schema_id
+  JOIN sys.columns AS c ON c.object_id = t.object_id
+  JOIN sys.types AS ty ON ty.user_type_id = c.user_type_id
+  LEFT JOIN sys.default_constraints AS dc ON dc.parent_object_id = t.object_id
+  AND dc.parent_column_id = c.column_id
+  /* ----- Detect primary‑key columns ----- */
+  LEFT JOIN (
+    SELECT
+      ic.object_id,
+      ic.column_id
+    FROM
+      sys.key_constraints AS kc
+      JOIN sys.index_columns AS ic ON ic.object_id = kc.parent_object_id
+      AND ic.index_id = kc.unique_index_id
+    WHERE
+      kc.type = 'PK' -- only primary keys
+  ) pkc ON pkc.object_id = c.object_id
+  AND pkc.column_id = c.column_id
+WHERE
+  s.name = '{0}'
+  AND t.name = '{1}'
+ORDER BY
+  c.column_id;
+        '''.format(in_schema, table), False)
