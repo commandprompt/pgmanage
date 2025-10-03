@@ -1126,4 +1126,4 @@ class MariaDB:
         return None
 
     def QueryTableDefinition(self, table=None):
-        return self.connection.Query("SHOW FULL COLUMNS FROM {0}".format(table), True)
+        return self.connection.Query("SHOW FULL COLUMNS FROM {0}".format(table), False)
