@@ -142,19 +142,9 @@ import PreviewBox from './PreviewBox.vue'
 import { handleError } from '../logging/utils';
 
 
-function formatDefaultValue(defaultValue, dataType, table) {
+function formatDefaultValue(defaultValue, table) {
   if (!defaultValue) return null
   if (defaultValue.trim().toLowerCase() == 'null') return null
-
-  let textTypesMap = ['CHAR', 'VARCHAR', 'TINYTEXT', 'MEDIUMTEXT', 'LONGTEXT',
-    'TEXT', 'CHARACTER', 'NCHAR', 'NVARCHAR',
-    'CHARACTER VARYING',
-  ]
-
-  if (textTypesMap.includes(dataType.toUpperCase())) {
-    const stringValue = defaultValue.toString()
-    return stringValue
-  }
 
   // If no conversion matches, return raw value
   return table.client.raw(defaultValue);
@@ -428,7 +418,7 @@ export default {
             coldef.nullable ? col.nullable() : col.notNullable()
 
             if(coldef.defaultValue) {
-              let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table);
+              let formattedDefault = formatDefaultValue(coldef.defaultValue, table);
               col.defaultTo(formattedDefault);
             }
  
@@ -441,7 +431,7 @@ export default {
             if (coldef.dataType === 'autoincrement') {
               table.increments(coldef.name).alter()
             } else {
-              let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table)
+              let formattedDefault = formatDefaultValue(coldef.defaultValue, table)
               // for non-postgres DBs .specificType produces column data-type change code even with alterType: false
               // so we set data-type here and skip it in the next block to avoid duplicate data-type change statements
               table.specificType(coldef.name, coldef.dataType).defaultTo(formattedDefault).alter({ alterNullable: false })
@@ -454,7 +444,7 @@ export default {
             if(typeChangedColNames.includes(coldef.name)) return;
 
             // TODO: knex does not support dropping column default value, figure out how to do this
-            let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table)
+            let formattedDefault = formatDefaultValue(coldef.defaultValue, table)
             table.specificType(coldef.name, coldef.dataType).defaultTo(formattedDefault).alter({ alterNullable: false, alterType: false })
           })
 
@@ -560,7 +550,7 @@ export default {
             coldef.nullable ? col.nullable() : col.notNullable()
 
             if(coldef.defaultValue) {
-              let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table);
+              let formattedDefault = formatDefaultValue(coldef.defaultValue, table);
               col.defaultTo(formattedDefault);
             }
 
