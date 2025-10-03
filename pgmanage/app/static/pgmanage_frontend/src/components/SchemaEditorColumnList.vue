@@ -45,7 +45,11 @@
           </div>
 
           <div :class="commentable ? 'col-2' : 'col-3'">
-            <input type='text' v-model="column.defaultValue" class="form-control mb-0" placeholder="NULL" :disabled="!column.editable"/>
+            <input type='text' v-model="column.defaultValue"
+              class="form-control mb-0"
+              @input='nullifyDefault(column)'
+              :placeholder="column.defaultValue === null ? 'not set' : 'empty'"
+              :disabled="!column.editable"/>
           </div>
 
           <div class="col-1 d-flex align-items-center">
@@ -173,6 +177,9 @@
         if(index == this.columns.length-1) return;
         let col = this.columns.splice(index, 1)[0]
         this.columns.splice(index+1, 0, col)
+      },
+      nullifyDefault(column) {
+        if(column.defaultValue === '') column.defaultValue = null
       },
       revertColumn(index) {
         this.columns[index] = JSON.parse(JSON.stringify(this.initialColumns[index]));

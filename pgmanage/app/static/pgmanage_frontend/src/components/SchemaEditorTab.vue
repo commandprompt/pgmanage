@@ -426,6 +426,7 @@ export default {
               table.specificType(coldef.name, coldef.dataType)
 
             coldef.nullable ? col.nullable() : col.notNullable()
+
             if(coldef.defaultValue) {
               let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table);
               col.defaultTo(formattedDefault);
@@ -441,20 +442,20 @@ export default {
               table.increments(coldef.name).alter()
             } else {
               let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table)
+              // for non-postgres DBs .specificType produces column data-type change code even with alterType: false
+              // so we set data-type here and skip it in the next block to avoid duplicate data-type change statements
               table.specificType(coldef.name, coldef.dataType).defaultTo(formattedDefault).alter({ alterNullable: false })
-              coldef.skipDefaults = true
             }
           })
 
+          let typeChangedColNames = columnChanges.typeChanges.map((tc) => tc.name)
           columnChanges.defaults.forEach(function (coldef) {
-            if (!!coldef?.skipDefaults) return
-            let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table)
-            table.specificType(coldef.name, coldef.dataType).alter().defaultTo(formattedDefault).alter({ alterNullable: false, alterType: false })
+            // skip setting default if it was done above
+            if(typeChangedColNames.includes(coldef.name)) return;
 
-            // FIXME: this does not work, figure out how to do drop default via Knex.
-            //  else {
-            //   table.specificType(coldef.name, coldef.dataType).defaultTo().alter({alterNullable : false, alterType: false})
-            // }
+            // TODO: knex does not support dropping column default value, figure out how to do this
+            let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table)
+            table.specificType(coldef.name, coldef.dataType).defaultTo(formattedDefault).alter({ alterNullable: false, alterType: false })
           })
 
           columnChanges.nullableChanges.forEach((coldef) => {
