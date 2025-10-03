@@ -278,7 +278,8 @@ export default {
           database_index: this.databaseIndex,
           workspace_id: this.workspaceId,
           table: this.localTable.tableName || this.table,
-          schema: this.schema
+          schema: this.schema,
+          tab_id: this.tabId,
         })
 
         let coldefs = response.data.data.map((col) => {
@@ -310,7 +311,8 @@ export default {
         database_index: this.databaseIndex,
         workspace_id: this.workspaceId,
         schema: this.schema,
-        table: this.localTable.tableName || this.table
+        table: this.localTable.tableName || this.table,
+        tab_id: this.tabId,
       })
       .then((resp) => {
         this.initialIndexes = resp.data.map((index) => {
@@ -330,7 +332,8 @@ export default {
         database_index: this.databaseIndex,
         workspace_id: this.workspaceId,
         schema: this.schema,
-        table: this.localTable.tableName || this.table
+        table: this.localTable.tableName || this.table,
+        tab_id: this.tabId,
       })
       .then((resp) => {
         this.initialForeignKeys = resp.data.map((index) => {
