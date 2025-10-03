@@ -138,6 +138,7 @@ import IndexesList from './SchemaEditorIndexesList.vue'
 import ForeignKeysList from './SchemaEditorFksList.vue'
 import isEqual from 'lodash/isEqual';
 import every from 'lodash/every';
+import omit from 'lodash/omit';
 import PreviewBox from './PreviewBox.vue'
 import { handleError } from '../logging/utils';
 
@@ -366,15 +367,11 @@ export default {
           if(column.new) columnChanges.adds.push(column)
           if(column.deleted || column.new) return //no need to do further steps for new or deleted cols
 
+          column.is_dirty = !isEqual(
+            omit(column, ['is_dirty']),
+            omit(originalColumns[idx], ['is_dirty']),
+          )
 
-          if (!isEqual(column, originalColumns[idx])) {
-            column.is_dirty = true;
-            originalColumns[idx].is_dirty = true;
-          } else {
-            column.is_dirty = false;
-            originalColumns[idx].is_dirty = false;
-          }
-  
           if(column.dataType !== originalColumns[idx].dataType) columnChanges.typeChanges.push(column)
           if(column.nullable !== originalColumns[idx].nullable) columnChanges.nullableChanges.push(column)
           if(column.defaultValue !== originalColumns[idx].defaultValue) columnChanges.defaults.push(column)
@@ -389,13 +386,11 @@ export default {
           if(index.new) indexChanges.adds.push(index)
           if(index.deleted || index.new) return
 
-          if (!isEqual(index, originalIndexes[idx])) {
-            index.is_dirty = true;
-            originalIndexes[idx].is_dirty = true;
-          } else {
-            index.is_dirty = false;
-            originalIndexes[idx].is_dirty = false;
-          }
+          index.is_dirty = !isEqual(
+            omit(index, ['is_dirty']),
+            omit(originalIndexes[idx], ['is_dirty']),
+          )
+
           if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
         })
 
