@@ -634,15 +634,7 @@ const useTabsStore = defineStore("tabs", {
         },
       });
 
-      const DIALECT_MAP = {
-        oracle: "oracledb",
-        mariadb: "mysql",
-        postgresql: "postgres",
-      };
-      let dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
-      let mappedDialect = DIALECT_MAP[dialect] || dialect;
-
-      tab.metaData.dialect = mappedDialect;
+      tab.metaData.dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
       tab.metaData.table = table;
       tab.metaData.schema = schema;
       tab.metaData.query_filter = ""; //to be used in the future for passing extra filters when tab is opened
@@ -677,7 +669,7 @@ const useTabsStore = defineStore("tabs", {
         },
       });
 
-      tab.metaData.dialect = dialect || "postgres";
+      tab.metaData.dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
       tab.metaData.editMode = mode;
       tab.metaData.schema =
         dialect === "mysql" ? node.data.database : node.data.schema;

@@ -122,6 +122,13 @@ const dbTechNames = {
   mssql: 'SQL Server'
 }
 
+const knexDialectMap = {
+  oracle: "oracledb",
+  mariadb: "mysql",
+  postgresql: "postgres",
+  sqlite: "sqlite3",
+};
+
 export {
   requestState,
   tabStatusMap,
@@ -139,4 +146,5 @@ export {
   editorModeMap,
   dataEditorFilterModes,
   dbTechNames,
+  knexDialectMap,
 };
