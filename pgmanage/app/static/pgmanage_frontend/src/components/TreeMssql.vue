@@ -66,6 +66,8 @@ import { TemplateSelectMssql } from "../tree_context_functions/tree_mssql";
 
 import { findNode, findChild } from "../utils.js";
 
+import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
+
 export default {
   name: "TreeMssql",
   components: {
@@ -107,6 +109,13 @@ export default {
         cm_databases: [
           this.cmRefreshObject,
           {
+            label: "Create Database",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate("Create Database", this.templates.create_database);
+            },
+          },
+          {
             label: "Doc: Databases",
             icon: "fas fa-globe-americas",
             onClick: () => {
@@ -127,9 +136,43 @@ export default {
               });
             },
           },
+          {
+            label: "Alter Database",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Database",
+                this.templates.alter_database.replace(
+                  "#database_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Drop Database",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Database",
+                this.templates.drop_database.replace(
+                  "#database_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
         ],
         cm_schemas: [
           this.cmRefreshObject,
+          {
+            label: "Create Schema",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate("Create Schema", this.templates.create_schema);
+            },
+          },
           {
             label: "Doc: Schemas",
             icon: "fas fa-globe-americas",
@@ -148,6 +191,20 @@ export default {
               tabsStore.createERDTab(this.selectedNode.data.schema);
             },
           },
+          {
+            label: "Drop Schema",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Schema",
+                this.templates.drop_schema.replace(
+                  "#schema_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
         ],
         cm_tables: [
           this.cmRefreshObject,
@@ -155,7 +212,11 @@ export default {
             label: "Create Table",
             icon: "fas fa-plus",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE, "mssql")
+              tabsStore.createSchemaEditorTab(
+                this.selectedNode,
+                operationModes.CREATE,
+                "mssql"
+              );
             },
           },
           {
@@ -185,14 +246,21 @@ export default {
             label: "Edit Data",
             icon: "fas fa-table",
             onClick: () => {
-              tabsStore.createDataEditorTab(this.selectedNode.title, this.selectedNode.data.schema)
+              tabsStore.createDataEditorTab(
+                this.selectedNode.title,
+                this.selectedNode.data.schema
+              );
             },
           },
           {
             label: "Alter Table",
             icon: "fas fa-edit",
             onClick: () => {
-              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "mssql")
+              tabsStore.createSchemaEditorTab(
+                this.selectedNode,
+                operationModes.UPDATE,
+                "mssql"
+              );
             },
           },
         ],
@@ -222,6 +290,13 @@ export default {
         cm_triggers: [
           this.cmRefreshObject,
           {
+            label: "Create Trigger",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate("Create Trigger", this.templates.create_trigger);
+            },
+          },
+          {
             label: "Doc: Triggers",
             icon: "fas fa-globe-americas",
             onClick: () => {
@@ -231,9 +306,33 @@ export default {
             },
           },
         ],
-        cm_trigger: [],
+        cm_trigger: [
+          {
+            label: "Drop Trigger",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Trigger",
+                this.templates.drop_trigger
+                  .replace("#table_name#", this.selectedNode.title)
+                  .replace("schema_name", this.selectedNode.data.schema)
+              );
+            },
+          },
+        ],
         cm_statistics: [
           this.cmRefreshObject,
+          {
+            label: "Create Statistics",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Statistics",
+                this.templates.create_statistics
+              );
+            },
+          },
           {
             label: "Doc: Statistics",
             icon: "fas fa-globe-americas",
@@ -244,9 +343,34 @@ export default {
             },
           },
         ],
-        cm_statistic: [this.cmRefreshObject],
+        cm_statistic: [
+          this.cmRefreshObject,
+          {
+            label: "Drop Statistics",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Statistics",
+                this.templates.drop_statistics
+                  .replace("#statistic_name#", this.selectedNode.title)
+                  .replace(
+                    "#table_name#",
+                    this.getParentNodeDeep(this.selectedNode, 2).title
+                  )
+              );
+            },
+          },
+        ],
         cm_views: [
           this.cmRefreshObject,
+          {
+            label: "Create View",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate("Create View", this.templates.create_view);
+            },
+          },
           {
             label: "Doc: Views",
             icon: "fas fa-globe-americas",
@@ -270,9 +394,41 @@ export default {
               );
             },
           },
+          {
+            label: "Alter View",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter View",
+                this.templates.alter_view
+                  .replace("#view_name#", this.selectedNode.title)
+                  .replace("#schema_name#", this.selectedNode.data.schema)
+              );
+            },
+          },
+          {
+            label: "Drop View",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop View",
+                this.templates.drop_view
+                  .replace("#view_name#", this.selectedNode.title)
+                  .replace("#schema_name#", this.selectedNode.data.schema)
+              );
+            },
+          },
         ],
         cm_functions: [
           this.cmRefreshObject,
+          {
+            label: "Create Function",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate("Create Function", this.templates.create_function);
+            },
+          },
           {
             label: "Doc: Functions",
             icon: "fas fa-globe-americas",
@@ -283,9 +439,46 @@ export default {
             },
           },
         ],
-        cm_function: [this.cmRefreshObject],
+        cm_function: [
+          this.cmRefreshObject,
+          {
+            label: "Alter Function",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Function",
+                this.templates.alter_function
+                  .replace("#function_name#", this.selectedNode.title)
+                  .replace("#schema_name#", this.selectedNode.data.schema)
+              );
+            },
+          },
+          {
+            label: "Drop Function",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Function",
+                this.templates.drop_function
+                  .replace("#function_name#", this.selectedNode.title)
+                  .replace("#schema_name#", this.selectedNode.data.schema)
+              );
+            },
+          },
+        ],
         cm_procedures: [
           this.cmRefreshObject,
+          {
+            label: "Create Procedure",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Procedure",
+                this.templates.create_procedure
+              );
+            },
+          },
           {
             label: "Doc: Procedures",
             icon: "fas fa-globe-americas",
@@ -296,9 +489,43 @@ export default {
             },
           },
         ],
-        cm_procedure: [this.cmRefreshObject],
+        cm_procedure: [
+          this.cmRefreshObject,
+          {
+            label: "Alter Procedure",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Procedure",
+                this.templates.alter_procedure
+                  .replace("#procedure_name#", this.selectedNode.title)
+                  .replace("#schema_name#", this.selectedNode.data.schema)
+              );
+            },
+          },
+          {
+            label: "Drop Procedure",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Procedure",
+                this.templates.drop_procedure
+                  .replace("#procedure_name#", this.selectedNode.title)
+                  .replace("#schema_name#", this.selectedNode.data.schema)
+              );
+            },
+          },
+        ],
         cm_users: [
           this.cmRefreshObject,
+          {
+            label: "Create User",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate("Create User", this.templates.create_user);
+            },
+          },
           {
             label: "Doc: Database Users",
             icon: "fas fa-globe-americas",
@@ -309,9 +536,47 @@ export default {
             },
           },
         ],
-        cm_user: [],
+        cm_user: [
+          {
+            label: "Alter User",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter User",
+                this.templates.alter_user.replace(
+                  "#user_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Drop User",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop User",
+                this.templates.drop_user.replace(
+                  "#user_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
         cm_database_roles: [
           this.cmRefreshObject,
+          {
+            label: "Create Database Role",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Database Role",
+                this.templates.create_database_role
+              );
+            },
+          },
           {
             label: "Doc: Database Roles",
             icon: "fas fa-globe-americas",
@@ -322,9 +587,44 @@ export default {
             },
           },
         ],
-        cm_database_role: [],
+        cm_database_role: [
+          {
+            label: "Alter Database Role",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Database Role",
+                this.templates.alter_database_role.replace(
+                  "#role_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Drop Database Role",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Database Role",
+                this.templates.drop_database_role.replace(
+                  "#role_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
         cm_logins: [
           this.cmRefreshObject,
+          {
+            label: "Create Login",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate("Create Login", this.templates.create_login);
+            },
+          },
           {
             label: "Doc: Logins",
             icon: "fas fa-globe-americas",
@@ -335,9 +635,47 @@ export default {
             },
           },
         ],
-        cm_login: [],
+        cm_login: [
+          {
+            label: "Alter Login",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Login",
+                this.templates.alter_login.replace(
+                  "#login_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Drop Login",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Login",
+                this.templates.drop_login.replace(
+                  "#login_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
         cm_server_roles: [
           this.cmRefreshObject,
+          {
+            label: "Create Server Role",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Server Role",
+                this.templates.create_server_role
+              );
+            },
+          },
           {
             label: "Doc: Server Roles",
             icon: "fas fa-globe-americas",
@@ -348,7 +686,35 @@ export default {
             },
           },
         ],
-        cm_server_role: [],
+        cm_server_role: [
+          {
+            label: "Alter Server Role",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Server Role",
+                this.templates.alter_server_role.replace(
+                  "#role_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+          {
+            label: "Drop Server Role",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Server Role",
+                this.templates.drop_server_role.replace(
+                  "#role_name#",
+                  this.selectedNode.title
+                )
+              );
+            },
+          },
+        ],
       };
     },
   },
@@ -647,6 +1013,7 @@ export default {
           },
         ];
 
+        this.templates = response.data.templates;
         this.serverVersion = response.data.major_version;
 
         this.$refs.tree.updateNode(node.path, {

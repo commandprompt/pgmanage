@@ -3,7 +3,8 @@ from enum import Enum
 from urllib.parse import urlparse
 
 import app.include.Spartacus as Spartacus
-from sqlparse import format
+from app.include.OmniDatabase.sql_templates import get_template
+from sqlparse import format as sql_format
 
 
 class TemplateType(Enum):
@@ -712,7 +713,7 @@ ORDER BY dp.name;
             sql += f"\nFROM [{schema}].[{table}] t"
         else:
             sql = f"SELECT t.*\nFROM [{schema}].[{table}] t"
-        formatted_sql = format(sql, keyword_case="upper", reindent=True)
+        formatted_sql = sql_format(sql, keyword_case="upper", reindent=True)
         return Template(formatted_sql)
 
     def GetPropertiesDatabase(self, database_name):
@@ -1293,11 +1294,10 @@ AND tr.name = '{trigger}'
             False,
         )
 
-    @lock_required
     def QueryTableDefinition(self, table=None, schema=None):
         in_schema = schema if schema else self.schema
 
-        return self.connection.Query('''
+        return self.Query('''
 SELECT
   s.name AS SCHEMA_NAME,
   t.name AS table_name,
@@ -1355,3 +1355,127 @@ WHERE
 ORDER BY
   c.column_id;
         '''.format(in_schema, table), False)
+
+    def TemplateCreateUser(self):
+        template = get_template("mssql", "create_user")
+        return template.safe_substitute(major_version=self.major_version)
+    
+    def TemplateAlterUser(self):
+        template = get_template("mssql", "alter_user")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropUser(self):
+        template = get_template("mssql", "drop_user")
+        return template.safe_substitute(major_version=self.major_version)
+    
+    def TemplateCreateLogin(self):
+        template = get_template("mssql", "create_login")
+        return template.safe_substitute(major_version=self.major_version)
+    
+    def TemplateAlterLogin(self):
+        template = get_template("mssql", "alter_login")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropLogin(self):
+        template = get_template("mssql", "drop_login")
+        return template.safe_substitute(major_version=self.major_version)
+    
+    def TemplateCreateServerRole(self):
+        template = get_template("mssql", "create_server_role")
+        return template.safe_substitute(major_version=self.major_version)
+    
+    def TemplateAlterServerRole(self):
+        template = get_template("mssql", "alter_server_role")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropServerRole(self):
+        template = get_template("mssql", "drop_server_role")
+        return template.safe_substitute(major_version=self.major_version)
+    
+    def TemplateCreateDatabaseRole(self):
+        template = get_template("mssql", "create_database_role")
+        return template.safe_substitute(major_version=self.major_version)
+    
+    def TemplateAlterDatabaseRole(self):
+        template = get_template("mssql", "alter_database_role")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropDatabaseRole(self):
+        template = get_template("mssql", "drop_database_role")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateCreateDatabase(self):
+        template = get_template("mssql", "create_database")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateAlterDatabase(self):
+        template = get_template("mssql", "alter_database")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropDatabase(self):
+        template = get_template("mssql", "drop_database")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateCreateSchema(self):
+        template = get_template("mssql", "create_schema")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropSchema(self):
+        template = get_template("mssql", "drop_schema")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateCreateFunction(self):
+        template = get_template("mssql", "create_function")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateAlterFunction(self):
+        template = get_template("mssql", "alter_function")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropFunction(self):
+        template = get_template("mssql", "drop_function")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateCreateProcedure(self):
+        template = get_template("mssql", "create_procedure")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateAlterProcedure(self):
+        template = get_template("mssql", "alter_procedure")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropProcedure(self):
+        template = get_template("mssql", "drop_procedure")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateCreateView(self):
+        template = get_template("mssql", "create_view")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateAlterView(self):
+        template = get_template("mssql", "alter_view")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropView(self):
+        template = get_template("mssql", "drop_view")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropTable(self):
+        template = get_template("mssql", "drop_table")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateCreateTrigger(self):
+        template = get_template("mssql", "create_trigger")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropTrigger(self):
+        template = get_template("mssql", "drop_trigger")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateCreateStatistics(self):
+        template = get_template("mssql", "create_statistics")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropStatistics(self):
+        template = get_template("mssql", "drop_statistics")
+        return template.safe_substitute(major_version=self.major_version)
