@@ -16,6 +16,8 @@
 <script>
 import { editorModeMap } from "../constants";
 import { settingsStore, tabsStore } from "../stores/stores_initializer";
+import { format } from "sql-formatter";
+
 export default {
   props: {
     label: {
@@ -37,6 +39,17 @@ export default {
     return {
       isCopyButtonClicked: false,
       isEmpty: true,
+      formatOptions: {
+        tabWidth: 2,
+        keywordCase: "upper",
+        //sql-formatter uses 'plsql' for oracle sql flavor
+        // otherwise - our db technology names match perfectly
+        language:
+          this.databaseTechnology === "oracle"
+            ? "plsql"
+            : this.databaseTechnology,
+        linesBetweenQueries: 1,
+      },
     };
   },
   mounted() {
@@ -45,6 +58,9 @@ export default {
   watch: {
     editorText(newValue, oldValue) {
       this.isEmpty = !newValue;
+      if (!!newValue) {
+        newValue = format(newValue, this.formatOptions);
+      }
       this.editor.setValue(newValue);
       this.editor.clearSelection();
       this.isCopyButtonClicked = false;
