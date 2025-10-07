@@ -263,6 +263,19 @@ export default {
               );
             },
           },
+          {
+            label: "Drop Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Table",
+                this.templates.drop_table
+                  .replace("#table_name#", this.selectedNode.title)
+                  .replace("#schema_name#", this.selectedNode.data.schema)
+              );
+            },
+          },
         ],
         cm_columns: [],
         cm_column: [],
@@ -316,7 +329,7 @@ export default {
                 "Drop Trigger",
                 this.templates.drop_trigger
                   .replace("#table_name#", this.selectedNode.title)
-                  .replace("schema_name", this.selectedNode.data.schema)
+                  .replace("#schema_name#", this.selectedNode.data.schema)
               );
             },
           },
@@ -724,22 +737,28 @@ export default {
     });
     this.doubleClickNode(this.getRootNode());
 
-    emitter.on(`schemaChanged_${this.workspaceId}`, ({ schema_name, database_name }) => {
-      const tree = this.$refs.tree;
-      let db_node = tree.getNextNode([0], (node) => {
-        return (
-          node.data.type === "database" && node.data.database === database_name
-        );
-      });
-      let schema_node = tree.getNextNode(db_node.path, (node) => {
-        return node.data.type === "schema" && node.data.schema === schema_name;
-      });
-      let tables_node = tree.getNextNode(schema_node.path, (node) => {
-        return node.data.type === "table_list";
-      });
-      // this is to handle cases when tables_node is absent because schema_node is not expanded and therefore empty
-      this.refreshTree(tables_node || schema_node, true);
-    });
+    emitter.on(
+      `schemaChanged_${this.workspaceId}`,
+      ({ schema_name, database_name }) => {
+        const tree = this.$refs.tree;
+        let db_node = tree.getNextNode([0], (node) => {
+          return (
+            node.data.type === "database" &&
+            node.data.database === database_name
+          );
+        });
+        let schema_node = tree.getNextNode(db_node.path, (node) => {
+          return (
+            node.data.type === "schema" && node.data.schema === schema_name
+          );
+        });
+        let tables_node = tree.getNextNode(schema_node.path, (node) => {
+          return node.data.type === "table_list";
+        });
+        // this is to handle cases when tables_node is absent because schema_node is not expanded and therefore empty
+        this.refreshTree(tables_node || schema_node, true);
+      }
+    );
 
     emitter.on(
       `goToNode_${this.workspaceId}`,
