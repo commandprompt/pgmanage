@@ -42,6 +42,8 @@ def get_tree_info(request, database):
                 "drop_trigger": database.TemplateDropTrigger(),
                 "create_statistics": database.TemplateCreateStatistics(),
                 "drop_statistics": database.TemplateDropStatistics(),
+                "create_type": database.TemplateCreateType(),
+                "drop_type": database.TemplateDropType(),
             },
         }
     except Exception as exc:
@@ -610,3 +612,24 @@ def get_table_definition(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data={"data": columns})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_types(request, database):
+    schema = request.data["schema"]
+    all_schemas = request.data.get("all_schemas", True)
+
+    list_types = []
+
+    try:
+        types = database.QueryTypes(all_schemas, schema)
+        for type_object in types.Rows:
+            type_data = {
+                "type_name": type_object["type_name"],
+            }
+            list_types.append(type_data)
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+
+    return JsonResponse(data=list_types, safe=False)

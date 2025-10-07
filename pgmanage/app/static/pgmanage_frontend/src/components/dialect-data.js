@@ -174,8 +174,7 @@ export default Object.freeze({
       formatterDialect: 'transactsql',
       api_endpoints: {
           schemas_url: "/get_schemas_mssql/",
-          // TODO: implement custom types endpoint for mssql
-          // types_url: "/get_types_mssql/",
+          types_url: "/get_types_mssql/",
           indexes_url: "/get_indexes_mssql/",
           table_definition_url: "/get_table_definition_mssql/",
           foreign_keys_url: "/get_fks_mssql/",

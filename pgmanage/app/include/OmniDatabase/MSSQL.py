@@ -1359,7 +1359,7 @@ ORDER BY
     def TemplateCreateUser(self):
         template = get_template("mssql", "create_user")
         return template.safe_substitute(major_version=self.major_version)
-    
+
     def TemplateAlterUser(self):
         template = get_template("mssql", "alter_user")
         return template.safe_substitute(major_version=self.major_version)
@@ -1367,11 +1367,11 @@ ORDER BY
     def TemplateDropUser(self):
         template = get_template("mssql", "drop_user")
         return template.safe_substitute(major_version=self.major_version)
-    
+
     def TemplateCreateLogin(self):
         template = get_template("mssql", "create_login")
         return template.safe_substitute(major_version=self.major_version)
-    
+
     def TemplateAlterLogin(self):
         template = get_template("mssql", "alter_login")
         return template.safe_substitute(major_version=self.major_version)
@@ -1379,11 +1379,11 @@ ORDER BY
     def TemplateDropLogin(self):
         template = get_template("mssql", "drop_login")
         return template.safe_substitute(major_version=self.major_version)
-    
+
     def TemplateCreateServerRole(self):
         template = get_template("mssql", "create_server_role")
         return template.safe_substitute(major_version=self.major_version)
-    
+
     def TemplateAlterServerRole(self):
         template = get_template("mssql", "alter_server_role")
         return template.safe_substitute(major_version=self.major_version)
@@ -1391,11 +1391,11 @@ ORDER BY
     def TemplateDropServerRole(self):
         template = get_template("mssql", "drop_server_role")
         return template.safe_substitute(major_version=self.major_version)
-    
+
     def TemplateCreateDatabaseRole(self):
         template = get_template("mssql", "create_database_role")
         return template.safe_substitute(major_version=self.major_version)
-    
+
     def TemplateAlterDatabaseRole(self):
         template = get_template("mssql", "alter_database_role")
         return template.safe_substitute(major_version=self.major_version)
@@ -1479,3 +1479,27 @@ ORDER BY
     def TemplateDropStatistics(self):
         template = get_template("mssql", "drop_statistics")
         return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateCreateType(self):
+        template = get_template("mssql", "create_type")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def TemplateDropType(self):
+        template = get_template("mssql", "drop_type")
+        return template.safe_substitute(major_version=self.major_version)
+
+    def QueryTypes(self, all_schemas, schema):
+        query_filter = "" if all_schemas else f"AND s.name = '{schema or self.schema}'"
+        return self.Query(
+            f"""
+SELECT  
+    t.name AS type_name,
+    t.user_type_id,
+    t.system_type_id
+FROM sys.types t
+JOIN sys.schemas s ON t.schema_id = s.schema_id
+WHERE t.is_user_defined = 1 AND t.is_table_type = 0 
+    {query_filter}
+ORDER BY s.name, t.name;
+"""
+        )

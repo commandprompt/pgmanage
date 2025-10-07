@@ -215,6 +215,25 @@ AS select_statement
 """
     ),
     "drop_view": Template("DROP VIEW #schema_name#.#view_name#"),
+    "create_type": Template(
+        """-- https://learn.microsoft.com/sql/t-sql/statements/create-type-transact-sql?view=sql-server-ver$major_version
+CREATE TYPE [ schema_name. ] type_name
+-- {
+--       FROM base_type
+--       [ ( precision [ , scale ] ) ]
+--       [ NULL | NOT NULL ]
+--     | EXTERNAL NAME assembly_name [ .class_name ]
+--     | AS TABLE ( { <column_definition> | <computed_column_definition> [ , ...n ]
+--       [ <table_constraint> ] [ , ...n ]
+--       [ <table_index> ] [ , ...n ] } )
+-- } [ ; ]
+"""
+    ),
+    "drop_type": Template(
+        """
+    DROP TYPE #schema_name#.#type_name#
+"""
+    ),
 }
 
 

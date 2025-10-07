@@ -530,6 +530,46 @@ export default {
             },
           },
         ],
+        cm_types: [
+          this.cmRefreshObject,
+          {
+            label: "Create Type",
+            icon: "fas fa-plus",
+            onClick: () => {
+              tabSQLTemplate(
+                "Create Type",
+                this.templates.create_type.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema_raw
+                )
+              );
+            },
+          },
+          {
+            label: "Doc: Types",
+            icon: "fas fa-globe-americas",
+            onClick: () => {
+              this.openWebSite(
+                `https://learn.microsoft.com/sql/t-sql/data-types/data-types-transact-sql?view=sql-server-ver${this.serverVersion}`
+              );
+            },
+          },
+        ],
+        cm_type: [
+          {
+            label: "Drop Type",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              tabSQLTemplate(
+                "Drop Type",
+                this.templates.drop_type
+                  .replace("#type_name#", this.selectedNode.title)
+                  .replace("#schema_name#", this.selectedNode.data.schema)
+              );
+            },
+          },
+        ],
         cm_users: [
           this.cmRefreshObject,
           {
@@ -985,6 +1025,8 @@ export default {
         return this.getProcedures(node);
       } else if (node.data.type == "procedure") {
         return this.getProcedureFields(node);
+      } else if (node.data.type == "type_list") {
+        return this.getTypes(node);
       } else if (node.data.type == "users_list") {
         return this.getUsers(node);
       } else if (node.data.type == "database_role_list") {
@@ -1142,6 +1184,13 @@ export default {
       this.removeChildNodes(node);
       return new Promise((resolve, reject) => {
         try {
+          this.insertNode(node, "Types", {
+            icon: "fas node-all fa-square node-type-list",
+            type: "type_list",
+            contextMenu: "cm_types",
+            schema: node.data.schema,
+          });
+
           this.insertNode(node, "Procedures", {
             icon: "fas node-all fa-cog node-procedure-list",
             type: "procedure_list",
@@ -1953,6 +2002,36 @@ export default {
               icon: "fas node-all fa-user node-user",
               type: "user",
               contextMenu: "cm_user",
+            },
+            true
+          );
+        }, null);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getTypes(node) {
+      try {
+        const response = await this.api.post("/get_types_mssql/", {
+          schema: node.data.schema,
+          all_schemas: false,
+        });
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Types (${response.data.length})`,
+        });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(
+            node,
+            el.type_name,
+            {
+              icon: "fas node-all fa-square node-type",
+              type: "type",
+              contextMenu: "cm_type",
+              schema: node.data.schema,
             },
             true
           );

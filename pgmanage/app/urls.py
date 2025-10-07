@@ -322,6 +322,7 @@ base_urlpatterns = [
     path('template_select_mssql/', views.tree_mssql.template_select,),
     path('get_properties_mssql/', views.tree_mssql.get_properties,),
     path('get_table_definition_mssql/', views.tree_mssql.get_table_definition, name='get_table_definition'),
+    path('get_types_mssql/', views.tree_mssql.get_types,),
 
     # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
