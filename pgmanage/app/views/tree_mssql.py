@@ -418,6 +418,10 @@ def get_indexes(request, database):
             index_data = {
                 "index_name": index["index_name"],
                 "unique": index["is_unique"] == "True",
+                "type": "unique" if index["is_unique"] == "True" else "non-unique",
+                "is_primary": index["is_primary"] == "True",
+                "columns": index["columns"].split(","),
+                "predicate": index["predicate"],
             }
             list_indexes.append(index_data)
     except Exception as exc:

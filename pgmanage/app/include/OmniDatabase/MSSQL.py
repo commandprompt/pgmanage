@@ -469,8 +469,10 @@ WHERE fk.constraint_type = 'FOREIGN KEY'
 FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
 JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE fk
   ON rc.constraint_name = fk.constraint_name
+  AND rc.constraint_schema = fk.constraint_schema
 JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE pk
   ON rc.unique_constraint_name = pk.constraint_name
+  AND rc.unique_constraint_schema = pk.constraint_schema
   AND fk.ordinal_position = pk.ordinal_position
 WHERE 1=1
                           {0}
@@ -548,14 +550,21 @@ ORDER BY fk.table_schema, fk.table_name, fk.constraint_name, fk.ordinal_position
         return self.Query(
             """
 SELECT 
-i.name AS index_name,
-i.is_unique
+    i.name          AS index_name,
+    i.is_unique     AS is_unique,
+    i.is_primary_key AS is_primary,
+    i.filter_definition AS predicate,
+    STRING_AGG(c.name, ',') 
+        WITHIN GROUP (ORDER BY ic.key_ordinal, c.name) AS columns
 FROM sys.indexes i
-JOIN sys.tables t  ON i.object_id = t.object_id
+JOIN sys.tables t ON i.object_id = t.object_id
 JOIN sys.schemas s ON t.schema_id = s.schema_id
+JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+JOIN sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
 WHERE i.is_hypothetical = 0 
   AND i.index_id > 0 
         {0}
+GROUP BY i.name, i.is_unique, i.is_primary_key, i.filter_definition
 ORDER BY i.name;
 """.format(
                 query_filter
@@ -952,8 +961,10 @@ WHERE tc.constraint_type = 'PRIMARY KEY'
 FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
 JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE fk
   ON rc.constraint_name = fk.constraint_name
+  AND rc.constraint_schema = fk.constraint_schema
 JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE pk
   ON rc.unique_constraint_name = pk.constraint_name
+  AND rc.unique_constraint_schema = pk.constraint_schema
   AND fk.ordinal_position = pk.ordinal_position
 WHERE fk.table_schema = '{schema}'
   AND fk.table_name   = '{table}'

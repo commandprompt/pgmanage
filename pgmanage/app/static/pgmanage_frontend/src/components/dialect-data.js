@@ -180,7 +180,6 @@ export default Object.freeze({
           foreign_keys_url: "/get_fks_mssql/",
       },
       disabledFeatures: {
-        indexPredicate: true,
         indexMethod: true,
         renameIndex: true,
       },
