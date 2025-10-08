@@ -1110,6 +1110,35 @@ WHERE sch.name = '{schema}'
 """
         )
 
+    def GetPropertiesType(self, type_name):
+        return self.Query(
+            f"""
+    SELECT 
+    s.name AS [Schema Name],
+    t.name AS [Type Name],
+    t.user_type_id AS [User Type ID],
+    st.name AS [Base Type],
+    t.max_length AS [Max Length],
+    t.precision AS [Precision],
+    t.scale AS [Scale],
+    t.is_nullable AS [Is Nullable],
+    t.is_table_type AS [Is Table Type],
+    t.is_user_defined AS [Is User Defined],
+    t.is_assembly_type AS [Is Assembly Type],
+    t.is_nullable AS [Is Nullable],
+    t.collation_name AS [Collation],
+    t.default_object_id AS [Default Object ID],
+    t.rule_object_id AS [Rule Object ID]
+FROM sys.types t
+JOIN sys.schemas s ON t.schema_id = s.schema_id
+LEFT JOIN sys.types st 
+       ON t.system_type_id = st.user_type_id  -- base system type
+WHERE t.is_user_defined = 1
+  AND t.is_table_type = 0
+  AND t.name = '{type_name}';
+"""
+        )
+
     def GetProperties(self, schema, table, object_name, object_type):
         if object_type == "database":
             return self.GetPropertiesDatabase(object_name).Transpose("Property", "Value")
@@ -1149,6 +1178,8 @@ WHERE sch.name = '{schema}'
             return self.GetPropertiesProcedure(schema, object_name).Transpose("Property", "Value")
         if object_type == "trigger":
             return self.GetPropertiesTrigger(schema, table, object_name).Transpose("Property", "Value")
+        if object_type == "type":
+            return self.GetPropertiesType(object_name).Transpose("Property", "Value")
 
     def GetDDLTable(self, schema, table):
         return self.ExecuteScalar(

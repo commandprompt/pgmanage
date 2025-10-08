@@ -2069,6 +2069,7 @@ export default {
         "function",
         "procedure",
         "statistic",
+        "type",
       ];
 
       switch (node.data.type) {
