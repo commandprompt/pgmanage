@@ -421,19 +421,24 @@ SELECT
     fk.table_schema,
     fk.table_name,
     fk.constraint_name,
+    fk.column_name,
     pk.table_schema AS r_table_schema,
-    pk.TABLE_NAME   AS r_table_name,
-    rc.unique_constraint_name AS r_constraint_name
+    pk.table_name   AS r_table_name,
+    pk.column_name  AS r_column_name,
+    rc.unique_constraint_name AS r_constraint_name,
+    rc.update_rule,
+    rc.delete_rule
 FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
-JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS fk
+JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE fk
     ON rc.constraint_name = fk.constraint_name
     AND rc.constraint_schema = fk.constraint_schema
-JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS pk
+JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE pk
     ON rc.unique_constraint_name = pk.constraint_name
     AND rc.unique_constraint_schema = pk.constraint_schema
-WHERE fk.constraint_type = 'FOREIGN KEY'
+    AND fk.ordinal_position = pk.ordinal_position
+WHERE 1=1
             {0}
-    ORDER BY fk.table_schema, fk.table_name;;
+    ORDER BY fk.table_schema, fk.table_name, fk.constraint_name, fk.ordinal_position;
     """.format(
                 query_filter
             )

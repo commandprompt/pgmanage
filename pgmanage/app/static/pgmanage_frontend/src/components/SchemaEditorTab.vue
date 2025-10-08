@@ -65,7 +65,7 @@
           :columns="columnNames"
           :db-meta-data="dbMetadata"
           :disabled-features="disabledFeatures"
-          :has-schema="dialect === 'postgres'"
+          :has-schema="dialectData.hasSchema"
           @foreign-keys:changed="changeForeignKeys"
           />
         </div>
