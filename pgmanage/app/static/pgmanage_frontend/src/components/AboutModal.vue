@@ -48,6 +48,10 @@
                 :src="mariadbIcon"
                 title="MariaDB"
               />
+              <img
+                :src="mssqlIcon"
+                title="MSSQL"
+              />
             </div>
           </div>
 
@@ -92,6 +96,7 @@
 import postgresqlLargeIcon from '@src/assets/images/db_icons/postgresql_large.png'
 import mysqlLargeIcon from '@src/assets/images/db_icons/mysql_large.png'
 import mariadbLargeIcon from '@src/assets/images/db_icons/mariadb_large.png'
+import mssqlLargeIcon from '@src/assets/images/db_icons/mssql_large.png'
 import oracleLargeIcon from '@src/assets/images/db_icons/oracle_large.png'
 import sqliteLargeIcon from '@src/assets/images/db_icons/sqlite_large.png'
 
@@ -103,6 +108,7 @@ export default {
             postgresqlIcon: postgresqlLargeIcon,
             mysqlIcon: mysqlLargeIcon,
             mariadbIcon: mariadbLargeIcon,
+            mssqlIcon: mssqlLargeIcon,
             oracleIcon: oracleLargeIcon,
             sqliteIcon: sqliteLargeIcon,
             pgmanageVersion: window.pgmanage_version

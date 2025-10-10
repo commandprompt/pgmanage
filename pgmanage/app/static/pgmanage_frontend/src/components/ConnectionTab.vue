@@ -125,6 +125,7 @@ export default {
     TreeMariaDB: defineAsyncComponent(() => import("./TreeMariaDB.vue")),
     TreeOracle: defineAsyncComponent(() => import("./TreeOracle.vue")),
     TreeMysql: defineAsyncComponent(() => import("./TreeMysql.vue")),
+    TreeMssql: defineAsyncComponent(() => import("./TreeMssql.vue")),
     Splitpanes,
     Pane,
     TreePropertiesDDL,
@@ -180,6 +181,7 @@ export default {
         mysql: "TreeMysql",
         mariadb: "TreeMariaDB",
         oracle: "TreeOracle",
+        mssql: "TreeMssql"
       };
       return treeTechnologiesMap[this.databaseTechnology];
     },

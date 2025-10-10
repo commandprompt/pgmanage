@@ -9,7 +9,7 @@ import { buildSnippetContextMenuObjects } from "../tree_context_functions/tree_s
 import { emitter } from "../emitter";
 import { format } from "sql-formatter";
 import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_extras/plugins";
-import { editorModeMap, maxLinesForIndentSQL } from "../constants";
+import { editorModeMap, maxLinesForIndentSQL, sqlFormatterDialectMap } from "../constants";
 import { showToast } from "../notification_control";
 import { SQLAutocomplete, SQLDialect } from 'sql-autocomplete';
 
@@ -37,9 +37,7 @@ export default {
       formatOptions: {
         tabWidth: 2,
         keywordCase: "upper",
-        //sql-formatter uses 'plsql' for oracle sql flavor
-        // otherwise - our db technology names match perfectly
-        language: this.dialect === "oracle" ? "plsql" : this.dialect,
+        language: sqlFormatterDialectMap[this.dialect] ?? this.dialect,
         linesBetweenQueries: 1,
       },
       completer: null
@@ -188,6 +186,7 @@ export default {
         'mariadb': SQLDialect.MYSQL,
         'oracle': SQLDialect.PLSQL,
         'sqlite': SQLDialect.SQLITE,
+        'mssql': SQLDialect.TSQL,
       }
 
       this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, filteredMeta);

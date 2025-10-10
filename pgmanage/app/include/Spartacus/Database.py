@@ -3949,6 +3949,7 @@ class MSSQL(Generic):
         password,
         conn_string="",
         encoding=None,
+        connection_params=None,
     ):
         if "MSSQL" in supported_rdbms:
             self.host = host
@@ -3964,6 +3965,7 @@ class MSSQL(Generic):
             self.con = None
             self.cur = None
             self.encoding = encoding
+            self.connection_params = connection_params if connection_params else {}
         else:
             raise Spartacus.Database.Exception(
                 "MSSQL is not supported. Please install it with 'pip install Spartacus[mssql]'."
@@ -3976,15 +3978,17 @@ class MSSQL(Generic):
         try:
             self.con = pymssql.connect(
                 host=self.host,
-                port=int(self.port),
+                port=self.port,
                 database=self.service,
                 user=self.user,
                 password=self.password,
+                **self.connection_params
             )
+            self.con.autocommit(autocommit)
             self.cur = self.con.cursor()
             self.start = True
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4009,7 +4013,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
         finally:
@@ -4028,7 +4032,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
         finally:
@@ -4053,7 +4057,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
         finally:
@@ -4070,7 +4074,7 @@ class MSSQL(Generic):
                 self.con.close()
                 self.con = None
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4090,7 +4094,7 @@ class MSSQL(Generic):
                 self.con.close()
                 self.con = None
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4131,7 +4135,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
         finally:
@@ -4156,7 +4160,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4187,11 +4191,13 @@ class MSSQL(Generic):
                             row = self.cur.fetchone()
                 if self.start:
                     self.start = False
+                if len(table.Rows) < blocksize:
+                    self.start = True
                 return table
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4221,13 +4227,38 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
     def Special(self, sql):
-        return self.Query(sql).Pretty()
+        return self.Query(sql, True, True).Pretty()
 
+    def FormatException(self, exc):
+        try:
+            # sometimes pymssql.Error may have the data we need in a nested tuple
+            if isinstance(exc.args[0], tuple):
+                args_unpacked = exc.args[0]
+            else:
+                args_unpacked = exc.args
+
+            err_code, raw_msg = args_unpacked[:2]
+
+        except Exception:
+            err_code, raw_msg = None, str(exc)
+
+        if isinstance(raw_msg, (bytes, bytearray)):
+            try:
+                decoded_msg = raw_msg.decode('utf-8', errors='replace')
+            except Exception:
+                decoded_msg = str(raw_msg)
+        else:
+            decoded_msg = str(raw_msg)
+
+        lines = [l.strip() for l in decoded_msg.splitlines() if l.strip()]
+
+        err_str = '\n'.join(lines)
+        return f"{err_code}: {err_str}"
 
 """
 ------------------------------------------------------------------------

@@ -100,6 +100,11 @@
                         -webkit-mask-image: url("../images/db_icons/mysql.svg");
                     }
 
+                    &-mssql {
+                        mask-image: url("../images/db_icons/mssql.svg");
+                        -webkit-mask-image: url("../images/db_icons/mssql.svg");
+                    }
+
                     &-oracle {
                         mask-image: url("../images/db_icons/oracle.svg");
                         -webkit-mask-image: url("../images/db_icons/oracle.svg");

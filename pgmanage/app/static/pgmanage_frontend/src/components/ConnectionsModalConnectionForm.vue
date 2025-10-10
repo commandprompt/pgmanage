@@ -105,6 +105,9 @@
                 <select v-if="connectionLocal.technology === 'postgresql'" id="connectionSSL" class="form-select" v-model="connectionLocal.connection_params.sslmode" :disabled="dbFormDisabled">
                     <option v-for="mode in sslModes" :key="mode" :value="mode">{{ mode }}</option>
                 </select>
+                <select v-else-if="connectionLocal.technology === 'mssql'" id="connectionSSL" class="form-select" v-model="connectionLocal.connection_params.encryption" :disabled="dbFormDisabled">
+                    <option v-for="mode in sslModes" :key="mode" :value="mode">{{ mode }}</option>
+                </select>
                 <select v-else-if="connectionLocal.technology === 'oracle'" id="connectionSSL" class="form-select" v-model="connectionLocal.connection_params.protocol" :disabled="dbFormDisabled">
                     <option v-for="mode in sslModes" :key="mode" :value="mode">{{ mode }}</option>
                 </select>
@@ -293,6 +296,7 @@ import { dbTechNames } from '../constants'
           color_label: 0
         },
         postgresql_ssl_modes: ["allow", "prefer", "require", "disable", "verify-full", "verify-ca"],
+        mssql_encryption_modes: ['off', 'request', 'require'],
         mysql_mariadb_modes: [
           { text: 'disable', value: 'ssl_disabled'},
           { text: 'require', value: 'ssl' },
@@ -491,6 +495,13 @@ import { dbTechNames } from '../constants'
             'user': '',
             'conn_string': ''
           },
+          'mssql': {
+            'server': 'ex: 127.0.0.1',
+            'port': 'ex: 1433',
+            'service': 'ex: master',
+            'user': 'ex: sa',
+            'conn_string': 'ex: mssql://sa@localhost:1433/master'
+          },
         }
         let current_db = this.connectionLocal.technology || 'postgresql'
         return placeholderMap[current_db]
@@ -512,6 +523,8 @@ import { dbTechNames } from '../constants'
           return this.oracle_modes
         } else if (['mysql', 'mariadb'].includes(this.connectionLocal.technology)) {
           return this.mysql_mariadb_modes
+        } else if (this.connectionLocal.technology === 'mssql') {
+          return this.mssql_encryption_modes
         } else {
           return []
         }
@@ -627,6 +640,10 @@ import { dbTechNames } from '../constants'
 
           case 'oracle':
             this.connectionLocal.connection_params = {protocol: "tcps"}
+            break
+          
+          case 'mssql':
+            this.connectionLocal.connection_params = { encryption: 'request' }
             break
         }
         this.connectionLocal.port = this.placeholder.port.replace('ex: ','')
