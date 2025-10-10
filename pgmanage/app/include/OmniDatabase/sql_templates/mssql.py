@@ -27,7 +27,7 @@ ALTER DATABASE #database_name#
 -- [;]
 """
     ),
-    "drop_database": Template("DROP DATABASE #database_name#"),
+    "drop_database": Template("DROP DATABASE [#database_name#]"),
     "create_function": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-function-transact-sql?view=sql-server-ver$major_version
 CREATE [ OR ALTER ] FUNCTION [ schema_name. ] function_name
@@ -64,7 +64,7 @@ ALTER FUNCTION #schema_name#.#function_name#
 -- [ ; ]
 """
     ),
-    "drop_function": Template("DROP FUNCTION #schema_name#.#function_name#"),
+    "drop_function": Template("DROP FUNCTION [#schema_name#].[#function_name#]"),
     "create_login": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-login-transact-sql?view=sql-server-ver$major_version
 CREATE LOGIN login_name
@@ -82,7 +82,7 @@ ALTER LOGIN #login_name#
 -- [;]
 """
     ),
-    "drop_login": Template("DROP LOGIN #login_name#"),
+    "drop_login": Template("DROP LOGIN [#login_name#]"),
     "create_procedure": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver$major_version
 CREATE [ OR ALTER ] { PROC | PROCEDURE }
@@ -108,7 +108,7 @@ ALTER { PROC | PROCEDURE } #schema_name#.#procedure_name# [ ; number ]
 -- [;]   
 """
     ),
-    "drop_procedure": Template("DROP PROCEDURE #schema_name#.#procedure_name#"),
+    "drop_procedure": Template("DROP PROCEDURE [#schema_name#].[#procedure_name#]"),
     "create_database_role": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-role-transact-sql?view=sql-server-ver$major_version
 CREATE ROLE role_name 
@@ -126,7 +126,7 @@ ALTER ROLE  #role_name#
 [;]  
 """
     ),
-    "drop_database_role": Template("DROP ROLE #role_name#"),
+    "drop_database_role": Template("DROP ROLE [#role_name#]"),
     "create_server_role": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-server-role-transact-sql?view=sql-server-ver$major_version
 CREATE SERVER ROLE role_name [ AUTHORIZATION server_principal ]"""
@@ -141,13 +141,13 @@ ALTER SERVER ROLE #role_name#
 -- } [ ; ]    
 """
     ),
-    "drop_server_role": Template("DROP SERVER ROLE #role_name#"),
+    "drop_server_role": Template("DROP SERVER ROLE [#role_name#]"),
     "create_schema": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-schema-transact-sql?view=sql-server-ver$major_version
 CREATE SCHEMA schema_name_clause [ <schema_element> [ ...n ] ]
 """
     ),
-    "drop_schema": Template("DROP SCHEMA #schema_name#"),
+    "drop_schema": Template("DROP SCHEMA [#schema_name#]"),
     "create_statistics": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-statistics-transact-sql?view=sql-server-ver$major_version
 CREATE STATISTICS statistics_name
@@ -155,8 +155,8 @@ ON { table_or_indexed_view_name } ( column [ , ...n ] )
 --    [ WITH FULLSCAN ] ;
 """
     ),
-    "drop_statistics": Template("DROP STATISTICS #table_name#.#statistic_name#"),
-    "drop_table": Template("DROP TABLE #schema_name#.#table_name#"),
+    "drop_statistics": Template("DROP STATISTICS [#schema_name#].[#table_name#].[#statistic_name#]"),
+    "drop_table": Template("DROP TABLE [#schema_name#].[#table_name#]"),
     "create_trigger": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-trigger-transact-sql?view=sql-server-ver$major_version
 CREATE [ OR ALTER ] TRIGGER [ schema_name . ] trigger_name
@@ -169,7 +169,7 @@ ON { table | view }
 -- AS { sql_statement  [ ; ] [ , ...n ] | EXTERNAL NAME <method_specifier [ ; ] > }
 """
     ),
-    "drop_trigger": Template("DROP TRIGGER #schema_name#.#table_name#"),
+    "drop_trigger": Template("DROP TRIGGER [#schema_name#].[#table_name#]"),
     "create_user": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-user-transact-sql?view=sql-server-ver$major_version
 CREATE USER user_name   
@@ -195,7 +195,7 @@ ALTER USER #user_name#
 -- | ALLOW_ENCRYPTED_VALUE_MODIFICATIONS = [ ON | OFF ]
 """
     ),
-    "drop_user": Template("DROP USER #user_name#"),
+    "drop_user": Template("DROP USER [#user_name#]"),
     "create_view": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-view-transact-sql?view=sql-server-ver$major_version
 CREATE [ OR ALTER ] VIEW [ schema_name . ] view_name [ (column [ ,...n ] ) ]
@@ -214,7 +214,7 @@ AS select_statement
 -- [ WITH CHECK OPTION ] [ ; ]  
 """
     ),
-    "drop_view": Template("DROP VIEW #schema_name#.#view_name#"),
+    "drop_view": Template("DROP VIEW [#schema_name#].[#view_name#]"),
     "create_type": Template(
         """-- https://learn.microsoft.com/sql/t-sql/statements/create-type-transact-sql?view=sql-server-ver$major_version
 CREATE TYPE [ schema_name. ] type_name
@@ -231,7 +231,7 @@ CREATE TYPE [ schema_name. ] type_name
     ),
     "drop_type": Template(
         """
-    DROP TYPE #schema_name#.#type_name#
+    DROP TYPE [#schema_name#].[#type_name#]
 """
     ),
 }

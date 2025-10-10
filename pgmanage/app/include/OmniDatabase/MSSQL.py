@@ -174,6 +174,10 @@ class MSSQL:
     def ExecuteScalar(self, sql):
         return self.connection.ExecuteScalar(sql)
 
+    @lock_required
+    def Execute(self, sql):
+        return self.connection.Execute(sql)
+
     def QueryDatabases(self):
         return self.Query(
             """SELECT name, database_id
