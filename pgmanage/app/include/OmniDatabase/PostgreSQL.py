@@ -679,7 +679,7 @@ class PostgreSQL:
             FROM information_schema.columns isc
             WHERE table_schema = '{0}' AND table_name = '{1}'
             ORDER BY ordinal_position
-        '''.format(in_schema, table), True)
+        '''.format(in_schema, table), False)
 
     @lock_required
     def QueryTablePKColumns(self, table=None, schema=None):

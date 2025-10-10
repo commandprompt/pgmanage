@@ -41,6 +41,8 @@
 </template>
 
 <script>
+import ClipboardMixin from "../mixins/table_clipboard_copy_mixin";
+import { markRaw } from "vue";
 import axios from 'axios'
 import Knex from 'knex'
 import isEqualWith from 'lodash/isEqualWith';
@@ -48,6 +50,9 @@ import zipObject from 'lodash/zipObject';
 import forIn from 'lodash/forIn';
 import isArray from 'lodash/isArray'
 import escape from 'lodash/escape';
+import isNil from 'lodash/isNil';
+import isEmpty from 'lodash/isEmpty';
+import last from 'lodash/last';
 import { showToast } from "../notification_control";
 import { queryRequestCodes, requestState } from '../constants'
 import { createRequest } from '../long_polling'
@@ -70,13 +75,14 @@ function escapeColumnName(name) {
     : `"${name.replace(/"/g, '""')}"`;
 }
 
-
+const contextEdits = new WeakSet();
 
 export default {
   name: "DataEditorTab",
   components: {
     DataEditorTabFilter: DataEditorTabFilterList
   },
+  mixins: [ClipboardMixin,],
   props: {
     dialect: String,
     schema: String,
@@ -130,6 +136,9 @@ export default {
     columnNames() {
       return this.tableColumns.map(col => col.name)
     },
+    primaryKeys() {
+      return this.tableColumns.filter(col => col.is_primary).map(col => col.name)
+    },
     dialectOperators() {
       return this.dialectData?.operators ?? [];
     }
@@ -147,19 +156,31 @@ export default {
           headerSort: false,
           maxInitialWidth: this.maxInitialWidth,
         },
-      selectableRows: false,
+      selectableRangeAutoFocus:false,
+      selectableRange:1,
+      selectableRangeColumns:true,
+      selectableRangeRows:true,
+      editTriggerEvent:"dblclick",
       rowFormatter: this.rowFormatter,
       sortMode: 'remote',
       headerSortClickElement:"icon",
       ajaxURL: "http://fake",
       ajaxRequestFunc: this.getTableData,
+      clipboard: "copy",
+      clipboardCopyRowRange: "range",
+      clipboardCopyConfig: {
+        columnHeaders: false, //do not include column headers in clipboard output
+      },
     })
 
     table.on("tableBuilt", () => {
-      this.tabulator = table;
+      this.tabulator = markRaw(table); // markRaw fixes problem with making tabulator proxy, that we don't need
       this.tabulator.on("cellEdited", this.cellEdited);
       this.knex = Knex({ client: this.dialect || 'postgres'})
-      this.getTableColumns().then(() => {this.tabulator.setSort("0", "asc")});
+      this.getTableColumns().then(() => {
+        this.addHeaderMenuOverlayElement();
+        this.tabulator.setSort("0", "asc");
+      });
     })
 
     emitter.on(`${this.tabId}_query_edit`, () => {
@@ -257,6 +278,61 @@ export default {
             cellClick: this.handleClick,
             headerClick: this.addRow,
           }
+
+          let cellContextMenu = (e, cellComponent) => {
+            return [
+              {
+                label: '<i class="fas fa-copy"></i><span>Copy</span>',
+                action: function (e, cell) {
+                  cell.getTable().copyToClipboard();
+                },
+              },
+              {
+                label: '<i class="fas fa-copy"></i><span>Copy as JSON</span>',
+                action: () => {
+                  const data = last(this.tabulator.getRangesData());
+                  this.copyTableData(data, "json", this.columnNames);
+                },
+              },
+              {
+                label: '<i class="fas fa-copy"></i><span>Copy as CSV</span>',
+                action: () => {
+                  const data = last(this.tabulator.getRangesData());
+                  this.copyTableData(data, "csv", this.columnNames);
+                },
+              },
+              {
+                label: '<i class="fas fa-copy"></i><span>Copy as Markdown</span>',
+                action: () => {
+                  const data = last(this.tabulator.getRangesData());
+                  this.copyTableData(data, "markdown", this.columnNames);
+                },
+              },
+              {
+                separator:true,
+              },
+              {
+                label: '<span>Set Null</span>',
+                action: () => {
+                  const range = last(this.tabulator.getRanges());
+                  range.getCells().flat().forEach((cell) => {
+                    contextEdits.add(cell);
+                    cell.setValue(null);
+                  })
+                }
+              },
+              {
+                label: '<span>Set Empty</span>',
+                action: () => {
+                  const range = last(this.tabulator.getRanges());
+                  range.getCells().flat().forEach((cell) => {
+                    contextEdits.add(cell);
+                    cell.setValue("");
+                  })
+                } 
+              },
+            ];
+          } 
           let columns = this.tableColumns.map((col, idx) => {
             let prepend = col.is_primary ? '<i class="fas fa-key action-key text-secondary me-1"></i>' : ''
             let title = `${prepend}<span>${col.name}</span><div class='fw-light'>${col.data_type}</div>`
@@ -265,11 +341,8 @@ export default {
               field: (idx).toString(),
               title: title,
               editor: "input",
-              editable: false,
               headerSort: true,
-              cellDblClick: function (e, cell) {
-                cell.edit(true);
-              },
+              contextMenu: cellContextMenu,
               headerDblClick: (e, column) => {
                 if (column.getWidth() > this.maxInitialWidth) {
                   column.setWidth(this.maxInitialWidth);
@@ -491,9 +564,15 @@ export default {
     cellEdited(cell) {
       if (!this.hasPK)
         return
+
+      const fromContext = contextEdits.has(cell);
+      contextEdits.delete(cell);
+
       // workaround when empty cell with initial null value is changed to empty string when starting editing
-      if (cell.getOldValue() === null && cell.getValue() === '')
-        cell.setValue(null)
+      if (cell.getOldValue() === null && cell.getValue() === '' && !fromContext) {
+        cell.restoreOldValue() // prevents from triggering cellEdited handler again
+        return
+      }
 
       let rowData = cell.getRow().getData()
       let rowMeta = rowData["rowMeta"]
@@ -505,7 +584,16 @@ export default {
             return true
           }
         }) && !rowMeta.is_new
-        cell.getRow().reformat()
+
+        const row = cell.getRow();
+
+        row.update({}); // triggers row formatter without wiping everything like with reformat()
+
+        const actionsCell = row.getCell("rowMeta");
+        if (actionsCell) {
+            const val = actionsCell.getValue();
+            actionsCell.setValue(val);  // re-triggers the actionsCell formatter
+        }
       }
 
     },
@@ -570,6 +658,16 @@ export default {
       const newRowObject = { rowMeta: rowMeta, id: newRowId, ...newRow };
       this.tabulator.addData(newRowObject, true);
       this.tableDataLocal.unshift(this.tabulator.getRow(newRowId).getData());
+
+      const firstRow = this.tabulator.getRows()[0];
+      if (!firstRow) return;
+
+      const firstCell = firstRow.getCells()[0];
+      if (!firstCell) return;
+
+      let currentRange = last(this.tabulator.getRanges())
+
+      currentRange.setBounds(firstCell, firstCell)
     },
     revertRow(rowMeta, rowNum) {
       let sourceRow = this.tableData.find(
@@ -611,7 +709,17 @@ export default {
         let rowMeta = change["rowMeta"]
         let {rowMeta:_, ...changeWitNoRowmeta} = change
         if(rowMeta.is_new) {
-          inserts.push(zipObject(colNames, Object.values(change)))
+          let zippedChange = zipObject(colNames, Object.values(change))
+          let insert = Object.entries(zippedChange).reduce((acc, [columnName, value]) => {
+            // skip primary keys if no value
+            if (this.primaryKeys.includes(columnName) && !value) {
+              return acc;
+            }
+            acc[columnName] = value;
+            return acc;
+          }, {});
+
+          inserts.push(insert)
         }
         if(rowMeta.is_dirty){
           
@@ -705,8 +813,31 @@ export default {
           let filtered = escape(cellVal.slice(0, 1000).toString().replace(/\n/g, ' ↲ '))
           return `${filtered}...`;
         }
+
+      if (isNil(cellVal)) {
+        return '<span class="text-muted">[null]</span>'
+      }
+
+      if(isEmpty(cellVal)) {
+        return '<span class="text-muted">[empty]</span>'
+      }
       return cellVal
-    }
+    },
+    addHeaderMenuOverlayElement() {
+      const targetElement = document.querySelector(`#${this.tabId}_content .tabulator-frozen-left .tabulator-col-title-holder`)
+      const overlay = document.createElement("div");
+      overlay.className =  "position-absolute w-100 h-100";
+      overlay.style.zIndex = "1000"; 
+      overlay.style.cursor = "pointer"
+      overlay.style.backgroundColor = "rgba(0, 0, 0, 0)";
+
+      targetElement.appendChild(overlay)
+
+      targetElement.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      });
+    },
   },
   watch: {
     hasChanges() {

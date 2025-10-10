@@ -138,23 +138,14 @@ import IndexesList from './SchemaEditorIndexesList.vue'
 import ForeignKeysList from './SchemaEditorFksList.vue'
 import isEqual from 'lodash/isEqual';
 import every from 'lodash/every';
+import omit from 'lodash/omit';
 import PreviewBox from './PreviewBox.vue'
 import { handleError } from '../logging/utils';
 
 
-function formatDefaultValue(defaultValue, dataType, table) {
+function formatDefaultValue(defaultValue, table) {
   if (!defaultValue) return null
   if (defaultValue.trim().toLowerCase() == 'null') return null
-
-  let textTypesMap = ['CHAR', 'VARCHAR', 'TINYTEXT', 'MEDIUMTEXT', 'LONGTEXT',
-    'TEXT', 'CHARACTER', 'NCHAR', 'NVARCHAR',
-    'CHARACTER VARYING',
-  ]
-
-  if (textTypesMap.includes(dataType.toUpperCase())) {
-    const stringValue = defaultValue.toString()
-    return stringValue
-  }
 
   // If no conversion matches, return raw value
   return table.client.raw(defaultValue);
@@ -278,7 +269,8 @@ export default {
           database_index: this.databaseIndex,
           workspace_id: this.workspaceId,
           table: this.localTable.tableName || this.table,
-          schema: this.schema
+          schema: this.schema,
+          tab_id: this.tabId,
         })
 
         let coldefs = response.data.data.map((col) => {
@@ -310,7 +302,8 @@ export default {
         database_index: this.databaseIndex,
         workspace_id: this.workspaceId,
         schema: this.schema,
-        table: this.localTable.tableName || this.table
+        table: this.localTable.tableName || this.table,
+        tab_id: this.tabId,
       })
       .then((resp) => {
         this.initialIndexes = resp.data.map((index) => {
@@ -330,7 +323,8 @@ export default {
         database_index: this.databaseIndex,
         workspace_id: this.workspaceId,
         schema: this.schema,
-        table: this.localTable.tableName || this.table
+        table: this.localTable.tableName || this.table,
+        tab_id: this.tabId,
       })
       .then((resp) => {
         this.initialForeignKeys = resp.data.map((index) => {
@@ -373,15 +367,11 @@ export default {
           if(column.new) columnChanges.adds.push(column)
           if(column.deleted || column.new) return //no need to do further steps for new or deleted cols
 
+          column.is_dirty = !isEqual(
+            omit(column, ['is_dirty']),
+            omit(originalColumns[idx], ['is_dirty']),
+          )
 
-          if (!isEqual(column, originalColumns[idx])) {
-            column.is_dirty = true;
-            originalColumns[idx].is_dirty = true;
-          } else {
-            column.is_dirty = false;
-            originalColumns[idx].is_dirty = false;
-          }
-  
           if(column.dataType !== originalColumns[idx].dataType) columnChanges.typeChanges.push(column)
           if(column.nullable !== originalColumns[idx].nullable) columnChanges.nullableChanges.push(column)
           if(column.defaultValue !== originalColumns[idx].defaultValue) columnChanges.defaults.push(column)
@@ -396,13 +386,11 @@ export default {
           if(index.new) indexChanges.adds.push(index)
           if(index.deleted || index.new) return
 
-          if (!isEqual(index, originalIndexes[idx])) {
-            index.is_dirty = true;
-            originalIndexes[idx].is_dirty = true;
-          } else {
-            index.is_dirty = false;
-            originalIndexes[idx].is_dirty = false;
-          }
+          index.is_dirty = !isEqual(
+            omit(index, ['is_dirty']),
+            omit(originalIndexes[idx], ['is_dirty']),
+          )
+
           if(index.index_name !== originalIndexes[idx].index_name) indexChanges.renames.push({'oldName': originalIndexes[idx].index_name, 'newName': index.index_name})
         })
 
@@ -423,8 +411,9 @@ export default {
               table.specificType(coldef.name, coldef.dataType)
 
             coldef.nullable ? col.nullable() : col.notNullable()
+
             if(coldef.defaultValue) {
-              let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table);
+              let formattedDefault = formatDefaultValue(coldef.defaultValue, table);
               col.defaultTo(formattedDefault);
             }
  
@@ -437,21 +426,21 @@ export default {
             if (coldef.dataType === 'autoincrement') {
               table.increments(coldef.name).alter()
             } else {
-              let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table)
+              let formattedDefault = formatDefaultValue(coldef.defaultValue, table)
+              // for non-postgres DBs .specificType produces column data-type change code even with alterType: false
+              // so we set data-type here and skip it in the next block to avoid duplicate data-type change statements
               table.specificType(coldef.name, coldef.dataType).defaultTo(formattedDefault).alter({ alterNullable: false })
-              coldef.skipDefaults = true
             }
           })
 
+          let typeChangedColNames = columnChanges.typeChanges.map((tc) => tc.name)
           columnChanges.defaults.forEach(function (coldef) {
-            if (!!coldef?.skipDefaults) return
-            let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table)
-            table.specificType(coldef.name, coldef.dataType).alter().defaultTo(formattedDefault).alter({ alterNullable: false, alterType: false })
+            // skip setting default if it was done above
+            if(typeChangedColNames.includes(coldef.name)) return;
 
-            // FIXME: this does not work, figure out how to do drop default via Knex.
-            //  else {
-            //   table.specificType(coldef.name, coldef.dataType).defaultTo().alter({alterNullable : false, alterType: false})
-            // }
+            // TODO: knex does not support dropping column default value, figure out how to do this
+            let formattedDefault = formatDefaultValue(coldef.defaultValue, table)
+            table.specificType(coldef.name, coldef.dataType).defaultTo(formattedDefault).alter({ alterNullable: false, alterType: false })
           })
 
           columnChanges.nullableChanges.forEach((coldef) => {
@@ -556,7 +545,7 @@ export default {
             coldef.nullable ? col.nullable() : col.notNullable()
 
             if(coldef.defaultValue) {
-              let formattedDefault = formatDefaultValue(coldef.defaultValue, coldef.dataType, table);
+              let formattedDefault = formatDefaultValue(coldef.defaultValue, table);
               col.defaultTo(formattedDefault);
             }
 

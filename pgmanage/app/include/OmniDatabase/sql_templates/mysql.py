@@ -249,7 +249,7 @@ UNIQUE ( column_name [, ... ] )
     ),
     "drop_unique": Template(
         """ALTER TABLE #table_name#
-DROP #constraint_name#
+DROP CONSTRAINT #constraint_name#
 """
     ),
     "create_foreignkey": Template(
@@ -270,7 +270,7 @@ ON #table_name#
 ( { column_name | ( expression ) } [ ASC | DESC ] )
 """
     ),
-    "drop_index": Template("DROP INDEX #index_name#"),
+    "drop_index": Template("DROP INDEX #index_name# ON #table_name#"),
     "delete": Template(
         """DELETE FROM #table_name#
 WHERE condition

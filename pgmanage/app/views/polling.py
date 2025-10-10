@@ -1080,7 +1080,12 @@ def thread_query(self, args) -> None:
                 and not all_data
             ):
                 block_size = block_size if mode == QueryModes.FETCH_MORE else 50
-                data = database.connection.QueryBlock(sql_cmd, block_size, True, True)
+                if database.db_type == "oracle" and len(sql_cmd.split(";\n")) >= 2:
+                    list_sql: list[str] = sqlparse.split(sql_cmd,  strip_semicolon=True)
+                    for el in list_sql:
+                        data = database.connection.QueryBlock(el, block_size, True, True)
+                else:
+                    data = database.connection.QueryBlock(sql_cmd, block_size, True, True)
 
                 notices = database.connection.GetNotices()[:]
 
@@ -1531,13 +1536,20 @@ def thread_save_edit_data(self, args) -> None:
         database = args["database"]
         client_object: Client = args["client_object"]
         command: str = args["sql_cmd"]
-
         if database.db_type in ["sqlite","mysql"] and len(command.split(";\n")) >= 2:
             try:
                 database.connection.Open(False)
                 database.connection.Execute("BEGIN")
                 for sql in command.split(";\n"):
                     database.connection.Execute(sql)
+                database.connection.Commit()
+            except Exception as exc:
+                database.connection.con.rollback()
+                raise DatabaseError(str(exc)) from exc
+        if database.db_type == "oracle" and len(command.split(";\n")) >= 2:
+            try:
+                database.connection.Open(False)
+                database.connection.Execute(f"BEGIN\n{command};\nEND;")
                 database.connection.Commit()
             except Exception as exc:
                 database.connection.con.rollback()

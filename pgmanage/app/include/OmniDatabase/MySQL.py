@@ -810,7 +810,7 @@ class MySQL:
         return template.template
 
     def TemplateCreateUnique(self):
-        template = get_template("mysql", "drop_primarykey")
+        template = get_template("mysql", "create_unique")
         return template.template
 
     def TemplateDropUnique(self):
@@ -1086,4 +1086,4 @@ class MySQL:
         return None
     
     def QueryTableDefinition(self, table=None):
-        return self.connection.Query("SHOW FULL COLUMNS FROM {0}".format(table), True)
+        return self.connection.Query("SHOW FULL COLUMNS FROM {0}".format(table), False)

@@ -712,6 +712,10 @@ class SQLite:
             p_table
         ), True)
 
+    @lock_required
+    def Execute(self, sql):
+        return self.connection.Execute(sql)
+
     def TemplateSelect(self, p_table, p_kind):
         # table
         if p_kind == 't':
@@ -1085,7 +1089,7 @@ class SQLite:
 
     @lock_required
     def QueryTableDefinition(self, table_name=None):
-        return self.connection.Query("PRAGMA table_info('{0}')".format(table_name), True)
+        return self.connection.Query("PRAGMA table_info('{0}')".format(table_name), False)
 
     @lock_required
     def GetViewDefinition(self, view):

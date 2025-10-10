@@ -28,6 +28,7 @@
 <script>
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
+import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
 import {
   TemplateSelectSqlite,
   TemplateInsertSqlite,
@@ -45,7 +46,7 @@ export default {
   components: {
     PowerTree: PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, DropDbObjectMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -154,13 +155,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Table",
-                this.templates.drop_table.replace(
+              let template = this.templates.drop_table.replace(
                   "#table_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -222,13 +221,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Index",
-                this.templates.drop_index.replace(
+              let template = this.templates.drop_index.replace(
                   "#index_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -269,13 +266,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Trigger",
-                this.templates.drop_trigger.replace(
+              let template = this.templates.drop_trigger.replace(
                   "#trigger_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -310,13 +305,11 @@ export default {
             icon: "fas fa-times",
             divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop View",
-                this.templates.drop_view.replace(
+              let template = this.templates.drop_view.replace(
                   "#view_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],

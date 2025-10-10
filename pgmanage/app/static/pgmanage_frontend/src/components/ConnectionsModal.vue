@@ -100,6 +100,7 @@ import { messageModalStore, tabsStore, settingsStore, connectionsStore } from '.
 import { useVuelidate } from '@vuelidate/core'
 import { Modal, Collapse } from 'bootstrap'
 import { handleError } from '../logging/utils';
+import { dbTechNames } from '../constants'
 
 export default {
   name: 'ConnectionsModal',
@@ -257,17 +258,7 @@ export default {
       })
     },
     connectionSubtitle(connection) {
-      const TECHMAP = {
-        sqlite: 'SQLite3',
-        terminal: 'Terminal',
-        mysql: 'MySQL',
-        mariadb: 'MariaDB',
-        postgresql: 'PostgreSQL',
-        oracle: 'Oracle',
-        mssql: 'SQL Server'
-      }
-
-      let techname = TECHMAP[connection.technology]
+      let techname = dbTechNames[connection.technology]
 
       if(connection.conn_string) return `${techname} - ${connection.conn_string}`
 

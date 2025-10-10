@@ -1451,14 +1451,15 @@ CREATE MATERIALIZED VIEW public.mvw_omnidb_test AS
         data = json.loads(response.content.decode())
         assert data['name'] == 'plpgsql'
 
+    # TODO: extract these tests into separate test set
     def test_execute_query_postgresql_session(self):
-        response = self.client_session.post('/execute_query_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0, "query": "select 1=1"}'})
+        response = self.client_session.post('/execute_query/', {'data': '{"database_index": 0, "workspace_id": 0, "query": "select 1=1"}'})
         assert 200 == response.status_code
         data = json.loads(response.content.decode())
         assert data['status'] == 'success'
 
     def test_execute_query_postgresql_nosession(self):
-        response = self.client_nosession.post('/execute_query_postgresql/', {'data': '{"database_index": 0, "workspace_id": 0}'})
+        response = self.client_nosession.post('/execute_query/', {'data': '{"database_index": 0, "workspace_id": 0}'})
         assert 401 == response.status_code
 
     def test_get_available_extensions_postgresql_session(self):
