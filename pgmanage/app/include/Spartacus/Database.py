@@ -1551,49 +1551,11 @@ class PostgreSQL(Generic):
             self.special = PGSpecial()
             self.help = DataTable(simple=True)
             self.help.Columns = ["Command", "Syntax", "Description"]
-            self.help.AddRow(["\\?", "\\?", "Show Commands."])
-            self.help.AddRow(["\\h", "\\h", "Show SQL syntax and help."])
-            self.help.AddRow(["\\list", "\\list", "List databases."])
-            self.help.AddRow(["\\l", "\\l[+] [pattern]", "List databases."])
-            self.help.AddRow(["\\du", "\\du[+] [pattern]", "List roles."])
-            self.help.AddRow(["\\dx", "\\dx[+] [pattern]", "List extensions."])
-            self.help.AddRow(["\\db", "\\db[+] [pattern]", "List tablespaces."])
-            self.help.AddRow(["\\dn", "\\dn[+] [pattern]", "List schemas."])
-            self.help.AddRow(["\\dt", "\\dt[+] [pattern]", "List tables."])
-            self.help.AddRow(["\\dv", "\\dv[+] [pattern]", "List views."])
-            self.help.AddRow(["\\ds", "\\ds[+] [pattern]", "List sequences."])
-            self.help.AddRow(
-                [
-                    "\\d",
-                    "\\d[+] [pattern]",
-                    "List or describe tables, views and sequences.",
-                ]
-            )
-            self.help.AddRow(
-                [
-                    "DESCRIBE",
-                    "DESCRIBE [pattern]",
-                    "Describe tables, views and sequences.",
-                ]
-            )
-            self.help.AddRow(
-                [
-                    "describe",
-                    "DESCRIBE [pattern]",
-                    "Describe tables, views and sequences.",
-                ]
-            )
-            self.help.AddRow(["\\di", "\\di[+] [pattern]", "List indexes."])
-            self.help.AddRow(
-                ["\\dm", "\\dm[+] [pattern]", "List materialized views."]
-            )
-            self.help.AddRow(["\\df", "\\df[+] [pattern]", "List functions."])
-            self.help.AddRow(
-                ["\\sf", "\\sf[+] FUNCNAME", "Show a function's definition."]
-            )
-            self.help.AddRow(["\\dT", "\\dT[+] [pattern]", "List data types."])
-            self.help.AddRow(["\\x", "\\x", "Toggle expanded output."])
-            self.help.AddRow(["\\timing", "\\timing", "Toggle timing of commands."])
+            for command_key, command in self.special.commands.items():
+                if command_key in ["\\z", "\\dp", "\\n", "\\np", "\\ns", "\\nd", "\\pager"]: # these commands either not working or not needed
+                    continue
+                self.help.AddRow([command_key, command.syntax, command.description])
+
             self.help_commands = DataTable(simple=True)
             self.help_commands.Columns = ["SQL Command"]
             for s in list(HelpCommands.keys()):
@@ -2198,7 +2160,7 @@ class PostgreSQL(Generic):
                         if title:
                             heading = title
                         if rows:
-                            table = DataTable()
+                            table = DataTable(simple=True)
                             table.Columns = headers
                             if isinstance(rows, type(self.cur)):
                                 if rows.description:
