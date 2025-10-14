@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { editorModeMap } from "../constants";
+import { editorModeMap, sqlFormatterDialectMap } from "../constants";
 import { settingsStore, tabsStore } from "../stores/stores_initializer";
 import { format } from "sql-formatter";
 
@@ -42,12 +42,9 @@ export default {
       formatOptions: {
         tabWidth: 2,
         keywordCase: "upper",
-        //sql-formatter uses 'plsql' for oracle sql flavor
-        // otherwise - our db technology names match perfectly
         language:
-          this.databaseTechnology === "oracle"
-            ? "plsql"
-            : this.databaseTechnology,
+          sqlFormatterDialectMap[this.databaseTechnology] ??
+          this.databaseTechnology,
         linesBetweenQueries: 1,
       },
     };
@@ -95,7 +92,7 @@ export default {
       });
 
       this.editor.setOptions({
-        enableHoverLinking: true
+        enableHoverLinking: true,
       });
       this.addCopyToEditorButton();
     },
