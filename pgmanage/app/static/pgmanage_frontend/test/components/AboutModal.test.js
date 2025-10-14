@@ -16,12 +16,13 @@ describe("AboutModal.vue", () => {
     const wrapper = mount(AboutModal);
 
     const icons = wrapper.findAll(".modal-about__db img");
-    expect(icons.length).toBe(5);
+    expect(icons.length).toBe(6);
     expect(icons.at(0).attributes("src")).toBe(wrapper.vm.postgresqlIcon);
     expect(icons.at(1).attributes("src")).toBe(wrapper.vm.oracleIcon);
     expect(icons.at(2).attributes("src")).toBe(wrapper.vm.mysqlIcon);
     expect(icons.at(3).attributes("src")).toBe(wrapper.vm.sqliteIcon);
     expect(icons.at(4).attributes("src")).toBe(wrapper.vm.mariadbIcon);
+    expect(icons.at(5).attributes("src")).toBe(wrapper.vm.mssqlIcon);
   });
 
   it("renders the correct supporter link", () => {

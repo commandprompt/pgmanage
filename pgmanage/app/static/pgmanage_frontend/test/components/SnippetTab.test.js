@@ -17,11 +17,15 @@ import { emitter } from "../../src/emitter.js";
 import { useSettingsStore } from "../../src/stores/settings.js";
 import { useMessageModalStore } from "../../src/stores/message_modal.js";
 import { useTabsStore } from "../../src/stores/tabs";
-import * as notificatonModule from "../../src/notification_control";
+import { showToast } from "@src/notification_control";
 import { maxFileSizeInKB, maxFileSizeInMB } from "../../src/constants.js";
 
+vi.mock("@src/notification_control", () => ({
+  showToast: vi.fn(),
+}));
+
 describe("SnippetTab", () => {
-  let wrapper, fileMock, showToastSpy, eventMock;
+  let wrapper, fileMock, eventMock;
   let settingsStore, messageModalStore;
   const tabId = "uniqueTabID";
 
@@ -45,8 +49,6 @@ describe("SnippetTab", () => {
     fileMock = new File(["content"], "example.txt", {
       type: "text/plain",
     });
-
-    showToastSpy = vi.spyOn(notificatonModule, "showToast");
 
     eventMock = new Event("drop");
   });
@@ -218,7 +220,7 @@ describe("SnippetTab", () => {
 
       wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
 
-      expect(showToastSpy).toHaveBeenCalledWith(
+      expect(showToast).toHaveBeenCalledWith(
         "error",
         "File with type 'image/jpeg' is not supported."
       );
@@ -235,7 +237,7 @@ describe("SnippetTab", () => {
 
       wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
 
-      expect(showToastSpy).toHaveBeenCalledWith(
+      expect(showToast).toHaveBeenCalledWith(
         "error",
         `Please drop a file that is ${maxFileSizeInMB}MB or less.`
       );
@@ -248,7 +250,7 @@ describe("SnippetTab", () => {
 
       wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
 
-      expect(showToastSpy).toHaveBeenCalledWith(
+      expect(showToast).toHaveBeenCalledWith(
         "error",
         "Only one file at a time is possible to drop"
       );
@@ -278,7 +280,7 @@ describe("SnippetTab", () => {
 
       wrapper.find(".snippet-editor").element.dispatchEvent(eventMock);
 
-      expect(showToastSpy).toHaveBeenCalledWith("error", error);
+      expect(showToast).toHaveBeenCalledWith("error", error);
       expect(preventDefault).toHaveBeenCalled();
       expect(stopPropagation).toHaveBeenCalled();
     });
