@@ -1551,49 +1551,11 @@ class PostgreSQL(Generic):
             self.special = PGSpecial()
             self.help = DataTable(simple=True)
             self.help.Columns = ["Command", "Syntax", "Description"]
-            self.help.AddRow(["\\?", "\\?", "Show Commands."])
-            self.help.AddRow(["\\h", "\\h", "Show SQL syntax and help."])
-            self.help.AddRow(["\\list", "\\list", "List databases."])
-            self.help.AddRow(["\\l", "\\l[+] [pattern]", "List databases."])
-            self.help.AddRow(["\\du", "\\du[+] [pattern]", "List roles."])
-            self.help.AddRow(["\\dx", "\\dx[+] [pattern]", "List extensions."])
-            self.help.AddRow(["\\db", "\\db[+] [pattern]", "List tablespaces."])
-            self.help.AddRow(["\\dn", "\\dn[+] [pattern]", "List schemas."])
-            self.help.AddRow(["\\dt", "\\dt[+] [pattern]", "List tables."])
-            self.help.AddRow(["\\dv", "\\dv[+] [pattern]", "List views."])
-            self.help.AddRow(["\\ds", "\\ds[+] [pattern]", "List sequences."])
-            self.help.AddRow(
-                [
-                    "\\d",
-                    "\\d[+] [pattern]",
-                    "List or describe tables, views and sequences.",
-                ]
-            )
-            self.help.AddRow(
-                [
-                    "DESCRIBE",
-                    "DESCRIBE [pattern]",
-                    "Describe tables, views and sequences.",
-                ]
-            )
-            self.help.AddRow(
-                [
-                    "describe",
-                    "DESCRIBE [pattern]",
-                    "Describe tables, views and sequences.",
-                ]
-            )
-            self.help.AddRow(["\\di", "\\di[+] [pattern]", "List indexes."])
-            self.help.AddRow(
-                ["\\dm", "\\dm[+] [pattern]", "List materialized views."]
-            )
-            self.help.AddRow(["\\df", "\\df[+] [pattern]", "List functions."])
-            self.help.AddRow(
-                ["\\sf", "\\sf[+] FUNCNAME", "Show a function's definition."]
-            )
-            self.help.AddRow(["\\dT", "\\dT[+] [pattern]", "List data types."])
-            self.help.AddRow(["\\x", "\\x", "Toggle expanded output."])
-            self.help.AddRow(["\\timing", "\\timing", "Toggle timing of commands."])
+            for command_key, command in self.special.commands.items():
+                if command_key in ["\\z", "\\dp", "\\n", "\\np", "\\ns", "\\nd", "\\pager"]: # these commands either not working or not needed
+                    continue
+                self.help.AddRow([command_key, command.syntax, command.description])
+
             self.help_commands = DataTable(simple=True)
             self.help_commands.Columns = ["SQL Command"]
             for s in list(HelpCommands.keys()):
@@ -2198,7 +2160,7 @@ class PostgreSQL(Generic):
                         if title:
                             heading = title
                         if rows:
-                            table = DataTable()
+                            table = DataTable(simple=True)
                             table.Columns = headers
                             if isinstance(rows, type(self.cur)):
                                 if rows.description:
@@ -3949,6 +3911,7 @@ class MSSQL(Generic):
         password,
         conn_string="",
         encoding=None,
+        connection_params=None,
     ):
         if "MSSQL" in supported_rdbms:
             self.host = host
@@ -3964,6 +3927,7 @@ class MSSQL(Generic):
             self.con = None
             self.cur = None
             self.encoding = encoding
+            self.connection_params = connection_params if connection_params else {}
         else:
             raise Spartacus.Database.Exception(
                 "MSSQL is not supported. Please install it with 'pip install Spartacus[mssql]'."
@@ -3976,15 +3940,17 @@ class MSSQL(Generic):
         try:
             self.con = pymssql.connect(
                 host=self.host,
-                port=int(self.port),
+                port=self.port,
                 database=self.service,
                 user=self.user,
                 password=self.password,
+                **self.connection_params
             )
+            self.con.autocommit(autocommit)
             self.cur = self.con.cursor()
             self.start = True
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4009,7 +3975,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
         finally:
@@ -4028,7 +3994,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
         finally:
@@ -4053,7 +4019,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
         finally:
@@ -4070,7 +4036,7 @@ class MSSQL(Generic):
                 self.con.close()
                 self.con = None
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4090,7 +4056,7 @@ class MSSQL(Generic):
                 self.con.close()
                 self.con = None
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4131,7 +4097,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
         finally:
@@ -4156,7 +4122,7 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4187,11 +4153,13 @@ class MSSQL(Generic):
                             row = self.cur.fetchone()
                 if self.start:
                     self.start = False
+                if len(table.Rows) < blocksize:
+                    self.start = True
                 return table
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
@@ -4221,13 +4189,38 @@ class MSSQL(Generic):
         except Spartacus.Database.Exception as exc:
             raise exc
         except pymssql.Error as exc:
-            raise Spartacus.Database.Exception(str(exc))
+            raise Spartacus.Database.Exception(self.FormatException(exc))
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
     def Special(self, sql):
-        return self.Query(sql).Pretty()
+        return self.Query(sql, True, True).Pretty()
 
+    def FormatException(self, exc):
+        try:
+            # sometimes pymssql.Error may have the data we need in a nested tuple
+            if isinstance(exc.args[0], tuple):
+                args_unpacked = exc.args[0]
+            else:
+                args_unpacked = exc.args
+
+            err_code, raw_msg = args_unpacked[:2]
+
+        except Exception:
+            err_code, raw_msg = None, str(exc)
+
+        if isinstance(raw_msg, (bytes, bytearray)):
+            try:
+                decoded_msg = raw_msg.decode('utf-8', errors='replace')
+            except Exception:
+                decoded_msg = str(raw_msg)
+        else:
+            decoded_msg = str(raw_msg)
+
+        lines = [l.strip() for l in decoded_msg.splitlines() if l.strip()]
+
+        err_str = '\n'.join(lines)
+        return f"{err_code}: {err_str}"
 
 """
 ------------------------------------------------------------------------

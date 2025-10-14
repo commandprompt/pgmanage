@@ -122,6 +122,13 @@ const dbTechNames = {
   mssql: 'SQL Server'
 }
 
+//sql-formatter uses 'plsql' for oracle and tsql for mssql sql flavor
+//otherwise - our db technology names match perfectly
+const sqlFormatterDialectMap = {
+  oracle: "plsql",
+  mssql: "tsql"
+}
+
 const knexDialectMap = {
   oracle: "oracledb",
   mariadb: "mysql",
@@ -146,5 +153,6 @@ export {
   editorModeMap,
   dataEditorFilterModes,
   dbTechNames,
+  sqlFormatterDialectMap,
   knexDialectMap,
 };

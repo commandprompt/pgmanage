@@ -65,7 +65,7 @@
           :columns="columnNames"
           :db-meta-data="dbMetadata"
           :disabled-features="disabledFeatures"
-          :has-schema="dialect === 'postgresql'"
+          :has-schema="dialectData.hasSchema"
           @foreign-keys:changed="changeForeignKeys"
           />
         </div>
@@ -602,7 +602,9 @@ export default {
       if(response.error == true) {
         showToast("error", response.data.message)
       } else {
-        let msg = response.data.status === "CREATE TABLE" ? `Table "${this.localTable.tableName}" created` : `Table "${this.localTable.tableName}" updated`
+        let verb = this.mode === operationModes.CREATE ? 'created' : 'updated'
+        let msg = `Table "${this.localTable.tableName}" ${verb}`
+
         showToast("success", msg)
 
         emitter.emit(`schemaChanged_${this.workspaceId}`, {

@@ -1,6 +1,6 @@
 from string import Template
 
-from . import mariadb, mysql, oracle, postgres, sqlite
+from . import mariadb, mysql, oracle, postgres, sqlite, mssql
 
 TEMPLATE_MODULES = {
     "postgres": postgres,
@@ -8,6 +8,7 @@ TEMPLATE_MODULES = {
     "mariadb": mariadb,
     "sqlite": sqlite,
     "oracle": oracle,
+    "mssql": mssql,
 }
 
 

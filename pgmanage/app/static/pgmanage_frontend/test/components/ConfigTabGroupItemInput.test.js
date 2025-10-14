@@ -101,7 +101,7 @@ describe("ConfigTabGroupItemInput.vue", () => {
     mountComponent({
       initialSetting: {
         ...mockSetting,
-        category: "Preset Options",
+        is_preset_option: 'True',
       },
     });
 

@@ -2,11 +2,12 @@ cryptography==45.0.5
 Django==4.2.23
 CherryPy==18.10.0
 sqlparse==0.5.3
-psycopg2==2.9.10
+psycopg2==2.9.11
 openpyxl==3.1.3
 RestrictedPython==8.0
 oracledb==3.2
 pymysql==1.1.1
+pymssql==2.3.7
 pgspecial==1.13.0
 sshtunnel==0.4.0
 psutil==6.1.1
