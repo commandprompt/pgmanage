@@ -175,6 +175,18 @@ export default {
 
     table.on("tableBuilt", () => {
       this.tabulator = markRaw(table); // markRaw fixes problem with making tabulator proxy, that we don't need
+      this.tabulator.on("cellEditing", (cell) => { // Prevent Tabulator from hijacking left/right arrow keys and mouse click while editing
+        this.$nextTick(() => {
+          const el = cell.getElement().querySelector("input");
+          if (!el) return;
+          el.addEventListener("keydown", (e) => {
+            if (["ArrowLeft", "ArrowRight"].includes(e.key)) e.stopPropagation();
+          });
+          el.addEventListener("mousedown", (e) => {
+            e.stopPropagation();
+          });
+        })
+      });
       this.tabulator.on("cellEdited", this.cellEdited);
       this.knex = Knex({ client: this.dialect || 'postgres'})
       this.getTableColumns().then(() => {
