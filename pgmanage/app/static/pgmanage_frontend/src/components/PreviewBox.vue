@@ -60,6 +60,7 @@ export default {
       }
       this.editor.setValue(newValue);
       this.editor.clearSelection();
+      this.editor.moveCursorTo(0,0);
       this.isCopyButtonClicked = false;
     },
   },
