@@ -129,6 +129,13 @@ const sqlFormatterDialectMap = {
   mssql: "tsql"
 }
 
+const knexDialectMap = {
+  oracle: "oracledb",
+  mariadb: "mysql",
+  postgresql: "postgres",
+  sqlite: "sqlite3",
+};
+
 export {
   requestState,
   tabStatusMap,
@@ -147,4 +154,5 @@ export {
   dataEditorFilterModes,
   dbTechNames,
   sqlFormatterDialectMap,
+  knexDialectMap,
 };

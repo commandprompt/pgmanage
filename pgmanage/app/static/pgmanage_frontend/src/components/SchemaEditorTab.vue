@@ -130,7 +130,7 @@ import { useVuelidate } from '@vuelidate/core'
 import ColumnList from './SchemaEditorColumnList.vue'
 import dialects from './dialect-data'
 import { createRequest } from '../long_polling'
-import { queryRequestCodes, operationModes } from '../constants'
+import { queryRequestCodes, operationModes, knexDialectMap } from '../constants'
 import axios from 'axios'
 import { showToast } from '../notification_control'
 import { dbMetadataStore, tabsStore } from '../stores/stores_initializer'
@@ -206,11 +206,12 @@ export default {
     this.operationModes = operationModes
   },
   mounted() {
+    let mappedDialect = knexDialectMap[this.dialect] || this.dialect;
     // the "client" parameter is a bit misleading here,
     // we do not connect to any db from Knex, just setting
     // the correct SQL dialect with this option
-    this.knex = Knex({ client: this.dialect })
-    this.loadDialectData(this.dialect)
+    this.knex = Knex({ client: mappedDialect })
+    this.loadDialectData(mappedDialect)
     if(this.$props.mode === operationModes.UPDATE) {
       this.loadTableDefinition().then(() => {
         this.loadIndexes();

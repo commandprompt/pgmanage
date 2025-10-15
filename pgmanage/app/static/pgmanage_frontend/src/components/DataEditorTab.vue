@@ -54,7 +54,7 @@ import isNil from 'lodash/isNil';
 import isEmpty from 'lodash/isEmpty';
 import last from 'lodash/last';
 import { showToast } from "../notification_control";
-import { queryRequestCodes, requestState } from '../constants'
+import { queryRequestCodes, requestState, knexDialectMap } from '../constants'
 import { createRequest } from '../long_polling'
 import { TabulatorFull as Tabulator} from 'tabulator-tables'
 import { emitter } from '../emitter';
@@ -144,7 +144,8 @@ export default {
     }
   },
   mounted() {
-    this.dialectData = dialects[this.dialect];
+    let mappedDialect = knexDialectMap[this.dialect] || this.dialect;
+    this.dialectData = dialects[mappedDialect];
     this.handleResize()
     let table = new Tabulator(this.$refs.tabulator, {
       placeholder: "No Data Available",
@@ -188,7 +189,7 @@ export default {
         })
       });
       this.tabulator.on("cellEdited", this.cellEdited);
-      this.knex = Knex({ client: this.dialect || 'postgres'})
+      this.knex = Knex({ client: mappedDialect || 'postgres'})
       this.getTableColumns().then(() => {
         this.addHeaderMenuOverlayElement();
         this.tabulator.setSort("0", "asc");

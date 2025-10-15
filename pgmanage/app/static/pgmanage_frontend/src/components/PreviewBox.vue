@@ -14,8 +14,10 @@
 </template>
 
 <script>
-import { editorModeMap } from "../constants";
+import { editorModeMap, sqlFormatterDialectMap } from "../constants";
 import { settingsStore, tabsStore } from "../stores/stores_initializer";
+import { format } from "sql-formatter";
+
 export default {
   props: {
     label: {
@@ -37,6 +39,14 @@ export default {
     return {
       isCopyButtonClicked: false,
       isEmpty: true,
+      formatOptions: {
+        tabWidth: 2,
+        keywordCase: "upper",
+        language:
+          sqlFormatterDialectMap[this.databaseTechnology] ??
+          this.databaseTechnology,
+        linesBetweenQueries: 1,
+      },
     };
   },
   mounted() {
@@ -45,8 +55,12 @@ export default {
   watch: {
     editorText(newValue, oldValue) {
       this.isEmpty = !newValue;
+      if (!!newValue) {
+        newValue = format(newValue, this.formatOptions);
+      }
       this.editor.setValue(newValue);
       this.editor.clearSelection();
+      this.editor.moveCursorTo(0,0);
       this.isCopyButtonClicked = false;
     },
   },
@@ -79,7 +93,7 @@ export default {
       });
 
       this.editor.setOptions({
-        enableHoverLinking: true
+        enableHoverLinking: true,
       });
       this.addCopyToEditorButton();
     },
