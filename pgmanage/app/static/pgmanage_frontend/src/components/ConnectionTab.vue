@@ -274,7 +274,10 @@ export default {
         this.lastTreeTabsView = view;
         return;
       }
-      this.showTreeTabsLoading = true;
+      let loadingTimeout = setTimeout(() => {
+        this.showTreeTabsLoading = true;
+      }, 1000);
+
       axios
         .post(view, {
           database_index: this.databaseIndex,
@@ -282,11 +285,13 @@ export default {
           data: data,
         })
         .then((resp) => {
+          clearTimeout(loadingTimeout);
           this.propertiesData = resp.data.properties;
           this.ddlData = resp.data.ddl;
           this.showTreeTabsLoading = false;
         })
         .catch((error) => {
+          clearTimeout(loadingTimeout);
           if (error?.response?.data?.password_timeout) {
             emitter.emit("show_password_prompt", {
               databaseIndex: this.databaseIndex,
