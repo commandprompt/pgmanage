@@ -1552,7 +1552,7 @@ class PostgreSQL(Generic):
             self.help = DataTable(simple=True)
             self.help.Columns = ["Command", "Syntax", "Description"]
             for command_key, command in self.special.commands.items():
-                if command_key in ["\\z", "\\dp", "\\n", "\\np", "\\ns", "\\nd", "\\pager"]: # these commands either not working or not needed
+                if command_key in ["\\z", "\\dp", "\\n", "\\np", "\\ns", "\\nd", "\\pager", "\\!", "\\e", "\\ev", "\\ef", "\\copy"]: # these commands either not working or not needed
                     continue
                 self.help.AddRow([command_key, command.syntax, command.description])
 
