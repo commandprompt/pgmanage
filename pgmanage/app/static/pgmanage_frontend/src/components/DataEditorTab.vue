@@ -171,6 +171,7 @@ export default {
       clipboardCopyRowRange: "range",
       clipboardCopyConfig: {
         columnHeaders: false, //do not include column headers in clipboard output
+        formatCells:false, //cell formatting on clipboard copy breaks rowFormatter's ability to colorize data grid rows
       },
     })
 
