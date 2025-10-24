@@ -157,6 +157,7 @@ def get_database_objects(request, database):
         and extension[2] not in unsupported_versions
     )
     has_pg_cron = False
+    database.GetVersion() # this is needed to trigger database.update_feature_flags, in case it is new database
     try:
         current_schema = "public"
         schema = database.QueryCurrentSchema().Rows
