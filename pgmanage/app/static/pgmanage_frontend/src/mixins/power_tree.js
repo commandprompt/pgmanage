@@ -6,6 +6,7 @@ import { logger } from "../logging/logger_setup";
 import { axiosHooks } from "../logging/service";
 import { handleError } from "../logging/utils";
 import { h } from "vue";
+import debounce from "lodash/debounce";
 
 let hoverTimer = null;
 
@@ -84,7 +85,9 @@ export default {
     onToggle(node, e) {
       this.$refs.tree.select(node.path);
       if (this.getRootNode().title !== "Snippets") {
-        this.getProperties(node);
+        debounce((node) => {
+          this.getProperties(node);
+        }, 200)(node);
       }
       if (node.isExpanded) return;
       this.refreshTree(node);
