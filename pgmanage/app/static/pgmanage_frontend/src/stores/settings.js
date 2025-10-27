@@ -122,9 +122,9 @@ const useSettingsStore = defineStore("settings", {
       this.scrollTree = value;
     },
     showModal() {
-      Modal.getOrCreateInstance('#modal_settings', {
-        backdrop: 'static', keyboard: false
-      }).show()
+      Modal.getOrCreateInstance("#modal_settings", {
+        backdrop: "static",
+      }).show();
     },
   },
 });

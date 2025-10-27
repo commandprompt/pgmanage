@@ -131,13 +131,17 @@ export default {
   mounted() {
     this.modalInstance = Modal.getOrCreateInstance(this.$refs.cellDataModal, {
       backdrop: "static",
-      keyboard: false,
     });
 
     this.$refs.cellDataModal.addEventListener("shown.bs.modal", (event) => {
       this.setupEditor();
       this.setEditorContent();
     });
+
+    this.$refs.cellDataModal.addEventListener("hidden.bs.modal", () => {
+      this.cleanupEditor();
+    });
+
     cellDataModalStore.$onAction((action) => {
       if (action.name === "showModal") {
         action.after(() => {
@@ -147,12 +151,7 @@ export default {
       }
 
       if (action.name === "hideModal") {
-        this.editor.setValue("");
-        this.contentMode = this.contentModes.TEXT;
         this.modalInstance.hide();
-        // erase leftover css classes left after editor destruction
-        this.$refs.editor.classList.remove("ace-omnidb", "ace-omnidb_dark");
-        this.editor.destroy();
       }
     });
   },
@@ -240,6 +239,13 @@ export default {
     },
     formatContent() {
       beautify(this.editor.getSession());
+    },
+    cleanupEditor() {
+      this.editor.setValue("");
+      this.contentMode = this.contentModes.TEXT;
+      // erase leftover css classes left after editor destruction
+      this.$refs.editor.classList.remove("ace-omnidb", "ace-omnidb_dark");
+      this.editor.destroy();
     },
   },
 };

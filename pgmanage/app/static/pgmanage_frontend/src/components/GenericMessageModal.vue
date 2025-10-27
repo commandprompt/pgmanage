@@ -92,13 +92,26 @@ export default {
           "#generic_modal_message",
           {
             backdrop: "static",
-            keyboard: false,
           }
         );
         this.modalInstance.show();
       }
       if (action.name === "hideModal") {
         this.modalInstance.hide();
+      }
+    });
+    let messageModalEl = document.getElementById("generic_modal_message");
+
+    messageModalEl.addEventListener("hide.bs.modal", (event) => {
+      const activeEl = document.activeElement;
+
+      const isConfirmButton =
+        activeEl?.id === "generic_modal_message_yes" ||
+        activeEl?.id === "generic_modal_message_no";
+
+      if (!this.store.closable && !isConfirmButton) {
+        event.preventDefault();
+        return;
       }
     });
   },

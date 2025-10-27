@@ -249,7 +249,6 @@ export default {
       if (newValue) {
         this.modalInstance = Modal.getOrCreateInstance(this.$refs.editWidgetModal, {
           backdrop: "static",
-          keyboard: false,
         })
         this.modalInstance.show();
         this.setupModal();
@@ -264,6 +263,11 @@ export default {
         };
       }
     },
+  },
+  mounted() {
+    this.$refs.editWidgetModal.addEventListener("hide.bs.modal", () => {
+      this.closeModal();
+    });
   },
   methods: {
     getMonitoringWidgetList() {
@@ -367,9 +371,7 @@ export default {
           widget_script_chart: this.scriptEditor.getValue(),
         })
         .then((resp) => {
-          this.resetToDefault();
           this.modalInstance.hide();
-          this.$emit("modalHide");
           this.$emit("widgetCreated", resp.data)
           showToast("success", "Monitoring widget created.");
         })
@@ -387,9 +389,7 @@ export default {
           widget_script_chart: this.scriptEditor.getValue(),
         })
         .then((resp) => {
-          this.resetToDefault();
           this.modalInstance.hide();
-          this.$emit("modalHide");
           this.$emit("widgetUpdated", resp.data);
           showToast("success", "Monitoring widget updated.");
         })

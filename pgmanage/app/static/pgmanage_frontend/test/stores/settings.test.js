@@ -252,7 +252,6 @@ describe("settings store", () => {
     store.showModal();
     expect(Modal.getOrCreateInstance).toHaveBeenCalledWith("#modal_settings", {
       backdrop: "static",
-      keyboard: false,
     });
   });
 });
