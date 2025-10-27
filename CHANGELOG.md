@@ -1,6 +1,6 @@
-# PgManage 1.3 Release
+# PgManage 1.4 Release
 
-## Release Date: June 17 2025
+## Release Date: Nov 10 2025
 
 ## Release Notes
 
