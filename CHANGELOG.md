@@ -1,3 +1,62 @@
+# PgManage 1.3 Release
+
+## Release Date: June 17 2025
+
+## Release Notes
+
+  - New features:
+    - implemented support for MS SQL Server databases 
+    - implemented keyboard navigation in Data Editor grid #736
+    - implemented support for partial/range selection in data grids for selective copying and other operations #752
+    - implemented a dedicated DB object drop/deletion dialog to replace template based workflow #734
+    - implemented "quick search/jump to" feature in DB object tree for quicker navigation #667
+    - implemented "pin database" feature for quicker navigation #237
+    - implemented postgres server log viewer #658
+    - implemented pan, zoom and layout save/restore in ERD tab, added a dedicated toolbar for pan/zoom #659
+    - implemented support for mDNS resolvig when connecting to database server #673
+    - implemented redraw of customized dashboard widgets when widget settings change #626
+    - implemented display of table index details in DDL tab for MariaDB and MySQL #704
+  
+  - Bugs fixed:
+    - fixed validation of octal config values in postgres server configuration #705
+    - fixed an error when restoring a postgres server config snapshot containing settings not supported by the current DB setup #708
+    - fixed an error where restoring a postgres configuration created with different locale could fail #707
+    - relaxed custom widget validation rules to allow blank chart generation code #720
+    - fixed an error in Data Editor when saving multiple rows in Oracle #737
+    - fixed an error when running multiple SQL statements against Oracle database #738
+    - fixed command history modal not displaying the most recent query #740
+    - fixed the issue where pgmanage tabs could become unresponsive if the network connection stalls
+    - don't show Explain/Explain Selection features when working with non-postgres databases
+    - properly handle null passwords when bulding DB connection string
+    - fixed race condition resulting in intermittent Schema Editor errors after modifying table in MySQL or MariaDB #755
+    - fixed incorrect default_value in get_table_definition* API endpoints #754
+    - fixed a bug in Schema Editor where "touched" column default values cannot be reverted to their initial state #757
+    - fixed missing color markers on altered table rows in Data Editor if Clipboard Copy command was used on them before #765
+
+  - UI/UX Improvements:
+    - reorganized DB tree context menus #668
+    - improved postgres notice display in Query Tab: added color labels and refined notice formatting #725
+    - improved nested context menu navigation when moving cursor from parent to child menu
+    - improved stylesheets for snippets panel tab
+    - right-justify integers and numerics in query results data grid #681
+    - improved formatting of DB error toasts and dialogs #739
+    - tweaked app scrollbar sizes to make them easier to grab
+    - removed unnecessary confirmation when closing DB workspaces, ask for confirmation only if there's unsaved data
+    - improved formatting and readability of Oracle DB sessions tab
+    - enlarged clickable area of DB tree node expand/collapse icon to make it easier to click
+    - added SQL formatting for DDL tab content when working SQLite3 databases
+    - don't immediately show the loader overlay in DDL/Properties tab when changing selected DB object
+
+  - Other Changes
+    - updated python from 3.9.13 to 3.11.13
+    - updated cherrypy from 18.1.1 to 18.10.0
+    - updated psycopg2 from 2.9.10 to 2.9.11
+    - extracted app SQL templates into separate modules
+    - removed redundant curly braces from postgres SQL templates
+    - use user id instead of user username for process log file names
+    - removed unnecessary blank lines between process log records
+    - use native prettytable features when generating psql console command list
+
 # PgManage 1.3.1 Bugfix Release
 
 ## Release Date: Aug 5 2025
@@ -9,9 +68,9 @@
     - fixed error when loading index information in DB Tree in Mariadb (#688)
     - fixed incorrect stylesheets for password strength validation widget
     - fixed erroneous "Discard Changes" warning when switching between conections in connection manager (#698)
-    - fixed issue with incorrect where clause generated when usingdata editor query filter in Oracle
+    - fixed issue with incorrect where clause generated when using Data Editor query filter in Oracle
     - fixed erros when loading DDL for metadata link objects in DB tree
-    - fixed back-end issue with idle schema editor thread not always getting terminated
+    - fixed back-end issue with idle Schema Editor thread not always getting terminated
     - fixed "autocommit" checkbox not working for Oracle DB connections
     - fixed validation errors when entering octal file permissions in Server Configuration Tab (#705)
     - fixed error when rolling back Postgres Server Configuration snapshots that have values not applicable to the current server setup
@@ -20,7 +79,7 @@
     - fixed query result copy as JSON when query result have duplicate column names (#712)
     - fixed isssue with saving custom monitoring widgets without chart code block defined (#720)
     
-  - Other changes
+  - Other Changes
     - updated restrictedpython from 7.4 to 8.0
     - updated django from 4.2.19 to 4.2.23 
     - updated oracledb from 2.5.1 to 3.2.0
@@ -82,7 +141,7 @@
     - added "Discard Changes" warning when closing Data Editor
     - improved data grid cell rendering performance for cells containing large amounts of data
 
-  - Other changes
+  - Other Changes
     - cleaned up legacy/unused sass styles
     - Django updated from 4.2.17 to 4.2.19
     - openpyxl updated from 3.0.10 to 3.1.3
@@ -121,7 +180,7 @@
     - fixed bug that caused old SQLite3 DB file being used when connection properties updated with a new file #598
     - fixed SQLite3 tables not ordered by name in DB object tree  # #596
     
-  - Other changes:
+  - Other Changes:
     - bumped happy-dom version to fix potential security vulnerability in dev environment
     - silenced SASS deprecation warnings during js bundle build
     - plus icons are now used for all context menus associated with "create" action #557
@@ -161,7 +220,7 @@
     - new application startup screen
     - improved naming for exported CSV/XLS files
     
-  - Other changes
+  - Other Changes
     - Django updated from 4.2.11 to 4.2.16
     - cryptography updated from 36.0.2 to 41.0.7
     - pymysql updated from 1.0.x to 1.1.1
@@ -248,7 +307,7 @@
    - significantly improved performance of query result data grids when working with large amounts of data
    - it is now possible to reuse a query from the history dialog by double clicking on the correspoding query cell
 
- - Other changes
+ - Other Changes
    - sshtunnel bumped from 0.1.5 to 0.4.0
    - optimized front-end imports to reduce js bundle size
    - optimized peformance of several back-end queries
@@ -324,7 +383,7 @@
    - improved displaying of long error messages in application toast notifications
    - warn user about unsaved connection changes in connection manager dialog
 
- - Other changes
+ - Other Changes
    - code indent feature now has a maximum content length limited to 75mb
    - monitoring dashboard was rewritten in Vuejs
    - application tab management code was rewritten in Vuejs
@@ -365,7 +424,7 @@
  - UI/UX Improvements:
    - slightly improved app startup speed
 
- - Other changes
+ - Other Changes
    - improved error handling when app back-end is down or unavailable due to network issues
    - application data grids migrated from Handsontable to Tabulator.js
    - updated Vuejs and Bootstrap libraries
@@ -397,7 +456,7 @@
    - various layout improvements on DB Query tab, application pane separators etc.
    - minimized UI visual clutter
 
- - Other changes
+ - Other Changes
    - database object tree was fully rewritten in Vuejs
    - moved SQL formatting/indentation to front-end
    - refactored DB Object APIs
@@ -433,7 +492,7 @@
     - pre-set database connection TCP port in the Connection Management dialog based on selected database type
     - add visually matching themes for query editor
 
- - Other changes
+ - Other Changes
     - django has been updated from 2.2 to 3.2
     - bundled python version changed from 3.8 to 3.9
     - code clean-up and refactoring
@@ -465,7 +524,7 @@
   - add PgManage Handbook links to application error modal dialogs
   - improved handling of drag-and-drop reordering for database operations tabs
 
-- Other changes
+- Other Changes
   - added support for configurable Postgresql Client binary path in application settings
   - excluded SASS libraries and .sass files from the release builds
   - include EGL/GLES libraries into app release builds
@@ -515,6 +574,6 @@
   - the autocommit checkbox on query tab now stays visible despite of application window size
 removed the option to make connections public in desktop variant of the app (which has only one user so shared/public connections make no sense)
 
-- Other changes
+- Other Changes
   - added postgresql 14 and 15  support
   - application data directory and db/log file naming was changed from omnidb* to pgmanage*.
