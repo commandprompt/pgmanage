@@ -64,20 +64,20 @@
 ## Release Notes
 
   - Bugs fixed:
-    - fixed error when loading foregin key information in DB Tree in SQLite3 (#682)
-    - fixed error when loading index information in DB Tree in Mariadb (#688)
+    - fixed error when loading foregin key information in DB Tree in SQLite3 #682
+    - fixed error when loading index information in DB Tree in Mariadb #688
     - fixed incorrect stylesheets for password strength validation widget
-    - fixed erroneous "Discard Changes" warning when switching between conections in connection manager (#698)
+    - fixed erroneous "Discard Changes" warning when switching between conections in connection manager #698
     - fixed issue with incorrect where clause generated when using Data Editor query filter in Oracle
     - fixed erros when loading DDL for metadata link objects in DB tree
     - fixed back-end issue with idle Schema Editor thread not always getting terminated
     - fixed "autocommit" checkbox not working for Oracle DB connections
-    - fixed validation errors when entering octal file permissions in Server Configuration Tab (#705)
+    - fixed validation errors when entering octal file permissions in Server Configuration Tab #705
     - fixed error when rolling back Postgres Server Configuration snapshots that have values not applicable to the current server setup
-    - fixed errors when restoreing Postgres Server Configuration for databases running with non-english locales (#707)
-    - fixed query result file export when query result have duplicate column names (#715)
-    - fixed query result copy as JSON when query result have duplicate column names (#712)
-    - fixed isssue with saving custom monitoring widgets without chart code block defined (#720)
+    - fixed errors when restoreing Postgres Server Configuration for databases running with non-english locales #707
+    - fixed query result file export when query result have duplicate column names #715
+    - fixed query result copy as JSON when query result have duplicate column names #712
+    - fixed isssue with saving custom monitoring widgets without chart code block defined #720
     
   - Other Changes
     - updated restrictedpython from 7.4 to 8.0
@@ -96,32 +96,32 @@
 ## Release Notes
 
   - New features:
-    - new visual data filtering UI in data editor (#483)
-    - new monitoring widget management UI with support for reordering of dashboard widgets (#617)
-    - new widget component layout with cleaner and easier to read UI (#618)
-    - new implementation of dashboard widget graphs with improved readability and better handling of large amounts of datapoints (#605)
+    - new visual data filtering UI in data editor #483
+    - new monitoring widget management UI with support for reordering of dashboard widgets #617
+    - new widget component layout with cleaner and easier to read UI #618
+    - new implementation of dashboard widget graphs with improved readability and better handling of large amounts of datapoints #605
     - extend Mysql monitoring widgets to support Mariadb
     - added support for exporting query results in JSON format
     - added support for code folding in SQL editor
-    - set backup type based on output file extension, set extension base on output type (#531)
+    - set backup type based on output file extension, set extension base on output type #531
     - added Postgres documentation links to SQL templates for quicker docs access
     - added column alias support in autocomplete engine
-    - added advanced clipboard copy for data grids (#217)
-    - added support for running EXPLAIN on a selected part of the query (#533)
-    - added "copy to editor" feature for DDL tab and "Generated SQL" preview box components (#536)
+    - added advanced clipboard copy for data grids #217
+    - added support for running EXPLAIN on a selected part of the query #533
+    - added "copy to editor" feature for DDL tab and "Generated SQL" preview box components #536
     - new cell data viewer modal with syntax highlighting and support different data types
     - added support for Postgres 17
     
   - Bugs fixed:
-    - removed unnecessary entries from info.plist on Mac builds which associated Pgmanage with some file extensions (#620)
+    - removed unnecessary entries from info.plist on Mac builds which associated Pgmanage with some file extensions #620
     - added logic for handing mutually-exclusive --create and --single-transaction options in Database Restore tab
     - fixed incorrect colors for disabled inputs in dark theme
     - don't allow multiple monitoring dashboard within the same DB workspace
     - fixed Postgresql Alter View template
     - fixed autocomplete switch colors in dark theme
     - fixed DB object tree node data not loading in some cases
-    - prevent starting duplicate backup/restore jobs (#572)
-    - fixed empty SSL option appearing in connection form when connection type is changed (#674)
+    - prevent starting duplicate backup/restore jobs #572
+    - fixed empty SSL option appearing in connection form when connection type is changed #674
     
   - UI/UX Improvements:
     - improved console tab size change handling
@@ -134,7 +134,7 @@
     - improved command history modal layout
     - add support for live update of widget font size and colors when theme or font size is changed in app settings
     - improved data editor grid rendering performance when working with large number of rows
-    - joined Run and Run selection buttons into a single block, moved autocommit option in its drop-down menu (#507)
+    - joined Run and Run selection buttons into a single block, moved autocommit option in its drop-down menu #507
     - backup/restore jobs are now ordered by job start time, from newest to oldest
     - the View Content data grid context menu is now disabled when multiple cells are selected
     - long backup/restore file paths are now truncated in the middle to improve readability
@@ -178,7 +178,7 @@
     - fixed race condition in Backup/Restore job status modal when running multiple jobs simultaneusly
     - fixed bug that allowed to register duplicate hotkey actions #611
     - fixed bug that caused old SQLite3 DB file being used when connection properties updated with a new file #598
-    - fixed SQLite3 tables not ordered by name in DB object tree  # #596
+    - fixed SQLite3 tables not ordered by name in DB object tree #596
     
   - Other Changes:
     - bumped happy-dom version to fix potential security vulnerability in dev environment
@@ -243,7 +243,7 @@
 
   - New features:
     - added IPv6 support for database connections
-    - allow using UNIX domain socket paths in connection form -> server field (#438)
+    - allow using UNIX domain socket paths in connection form -> server field #438
     - allow empty server values in the connection form for Postgres connections
     - password prompt will now be shown when user tries to establish database connection with wrong password
     - queries in console query history modal can now be copied to query tab with a double-click
