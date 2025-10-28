@@ -55,7 +55,7 @@ export default {
   watch: {
     editorText(newValue, oldValue) {
       this.isEmpty = !newValue;
-      if (!!newValue) {
+      if (!!newValue && this.databaseTechnology !== "postgresql") {
         newValue = format(newValue, this.formatOptions);
       }
       this.editor.setValue(newValue);
