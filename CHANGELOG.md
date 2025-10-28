@@ -16,14 +16,13 @@
     - implemented support for mDNS resolvig when connecting to database server #673
     - implemented redraw of customized dashboard widgets when widget settings change #626
     - implemented display of table index details in DDL tab for MariaDB and MySQL #704
+    - implemented foreign key support in schema editor #251
   
   - Bugs fixed:
-    - fixed validation of octal config values in postgres server configuration #705
-    - fixed an error when restoring a postgres server config snapshot containing settings not supported by the current DB setup #708
-    - fixed an error where restoring a postgres configuration created with different locale could fail #707
     - relaxed custom widget validation rules to allow blank chart generation code #720
     - fixed an error in Data Editor when saving multiple rows in Oracle #737
     - fixed an error when running multiple SQL statements against Oracle database #738
+    - fixed error when opening Oracle database connections in desktop app builds #767
     - fixed command history modal not displaying the most recent query #740
     - fixed the issue where pgmanage tabs could become unresponsive if the network connection stalls
     - don't show Explain/Explain Selection features when working with non-postgres databases
