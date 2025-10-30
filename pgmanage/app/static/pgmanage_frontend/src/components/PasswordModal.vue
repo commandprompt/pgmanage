@@ -116,7 +116,6 @@ export default {
     showModal() {
       this.modalInstance = Modal.getOrCreateInstance(this.$refs.modalPassword, {
         backdrop: "static",
-        keyboard: false,
       });
       this.modalInstance.show();
     },
