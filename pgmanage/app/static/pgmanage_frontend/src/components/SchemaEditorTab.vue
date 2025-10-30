@@ -372,12 +372,13 @@ export default {
             omit(column, ['is_dirty']),
             omit(originalColumns[idx], ['is_dirty']),
           )
-
-          if(column.dataType !== originalColumns[idx].dataType) columnChanges.typeChanges.push(column)
-          if(column.nullable !== originalColumns[idx].nullable) columnChanges.nullableChanges.push(column)
-          if(column.defaultValue !== originalColumns[idx].defaultValue) columnChanges.defaults.push(column)
+          // use the original column name in changesets, renamed columns generate incorrect sql
+          let coldef = { ...column, name: originalColumns[idx].name }
+          if(column.dataType !== originalColumns[idx].dataType) columnChanges.typeChanges.push(coldef)
+          if(column.nullable !== originalColumns[idx].nullable) columnChanges.nullableChanges.push(coldef)
+          if(column.defaultValue !== originalColumns[idx].defaultValue) columnChanges.defaults.push(coldef)
           if(column.name !== originalColumns[idx].name) columnChanges.renames.push({'oldName': originalColumns[idx].name, 'newName': column.name})
-          if(column.comment !== originalColumns[idx].comment) columnChanges.comments.push(column)
+          if(column.comment !== originalColumns[idx].comment) columnChanges.comments.push(coldef)
         })
 
 
