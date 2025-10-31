@@ -7,6 +7,7 @@
     @nodecontextmenu="onContextMenu"
     :allow-multiselect="false"
     @nodeclick="onClickHandler"
+    tabindex="0"
   >
     <template v-slot:toggle="{ node }">
       <i v-if="node.isExpanded" class="exp_col fas fa-chevron-down"></i>

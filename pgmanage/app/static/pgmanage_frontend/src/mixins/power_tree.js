@@ -70,6 +70,10 @@ export default {
         this.$emit("clearTabs");
       }
     });
+    const treeEl = document.getElementById(`${this.workspaceId}_tree`);
+    if (treeEl) {
+      treeEl.addEventListener('keydown', this.handleTreeKeyboardNavigation);
+    }
   },
   unmounted() {
     emitter.all.delete(`refreshNode_${this.workspaceId}`);
@@ -339,6 +343,42 @@ export default {
       } else {
         this.expandNode(node);
       }
+    },
+    handleTreeKeyboardNavigation(event) {
+      const keyCode = event.code;
+      const tree = this.$refs.tree;
+
+      const selectedNode = tree.getSelected()[0];
+      let nodeToSelect;
+
+      if (keyCode === 'ArrowDown') {
+        nodeToSelect = tree.getNextNode(selectedNode.path, node => node.isVisible);
+      } else if (keyCode === 'ArrowUp') {
+        nodeToSelect = tree.getPrevNode(selectedNode.path, node => node.isVisible);
+      } else if (keyCode === 'Enter' || keyCode === 'Space' || keyCode === 'ArrowLeft' || keyCode === 'ArrowRight') {
+        if (selectedNode.isLeaf) return;
+        this.onToggle(selectedNode);
+        this.toggleNode(selectedNode);
+      }
+
+      if (!nodeToSelect) return;
+
+      
+      const nodeEl = this.getNodeEl(selectedNode.path).querySelector('.vue-power-tree-title');
+      const container = tree.$el.parentElement
+
+      if (nodeEl && container) {
+        const nodeRect = nodeEl.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const isVisible =
+          nodeRect.top >= containerRect.top &&
+          nodeRect.bottom <= containerRect.bottom;
+
+        if (isVisible) {
+          event.preventDefault(); // prevent page scroll since we’ll manage focus manually
+        }
+      }
+      tree.select(nodeToSelect.path);
     },
   },
 };
