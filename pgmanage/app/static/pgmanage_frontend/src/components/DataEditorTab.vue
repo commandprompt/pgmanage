@@ -190,7 +190,7 @@ export default {
         })
       });
       this.tabulator.element.addEventListener("keydown", (e) => {
-         if (e.key === "ContextMenu") {
+         if (e.key === "ContextMenu" || (e.shiftKey && e.code === 'F10')) {
             e.preventDefault();
             let selectedRange = table.getRanges()[0]
             let selectedCell = selectedRange.getCells()[0][0]
