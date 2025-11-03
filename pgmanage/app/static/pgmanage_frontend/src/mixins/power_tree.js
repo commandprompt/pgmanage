@@ -359,6 +359,19 @@ export default {
         if (selectedNode.isLeaf) return;
         this.onToggle(selectedNode);
         this.toggleNode(selectedNode);
+      } else if (keyCode === 'ContextMenu' || (event.shiftKey && keyCode === 'F10')) {
+        event.preventDefault();
+        const nodeEl = this.getNodeEl(selectedNode.path).querySelector('.vue-power-tree-title');
+        const rect = nodeEl.getBoundingClientRect();
+
+        const fakeEvent = new MouseEvent("contextmenu", {
+          bubbles: true,
+          clientX: rect.left + rect.width / 2,
+          clientY: rect.top + rect.height / 2,
+        });
+
+        this.onContextMenu(selectedNode, fakeEvent);
+        return;
       }
 
       if (!nodeToSelect) return;
