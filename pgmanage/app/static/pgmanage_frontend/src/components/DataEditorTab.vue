@@ -42,6 +42,7 @@
 
 <script>
 import ClipboardMixin from "../mixins/table_clipboard_copy_mixin";
+import ContextMenuMixin from "../mixins/tabulator_context_menu_mixin";
 import { markRaw } from "vue";
 import axios from 'axios'
 import Knex from 'knex'
@@ -82,7 +83,7 @@ export default {
   components: {
     DataEditorTabFilter: DataEditorTabFilterList
   },
-  mixins: [ClipboardMixin,],
+  mixins: [ClipboardMixin, ContextMenuMixin],
   props: {
     dialect: String,
     schema: String,
@@ -189,41 +190,6 @@ export default {
           });
         })
       });
-      this.tabulator.element.addEventListener("keydown", (e) => {
-         if (e.key === "ContextMenu" || (e.shiftKey && e.code === 'F10')) {
-            e.preventDefault();
-            let selectedRange = table.getRanges()[0]
-            let selectedCell = selectedRange.getCells()[0][0]
-            let cellElement = selectedCell.getElement()
-            const rect = cellElement.getBoundingClientRect();
-            const event = new MouseEvent("contextmenu", {
-              bubbles: true,
-              clientX: rect.left + rect.width / 2,
-              clientY: rect.top + rect.height / 2,
-            });
-
-            cellElement.dispatchEvent(event);
-
-            this.$nextTick(() => {
-              const menu = document.querySelector(".tabulator-menu");
-              if (!menu || menu.style.display === "none") return;
-
-              const items = [...menu.querySelectorAll(".tabulator-menu-item")];
-              if (!items.length) return;
-              items[0].focus();
-            })
-          }
-      })
-
-      this.tabulator.on("menuOpened", (component) => {
-        document
-              .querySelectorAll(".tabulator-menu-item")
-              .forEach((el) => el.setAttribute("tabindex", "0"));
-      })
-
-      this.tabulator.on("menuClosed", (component) => {
-        component.getElement().focus() // restores cell focus after context menu is closed
-      })
 
       this.tabulator.on("cellEdited", this.cellEdited);
       this.knex = Knex({ client: mappedDialect || 'postgres'})
@@ -258,12 +224,10 @@ export default {
       }
     })
 
-    document.addEventListener("keydown", this.handleMenuNavigation);
   },
   unmounted() {
     emitter.all.delete(`${this.tabId}_query_edit`);
     emitter.all.delete(`${this.tabId}_check_query_edit_status`);
-    document.removeEventListener("keydown", this.menuKeyHandler);
   },
   updated() {
     if (tabsStore.selectedPrimaryTab?.metaData?.selectedTab?.id === this.tabId) {
@@ -890,28 +854,6 @@ export default {
         e.stopPropagation();
         e.preventDefault();
       });
-    },
-    handleMenuNavigation(e) {
-      const menu = document.querySelector(".tabulator-menu");
-      if (!menu || menu.style.display === "none") return;
-
-      const items = [...menu.querySelectorAll(".tabulator-menu-item")];
-      if (!items.length) return;
-
-      let index = items.findIndex((item) => item === document.activeElement);
-
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        index = (index + 1) % items.length;
-        items[index].focus();
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        index = (index - 1 + items.length) % items.length;
-        items[index].focus();
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        document.activeElement.click(); // trigger Tabulator's action
-      }
     },
   },
   watch: {
