@@ -87,7 +87,7 @@ export default {
   props: {
     dialect: String,
     schema: String,
-    table: String,
+    tableName: String,
     tabId: String,
     workspaceId: String,
     databaseIndex: Number,
@@ -107,7 +107,7 @@ export default {
       rowLimit: 10,
       dataLoaded: false,
       heightSubtract: 200, //default safe value, recalculated in handleResize
-      tabulator: null,
+      table: null,
       maxInitialWidth: 200,
       queryState: requestState.Idle,
       rawQuery: "",
@@ -117,7 +117,7 @@ export default {
   },
   computed: {
     talbleUnquoted() {
-      return this.table.replace(/^"(.*)"$/, '$1')
+      return this.tableName.replace(/^"(.*)"$/, '$1')
     },
     hasChanges() {
       return this.pendingChanges.length > 0
@@ -177,8 +177,8 @@ export default {
     })
 
     table.on("tableBuilt", () => {
-      this.tabulator = markRaw(table); // markRaw fixes problem with making tabulator proxy, that we don't need
-      this.tabulator.on("cellEditing", (cell) => { // Prevent Tabulator from hijacking left/right arrow keys and mouse click while editing
+      this.table = markRaw(table); // markRaw fixes problem with making tabulator proxy, that we don't need
+      this.table.on("cellEditing", (cell) => { // Prevent Tabulator from hijacking left/right arrow keys and mouse click while editing
         this.$nextTick(() => {
           const el = cell.getElement().querySelector("input");
           if (!el) return;
@@ -191,11 +191,11 @@ export default {
         })
       });
 
-      this.tabulator.on("cellEdited", this.cellEdited);
+      this.table.on("cellEdited", this.cellEdited);
       this.knex = Knex({ client: mappedDialect || 'postgres'})
       this.getTableColumns().then(() => {
         this.addHeaderMenuOverlayElement();
-        this.tabulator.setSort("0", "asc");
+        this.table.setSort("0", "asc");
       });
     })
 
@@ -279,7 +279,7 @@ export default {
           database_index: this.databaseIndex,
           workspace_id: this.workspaceId,
           schema: this.schema,
-          table: this.table
+          table: this.tableName
         })
         .then((response) => {
           this.tableColumns = response.data.columns
@@ -307,21 +307,21 @@ export default {
               {
                 label: '<i class="fas fa-copy"></i><span>Copy as JSON</span>',
                 action: () => {
-                  const data = last(this.tabulator.getRangesData());
+                  const data = last(this.table.getRangesData());
                   this.copyTableData(data, "json", this.columnNames);
                 },
               },
               {
                 label: '<i class="fas fa-copy"></i><span>Copy as CSV</span>',
                 action: () => {
-                  const data = last(this.tabulator.getRangesData());
+                  const data = last(this.table.getRangesData());
                   this.copyTableData(data, "csv", this.columnNames);
                 },
               },
               {
                 label: '<i class="fas fa-copy"></i><span>Copy as Markdown</span>',
                 action: () => {
-                  const data = last(this.tabulator.getRangesData());
+                  const data = last(this.table.getRangesData());
                   this.copyTableData(data, "markdown", this.columnNames);
                 },
               },
@@ -331,7 +331,7 @@ export default {
               {
                 label: '<span>Set Null</span>',
                 action: () => {
-                  const range = last(this.tabulator.getRanges());
+                  const range = last(this.table.getRanges());
                   range.getCells().flat().forEach((cell) => {
                     contextEdits.add(cell);
                     cell.setValue(null);
@@ -341,7 +341,7 @@ export default {
               {
                 label: '<span>Set Empty</span>',
                 action: () => {
-                  const range = last(this.tabulator.getRanges());
+                  const range = last(this.table.getRanges());
                   range.getCells().flat().forEach((cell) => {
                     contextEdits.add(cell);
                     cell.setValue("");
@@ -371,7 +371,7 @@ export default {
             }
           })
           columns.unshift(actionsCol)
-          this.tabulator.setColumns(columns)
+          this.table.setColumns(columns)
 
           this.dataLoaded = true
         })
@@ -466,7 +466,7 @@ export default {
 
       if (!params?.sort && orderByClause) {
         const result = mapColumnsToIndexes(orderByColumns, this.tableColumns);
-        this.tabulator.setSort(result);
+        this.table.setSort(result);
         return null;
       }
 
@@ -490,7 +490,7 @@ export default {
             .join(",")
         );
       } else {
-        this.tabulator.setSort("0", "asc");
+        this.table.setSort("0", "asc");
         return null;
       }
     },
@@ -510,7 +510,7 @@ export default {
     },
     sendDataRequest(finalFilter) {
       var message_data = {
-        table: this.table,
+        table: this.tableName,
         schema: this.schema,
         db_index: this.databaseIndex,
         query_filter: finalFilter,
@@ -645,7 +645,7 @@ export default {
           return {id: index, rowMeta: rowMeta, ...row}
         })
         this.tableDataLocal = JSON.parse(JSON.stringify(this.tableData))
-        this.tabulator.replaceData(this.tableDataLocal)
+        this.table.replaceData(this.tableDataLocal)
       }
     },
     handleSaveResponse(response) {
@@ -671,18 +671,18 @@ export default {
         initial_id: -1,
       };
 
-      let newRowId = this.tabulator.getRows().length;
+      let newRowId = this.table.getRows().length;
       const newRowObject = { rowMeta: rowMeta, id: newRowId, ...newRow };
-      this.tabulator.addData(newRowObject, true);
-      this.tableDataLocal.unshift(this.tabulator.getRow(newRowId).getData());
+      this.table.addData(newRowObject, true);
+      this.tableDataLocal.unshift(this.table.getRow(newRowId).getData());
 
-      const firstRow = this.tabulator.getRows()[0];
+      const firstRow = this.table.getRows()[0];
       if (!firstRow) return;
 
       const firstCell = firstRow.getCells()[0];
       if (!firstCell) return;
 
-      let currentRange = last(this.tabulator.getRanges())
+      let currentRange = last(this.table.getRanges())
 
       currentRange.setBounds(firstCell, firstCell)
     },
@@ -691,23 +691,23 @@ export default {
         (row) => row["rowMeta"].initial_id == rowMeta.initial_id
       );
       let copyRow = JSON.parse(JSON.stringify(sourceRow));
-      this.tabulator.updateData([{ id: rowNum, ...copyRow }]).then(() => {
-        this.tabulator.getRow(rowNum).reformat();
+      this.table.updateData([{ id: rowNum, ...copyRow }]).then(() => {
+        this.table.getRow(rowNum).reformat();
       });
     },
     deleteRow(rowMeta, rowNum) {
       if (rowMeta.is_new) {
-        this.tabulator.deleteRow(rowNum).then(() => {
+        this.table.deleteRow(rowNum).then(() => {
           this.tableDataLocal = this.tableDataLocal.filter(
             (row) => row.id !== rowNum
           );
         });
       } else {
         rowMeta.is_deleted = true;
-        this.tabulator
+        this.table
           .updateData([{ id: rowNum, rowMeta: rowMeta }])
           .then(() => {
-            this.tabulator.getRow(rowNum).reformat();
+            this.table.getRow(rowNum).reformat();
           });
       }
     },

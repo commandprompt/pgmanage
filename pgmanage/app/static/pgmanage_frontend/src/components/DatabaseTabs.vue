@@ -259,7 +259,7 @@ export default {
           tabId: tab.id,
           databaseIndex: tab?.metaData?.databaseIndex,
           databaseName: tab?.metaData?.databaseName,
-          table: tab.metaData.table,
+          tableName: tab.metaData.table,
           schema: tab.metaData.schema,
           dialect: tab.metaData.dialect,
           query_filter: tab.metaData.dialect,
