@@ -453,6 +453,7 @@ export default {
       if (!nodeToSelect) return;
       
       tree.select(nodeToSelect.path);
+      this.getProperties(nodeToSelect);
 
       const nodeEl = this.getNodeEl(nodeToSelect.path).querySelector('.vue-power-tree-title');
       const nodeRect = nodeEl.getBoundingClientRect();
