@@ -42,6 +42,7 @@
 
 <script>
 import ClipboardMixin from "../mixins/table_clipboard_copy_mixin";
+import ContextMenuMixin from "../mixins/tabulator_context_menu_mixin";
 import { markRaw } from "vue";
 import axios from 'axios'
 import Knex from 'knex'
@@ -82,7 +83,7 @@ export default {
   components: {
     DataEditorTabFilter: DataEditorTabFilterList
   },
-  mixins: [ClipboardMixin,],
+  mixins: [ClipboardMixin, ContextMenuMixin],
   props: {
     dialect: String,
     schema: String,
@@ -189,6 +190,7 @@ export default {
           });
         })
       });
+
       this.tabulator.on("cellEdited", this.cellEdited);
       this.knex = Knex({ client: mappedDialect || 'postgres'})
       this.getTableColumns().then(() => {
@@ -221,6 +223,7 @@ export default {
         })
       }
     })
+
   },
   unmounted() {
     emitter.all.delete(`${this.tabId}_query_edit`);

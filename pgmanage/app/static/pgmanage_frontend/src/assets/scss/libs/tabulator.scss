@@ -283,8 +283,9 @@
                 color: themed($color);
             }
 
-            &:hover, &.open {
+            &:hover, &.open, &:focus {
                 background-color: rgba($primaryBlue, 0.15) !important;
+                outline: none;
             }
         }
 

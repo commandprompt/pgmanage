@@ -81,12 +81,13 @@ import last from 'lodash/last';
 import { Tab } from "bootstrap";
 import dialects from './dialect-data';
 import ClipboardMixin from "../mixins/table_clipboard_copy_mixin";
+import ContextMenuMixin from "../mixins/tabulator_context_menu_mixin";
 
 export default {
   components: {
     ExplainTabContent,
   },
-  mixins: [ClipboardMixin,],
+  mixins: [ClipboardMixin, ContextMenuMixin],
   props: {
     tabId: String,
     workspaceId: String,
@@ -100,7 +101,7 @@ export default {
     resizeDiv(newValue, oldValue) {
       if (newValue) {
         this.handleResize();
-        if (this.table) this.table.redraw();
+        if (this.tabulator) this.tabulator.redraw();
         this.$emit("resized");
       }
     },
@@ -136,7 +137,7 @@ export default {
       },
       query: "",
       plan: "",
-      table: null,
+      tabulator: null,
       heightSubtract: 200,
       colWidthArray: [],
       columns: [],
@@ -194,9 +195,9 @@ export default {
       this.handleResize();
     });
 
-    let table = new Tabulator(this.$refs.tabulator, this.tableSettings);
-    table.on("tableBuilt", () => {
-      this.table = table;
+    let tabulator = new Tabulator(this.$refs.tabulator, this.tableSettings);
+    tabulator.on("tableBuilt", () => {
+      this.tabulator = tabulator;
       document.querySelector(`#${this.tabId}_content .tabulator-range-overlay`).classList.add('invisible'); // hides cell range overlay on table initialization
     });
     settingsStore.$onAction((action) => {
@@ -209,7 +210,7 @@ export default {
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               this.handleResize();
-              this.table.redraw();
+              this.tabulator.redraw();
             });
           });
         });
@@ -217,7 +218,7 @@ export default {
     });
 
     this.$refs.dataTab.addEventListener("shown.bs.tab", (event) => {
-      this.table.redraw();
+      this.tabulator.redraw();
     });
   },
   updated() {
@@ -359,21 +360,21 @@ export default {
           {
             label: '<i class="fas fa-copy"></i><span>Copy as JSON</span>',
             action: () => {
-              const data = last(this.table.getRangesData());
+              const data = last(this.tabulator.getRangesData());
               this.copyTableData(data, "json", this.columns);
             },
           },
           {
             label: '<i class="fas fa-copy"></i><span>Copy as CSV</span>',
             action: () => {
-              const data = last(this.table.getRangesData());
+              const data = last(this.tabulator.getRangesData());
               this.copyTableData(data, "csv", this.columns);
             },
           },
           {
             label: '<i class="fas fa-copy"></i><span>Copy as Markdown</span>',
             action: () => {
-              const data = last(this.table.getRangesData());
+              const data = last(this.tabulator.getRangesData());
               this.copyTableData(data, "markdown", this.columns);
             },
           },
@@ -465,26 +466,26 @@ export default {
     },
     updateTableData(data) {
       const columns = this.prepareColumns(data.col_names, data.col_types)
-      this.table.destroy()
+      this.tabulator.destroy()
       this.tableSettings.data = data.data
       this.tableSettings.columns = columns
-      let table = new Tabulator(this.$refs.tabulator, this.tableSettings);
-      table.on("renderStarted", () => {
+      let tabulator = new Tabulator(this.$refs.tabulator, this.tableSettings);
+      tabulator.on("renderStarted", () => {
         if (this.customLayout === undefined || this.colWidthArray.length === 0) return
-        this.table.getColumns().forEach((col, idx) => {
+        this.tabulator.getColumns().forEach((col, idx) => {
           if(idx > 0) {
             col.setWidth(this.colWidthArray[idx-1])
           }
         });
       })
-      table.on("tableBuilt", () => {
-        this.table = table;
-        if (this.defaultColWidthArray.length !== this.table.getColumns().length) {
-          this.defaultColWidthArray = this.table.getColumns().map(col => col.getWidth());
+      tabulator.on("tableBuilt", () => {
+        this.tabulator = tabulator;
+        if (this.defaultColWidthArray.length !== this.tabulator.getColumns().length) {
+          this.defaultColWidthArray = this.tabulator.getColumns().map(col => col.getWidth());
         }
         if (this.customLayout !== undefined && this.colWidthArray.length !== 0) {
           
-          this.table.getColumns().forEach((col, idx) => {
+          this.tabulator.getColumns().forEach((col, idx) => {
             if(idx > 0) {
               col.setWidth(this.colWidthArray[idx-1])
             }
@@ -493,7 +494,7 @@ export default {
         this.addHeaderMenuOverlayElement();
       });
 
-      table.on(
+      tabulator.on(
         "cellDblClick",
         (e, cell) => {
           if (cell.getValue()) {
@@ -506,9 +507,9 @@ export default {
      applyLayout() {
       this.colWidthArray = []
 
-      this.table.blockRedraw();
+      this.tabulator.blockRedraw();
 
-      this.table.getColumns().forEach((col, idx) => {
+      this.tabulator.getColumns().forEach((col, idx) => {
         if(idx > 0) {
           if(this.customLayout == 'adaptive') {
             let widths = col.getCells().map((cell) => {return cell.getElement().scrollWidth}).filter((el) => el > 0)
@@ -532,31 +533,31 @@ export default {
         }
       });
 
-      this.table.restoreRedraw();
+      this.tabulator.restoreRedraw();
     },
     fetchData(data) {
-      let initialData = this.table.getData();
+      let initialData = this.tabulator.getData();
       const allData = [...initialData, ...data.data]
       let rowsToAppend = data.data.length
 
-      // destroy and recreate table instance if there is a lot of data to append
+      // destroy and recreate tabulator instance if there is a lot of data to append
       if(rowsToAppend > 1000) {
-        const scrollTop = this.table.rowManager.scrollTop
-        const scrollLeft = this.table.rowManager.scrollLeft
+        const scrollTop = this.tabulator.rowManager.scrollTop
+        const scrollLeft = this.tabulator.rowManager.scrollLeft
         this.tableSettings.data = allData;
         this.tableSettings.columns = this.prepareColumns(data.col_names, data.col_types)
 
-        this.table.destroy()
-        let table = new Tabulator(this.$refs.tabulator, this.tableSettings);
-        table.on("tableBuilt", () => {
-          this.table = table;
+        this.tabulator.destroy()
+        let tabulator = new Tabulator(this.$refs.tabulator, this.tableSettings);
+        tabulator.on("tableBuilt", () => {
+          this.tabulator = tabulator;
           this.applyLayout();
-          this.table.rowManager.element.scrollTop = scrollTop;
-          this.table.rowManager.scrollLeft = scrollLeft;
+          this.tabulator.rowManager.element.scrollTop = scrollTop;
+          this.tabulator.rowManager.scrollLeft = scrollLeft;
           this.addHeaderMenuOverlayElement();
         });
 
-        table.on(
+        tabulator.on(
           "cellDblClick",
           (e, cell) => {
             if (cell.getValue()) {
@@ -566,7 +567,7 @@ export default {
           }
         );
       } else {
-        this.table.addData(data.data);
+        this.tabulator.addData(data.data);
       }
 
 
