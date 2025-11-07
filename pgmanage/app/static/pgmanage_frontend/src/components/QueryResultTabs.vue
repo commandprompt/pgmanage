@@ -81,13 +81,12 @@ import last from 'lodash/last';
 import { Tab } from "bootstrap";
 import dialects from './dialect-data';
 import ClipboardMixin from "../mixins/table_clipboard_copy_mixin";
-import ContextMenuMixin from "../mixins/tabulator_context_menu_mixin";
 
 export default {
   components: {
     ExplainTabContent,
   },
-  mixins: [ClipboardMixin, ContextMenuMixin],
+  mixins: [ClipboardMixin,],
   props: {
     tabId: String,
     workspaceId: String,

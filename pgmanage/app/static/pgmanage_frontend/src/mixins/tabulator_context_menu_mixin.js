@@ -1,11 +1,11 @@
 export default {
   watch: {
-    table: {
+    tabulator: {
       handler() {
-        this.table.element.addEventListener("keydown", (e) => {
+        this.tabulator.element.addEventListener("keydown", (e) => {
           if (e.key === "ContextMenu" || (e.shiftKey && e.code === "F10")) {
             e.preventDefault();
-            let selectedRange = this.table.getRanges()[0];
+            let selectedRange = this.tabulator.getRanges()[0];
             let selectedCell = selectedRange.getCells()[0][0];
             let cellElement = selectedCell.getElement();
             const rect = cellElement.getBoundingClientRect();
@@ -33,20 +33,24 @@ export default {
           }
         });
 
-        this.table.on("menuOpened", (component) => {
-          let contextMenuEl =
-            component.getTable().modules.menu.rootPopup.element;
-          contextMenuEl.addEventListener("keydown", this.handleMenuNavigation);
+        this.tabulator.on("menuOpened", (component) => {
           document
             .querySelectorAll(".tabulator-menu-item")
             .forEach((el) => el.setAttribute("tabindex", "0"));
         });
 
-        this.table.on("menuClosed", (component) => {
+        this.tabulator.on("menuClosed", (component) => {
           component.getElement().focus(); // restores cell focus after context menu is closed
         });
       },
+      once: true,
     },
+  },
+  mounted() {
+    document.addEventListener("keydown", this.handleMenuNavigation);
+  },
+  unmounted() {
+    document.removeEventListener("keydown", this.handleMenuNavigation);
   },
   methods: {
     handleMenuNavigation(e) {
