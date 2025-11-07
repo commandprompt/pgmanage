@@ -70,6 +70,10 @@ export default {
         this.$emit("clearTabs");
       }
     });
+    const treeEl = document.getElementById(`${this.workspaceId}_tree`);
+    if (treeEl) {
+      treeEl.addEventListener('keydown', this.handleTreeKeyboardNavigation);
+    }
   },
   unmounted() {
     emitter.all.delete(`refreshNode_${this.workspaceId}`);
@@ -338,6 +342,141 @@ export default {
         this.expandNode(node);
       } else {
         this.expandNode(node);
+      }
+    },
+    handleTreeKeyboardNavigation(event) {
+      const keyCode = event.code;
+      const tree = this.$refs.tree;
+      
+      const container = this.$refs.tree.$el.parentElement;
+      const selectedNode = tree.getSelected()[0];
+      let nodeToSelect;
+      
+      switch (keyCode) {
+        case "ArrowDown":
+          event.preventDefault();
+          nodeToSelect = tree.getNextNode(selectedNode.path, node => node.isVisible);
+          break;
+        case "ArrowUp":
+          event.preventDefault()
+          nodeToSelect = tree.getPrevNode(selectedNode.path, node => node.isVisible);
+          break;
+        case "ArrowRight":
+          if (selectedNode.isLeaf) return;
+
+          if (!selectedNode.isExpanded) {
+            this.onToggle(selectedNode);
+            this.expandNode(selectedNode);
+          } else {
+            nodeToSelect = tree.getNextNode(selectedNode.path, node => node.isVisible);
+          }
+          break;
+        case "ArrowLeft":
+          if (selectedNode.level === 1) return;
+
+          if (selectedNode.isLeaf || !selectedNode.isExpanded) {
+            nodeToSelect = tree.getPrevNode(selectedNode.path, node => node.level === selectedNode.level - 1);
+          } else if (selectedNode.isExpanded) {
+            this.toggleNode(selectedNode);
+          }
+          break;
+        case "Home":
+          nodeToSelect = tree.getFirstNode()
+          tree.select(nodeToSelect.path);
+          return;
+        case "End":
+          nodeToSelect = tree.getLastNode() // last node might be not visible
+          if (!nodeToSelect.isVisible) {
+            // find any visible prev
+            nodeToSelect = tree.getPrevNode(nodeToSelect.path, node => node.isVisible);
+          }
+          tree.select(nodeToSelect.path);
+          return;
+        case "PageDown": {
+          event.preventDefault()
+          const nodeEl = this.getNodeEl(selectedNode.path);
+          const nodeHeight = nodeEl?.offsetHeight || 24;
+          const visibleCount = Math.floor(container.clientHeight / nodeHeight);
+
+          let node = selectedNode;
+          for (let i = 0; i < visibleCount; i++) {
+            const next = tree.getNextNode(node.path, node => node.isVisible);
+            if (!next) break;
+            node = next;
+          }
+          nodeToSelect = node;
+          break;
+        }
+        case "PageUp": {
+          event.preventDefault()
+          const nodeEl = this.getNodeEl(selectedNode.path);
+          const nodeHeight = nodeEl?.offsetHeight || 24;
+          const visibleCount = Math.floor(container.clientHeight / nodeHeight);
+
+          let node = selectedNode;
+          for (let i = 0; i < visibleCount; i++) {
+            const prev = tree.getPrevNode(node.path, node => node.isVisible);
+            if (!prev) break;
+            node = prev;
+          }
+          nodeToSelect = node;
+          break;
+        }
+        case "Enter":
+        case "Space":
+          event.preventDefault()
+          if (selectedNode.isLeaf) return;
+          this.onToggle(selectedNode);
+          this.toggleNode(selectedNode);
+          return;
+        case "ContextMenu":
+        case "F10":
+          if (keyCode === "ContextMenu" || event.shiftKey) {
+            event.preventDefault();
+            const nodeEl = this.getNodeEl(selectedNode.path);
+            const rect = nodeEl.getBoundingClientRect();
+
+            const fakeEvent = new MouseEvent("contextmenu", {
+              bubbles: true,
+              clientX: rect.left + rect.width / 2,
+              clientY: rect.top + rect.height / 2,
+            });
+
+            this.onContextMenu(selectedNode, fakeEvent);
+            return;
+          }
+          return;
+        default:
+          return;
+      }
+
+      if (!nodeToSelect) return;
+      
+      tree.select(nodeToSelect.path);
+      this.getProperties(nodeToSelect);
+
+      const nodeEl = this.getNodeEl(nodeToSelect.path).querySelector('.vue-power-tree-title');
+      const nodeRect = nodeEl.getBoundingClientRect();
+      const contRect = container.getBoundingClientRect();
+      const headerHeight = 40;
+      const footerHeight = 30;
+
+      // Convert node position relative to scrollable content
+      const nodeTop = container.scrollTop + (nodeRect.top - contRect.top);
+      const nodeBottom = nodeTop + nodeRect.height;
+      const viewTop = container.scrollTop + headerHeight;
+      const viewBottom = viewTop + container.clientHeight - headerHeight - footerHeight;
+
+      if (nodeTop < viewTop) {
+        container.scrollTo({
+          top: nodeTop - headerHeight,
+          behavior: 'instant',
+        });
+      } else if (nodeBottom > viewBottom) {
+        container.scrollTo({
+          top: nodeBottom - container.clientHeight + footerHeight,
+          behavior: 'instant',
+        });
       }
     },
   },

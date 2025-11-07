@@ -113,4 +113,8 @@
       color: $primaryBlue !important;
     }
   }
+
+  &:focus {
+    outline: none;
+  }
 }
