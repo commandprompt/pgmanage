@@ -34,6 +34,9 @@ export default {
         });
 
         this.tabulator.on("menuOpened", (component) => {
+          let contextMenuEl =
+            component.getTable().modules.menu.rootPopup.element;
+          contextMenuEl.addEventListener("keydown", this.handleMenuNavigation);
           document
             .querySelectorAll(".tabulator-menu-item")
             .forEach((el) => el.setAttribute("tabindex", "0"));
@@ -43,14 +46,7 @@ export default {
           component.getElement().focus(); // restores cell focus after context menu is closed
         });
       },
-      once: true,
     },
-  },
-  mounted() {
-    document.addEventListener("keydown", this.handleMenuNavigation);
-  },
-  unmounted() {
-    document.removeEventListener("keydown", this.handleMenuNavigation);
   },
   methods: {
     handleMenuNavigation(e) {
