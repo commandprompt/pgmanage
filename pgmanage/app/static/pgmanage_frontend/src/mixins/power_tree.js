@@ -347,51 +347,136 @@ export default {
     handleTreeKeyboardNavigation(event) {
       const keyCode = event.code;
       const tree = this.$refs.tree;
-
+      
+      const container = this.$refs.tree.$el.parentElement;
       const selectedNode = tree.getSelected()[0];
       let nodeToSelect;
+      
+      switch (keyCode) {
+        case "ArrowDown":
+          event.preventDefault();
+          nodeToSelect = tree.getNextNode(selectedNode.path, node => node.isVisible);
+          break;
+        case "ArrowUp":
+          event.preventDefault()
+          nodeToSelect = tree.getPrevNode(selectedNode.path, node => node.isVisible);
+          break;
+        case "ArrowRight":
+          if (selectedNode.isLeaf) return;
 
-      if (keyCode === 'ArrowDown') {
-        nodeToSelect = tree.getNextNode(selectedNode.path, node => node.isVisible);
-      } else if (keyCode === 'ArrowUp') {
-        nodeToSelect = tree.getPrevNode(selectedNode.path, node => node.isVisible);
-      } else if (keyCode === 'Enter' || keyCode === 'Space' || keyCode === 'ArrowLeft' || keyCode === 'ArrowRight') {
-        if (selectedNode.isLeaf) return;
-        this.onToggle(selectedNode);
-        this.toggleNode(selectedNode);
-      } else if (keyCode === 'ContextMenu' || (event.shiftKey && keyCode === 'F10')) {
-        event.preventDefault();
-        const nodeEl = this.getNodeEl(selectedNode.path).querySelector('.vue-power-tree-title');
-        const rect = nodeEl.getBoundingClientRect();
+          if (!selectedNode.isExpanded) {
+            this.onToggle(selectedNode);
+            this.expandNode(selectedNode);
+          } else {
+            nodeToSelect = tree.getNextNode(selectedNode.path, node => node.isVisible);
+          }
+          break;
+        case "ArrowLeft":
+          if (selectedNode.level === 1) return;
 
-        const fakeEvent = new MouseEvent("contextmenu", {
-          bubbles: true,
-          clientX: rect.left + rect.width / 2,
-          clientY: rect.top + rect.height / 2,
-        });
+          if (selectedNode.isLeaf || !selectedNode.isExpanded) {
+            nodeToSelect = tree.getPrevNode(selectedNode.path, node => node.level === selectedNode.level - 1);
+          } else if (selectedNode.isExpanded) {
+            this.toggleNode(selectedNode);
+          }
+          break;
+        case "Home":
+          nodeToSelect = tree.getFirstNode()
+          tree.select(nodeToSelect.path);
+          return;
+        case "End":
+          nodeToSelect = tree.getLastNode() // last node might be not visible
+          if (!nodeToSelect.isVisible) {
+            // find any visible prev
+            nodeToSelect = tree.getPrevNode(nodeToSelect.path, node => node.isVisible);
+          }
+          tree.select(nodeToSelect.path);
+          return;
+        case "PageDown": {
+          event.preventDefault()
+          const nodeEl = this.getNodeEl(selectedNode.path);
+          const nodeHeight = nodeEl?.offsetHeight || 24;
+          const visibleCount = Math.floor(container.clientHeight / nodeHeight);
 
-        this.onContextMenu(selectedNode, fakeEvent);
-        return;
+          let node = selectedNode;
+          for (let i = 0; i < visibleCount; i++) {
+            const next = tree.getNextNode(node.path, node => node.isVisible);
+            if (!next) break;
+            node = next;
+          }
+          nodeToSelect = node;
+          break;
+        }
+        case "PageUp": {
+          event.preventDefault()
+          const nodeEl = this.getNodeEl(selectedNode.path);
+          const nodeHeight = nodeEl?.offsetHeight || 24;
+          const visibleCount = Math.floor(container.clientHeight / nodeHeight);
+
+          let node = selectedNode;
+          for (let i = 0; i < visibleCount; i++) {
+            const prev = tree.getPrevNode(node.path, node => node.isVisible);
+            if (!prev) break;
+            node = prev;
+          }
+          nodeToSelect = node;
+          break;
+        }
+        case "Enter":
+        case "Space":
+          event.preventDefault()
+          if (selectedNode.isLeaf) return;
+          this.onToggle(selectedNode);
+          this.toggleNode(selectedNode);
+          return;
+        case "ContextMenu":
+        case "F10":
+          if (keyCode === "ContextMenu" || event.shiftKey) {
+            event.preventDefault();
+            const nodeEl = this.getNodeEl(selectedNode.path);
+            const rect = nodeEl.getBoundingClientRect();
+
+            const fakeEvent = new MouseEvent("contextmenu", {
+              bubbles: true,
+              clientX: rect.left + rect.width / 2,
+              clientY: rect.top + rect.height / 2,
+            });
+
+            this.onContextMenu(selectedNode, fakeEvent);
+            return;
+          }
+          return;
+        default:
+          return;
       }
 
       if (!nodeToSelect) return;
-
       
-      const nodeEl = this.getNodeEl(selectedNode.path).querySelector('.vue-power-tree-title');
-      const container = tree.$el.parentElement
-
-      if (nodeEl && container) {
-        const nodeRect = nodeEl.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        const isVisible =
-          nodeRect.top >= containerRect.top &&
-          nodeRect.bottom <= containerRect.bottom;
-
-        if (isVisible) {
-          event.preventDefault(); // prevent page scroll since we’ll manage focus manually
-        }
-      }
       tree.select(nodeToSelect.path);
+
+      const nodeEl = this.getNodeEl(nodeToSelect.path).querySelector('.vue-power-tree-title');
+      const nodeRect = nodeEl.getBoundingClientRect();
+      const contRect = container.getBoundingClientRect();
+      const headerHeight = 40;
+      const footerHeight = 30;
+
+      // Convert node position relative to scrollable content
+      const nodeTop = container.scrollTop + (nodeRect.top - contRect.top);
+      const nodeBottom = nodeTop + nodeRect.height;
+      const viewTop = container.scrollTop + headerHeight;
+      const viewBottom = viewTop + container.clientHeight - headerHeight - footerHeight;
+
+      if (nodeTop < viewTop) {
+        container.scrollTo({
+          top: nodeTop - headerHeight,
+          behavior: 'instant',
+        });
+      } else if (nodeBottom > viewBottom) {
+        container.scrollTo({
+          top: nodeBottom - container.clientHeight + footerHeight,
+          behavior: 'instant',
+        });
+      }
     },
   },
 };

@@ -115,8 +115,6 @@
   }
 
   &:focus {
-     outline: none;
-      box-shadow: 0 0 0 2px rgba($primaryBlue, .2);
-      border-radius: 4px;
+    outline: none;
   }
 }
