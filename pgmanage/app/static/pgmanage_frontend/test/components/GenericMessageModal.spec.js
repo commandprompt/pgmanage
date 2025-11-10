@@ -18,6 +18,9 @@ describe("GenericMessageModal.vue", () => {
 
   beforeEach(() => {
     store = useMessageModalStore();
+    document.getElementById = vi.fn(() => ({
+      addEventListener: vi.fn(),
+    }));
   });
 
   afterEach(() => {

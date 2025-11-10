@@ -115,12 +115,11 @@ describe("CellDataModal.vue", () => {
     expect(wrapper.vm.showLoading).toBe(true);
   });
 
-  test("should hide modal and clear editor on store action", async () => {
+  test("should hide modal on store action", async () => {
     cellDataModalStore.showModal();
     await flushPromises();
     cellDataModalStore.hideModal();
 
-    expect(wrapper.vm.editor.setValue).toHaveBeenCalledWith("");
     expect(wrapper.vm.modalInstance.hide).toHaveBeenCalled();
   });
 
@@ -161,6 +160,15 @@ describe("CellDataModal.vue", () => {
 
     expect(setupEditorSpy).toHaveBeenCalled();
     expect(setEditorContentSpy).toHaveBeenCalled();
+  });
+
+  test("calls cleanupEditor when modal is hidden", async () => {
+    const cleanupEditorSpy = vi.spyOn(wrapper.vm, "cleanupEditor");
+
+    await wrapper.vm.$refs.cellDataModal.dispatchEvent(
+      new Event("hidden.bs.modal")
+    );
+    expect(cleanupEditorSpy).toHaveBeenCalled();
   });
 
   test("formats content when autoFormat is enabled and contentMode changes", async () => {

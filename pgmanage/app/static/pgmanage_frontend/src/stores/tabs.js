@@ -671,7 +671,7 @@ const useTabsStore = defineStore("tabs", {
         },
       });
 
-      tab.metaData.dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
+      tab.metaData.dialect = this.selectedPrimaryTab?.metaData?.selectedDBMS;
       tab.metaData.editMode = mode;
       tab.metaData.schema =
         dialect === "mysql" ? node.data.database : node.data.schema;

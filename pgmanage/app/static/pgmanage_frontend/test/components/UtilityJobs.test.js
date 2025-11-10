@@ -41,7 +41,6 @@ describe("UtilityJobs.vue", () => {
   });
 
   it("renders job list with correct data", async () => {
-    await wrapper.vm.getJobList();
 
     const jobItems = wrapper.findAll(".list-group-item");
 
@@ -60,8 +59,6 @@ describe("UtilityJobs.vue", () => {
   });
 
   it("displays correct status icon based on job status", async () => {
-    await wrapper.vm.getJobList();
-
     const jobItem = wrapper.findAll(".list-group-item")[1];
     const statusIcon = jobItem.find("i");
 
@@ -105,8 +102,6 @@ describe("UtilityJobs.vue", () => {
     expect(wrapper.vm.jobList.length).toBe(0);
   });
   it("fetches job list from API and populates jobList", async () => {
-    await wrapper.vm.getJobList();
-
     expect(wrapper.vm.jobList.length).toBe(1);
     expect(wrapper.vm.jobList[0].utility_pid).toBe(12345);
   });
