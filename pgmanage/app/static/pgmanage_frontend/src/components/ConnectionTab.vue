@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid position-relative g-0">
+  <div data-testid="connection-tab" class="container-fluid position-relative g-0">
     <div class="row g-0">
       <splitpanes class="default-theme">
         <pane min-size="18" size="25">
