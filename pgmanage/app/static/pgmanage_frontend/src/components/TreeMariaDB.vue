@@ -29,7 +29,7 @@
              class="fas fa-thumbtack database-pin-icon me-2"
              :class="node.data.pinned ? 'text-primary pinned' : 'text-muted'"
              @click.stop="pinDatabase(node)"
-             title="Pin this database"
+             :title="`${node.data.pinned ? 'Unpin' : 'Pin'} this database`"
            ></i>
          </span>
       </div>
