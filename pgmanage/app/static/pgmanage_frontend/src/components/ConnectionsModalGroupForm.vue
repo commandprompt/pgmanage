@@ -29,7 +29,7 @@
               ></div>
             </div>
             <div class="group-list__item_text d-flex flex-column">
-              <p class="group-list__item_title">{{ connection.alias }}</p>
+              <p class="group-list__item_title clipped-text">{{ connection.alias }}</p>
               <span class="group-list__item_subtitle muted-text line-clamp-text clipped-text">{{ this.connectionSubtitle(connection) }}</span>
             </div>
           </label>
