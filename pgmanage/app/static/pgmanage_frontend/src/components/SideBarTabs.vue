@@ -34,8 +34,15 @@
                 v-html="tab.icon"
               >
               </span>
-              <span class="omnidb__tab-menu__link-name">
-                <span>{{ tab.name }}</span>
+              <span
+                v-if="tab.name.length > 11"
+                class="omnidb__tab-menu__link-name"
+                :data-content-start="`${splitStringInHalf(tab.name)[0]}`"
+                :data-content-end="`${splitStringInHalf(tab.name)[1]}`"
+              >
+              </span>
+              <span v-else class="omnidb__tab-menu__link-name">
+                {{ tab.name }}
               </span>
             </span>
             <i
@@ -70,6 +77,7 @@ import { colorLabelMap } from "../constants";
 import WelcomeScreen from "./WelcomeScreen.vue";
 import SnippetPanel from "./SnippetPanel.vue";
 import TabsUtils from "../mixins/tabs_utils_mixin.js";
+import { splitStringInHalf } from "../utils.js";
 
 export default {
   name: "SideBarTabs",
@@ -114,7 +122,31 @@ export default {
       if(connection) {
         return colorLabelMap[connection.color_label].class || ''
       }
-    }
+    },
+    splitStringInHalf,
   },
 };
 </script>
+
+<style lang="scss" scoped>
+span.omnidb__tab-menu__link-name {
+  &::before,
+  &::after {
+    display: inline-block;
+    max-width: 50%;
+    overflow: hidden;
+    white-space: pre;
+  }
+
+  &::before {
+    content: attr(data-content-start);
+    text-overflow: ellipsis;
+  }
+
+  &::after {
+    content: attr(data-content-end);
+    text-overflow: clip;
+    direction: rtl;
+  }
+}
+</style>
