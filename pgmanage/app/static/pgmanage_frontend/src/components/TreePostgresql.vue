@@ -7,17 +7,33 @@
     </template>
 
     <template v-slot:title="{ node }">
-      <span class="item-icon">
-        <i :class="['icon_tree', node.data.icon]"></i>
-      </span>
-      <span v-if="node.data.raw_html" v-html="node.title"> </span>
-      <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
-        ">
-        <b>{{ node.title }}</b>
-      </span>
-      <span v-else>
-        {{ formatTitle(node) }}
-      </span>
+      <div class="d-flex flex-grow-1 justify-content-between">
+        <div>
+          <span class="item-icon">
+            <i :class="['icon_tree', node.data.icon]"></i>
+          </span>
+          
+          <span v-if="node.data.raw_html" v-html="node.title"> </span>
+          <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
+            ">
+            <b>{{ node.title }}</b>
+          </span>
+          <span v-else>
+            {{ formatTitle(node) }}
+          </span>
+        </div>
+  
+        <!-- Pin icon for database nodes -->
+         <span>
+           <i
+             v-if="node.data.type === 'database'"
+             class="fas fa-thumbtack database-pin-icon me-2"
+             :class="node.data.pinned ? 'text-primary pinned' : 'text-muted'"
+             @click.stop="pinDatabase(node)"
+             :title="`${node.data.pinned ? 'Unpin' : 'Pin'} this database`"
+           ></i>
+         </span>
+      </div>
     </template>
   </PowerTree>
 </template>
@@ -25,6 +41,8 @@
 <script>
 import { emitter } from "../emitter";
 import TreeMixin from "../mixins/power_tree.js";
+import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
+import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import { checkBeforeChangeDatabase } from "../workspace";
 import {
@@ -33,11 +51,12 @@ import {
   TemplateUpdatePostgresql,
   TemplateInsertPostgresql,
   TemplateSelectFunctionPostgresql,
+  TemplateCallProcedurePostgresql,
 } from "../tree_context_functions/tree_postgresql";
 import { createExtensionModal, createPgCronModal, createRoleModal } from "./postgresql_modals";
 import { operationModes } from "../constants";
 import { connectionsStore, messageModalStore, tabsStore, dbMetadataStore } from "../stores/stores_initializer";
-import ContextMenu from "@imengyu/vue3-context-menu";
+import { findNode, findChild } from "../utils.js";
 
 
 export default {
@@ -45,7 +64,7 @@ export default {
   components: {
     PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, PinDatabaseMixin, DropDbObjectMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -72,6 +91,7 @@ export default {
       ],
       currentSchema: "public",
       cm_server_extra: [],
+      serverVersion: null,
     };
   },
   computed: {
@@ -100,9 +120,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/managing-databases.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/managing-databases.html`
               );
             },
           },
@@ -132,20 +150,6 @@ export default {
               );
             },
           },
-          COMMENT_MENUITEM,
-          {
-            label: "Drop Database",
-            icon: "fas fa-times",
-            onClick: () => {
-              tabSQLTemplate(
-                "Drop Database",
-                this.templates.drop_database.replace(
-                  "#database_name#",
-                  this.selectedNode.data.raw_value ?? this.selectedNode.title
-                )
-              );
-            },
-          },
           {
             label: "Backup",
             icon: "fa-solid fa-download ",
@@ -158,6 +162,19 @@ export default {
             icon: "fa-solid fa-upload ",
             onClick: () => {
               tabsStore.createUtilityTab(this.selectedNode, 'Restore')
+            },
+          },
+          COMMENT_MENUITEM,
+          {
+            label: "Drop Database",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              let template = this.templates.drop_database.replace(
+                  "#database_name#",
+                  this.selectedNode.data.raw_value ?? this.selectedNode.title
+                )
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -175,9 +192,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-schemas.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-schemas.html`
               );
             },
           },
@@ -188,6 +203,19 @@ export default {
             icon: "fab fa-hubspot",
             onClick: () => {
               tabsStore.createERDTab(this.selectedNode.data.schema_raw)
+            },
+          },
+          {
+            label: "Alter Schema",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Schema",
+                this.templates.alter_schema.replace(
+                  "#schema_name#",
+                  this.selectedNode.data.schema_raw
+                )
+              );
             },
           },
           {
@@ -204,31 +232,17 @@ export default {
               tabsStore.createUtilityTab(this.selectedNode, 'Restore')
             },
           },
-          {
-            label: "Alter Schema",
-            icon: "fas fa-edit",
-            onClick: () => {
-              tabSQLTemplate(
-                "Alter Schema",
-                this.templates.alter_schema.replace(
-                  "#schema_name#",
-                  this.selectedNode.data.schema_raw
-                )
-              );
-            },
-          },
           COMMENT_MENUITEM,
           {
             label: "Drop Schema",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Schema",
-                this.templates.drop_schema.replace(
+            let template = this.templates.drop_schema.replace(
                   "#schema_name#",
                   this.selectedNode.data.schema_raw
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -246,9 +260,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-basics.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-basics.html`
               );
             },
           },
@@ -257,9 +269,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-constraints.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-constraints.html`
               );
             },
           },
@@ -268,9 +278,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-alter.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-alter.html`
               );
             },
           },
@@ -278,27 +286,48 @@ export default {
         cm_table: [
           this.cmRefreshObject,
           {
-            label: "Data Actions",
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectPostgresql(
+                this.selectedNode.data.schema_raw,
+                this.selectedNode.data.raw_value,
+                "t"
+              );
+            },
+          },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw)
+            },
+          },
+          {
+            label: "Alter Table",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "postgres")
+            },
+          },
+          {
+            label: "Backup",
+            icon: "fa-solid fa-download ",
+            onClick: () => {
+              tabsStore.createUtilityTab(this.selectedNode, 'Backup')
+            },
+          },
+          {
+            label: "Restore",
+            icon: "fa-solid fa-upload ",
+            onClick: () => {
+              tabsStore.createUtilityTab(this.selectedNode, 'Restore')
+            },
+          },
+          {
+            label: "Templates",
             icon: "fas fa-list",
             children: [
-              {
-                label: "Query Data",
-                icon: "fas fa-search",
-                onClick: () => {
-                  TemplateSelectPostgresql(
-                    this.selectedNode.data.schema_raw,
-                    this.selectedNode.data.raw_value,
-                    "t"
-                  );
-                },
-              },
-              {
-                label: "Edit Data",
-                icon: "fas fa-table",
-                onClick: () => {
-                  tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw)
-                },
-              },
               {
                 label: "Insert Record",
                 icon: "fas fa-edit",
@@ -345,12 +374,6 @@ export default {
                   );
                 },
               },
-            ],
-          },
-          {
-            label: "Table Actions",
-            icon: "fas fa-list",
-            children: [
               {
                 label: "Vacuum Table",
                 icon: "fas fa-broom",
@@ -377,42 +400,20 @@ export default {
                   );
                 },
               },
-              {
-                label: "Alter Table",
-                icon: "fas fa-edit",
-                onClick: () => {
-                  tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "postgres")
-                },
-              },
-              COMMENT_MENUITEM,
-              {
-                label: "Drop Table",
-                icon: "fas fa-times",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Drop Table",
-                    this.templates.drop_table.replace(
-                      "#table_name#",
-                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-                    )
-                  );
-                },
-              },
-              {
-                label: "Backup",
-                icon: "fa-solid fa-download ",
-                onClick: () => {
-                  tabsStore.createUtilityTab(this.selectedNode, 'Backup')
-                },
-              },
-              {
-                label: "Restore",
-                icon: "fa-solid fa-upload ",
-                onClick: () => {
-                  tabsStore.createUtilityTab(this.selectedNode, 'Restore')
-                },
-              },
             ],
+          },
+          COMMENT_MENUITEM,
+          {
+            label: "Drop Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              let template = this.templates.drop_table.replace(
+                "#table_name#",
+                `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+              )
+              this.prepareDropModal(this.selectedNode, template)
+            },
           },
         ],
         cm_columns: [
@@ -451,21 +452,19 @@ export default {
             },
           },
           COMMENT_MENUITEM,
+
           {
             label: "Drop Column",
-            icon: "fas fa-edit",
+            icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Column",
-                this.templates.drop_column
-                  .replace(
-                    "#table_name#",
-                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
-                      .raw_value
-                    }`
-                  )
-                  .replace(/#column_name#/g, this.selectedNode.data.raw_value)
-              );
+              let template = this.templates.drop_column.replace(
+                "#table_name#",
+                `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                  .raw_value
+                }`
+              ).replace(/#column_name#/g, this.selectedNode.data.raw_value)
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -492,10 +491,9 @@ export default {
           {
             label: "Drop Primary Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Primary Key",
-                this.templates.drop_primarykey
+              let template = this.templates.drop_primarykey
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -506,7 +504,7 @@ export default {
                     "#constraint_name#",
                     this.selectedNode.data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -533,10 +531,9 @@ export default {
           {
             label: "Drop Foreign Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Key",
-                this.templates.drop_foreignkey
+              let template = this.templates.drop_foreignkey
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -547,7 +544,7 @@ export default {
                     "#constraint_name#",
                     this.selectedNode.data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -574,10 +571,9 @@ export default {
           {
             label: "Drop Unique",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Unique",
-                this.templates.drop_unique
+              let template = this.templates.drop_unique
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -588,7 +584,7 @@ export default {
                     "#constraint_name#",
                     this.selectedNode.data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -614,21 +610,20 @@ export default {
           {
             label: "Drop Check",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Check",
-                this.templates.drop_check
-                  .replace(
-                    "#table_name#",
-                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
-                      .raw_value
-                    }`
-                  )
-                  .replace(
-                    "#constraint_name#",
-                    this.selectedNode.data.raw_value
-                  )
-              );
+              let template = this.templates.drop_check
+                .replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                    .raw_value
+                  }`
+                )
+                .replace(
+                  "#constraint_name#",
+                  this.selectedNode.data.raw_value
+                )
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -654,10 +649,9 @@ export default {
           {
             label: "Drop Exclude",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Exclude",
-                this.templates.drop_exclude
+              let template = this.templates.drop_exclude
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -668,7 +662,7 @@ export default {
                     "#constraint_name#",
                     this.selectedNode.data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -693,9 +687,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/indexes.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/indexes.html`
               );
             },
           },
@@ -732,14 +724,13 @@ export default {
           {
             label: "Drop Index",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Index",
-                this.templates.drop_index.replace(
-                  "#index_name#",
-                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-                )
-              );
+              let template = this.templates.drop_index.replace(
+                "#index_name#",
+                `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+              )
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -764,9 +755,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/rules.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/rules.html`
               );
             },
           },
@@ -800,10 +789,9 @@ export default {
           {
             label: "Drop Rule",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Rule",
-                this.templates.drop_rule
+              let template = this.templates.drop_rule
                   .replace(
                     "#table_name#",
                     `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
@@ -811,7 +799,7 @@ export default {
                     }`
                   )
                   .replace("#rule_name#", this.selectedNode.data.raw_value)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -836,9 +824,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/trigger-definition.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/trigger-definition.html`
               );
             },
           },
@@ -895,24 +881,6 @@ export default {
               );
             },
           },
-          COMMENT_MENUITEM,
-          {
-            label: "Drop Trigger",
-            icon: "fas fa-times",
-            onClick: () => {
-              tabSQLTemplate(
-                "Drop Trigger",
-                this.templates.drop_trigger
-                  .replace(
-                    "#table_name#",
-                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
-                      .raw_value
-                    }`
-                  )
-                  .replace("#trigger_name#", this.selectedNode.data.raw_value)
-              );
-            },
-          },
           {
             label: "Restore",
             icon: "fa-solid fa-upload ",
@@ -920,6 +888,23 @@ export default {
               tabsStore.createUtilityTab(this.selectedNode, 'Restore')
             },
           },
+          COMMENT_MENUITEM,
+          {
+            label: "Drop Trigger",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              let template = this.templates.drop_trigger
+                  .replace(
+                    "#table_name#",
+                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                      .raw_value
+                    }`
+                  )
+                  .replace("#trigger_name#", this.selectedNode.data.raw_value)
+              this.prepareDropModal(this.selectedNode, template)
+            },
+          }
         ],
         cm_direct_trigger_function: [
           this.cmRefreshObject,
@@ -947,16 +932,15 @@ export default {
           {
             label: "Drop Trigger Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Trigger Function",
-                this.templates.drop_triggerfunction.replace(
+              let template = this.templates.drop_triggerfunction.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_inheriteds: [
           this.cmRefreshObject,
@@ -979,9 +963,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-partitioning.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-partitioning.html`
               );
             },
           },
@@ -1006,16 +988,15 @@ export default {
           {
             label: "Drop Inherited",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Partition",
-                this.templates.drop_partition.replace(
+              let template = this.templates.drop_partition.replace(
                   "#partition_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_partitions: [
           this.cmRefreshObject,
@@ -1038,9 +1019,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-partitioning.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-partitioning.html`
               );
             },
           },
@@ -1066,16 +1045,15 @@ export default {
           {
             label: "Drop Partition",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Partition",
-                this.templates.drop_partition.replace(
+              let template = this.templates.drop_partition.replace(
                   "#partition_name#",
-                  this.selectedNode.data.raw_value
+                  this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_statistics: [
           this.cmRefreshObject,
@@ -1100,9 +1078,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/planner-stats.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/planner-stats.html`
               );
             },
           },
@@ -1126,16 +1102,15 @@ export default {
           {
             label: "Drop Statistics",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Statistics",
-                this.templates.drop_statistics.replace(
+              let template = this.templates.drop_statistics.replace(
                   "#statistics_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_partitioned_tables: [
           this.cmRefreshObject,
@@ -1144,9 +1119,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/ddl-partitioning.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/ddl-partitioning.html`
               );
             },
           },
@@ -1159,9 +1132,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/tutorial-inheritance.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/tutorial-inheritance.html`
               );
             },
           },
@@ -1186,28 +1157,41 @@ export default {
         cm_foreign_table: [
           this.cmRefreshObject,
           {
-            label: "Data Actions",
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectPostgresql(
+                this.selectedNode.data.schema_raw,
+                this.selectedNode.data.raw_value,
+                "f"
+              );
+            },
+          },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw)
+            },
+          },
+          {
+            label: "Alter Foreign Table",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabSQLTemplate(
+                "Alter Foreign Table",
+                this.templates.alter_foreign_table.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+                )
+              );
+            },
+          },
+          {
+            label: "Templates",
             icon: "fas fa-list",
             children: [
-              {
-                label: "Query Data",
-                icon: "fas fa-search",
-                onClick: () => {
-                  TemplateSelectPostgresql(
-                    this.selectedNode.data.schema_raw,
-                    this.selectedNode.data.raw_value,
-                    "f"
-                  );
-                },
-              },
-              {
-                label: "Edit Data",
-                icon: "fas fa-table",
-                onClick: () => {
-                  tabsStore.createDataEditorTab(this.selectedNode.data.raw_value, this.selectedNode.data.schema_raw)
-                },
-              },
-              {
+            {
                 label: "Insert Record",
                 icon: "fas fa-edit",
                 onClick: () => {
@@ -1240,12 +1224,6 @@ export default {
                   );
                 },
               },
-            ],
-          },
-          {
-            label: "Table Actions",
-            icon: "fas fa-list",
-            children: [
               {
                 label: "Analyze Foreign Table",
                 icon: "fas fa-table",
@@ -1259,35 +1237,21 @@ export default {
                   );
                 },
               },
-              {
-                label: "Alter Foreign Table",
-                icon: "fas fa-edit",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Alter Foreign Table",
-                    this.templates.alter_foreign_table.replace(
-                      "#table_name#",
-                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-                    )
-                  );
-                },
-              },
-              COMMENT_MENUITEM,
-              {
-                label: "Drop Foreign Table",
-                icon: "fas fa-times",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Drop Foreign Table",
-                    this.templates.drop_foreign_table.replace(
-                      "#table_name#",
-                      `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
-                    )
-                  );
-                },
-              },
             ],
           },
+          COMMENT_MENUITEM,
+          {
+            label: "Drop Foreign Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              let template = this.templates.drop_foreign_table.replace(
+                  "#table_name#",
+                  `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
+                )
+              this.prepareDropModal(this.selectedNode, template)
+            },
+          }
         ],
         cm_foreign_columns: [
           {
@@ -1326,20 +1290,19 @@ export default {
           {
             label: "Drop Foreign Column",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Column",
-                this.templates.drop_foreign_column
-                  .replace(
-                    "#table_name#",
-                    `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
-                      .raw_value
-                    }`
-                  )
-                  .replace(/#column_name#/g, this.selectedNode.data.raw_value)
-              );
+              let template = this.templates.drop_foreign_column
+                    .replace(
+                      "#table_name#",
+                      `${this.selectedNode.data.schema_raw}.${this.getParentNodeDeep(this.selectedNode, 2).data
+                        .raw_value
+                      }`
+                    )
+                    .replace(/#column_name#/g, this.selectedNode.data.raw_value)
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_sequences: [
           this.cmRefreshObject,
@@ -1361,9 +1324,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createsequence.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createsequence.html`
               );
             },
           },
@@ -1386,16 +1347,15 @@ export default {
           {
             label: "Drop Sequence",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Sequence",
-                this.templates.drop_sequence.replace(
+              let template = this.templates.drop_sequence.replace(
                   "#sequence_name#",
                   `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_views: [
           this.cmRefreshObject,
@@ -1417,9 +1377,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createview.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createview.html`
               );
             },
           },
@@ -1461,16 +1419,15 @@ export default {
           {
             label: "Drop View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop View",
-                this.templates.drop_view.replace(
+              let template = this.templates.drop_view.replace(
                   "#view_name#",
                   `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_view_triggers: [
           this.cmRefreshObject,
@@ -1493,9 +1450,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/trigger-definition.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/trigger-definition.html`
               );
             },
           },
@@ -1520,9 +1475,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-creatematerializedview.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-creatematerializedview.html`
               );
             },
           },
@@ -1590,16 +1543,15 @@ export default {
           {
             label: "Drop Mat. View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Materialized View",
-                this.templates.drop_mview.replace(
+              let template = this.templates.drop_mview.replace(
                   "#view_name#",
                   `${this.selectedNode.data.schema}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_functions: [
           this.cmRefreshObject,
@@ -1621,9 +1573,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createfunction.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createfunction.html`
               );
             },
           },
@@ -1663,7 +1613,7 @@ export default {
           },
           {
             label: "Restore",
-            icon: "fa-solid fa-upload ",
+            icon: "fa-solid fa-upload",
             onClick: () => {
               tabsStore.createUtilityTab(this.selectedNode, 'Restore')
             },
@@ -1672,16 +1622,15 @@ export default {
           {
             label: "Drop Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Function",
-                this.templates.drop_function.replace(
+              let template = this.templates.drop_function.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_trigger_functions: [
           this.cmRefreshObject,
@@ -1703,9 +1652,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/plpgsql-trigger.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/plpgsql-trigger.html`
               );
             },
           },
@@ -1735,16 +1682,15 @@ export default {
           {
             label: "Drop Trigger Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Trigger Function",
-                this.templates.drop_triggerfunction.replace(
+              let template = this.templates.drop_triggerfunction.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_event_trigger_functions: [
           this.cmRefreshObject,
@@ -1766,9 +1712,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/functions-event-triggers.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/functions-event-triggers.html`
               );
             },
           },
@@ -1800,16 +1744,15 @@ export default {
           {
             label: "Drop Event Trigger Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Event Trigger Function",
-                this.templates.drop_eventtriggerfunction.replace(
+              let template = this.templates.drop_eventtriggerfunction.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_procedures: [
           this.cmRefreshObject,
@@ -1831,9 +1774,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createprocedure.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createprocedure.html`
               );
             },
           },
@@ -1875,16 +1816,15 @@ export default {
           {
             label: "Drop Procedure",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Procedure",
-                this.templates.drop_procedure.replace(
+              let template = this.templates.drop_procedure.replace(
                   "#procedure_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
-          },
+          }
         ],
         cm_aggregates: [
           this.cmRefreshObject,
@@ -1906,9 +1846,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createaggregate.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createaggregate.html`
               );
             },
           },
@@ -1932,14 +1870,13 @@ export default {
           {
             label: "Drop Aggregate",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Aggregate",
-                this.templates.drop_aggregate.replace(
+              let template = this.templates.drop_aggregate.replace(
                   "#aggregate_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -1963,9 +1900,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createtype.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createtype.html`
               );
             },
           },
@@ -1988,14 +1923,13 @@ export default {
           {
             label: "Drop Type",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Type",
-                this.templates.drop_type.replace(
+              let template = this.templates.drop_type.replace(
                   "#type_name#",
                   `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2019,9 +1953,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-createdomain.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-createdomain.html`
               );
             },
           },
@@ -2044,14 +1976,13 @@ export default {
           {
             label: "Drop Domain",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Domain",
-                this.templates.drop_domain.replace(
+              let template = this.templates.drop_domain.replace(
                   "#domain_name#",
                   `${this.selectedNode.data.schema_raw}.${this.selectedNode.data.raw_value}`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2069,9 +2000,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/extend-extensions.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/extend-extensions.html`
               );
             },
           },
@@ -2088,6 +2017,7 @@ export default {
           {
             label: "Drop Extension",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               createExtensionModal(this.selectedNode, operationModes.DELETE);
             },
@@ -2110,9 +2040,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/postgres-fdw.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/postgres-fdw.html`
               );
             },
           },
@@ -2135,14 +2063,13 @@ export default {
           {
             label: "Drop Foreign Data Wrapper",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Data Wrapper",
-                this.templates.drop_fdw.replace(
+              let template = this.templates.drop_fdw.replace(
                   "#fdwname#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2193,14 +2120,13 @@ export default {
           {
             label: "Drop Foreign Server",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Server",
-                this.templates.drop_foreign_server.replace(
+              let template = this.templates.drop_foreign_server.replace(
                   "#srvname#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2239,16 +2165,15 @@ export default {
           {
             label: "Drop User Mapping",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop User Mapping",
-                this.templates.drop_user_mapping
+              let template = this.templates.drop_user_mapping
                   .replace("#user_name#", this.selectedNode.data.raw_value)
                   .replace(
                     "#srvname#",
                     this.getParentNodeDeep(this.selectedNode, 2).data.raw_value
                   )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2269,9 +2194,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/event-triggers.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/event-triggers.html`
               );
             },
           },
@@ -2320,14 +2243,13 @@ export default {
           {
             label: "Drop Event Trigger",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Event Trigger",
-                this.templates.drop_eventtrigger.replace(
+              let template = this.templates.drop_eventtrigger.replace(
                   "#trigger_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2358,14 +2280,13 @@ export default {
           {
             label: "Drop Event Trigger Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Event Trigger Function",
-                this.templates.drop_eventtriggerfunction.replace(
+              let template = this.templates.drop_eventtriggerfunction.replace(
                   "#function_name#",
                   this.selectedNode.data.id
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2386,9 +2307,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/logical-replication-publication.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/logical-replication-publication.html`
               );
             },
           },
@@ -2411,14 +2330,13 @@ export default {
           {
             label: "Drop Publication",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Publication",
-                this.templates.drop_publication.replace(
+              let template = this.templates.drop_publication.replace(
                   "#pub_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2440,18 +2358,17 @@ export default {
         ],
         cm_pubtable: [
           {
-            label: "Drop Table",
+            label: "Drop Publication Table",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Table",
-                this.templates.drop_pubtable
+              let template = this.templates.drop_pubtable
                   .replace(
                     "#pub_name#",
                     this.getParentNodeDeep(this.selectedNode, 2).title
                   )
-                  .replace("#table_name#", this.selectedNode.data.raw_value)
-              );
+                  .replace("#table_name#", this.selectedNode.title)
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2472,9 +2389,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/logical-replication-subscription.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/logical-replication-subscription.html`
               );
             },
           },
@@ -2497,14 +2412,13 @@ export default {
           {
             label: "Drop Subscription",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Subscription",
-                this.templates.drop_subscription.replace(
+              let template = this.templates.drop_subscription.replace(
                   "#sub_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2525,9 +2439,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/manage-ag-tablespaces.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/manage-ag-tablespaces.html`
               );
             },
           },
@@ -2550,14 +2462,13 @@ export default {
           {
             label: "Drop Tablespace",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Tablespace",
-                this.templates.drop_tablespace.replace(
+              let template = this.templates.drop_tablespace.replace(
                   "#tablespace_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2567,7 +2478,7 @@ export default {
             label: "Create Role",
             icon: "fas fa-plus",
             onClick: () => {
-              createRoleModal(this.selectedNode, operationModes.CREATE, this.getMajorVersion(this.templates.version));
+              createRoleModal(this.selectedNode, operationModes.CREATE, this.serverVersion);
             },
           },
           {
@@ -2575,9 +2486,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/user-manag.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/user-manag.html`
               );
             },
           },
@@ -2587,21 +2496,20 @@ export default {
             label: "Alter Role",
             icon: "fas fa-edit",
             onClick: () => {
-              createRoleModal(this.selectedNode, operationModes.UPDATE, this.getMajorVersion(this.templates.version));
+              createRoleModal(this.selectedNode, operationModes.UPDATE, this.serverVersion);
             },
           },
           COMMENT_MENUITEM,
           {
             label: "Drop Role",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Role",
-                this.templates.drop_role.replace(
+              let template = this.templates.drop_role.replace(
                   "#role_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2622,9 +2530,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/warm-standby.html#streaming-replication-slots`
+                `https://www.postgresql.org/docs/${this.serverVersion}/warm-standby.html#streaming-replication-slots`
               );
             },
           },
@@ -2633,14 +2539,13 @@ export default {
           {
             label: "Drop Slot",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Physical Replication Slot",
-                this.templates.drop_physicalreplicationslot.replace(
+              let template = this.templates.drop_physicalreplicationslot.replace(
                   "#slot_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2661,9 +2566,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/logicaldecoding-explanation.html#logicaldecoding-replication-slots`
+                `https://www.postgresql.org/docs/${this.serverVersion}/logicaldecoding-explanation.html#logicaldecoding-replication-slots`
               );
             },
           },
@@ -2672,14 +2575,13 @@ export default {
           {
             label: "Drop Slot",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Logical Replication Slot",
-                this.templates.drop_logicalreplicationslot.replace(
+              let template = this.templates.drop_logicalreplicationslot.replace(
                   "#slot_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -2771,25 +2673,85 @@ export default {
       // this is to handle cases when tables_node is absent because schema_node is not expanded and therefore empty
       this.refreshTree(tables_node || schema_node, true);
     });
+
+    emitter.on(`goToNode_${this.workspaceId}`, async ({ name, type, schema, database }) => {
+      const rootNode = this.getRootNode();
+       // Step 1: Find "Databases" node
+      const databasesRoot = rootNode.children.find(child => child.data.type === "database_list");
+      if (!databasesRoot) return;
+
+      await this.expandAndRefreshIfNeeded(databasesRoot);
+      const updatedDatabasesRoot = this.$refs.tree.getNode(databasesRoot.path)
+      
+      // Step 2: Find the specific database node
+      const databaseNode = findNode(updatedDatabasesRoot, node => node.data?.database === database && node.data.type === 'database');
+      if (!databaseNode) return;
+
+      await this.expandAndRefreshIfNeeded(databaseNode);
+      const updatedDatabaseNode = this.$refs.tree.getNode(databaseNode.path)
+
+      // If target is a database, stop here
+      if (type === 'database') {
+        this.$refs.tree.select(updatedDatabaseNode.path);
+        this.getNodeEl(updatedDatabaseNode.path).scrollIntoView({
+          block: "start",
+          inline: "end",
+        });
+        return;
+      }
+
+      // Step 3: Find "schemas_node"
+      const schemasNode = findChild(updatedDatabaseNode, 'schema_list');
+      if (!schemasNode) return;
+      await this.expandAndRefreshIfNeeded(schemasNode);
+
+      const updatedSchemasNode = this.$refs.tree.getNode(schemasNode.path)
+
+      const schemaNode = findNode(updatedSchemasNode, node => node.title === schema && node.data.type === 'schema');
+      if (!schemaNode) return;
+      await this.expandAndRefreshIfNeeded(schemaNode);
+
+      const updatedSchemaNode = this.$refs.tree.getNode(schemaNode.path)
+
+      // If target is a schema, stop here
+      if (type === 'schema') {
+        this.$refs.tree.select(updatedSchemaNode.path);
+        this.getNodeEl(updatedSchemaNode.path).scrollIntoView({
+          block: "start",
+          inline: "end",
+        });
+        return;
+      }
+
+      // Step 3: Find '_list' that we need
+      const containerType = `${type}_list`;
+      const containerNode = findChild(updatedSchemaNode, containerType);
+      if (!containerNode) return;
+      await this.expandAndRefreshIfNeeded(containerNode);
+
+      const updatedContainerNode = this.$refs.tree.getNode(containerNode.path)
+
+      // Step 4: Find the target node
+      const targetNode = findNode(updatedContainerNode, node => node.title === name && node.data.type === type);
+      if (!targetNode) return;
+
+      // Step 5: Select and scroll to it
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.$refs.tree.select(targetNode.path);
+          this.getNodeEl(targetNode.path).scrollIntoView({
+            block: "start",
+            inline: "end",
+          });
+        })
+      })
+    });
   },
   unmounted() {
     emitter.all.delete(`schemaChanged_${this.workspaceId}`);
+    emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
-    onContextMenu(node, e) {
-      this.$refs.tree.select(node.path);
-      e.preventDefault();
-      if (!!node.data.contextMenu) {
-        ContextMenu.showContextMenu({
-            theme: "pgmanage",
-            x: e.x,
-            y: e.y,
-            zIndex: 1000,
-            minWidth: 230,
-            items: this.contextMenu[node.data.contextMenu],
-        });
-      }
-    },
     refreshTreePostgresqlConfirm(node) {
       if (node.data.type == "server") {
         return this.getTreeDetailsPostgresql(node)
@@ -2911,28 +2873,39 @@ export default {
         return Promise.resolve('success');
       }
     },
-    refreshTree(node, force) {
-      this.checkCurrentDatabase(
-        node,
-        true,
-        () => {
-          setTimeout(() => {
-            if (!this.shouldUpdateNode(node, force)) return
-            if (node.children.length == 0) this.insertSpinnerNode(node);
-            this.refreshTreePostgresqlConfirm(node).then(() => {
-              this.$hooks?.add_tree_node_item?.forEach((hook) => {
-                hook(node);
-              });
-            })
-            .catch((error) => {
-              this.nodeOpenError(error, node);
-            });
-          }, 100);
-        },
-        () => {
-          this.toggleNode(node);
-        }
-      );
+    refreshTree(node, force = false) {
+      return new Promise((resolve, reject) => {
+        this.checkCurrentDatabase(
+          node,
+          true,
+          () => {
+            setTimeout(() => {
+              if (!this.shouldUpdateNode(node, force)) {
+                resolve();
+                return;
+              }
+
+              if (node.children.length === 0) this.insertSpinnerNode(node);
+
+              this.refreshTreePostgresqlConfirm(node)
+                .then(() => {
+                  this.$hooks?.add_tree_node_item?.forEach((hook) => {
+                    hook(node);
+                  });
+                  resolve();
+                })
+                .catch((error) => {
+                  this.nodeOpenError(error, node);
+                  reject(error);
+                });
+            }, 100);
+          },
+          () => {
+            this.toggleNode(node);
+            resolve();
+          }
+        );
+      });
     },
     checkCurrentDatabase(
       node,
@@ -3137,7 +3110,8 @@ export default {
                 onClick: () => {
                   tabsStore.createMonitoringTab(
                     "Backends",
-                    'select pid as "Pid",\
+                    '/*pgmanage-dash*/ \
+                    select pid as "Pid",\
                     datname as "Database",\
                     usename as "User",\
                     application_name as "Application",\
@@ -3158,9 +3132,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/`
+                `https://www.postgresql.org/docs/${this.serverVersion}/`
               );
             },
           },
@@ -3169,9 +3141,7 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql.html`
               );
             },
           },
@@ -3180,15 +3150,13 @@ export default {
             icon: "fas fa-globe-americas",
             onClick: () => {
               this.openWebSite(
-                `https://www.postgresql.org/docs/${this.getMajorVersion(
-                  this.templates.version
-                )}/sql-commands.html`
+                `https://www.postgresql.org/docs/${this.serverVersion}/sql-commands.html`
               );
             },
           }];
   
         this.templates = response.data.templates;
-        this.templates['version'] = response.data.version
+        this.serverVersion = response.data.major_version;
         this.featureFlags = response.data.feature_flags
 
         this.$refs.tree.updateNode(node.path, {
@@ -3261,8 +3229,11 @@ export default {
             database: el.name,
             oid: el.oid,
             raw_value: el.name_raw,
+            pinned: el.pinned,
           });
         }, null);
+        const databasesNode = this.$refs.tree.getNode(node.path)
+        this.sortPinnedNodes(databasesNode)
       } catch(error) {
         throw error;
       }
@@ -5159,8 +5130,8 @@ export default {
             type: "user_mapping_list",
             contextMenu: "cm_user_mappings",
           });
-  
-          let options = el.options.split(",");
+
+          let options = el.options?.split(",") || [];
           options.forEach((option_el) => {
             this.insertNode(
               foreign_server_node,
@@ -5217,7 +5188,7 @@ export default {
   
           const user_mapping_node = this.getFirstChildNode(node);
   
-          let options = el.options.split(",");
+          let options = el.options?.split(",") || [];
   
           options.forEach((option_el) => {
             this.insertNode(
@@ -5637,17 +5608,6 @@ export default {
     },
     openWebSite(site) {
       window.open(site, "_blank");
-    },
-    getMajorVersion(version) {
-      // FIXME
-      let v_version = version.split(" (")[0];
-      let tmp = v_version
-        .replace("PostgreSQL ", "")
-        .replace("beta", ".")
-        .replace("rc", ".")
-        .split(".");
-      tmp.pop();
-      return tmp.join(".");
     },
   },
 };

@@ -14,30 +14,35 @@
                     <span class="text-nowrap">Selected DB:&nbsp;</span>
                     <span class="text-info">{{ databaseName }}</span>
                   </p>
-
-                  <div
-                    :id="`${workspaceId}_switch`"
-                    class="omnidb__switch omnidb__switch--sm"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-html="true"
-                    data-bs-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>"
-                  >
-                    <input
-                      type="checkbox"
-                      :id="`${workspaceId}_autocomplete`"
-                      class="omnidb__switch--input"
-                      v-model="autocompleteStatus"
-                      @change="emitConnectionSave"
-                    />
-                    <label
-                      :for="`${workspaceId}_autocomplete`"
-                      class="omnidb__switch--label"
+                  
+                  <div class="d-flex align-items-center">
+                    <button class="btn btn-icon btn-icon-primary me-2" title="Quick Search" @click="showQuickSearch">
+                      <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    <div
+                      :id="`${workspaceId}_switch`"
+                      class="omnidb__switch omnidb__switch--sm"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-html="true"
+                      data-bs-title="<h5>Toggle autocomplete.</h5><div>Switch OFF <b>disables the autocomplete</b> on the inner tabs for this connection.</div>"
                     >
-                      <span>
-                        <i class="fas fa-spell-check"></i>
-                      </span>
-                    </label>
+                      <input
+                        type="checkbox"
+                        :id="`${workspaceId}_autocomplete`"
+                        class="omnidb__switch--input"
+                        v-model="autocompleteStatus"
+                        @change="emitConnectionSave"
+                      />
+                      <label
+                        :for="`${workspaceId}_autocomplete`"
+                        class="omnidb__switch--label"
+                      >
+                        <span>
+                          <i class="fas fa-spell-check"></i>
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </div>
                 <splitpanes
@@ -93,6 +98,7 @@
         </pane>
       </splitpanes>
     </div>
+    <SearchModal :workspace-id="workspaceId" :database-index="databaseIndex" :database-technology="databaseTechnology" />
   </div>
 </template>
 
@@ -108,6 +114,7 @@ import TreePropertiesDDL from "./TreePropertiesDDL.vue";
 import TabTitleUpdateMixin from "../mixins/sidebar_title_update_mixin";
 import { Tooltip } from "bootstrap";
 import { handleError } from "../logging/utils";
+import SearchModal from "./SearchModal.vue";
 
 export default {
   name: "ConnectionTab",
@@ -118,9 +125,11 @@ export default {
     TreeMariaDB: defineAsyncComponent(() => import("./TreeMariaDB.vue")),
     TreeOracle: defineAsyncComponent(() => import("./TreeOracle.vue")),
     TreeMysql: defineAsyncComponent(() => import("./TreeMysql.vue")),
+    TreeMssql: defineAsyncComponent(() => import("./TreeMssql.vue")),
     Splitpanes,
     Pane,
     TreePropertiesDDL,
+    SearchModal,
   },
   mixins: [TabTitleUpdateMixin],
   props: {
@@ -172,6 +181,7 @@ export default {
         mysql: "TreeMysql",
         mariadb: "TreeMariaDB",
         oracle: "TreeOracle",
+        mssql: "TreeMssql"
       };
       return treeTechnologiesMap[this.databaseTechnology];
     },
@@ -264,7 +274,10 @@ export default {
         this.lastTreeTabsView = view;
         return;
       }
-      this.showTreeTabsLoading = true;
+      let loadingTimeout = setTimeout(() => {
+        this.showTreeTabsLoading = true;
+      }, 1000);
+
       axios
         .post(view, {
           database_index: this.databaseIndex,
@@ -272,11 +285,13 @@ export default {
           data: data,
         })
         .then((resp) => {
+          clearTimeout(loadingTimeout);
           this.propertiesData = resp.data.properties;
           this.ddlData = resp.data.ddl;
           this.showTreeTabsLoading = false;
         })
         .catch((error) => {
+          clearTimeout(loadingTimeout);
           if (error?.response?.data?.password_timeout) {
             emitter.emit("show_password_prompt", {
               databaseIndex: this.databaseIndex,
@@ -307,6 +322,9 @@ export default {
     clearTreeTabsData() {
       this.ddlData='';
       this.propertiesData=[];
+    },
+    showQuickSearch(event) {
+      emitter.emit(`${this.workspaceId}_show_quick_search`, event);
     },
   },
 };

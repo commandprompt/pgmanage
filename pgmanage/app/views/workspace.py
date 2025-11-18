@@ -5,7 +5,8 @@ import sys
 from datetime import datetime, timezone
 
 from app.client_manager import client_manager
-from app.models.main import Connection, Shortcut, Tab, UserDetails
+from app.include.Session import Session
+from app.models.main import Connection, ERDLayout, Shortcut, Tab, UserDetails
 from app.utils.crypto import make_hash
 from app.utils.decorators import database_required, user_authenticated
 from app.utils.key_manager import key_manager
@@ -37,7 +38,7 @@ def index(request):
     if not request.session.get("pgmanage_session"):
         return redirect(settings.LOGIN_REDIRECT_URL)
 
-    session = request.session.get("pgmanage_session")
+    session: Session = request.session.get("pgmanage_session")
 
     if not settings.MASTER_PASSWORD_REQUIRED and user_details.masterpass_check == '':
 
@@ -61,7 +62,7 @@ def index(request):
     }
 
     # wiping saved tabs databases list
-    session.v_tabs_databases = dict([])
+    session.tabs_databases = {}
     request.session["pgmanage_session"] = session
 
     client_manager.clear_client(client_id=request.session.session_key)
@@ -109,15 +110,15 @@ class SettingsView(View):
         )
 
     def post(self, request, *args, **kwargs):
-        session = kwargs.get("session")
+        session: Session = kwargs.get("session")
         settings_data = request.data.get("settings")
         shortcut_list = request.data.get("shortcuts")
         current_os = request.data.get("current_os")
 
-        session.v_theme_id = settings_data.get("theme")
-        session.v_font_size = settings_data.get("font_size")
-        session.v_csv_encoding = settings_data.get("csv_encoding")
-        session.v_csv_delimiter = settings_data.get("csv_delimiter")
+        session.theme = settings_data.get("theme")
+        session.font_size = settings_data.get("font_size")
+        session.csv_encoding = settings_data.get("csv_encoding")
+        session.csv_delimiter = settings_data.get("csv_delimiter")
         try:
             user_details = UserDetails.objects.get(user=request.user)
             restore_tabs = settings_data.get('restore_tabs', None)
@@ -180,13 +181,13 @@ def save_user_password(request):
 
 @user_authenticated
 @session_required
-def change_active_database(request, session):
+def change_active_database(request, session: Session):
     data = request.data
     workspace_id = data["workspace_id"]
     new_database = data["database"]
     conn_id = data["database_index"]
 
-    session.v_tabs_databases[workspace_id] = new_database
+    session.tabs_databases[workspace_id] = new_database
 
     conn = Connection.objects.get(id=conn_id)
     conn.last_used_database = new_database
@@ -200,15 +201,15 @@ def change_active_database(request, session):
 
 @user_authenticated
 @session_required
-def renew_password(request, session):
+def renew_password(request, session: Session):
     data = request.data
     database_index = data.get("database_index")
     password = data.get("password")
     password_kind = data.get("password_kind", "database")
 
-    database_object = session.v_databases[database_index]
+    database_object = session.databases[database_index]
     if password_kind == "database":
-        database_object["database"].v_connection.v_password = password
+        database_object["database"].connection.password = password
     else:
         database_object["tunnel"]["password"] = password
 
@@ -226,7 +227,8 @@ def renew_password(request, session):
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def draw_graph(request, database):
-    schema = request.data.get("schema", '')
+    data = request.data
+    schema = data.get("schema", '')
     edge_dict = {}
     node_dict = {}
 
@@ -294,13 +296,80 @@ def draw_graph(request, database):
                         col['is_pk'] = True
                         col['cgid'] = f"{fkcol['r_table_name']}-{fkcol['r_column_name']}"
 
-        response_data = {"nodes": list(node_dict.values()), "edges": list(edge_dict.values())}
+
+        database_name = (
+            "sqlite3" if database.db_type == "sqlite" else database.service
+        )
+        layout_name = f"{database_name}@{data.get('schema')}"
+
+        layout_obj = ERDLayout.objects.filter(name=layout_name, connection=Connection.objects.get(id=data.get("database_index"))).first()
+
+        if layout_obj:
+            layout_data = layout_obj.layout
+
+            layout_nodes = {node["data"]["id"]: node for node in layout_data.get('elements', {}).get('nodes', [])}
+            layout_edges = {edge["data"]["cgid"]: edge for edge in layout_data.get("elements", {}).get("edges", []) if edge["data"]["cgid"] is not None}
+
+
+            current_node_ids = set(node_dict.keys())
+            current_edge_ids = set(edge_dict.keys())
+
+            filtered_nodes = [node for id_, node in layout_nodes.items() if id_ in current_node_ids]
+
+
+            new_nodes = [v for k, v in node_dict.items() if k not in layout_nodes.keys()]
+
+            filtered_edges = [edge for id_, edge in layout_edges.items() if id_ in current_edge_ids]
+
+            new_edges = [
+                edge for edge in edge_dict.values()
+                if  edge['cgid'] not in layout_edges.keys()
+            ]
+
+            layout_data["elements"] = {
+                "nodes": filtered_nodes,
+                "edges": filtered_edges
+            }
+
+            return JsonResponse(data={
+                "layout": layout_data,
+                "new_nodes": new_nodes,
+                "new_edges": new_edges,
+            })
+
+        response_data = {
+            "nodes": list(node_dict.values()),
+            "edges": list(edge_dict.values()),
+        }
 
     except Exception as exc:
         return JsonResponse(data={'data': str(exc)}, status=400)
-
     return JsonResponse(response_data)
 
+
+@user_authenticated
+def save_graph_state(request):
+    try:
+        data = request.data
+        database_index = data.get("database_index")
+        layout = data.get("layout")
+        database_name = (
+            "sqlite3"
+            if os.path.isfile(data.get("database_name"))
+            else data.get("database_name")
+        )
+        layout_name = f"{database_name}@{data.get('schema')}"
+        conn = Connection.objects.get(id=database_index)
+
+        layout_obj, _ = ERDLayout.objects.update_or_create(
+                connection=conn,
+                name=layout_name,
+                defaults={"layout": layout},
+            )
+    except Exception as exc:
+        return JsonResponse(data={'data': str(exc)}, status=400)
+
+    return JsonResponse({"status": "saved"})
 
 
 @user_authenticated
@@ -354,14 +423,22 @@ def get_table_columns(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_database_meta(request, database):
     response_data = {
-        'schemas': None
+        'schemas': None,
+        'databases': []
     }
 
     schema_list = []
 
     try:
-        if database.has_schema:
-            schemas = database.QuerySchemas().Rows if hasattr(database, 'QuerySchemas') else [{"schema_name": database.v_schema}]
+        if hasattr(database, "QueryDatabases"):
+            databases = database.QueryDatabases()
+            for database_object in databases.Rows:
+                response_data["databases"].append(database_object[0])
+
+        if database.db_type in ["mysql", "mariadb"]:
+            schemas = [{"schema_name": database.service}]
+        elif database.has_schema:
+            schemas = database.QuerySchemas().Rows if hasattr(database, 'QuerySchemas') else [{"schema_name": database.schema}]
         else:
             schemas = [{'schema_name': '-noschema-'}]
 
@@ -390,7 +467,7 @@ def get_database_meta(request, database):
                 schema_data['tables'].append(table_data)
             
             if database.has_schema:
-                views = database.QueryViews(p_all_schemas=False, p_schema=schema["schema_name"])
+                views = database.QueryViews(all_schemas=False, schema=schema["schema_name"])
             else:
                 views = database.QueryViews()
 
@@ -402,9 +479,9 @@ def get_database_meta(request, database):
                 view_name = view.get('name_raw') or view["table_name"]
 
                 if database.has_schema:
-                    view_columns = database.QueryViewFields(p_table=view_name, p_all_schemas=False, p_schema=schema["schema_name"])
+                    view_columns = database.QueryViewFields(table=view_name, all_schemas=False, schema=schema["schema_name"])
                 else:
-                    view_columns = database.QueryViewFields(p_table=view_name)
+                    view_columns = database.QueryViewFields(table_name=view_name)
 
                 view_data['columns'] = list((c['column_name'] for c in view_columns.Rows))
                 schema_data['views'].append(view_data)
@@ -439,7 +516,7 @@ def refresh_monitoring(request, database):
 
 @user_authenticated
 @session_required
-def master_password(request, session):
+def master_password(request, session: Session):
     """
     Set the master password and store in the memory
     This password will be used to encrypt/decrypt saved server passwords
@@ -473,6 +550,32 @@ def master_password(request, session):
     # saving new pgmanage_session
     request.session["pgmanage_session"] = session
 
+    return HttpResponse(status=200)
+
+@user_authenticated
+def toggle_pin_database(request):
+    data = request.data
+
+    database_index: int = data.get("database_index")
+    database_name: str = data.get("database_name")
+    pinned: bool = data.get("pinned")
+
+    if not database_index or not database_name:
+        return JsonResponse(data={"data": "database_index and database_name cannot be empty."}, status=400)
+
+    connection = Connection.objects.filter(id=database_index).first()
+
+    if pinned:
+        if database_name not in connection.pinned_databases:
+            connection.pinned_databases.append(database_name)
+    else:
+        connection.pinned_databases = [
+            db_name
+            for db_name in connection.pinned_databases
+            if database_name != db_name
+        ]
+
+    connection.save()
     return HttpResponse(status=200)
 
 
@@ -529,3 +632,13 @@ def validate_binary_path(request):
         result[utility] = result_utility_version
 
     return JsonResponse(data={"data": result})
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def execute_query(request, database):
+    data = request.data
+    try:
+        database.Execute(data.get("query"))
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse({"status": "success"})

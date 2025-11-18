@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi } from "vitest";
-import ConfirmableButton from "@/components/ConfirmableButton.vue";
+import ConfirmableButton from "@src/components/ConfirmableButton.vue";
 
 describe("ConfirmableButton.vue", () => {
   it("should render default slot content and trigger defaultClick on click", async () => {

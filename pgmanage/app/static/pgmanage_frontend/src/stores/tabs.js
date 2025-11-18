@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import ShortUniqueId from "short-unique-id";
-import { connectionsStore, messageModalStore } from "./stores_initializer";
+import { connectionsStore, messageModalStore, dbMetadataStore } from "./stores_initializer";
 import { showToast, showConfirm } from "../notification_control";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import { createRequest, removeContext } from "../long_polling";
@@ -13,6 +13,7 @@ import { h } from "vue";
 import postgresqlIcon from '@src/assets/images/db_icons/postgresql.svg'
 import mysqlIcon from '@src/assets/images/db_icons/mysql.svg'
 import mariadbIcon from '@src/assets/images/db_icons/mariadb.svg'
+import mssqlIcon from '@src/assets/images/db_icons/mssql.svg'
 import oracleIcon from '@src/assets/images/db_icons/oracle.svg'
 import sqliteIcon from '@src/assets/images/db_icons/sqlite.svg'
 
@@ -208,26 +209,7 @@ const useTabsStore = defineStore("tabs", {
             confirmFunction();
           });
         } else {
-          ContextMenu.showContextMenu({
-            theme: "pgmanage",
-            x: e.x,
-            y: e.y,
-            zIndex: 1000,
-            minWidth: 230,
-            items: [
-              {
-                label: "Confirm",
-                icon: "fas fa-check",
-                onClick: function () {
-                  confirmFunction();
-                },
-              },
-              {
-                label: "Cancel",
-                icon: "fas fa-times",
-              },
-            ],
-          });
+          confirmFunction();
         }
       } else {
         confirmFunction();
@@ -325,6 +307,7 @@ const useTabsStore = defineStore("tabs", {
             'mariadb': mariadbIcon,
             'oracle': oracleIcon,
             'sqlite': sqliteIcon,
+            'mssql': mssqlIcon,
           }
 
           let imgPath = dbIcons[connection.technology];
@@ -593,7 +576,21 @@ const useTabsStore = defineStore("tabs", {
       this.selectTab(tab);
     },
     createERDTab(schema = "") {
-      let tabName = schema ? `ERD: ${schema}` : "ERD";
+      let secondaryTabs = this.selectedPrimaryTab.metaData.secondaryTabs;
+      let existingTabs = secondaryTabs.filter((t) => {
+        return t.component === "ERDTab";
+      });
+
+      let tabName = schema
+        ? `ERD: ${this.selectedPrimaryTab?.metaData?.selectedDatabase}@${schema}`
+        : "ERD";
+      if (existingTabs) {
+        let existingSameTab = existingTabs.find((t) => t.name == tabName);
+        if (!!existingSameTab) {
+          this.selectTab(existingSameTab);
+          return;
+        }
+      }
 
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
@@ -639,15 +636,7 @@ const useTabsStore = defineStore("tabs", {
         },
       });
 
-      const DIALECT_MAP = {
-        oracle: "oracledb",
-        mariadb: "mysql",
-        postgresql: "postgres",
-      };
-      let dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
-      let mappedDialect = DIALECT_MAP[dialect] || dialect;
-
-      tab.metaData.dialect = mappedDialect;
+      tab.metaData.dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
       tab.metaData.table = table;
       tab.metaData.schema = schema;
       tab.metaData.query_filter = ""; //to be used in the future for passing extra filters when tab is opened
@@ -682,7 +671,7 @@ const useTabsStore = defineStore("tabs", {
         },
       });
 
-      tab.metaData.dialect = dialect || "postgres";
+      tab.metaData.dialect = this.selectedPrimaryTab.metaData.selectedDBMS;
       tab.metaData.editMode = mode;
       tab.metaData.schema =
         dialect === "mysql" ? node.data.database : node.data.schema;
@@ -699,6 +688,15 @@ const useTabsStore = defineStore("tabs", {
       this.selectTab(tab);
     },
     createMonitoringTab(name = "Backends", query) {
+      let secondaryTabs = this.selectedPrimaryTab.metaData.secondaryTabs;
+      let existingTab = secondaryTabs.filter((t) => {
+        return t.component === "MonitoringTab"
+      })[0]
+
+      if(existingTab) {
+        this.selectTab(existingTab);
+        return
+      }
       const tab = this.addTab({
         parentId: this.selectedPrimaryTab.id,
         name: name,
@@ -842,6 +840,7 @@ const useTabsStore = defineStore("tabs", {
       if (tabsToRemove.length > 0) {
         createRequest(queryRequestCodes.CloseTab, tabsToRemove);
       }
+      dbMetadataStore.deleteDbMeta(connectionTab.metaData.selectedDatabaseIndex);
       this.removeTab(connectionTab);
     },
   },

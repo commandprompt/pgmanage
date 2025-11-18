@@ -13,10 +13,10 @@ def clear_commands_history(request):
     data = request.data
 
     database_index: int = data["database_index"]
-    database_filter: Optional[str] = data["database_filter"]
+    database_filter: Optional[str] = data.get("database_filter")
     command_contains: str = data["command_contains"]
-    command_from: Optional[str] = data["command_from"]
-    command_to: Optional[str] = data["command_to"]
+    command_from: Optional[str] = data.get("command_from")
+    command_to: Optional[str] = data.get("command_to")
     command_type: Union[Literal["Query"], Literal["Console"]] = data["command_type"]
 
     try:
@@ -52,10 +52,10 @@ def get_commands_history(request):
 
     current_page: int = data["current_page"]
     database_index: int = data["database_index"]
-    database_filter: Optional[str] = data["database_filter"]
+    database_filter: Optional[str] = data.get("database_filter")
     command_contains: str = data["command_contains"]
-    command_from: Optional[str] = data["command_from"]
-    command_to: Optional[str] = data["command_to"]
+    command_from: Optional[str] = data.get("command_from")
+    command_to: Optional[str] = data.get("command_to")
     command_type: Union[Literal["Query"], Literal["Console"]] = data["command_type"]
 
     try:

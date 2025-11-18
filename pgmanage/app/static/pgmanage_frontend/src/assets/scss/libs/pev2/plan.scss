@@ -12,7 +12,7 @@ $connectorLine: 2px solid darken($lineColor, 10%);
   -moz-osx-font-smoothing: grayscale;
 
   @include themify() {
-    background-color: themed($pev2Bg) !important;
+    background-color: themed($panelsBg) !important;
     color: themed($color);
   }
 
@@ -25,6 +25,10 @@ $connectorLine: 2px solid darken($lineColor, 10%);
       &.active {
         background: $primaryBlue;
         color: $white;
+      }
+
+      .badge {
+        display: none;
       }
     }
   }
@@ -153,6 +157,10 @@ $connectorLine: 2px solid darken($lineColor, 10%);
         box-shadow: none;
       }
     }
+
+    .border-start {
+      border-left-color: transparent !important;
+    }
   }
 
   //close btn inside 'Settings' panel
@@ -171,6 +179,16 @@ $connectorLine: 2px solid darken($lineColor, 10%);
       @include themify() {
         border-color: themed($borderColor) !important;
       }
+    }
+  }
+
+  //"Copy" button inside "Query" tab
+  .copy.position-absolute {
+    .btn.btn-outline-secondary {
+      background-color: transparent !important;
+      border: none !important;
+      margin: 0 !important;
+      color: $primaryBlue !important;
     }
   }
 }
@@ -207,7 +225,7 @@ a[href="https://github.com/dalibo/pev2"]{
     
     @include themify() {
       color: themed($color);
-      background-color: themed($pev2Bg);
+      background-color: themed($panelsBg);
     }
   }
 

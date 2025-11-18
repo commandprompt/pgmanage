@@ -182,21 +182,21 @@ class Client:
         else:
             del self._connection_sessions[workspace_id]
 
-        if tab["type"] in ["query", "console", "connection", "edit", "schema_edit"]:
+        if tab.get("type") in ["query", "console", "connection", "edit", "schema_edit"]:
             try:
                 tab["thread"].stop()
-                tab["omnidatabase"].v_connection.Cancel(False)
+                tab["omnidatabase"].connection.Cancel(False)
             except Exception:
                 pass
             try:
-                tab["omnidatabase"].v_connection.Close()
+                tab["omnidatabase"].connection.Close()
             except Exception:
                 pass
 
-        elif tab["type"] == "debug":
+        elif tab.get("type") == "debug":
             self._close_debug_tab(tab)
 
-        elif tab["type"] == "terminal":
+        elif tab.get("type") == "terminal":
             self._close_terminal_tab(tab)
 
     def _close_debug_tab(self, tab: Dict[str, Any]) -> None:
@@ -210,19 +210,19 @@ class Client:
         """
         tab["cancelled"] = True
         try:
-            tab["omnidatabase_control"].v_connection.Cancel(False)
+            tab["omnidatabase_control"].connection.Cancel(False)
         except Exception:
             pass
         try:
-            tab["omnidatabase_control"].v_connection.Terminate(tab["debug_pid"])
+            tab["omnidatabase_control"].connection.Terminate(tab["debug_pid"])
         except Exception:
             pass
         try:
-            tab["omnidatabase_control"].v_connection.Close()
+            tab["omnidatabase_control"].connection.Close()
         except Exception:
             pass
         try:
-            tab["omnidatabase_debug"].v_connection.Close()
+            tab["omnidatabase_debug"].connection.Close()
         except Exception:
             pass
 
@@ -259,14 +259,14 @@ class Client:
             bool: True if the database should be updated, False otherwise.
         """
         omni_database = tab["omnidatabase"]
-        connection = main_tab_database.v_connection
+        connection = main_tab_database.connection
         return (
             omni_database is None
-            or main_tab_database.v_db_type != omni_database.v_db_type
-            or connection.v_host != omni_database.v_connection.v_host
-            or str(connection.v_port) != str(omni_database.v_connection.v_port)
-            or current_tab_database != omni_database.v_active_service
-            or connection.v_password != omni_database.v_connection.v_password
+            or main_tab_database.db_type != omni_database.db_type
+            or connection.host != omni_database.connection.host
+            or str(connection.port) != str(omni_database.connection.port)
+            or current_tab_database != omni_database.active_service
+            or connection.password != omni_database.connection.password
         )
 
     def _replace_database(
@@ -295,28 +295,28 @@ class Client:
         )
 
         database_new = OmniDatabase.Generic.InstantiateDatabase(
-            p_db_type=main_tab_database.v_db_type,
-            p_server=main_tab_database.v_connection.v_host,
-            p_port=str(main_tab_database.v_connection.v_port),
-            p_service=current_tab_database,
-            p_user=main_tab_database.v_active_user,
-            p_password=main_tab_database.v_connection.v_password,
-            p_conn_id=main_tab_database.v_conn_id,
-            p_alias=main_tab_database.v_alias,
-            p_conn_string=main_tab_database.v_conn_string,
-            p_parse_conn_string=False,
+            db_type=main_tab_database.db_type,
+            server=main_tab_database.connection.host,
+            port=str(main_tab_database.connection.port),
+            service=current_tab_database,
+            user=main_tab_database.active_user,
+            password=main_tab_database.connection.password,
+            conn_id=main_tab_database.conn_id,
+            alias=main_tab_database.alias,
+            conn_string=main_tab_database.conn_string,
+            parse_conn_string=False,
             connection_params=connection_params,
         )
 
         # check if database connection is valid
         try:
-            database_new.v_connection.Open()
+            database_new.connection.Open()
         except Exception:
             # otherwise revert to main connection
             database_new = main_tab_database
 
         if use_lock:
-            database_new.v_lock = threading.Lock()
+            database_new.lock = threading.Lock()
 
         if tab["omnidatabase"]:
             self.to_be_removed.append(tab["omnidatabase"])
@@ -350,8 +350,8 @@ class Client:
         Returns:
             The tab's database object.
         """
-        main_tab_database = session.v_databases[database_index]["database"]
-        current_tab_database = current_database or session.v_tabs_databases.get(
+        main_tab_database = session.databases[database_index]["database"]
+        current_tab_database = current_database or session.tabs_databases.get(
             workspace_id
         )
 
@@ -372,10 +372,10 @@ class Client:
 
         # Try to open connection if not opened yet
         if attempt_to_open_connection and (
-            not tab["omnidatabase"].v_connection.v_con
-            or tab["omnidatabase"].v_connection.GetConStatus() == 0
+            not tab["omnidatabase"].connection.con
+            or tab["omnidatabase"].connection.GetConStatus() == 0
         ):
-            tab["omnidatabase"].v_connection.Open()
+            tab["omnidatabase"].connection.Open()
 
         return tab["omnidatabase"]
 
@@ -566,7 +566,7 @@ def cleanup_thread():
     while True:
         while Client.to_be_removed:
             conn = Client.to_be_removed.pop(0)
-            conn.v_connection.Close()
+            conn.connection.Close()
 
         for client_id in list(client_manager.clients):
             client = client_manager.get_client(client_id=client_id)

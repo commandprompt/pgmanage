@@ -51,7 +51,7 @@ def _hook_import(name, *args, **kwargs):
 @database_required(check_timeout=False, open_connection=False)
 def monitoring_widgets_list(request, database):
     widget_list = []
-    db_type = 'mysql' if database.v_db_type == 'mariadb' else database.v_db_type
+    db_type = 'mysql' if database.db_type == 'mariadb' else database.db_type
     try:
         for _, mon_widget in builtin_monitoring_widgets.items():
             if mon_widget.get("dbms") == db_type:
@@ -66,7 +66,7 @@ def monitoring_widgets_list(request, database):
                     }
                 )
 
-        technology = Technology.objects.filter(name=database.v_db_type).first()
+        technology = Technology.objects.filter(name=database.db_type).first()
 
         custom_monitoring_widgets = MonWidgets.objects.filter(
             user=request.user, technology=technology.id
@@ -139,7 +139,7 @@ def create_widget(request, database):
 
     widget = MonWidgets(
         user=request.user,
-        technology=Technology.objects.filter(name=database.v_db_type).first(),
+        technology=Technology.objects.filter(name=database.db_type).first(),
         script_chart=widget_script_chart,
         script_data=widget_script_data,
         type=widget_type,
@@ -184,7 +184,7 @@ def monitoring_widgets(request, database):
     database_index = request.data.get("database_index")
     widgets = []
     try:
-        technology = Technology.objects.filter(name=database.v_db_type).first()
+        technology = Technology.objects.filter(name=database.db_type).first()
         conn_object = Connection.objects.get(id=database_index)
         custom_widget_ids = list(MonWidgets.objects.filter(
             user=request.user, technology=technology.id
@@ -268,7 +268,7 @@ def monitoring_widgets(request, database):
                     if (
                         mon_widget.get("id") == widget_config.unit
                         and mon_widget.get("plugin_name") == widget_config.plugin_name
-                        and mon_widget.get("dbms") == database.v_db_type
+                        and mon_widget.get("dbms") == database.db_type
                     ):
                         found = True
                         widget = {
@@ -440,7 +440,7 @@ def refresh_monitoring_widget(request, database, widget_saved_id):
 def create_dashboard_monitoring_widget(request, database):
     widget_data = request.data.get("widget_data")
 
-    conn_object = Connection.objects.get(id=database.v_conn_id)
+    conn_object = Connection.objects.get(id=database.conn_id)
 
     try:
         user_widget = MonWidgetsConnections(

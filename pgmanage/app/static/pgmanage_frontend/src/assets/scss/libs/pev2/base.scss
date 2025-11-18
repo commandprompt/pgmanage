@@ -43,13 +43,35 @@ $buffers-colors: (
   }
 }
 
-.btn-group-xs > .btn, .btn-xs {
-  padding: .25rem .4rem;
-  font-size: $fontSizeSm;
-  border-radius: .2rem;
+.btn-group-xs {
+  & > .btn, .btn-xs {
+    padding: .25rem .5rem;
+    font-size: 0.875rem;
+    border-radius: .25rem;
+    line-height: 1.5;
+    flex: 1 1 auto;
 
-  &, .fa {
-    line-height: .5;
+    @include themify() {
+      background-color: themed($surfaceBg) !important;
+    }
+
+    .fa {
+      line-height: .5;
+    }
+  }
+
+  .btn.btn-outline-secondary {
+    border: none !important;
+
+    @include themify() {
+      background-color: themed($surfaceBgSecondary) !important;
+    }
+
+    &.active, &:hover {
+      @include themify() {
+        color: themed($color) !important;
+      }
+    }
   }
 }
 

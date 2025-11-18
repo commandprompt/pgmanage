@@ -60,7 +60,7 @@ def database_required(check_timeout=True, open_connection=True, prefer_database=
                     )
                 except InvalidPasswordException as exc:
                     error_resp = str(exc)
-                    if session.v_databases.get(database_index, {}).get(
+                    if session.databases.get(database_index, {}).get(
                         "decryption_failed"
                     ):
                         error_resp = f"There was a decryption error with the stored password. Please try re-saving your password in Connection Manager and attempt again.\n{str(exc)}"

@@ -1,0 +1,74 @@
+.snippets {
+  height: 100vh;
+  padding-left: 100px;
+  left: 0px;
+  position: fixed;
+  top: 100%;
+  transform: translateY(0px);
+  transition: 0.35s;
+  width: 100%;
+  z-index: 200;
+  border-top: 1px solid;
+
+  @include themify() {
+    border: 1px solid rgba($primaryBlue, 0.3);
+  }
+
+  &.snippets--slide-in {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.35);
+  }
+
+  &--slide-in {
+    display: block;
+    transform: translateY(-97vh);
+  }
+
+  &__toggler {
+    border: 1px solid rgba($primaryBlue, 0.3);
+    padding: 0.25rem 1.5rem 0;
+    left: 50%;
+    line-height: 1;
+    position: absolute;
+    transform-origin: bottom;
+    transform: translateY(-100%);
+    transition: 0.35s;
+    z-index: 1; 
+    color: $secondaryGrey;
+    border-radius: $borderRadius $borderRadius 0 0;
+    border-bottom: 0;
+
+    @include themify() {
+      background-color: themed($panelsBg);
+    }
+
+    &:focus, &:focus-visible {
+      outline: none;
+    }
+
+    &:hover {
+      color: $primaryBlue;
+    }
+  }
+
+  &__left {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 7px 0 0 0;
+    width: 100%;
+  }
+
+  &__right {
+    padding-top: 1rem;
+  }
+
+  &__tree {
+    overflow: auto;
+    flex-grow: 1;
+    transition: scroll 0.3s;
+  }
+
+  .splitpanes .splitpanes__pane {
+    transition: none;
+  }
+}

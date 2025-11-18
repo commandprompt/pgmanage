@@ -1,5 +1,6 @@
 import ast
 
+from app.models.main import Connection
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
 
@@ -13,50 +14,33 @@ def get_tree_info(request, database):
             "version": database.GetVersion(),
             "username": database.GetUserName(),
             "superuser": database.GetUserSuper(),
-            "create_role": database.TemplateCreateRole().v_text,
-            "alter_role": database.TemplateAlterRole().v_text,
-            "drop_role": database.TemplateDropRole().v_text,
-            #'create_tablespace': database.TemplateCreateTablespace().v_text,
-            #'alter_tablespace': database.TemplateAlterTablespace().v_text,
-            #'drop_tablespace': database.TemplateDropTablespace().v_text,
-            "create_database": database.TemplateCreateDatabase().v_text,
-            "alter_database": database.TemplateAlterDatabase().v_text,
-            "drop_database": database.TemplateDropDatabase().v_text,
-            #'create_sequence': database.TemplateCreateSequence().v_text,
-            #'alter_sequence': database.TemplateAlterSequence().v_text,
-            #'drop_sequence': database.TemplateDropSequence().v_text,
-            "create_function": database.TemplateCreateFunction().v_text,
-            "drop_function": database.TemplateDropFunction().v_text,
-            "create_procedure": database.TemplateCreateProcedure().v_text,
-            "drop_procedure": database.TemplateDropProcedure().v_text,
-            #'create_triggerfunction': database.TemplateCreateTriggerFunction().v_text,
-            #'drop_triggerfunction': database.TemplateDropTriggerFunction().v_text,
-            "create_view": database.TemplateCreateView().v_text,
-            "drop_view": database.TemplateDropView().v_text,
-            "create_table": database.TemplateCreateTable().v_text,
-            "alter_table": database.TemplateAlterTable().v_text,
-            "drop_table": database.TemplateDropTable().v_text,
-            "create_column": database.TemplateCreateColumn().v_text,
-            "alter_column": database.TemplateAlterColumn().v_text,
-            "drop_column": database.TemplateDropColumn().v_text,
-            "create_primarykey": database.TemplateCreatePrimaryKey().v_text,
-            "drop_primarykey": database.TemplateDropPrimaryKey().v_text,
-            "create_unique": database.TemplateCreateUnique().v_text,
-            "drop_unique": database.TemplateDropUnique().v_text,
-            "create_foreignkey": database.TemplateCreateForeignKey().v_text,
-            "drop_foreignkey": database.TemplateDropForeignKey().v_text,
-            "create_index": database.TemplateCreateIndex().v_text,
-            "drop_index": database.TemplateDropIndex().v_text,
-            #'create_trigger': database.TemplateCreateTrigger().v_text,
-            #'create_view_trigger': database.TemplateCreateViewTrigger().v_text,
-            #'alter_trigger': database.TemplateAlterTrigger().v_text,
-            #'enable_trigger': database.TemplateEnableTrigger().v_text,
-            #'disable_trigger': database.TemplateDisableTrigger().v_text,
-            #'drop_trigger': database.TemplateDropTrigger().v_text,
-            #'create_partition': database.TemplateCreatePartition().v_text,
-            #'noinherit_partition': database.TemplateNoInheritPartition().v_text,
-            #'drop_partition': database.TemplateDropPartition().v_text
-            "delete": database.TemplateDelete().v_text,
+            "create_role": database.TemplateCreateRole(),
+            "alter_role": database.TemplateAlterRole(),
+            "drop_role": database.TemplateDropRole(),
+            "create_database": database.TemplateCreateDatabase(),
+            "alter_database": database.TemplateAlterDatabase(),
+            "drop_database": database.TemplateDropDatabase(),
+            "create_function": database.TemplateCreateFunction(),
+            "drop_function": database.TemplateDropFunction(),
+            "create_procedure": database.TemplateCreateProcedure(),
+            "drop_procedure": database.TemplateDropProcedure(),
+            "create_view": database.TemplateCreateView(),
+            "drop_view": database.TemplateDropView(),
+            "create_table": database.TemplateCreateTable(),
+            "alter_table": database.TemplateAlterTable(),
+            "drop_table": database.TemplateDropTable(),
+            "create_column": database.TemplateCreateColumn(),
+            "alter_column": database.TemplateAlterColumn(),
+            "drop_column": database.TemplateDropColumn(),
+            "create_primarykey": database.TemplateCreatePrimaryKey(),
+            "drop_primarykey": database.TemplateDropPrimaryKey(),
+            "create_unique": database.TemplateCreateUnique(),
+            "drop_unique": database.TemplateDropUnique(),
+            "create_foreignkey": database.TemplateCreateForeignKey(),
+            "drop_foreignkey": database.TemplateDropForeignKey(),
+            "create_index": database.TemplateCreateIndex(),
+            "drop_index": database.TemplateDropIndex(),
+            "delete": database.TemplateDelete(),
         }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -168,9 +152,23 @@ def get_fks(request, database):
     table = data["table"]
     schema = data["schema"]
 
+    list_fk = []
+
     try:
         fks = database.QueryTablesForeignKeys(table, False, schema)
-        list_fk = [fk["constraint_name"] for fk in fks.Rows]
+        for fk in fks.Rows:
+            fk_data = {
+                "constraint_name": fk["constraint_name"],
+                "column_name": fk["column_name"],
+                "table_name": fk["table_name"],
+                "table_schema": fk["table_schema"],
+                "r_table_name": fk["r_table_name"],
+                "r_table_schema": fk["r_table_schema"],
+                "r_column_name": fk["r_column_name"],
+                "on_update": fk["update_rule"],
+                "on_delete": fk["delete_rule"],
+            }
+            list_fk.append(fk_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -245,11 +243,13 @@ def get_indexes(request, database):
             ]:
                 index_type = index["index_type"].lower()
             else:
-                index_type = "unique" if index["uniqueness"] == "Unique" else "non-unique"
+                index_type = (
+                    "unique" if index["uniqueness"] == "Unique" else "non-unique"
+                )
             index_data = {
                 "index_name": index["index_name"],
                 "unique": index["uniqueness"] == "Unique",
-                "is_primary": index["is_primary"] == "True",
+                "is_primary": index["is_primary"] == "TRUE",
                 "columns": ast.literal_eval(index["columns"]),
                 "type": index_type,
             }
@@ -281,8 +281,16 @@ def get_indexes_columns(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_databases(request, database):
     try:
+        conn_object = Connection.objects.get(id=database.conn_id)
+
         databases = database.QueryDatabases()
-        list_databases = [{"name": db[0]} for db in databases.Rows]
+        list_databases = [
+            {
+                "name": db[0],
+                "pinned": db[0] in conn_object.pinned_databases,
+            }
+            for db in databases.Rows
+        ]
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data=list_databases, safe=False)
@@ -485,7 +493,7 @@ def template_select(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateSelect(schema, table).v_text
+        template = database.TemplateSelect(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -500,7 +508,7 @@ def template_insert(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateInsert(schema, table).v_text
+        template = database.TemplateInsert(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -515,7 +523,7 @@ def template_update(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateUpdate(schema, table).v_text
+        template = database.TemplateUpdate(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

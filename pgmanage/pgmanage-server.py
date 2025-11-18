@@ -203,10 +203,10 @@ for attribute, value in pgmanage_settings.__dict__.items():
 # TODO: implement custom hooks and move any such imports there
 
 import app.include.OmniDatabase as OmniDatabase
-import app.include.Spartacus as Spartacus
+from app.include.Spartacus.Database import supported_rdbms
 
-if 'SQLite' in Spartacus.Database.v_supported_rdbms and not pgmanage.custom_settings.DESKTOP_MODE:
-    Spartacus.Database.v_supported_rdbms.remove('SQLite')
+if 'SQLite' in supported_rdbms and not pgmanage.custom_settings.DESKTOP_MODE:
+    supported_rdbms.remove('SQLite')
 
 import logging
 import logging.config
@@ -267,7 +267,7 @@ if options.reset:
 
 if options.listusers:
     from app.include.Spartacus.Database import DataTable
-    table = DataTable()
+    table = DataTable(simple=True)
     table.AddColumn('id')
     table.AddColumn('username')
     table.AddColumn('superuser')
@@ -297,7 +297,7 @@ if options.listconnections:
     maintenance_action = True
 
     from app.include.Spartacus.Database import DataTable
-    table = DataTable()
+    table = DataTable(simple=True)
     table.AddColumn('id')
     table.AddColumn('technology')
     table.AddColumn('alias')
@@ -491,8 +491,7 @@ class DjangoApplication(object):
             if parameters['is_ssl']:
                 import ssl
                 ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-                ssl_ctx.options |= ssl.OP_NO_TLSv1
-                ssl_ctx.options |= ssl.OP_NO_TLSv1_1
+                ssl_ctx.minimum_version = ssl.TLSVersion.TLSv1_2
                 ssl_ctx.load_cert_chain(parameters['ssl_certificate_file'],
                                        parameters['ssl_key_file'])
                 v_cherrypy_config['server.ssl_module'] = 'builtin'

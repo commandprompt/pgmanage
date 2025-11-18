@@ -544,48 +544,6 @@ a:not([href]):not([tabindex]){
   font-size: inherit;
 }
 
-/* PANELS */
-.omnidb__panel {
-  box-shadow: 0px 0px 0px rgba(255,255,255,0);
-  left: 0px;
-  position: fixed;
-  top: 100%;
-  transform: translateY(0px);
-  transition: 0.35s;
-  width: 100%;
-  z-index: 200;
-}
-.omnidb__panel--slide-in {
-  display: block;
-  box-shadow: -12px 0px 15px rgba(22,23,30,0.25);
-}
-.omnidb__panel__toggler {
-  border-bottom-left-radius: 0px;
-  border-bottom-right-radius: 0px;
-  left: 50%;
-  position: absolute;
-  transform-origin: bottom;
-  transform: translateY(-100%) scaleY(0.46);
-  transition: 0.35s;
-  z-index: 1;
-}
-.omnidb__panel__toggler:focus,
-.omnidb__panel__toggler:hover {
-  transform: translateY(-100%);
-}
-
-/* SNIPPETS */
-.omnidb__snippets__content-left {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 7px 0 0 0;
-  width: 100%;
-}
-.omnidb__snippets__div-right {
-  padding-top: 1rem;
-}
-
 /* QUERY INFO */
 .custom-file > input {
   opacity: 0;

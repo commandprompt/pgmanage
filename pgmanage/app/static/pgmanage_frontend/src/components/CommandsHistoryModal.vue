@@ -277,6 +277,7 @@ export default {
         action.after(() => {
           if (this.table) this.table.destroy();
           this.setupTabulator();
+          this.resetToDefault();
           this.showCommandsModal();
           this.getCommandsHistory(true);
         });
@@ -289,7 +290,6 @@ export default {
 
     this.$refs.historyModal.addEventListener("hide.bs.modal", () => {
       commandsHistoryStore.reset();
-      this.resetToDefault();
       $(this.$refs.timeRange).data("daterangepicker").remove();
     });
   },
@@ -463,7 +463,7 @@ export default {
     },
     resetToDefault() {
       this.startedFrom = moment().subtract(6, "hour").toISOString();
-      this.startedTo = moment().toISOString();
+      this.startedTo = null;
       this.timeRangeLabel = "Last 6 Hours";
       this.commandContains = "";
       this.databaseFilter = "";

@@ -1,0 +1,48 @@
+.search-modal  {
+    height: 100%;
+    width: 100%;
+    z-index: 1050;
+
+    &::after{
+        content: '';
+        display: block;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.517);  
+    }
+
+    &__container {
+        margin-top: 35px;
+        box-shadow: $dropdownBoxShadow;
+        border-radius: $borderRadius;
+        width: 700px;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+
+        @include themify() {
+            background: themed($tabsSurfaceBg);
+        }
+    }
+
+    &__results {
+        border-radius: 0;
+        
+        &:has(li) {
+            margin-top: 1rem;
+        }
+        
+        &_item.list-group-item {
+            border: none;
+            border-radius: $borderRadius;
+            
+            &.selected {
+                background-color: rgba($primaryBlue, 0.15);
+            }
+            
+            &:hover:not(.selected) {
+                background-color: rgba($secondaryGrey, 0.15);
+            }
+        }
+    }
+}

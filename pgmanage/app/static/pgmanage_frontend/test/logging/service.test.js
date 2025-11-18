@@ -1,15 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import axios from "axios";
-import * as logging_service from "@/logging/service";
-import { requestHistory } from "../../src/logging/service";
-import { showAlert } from "@/notification_control";
-import { flushPromises } from "@vue/test-utils";
+import * as logging_service from "@src/logging/service";
+import { requestHistory } from "@src/logging/service";
+import { showAlert } from "@src/notification_control";
 
 Date.now = vi.fn(() => new Date("2024-08-05T12:33:37.000Z"));
 
-vi.mock("axios");
-
-vi.mock("@/notification_control", () => ({
+vi.mock("@src/notification_control", () => ({
   showAlert: vi.fn(),
 }));
 

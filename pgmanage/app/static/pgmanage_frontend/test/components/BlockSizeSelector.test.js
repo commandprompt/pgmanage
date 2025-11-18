@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
-import BlockSizeSelector from "@/components/BlockSizeSelector.vue";
+import BlockSizeSelector from "@src/components/BlockSizeSelector.vue";
 
 describe("BlockSizeSelector.vue", () => {
   it("renders the correct options based on blockSizeOptions", () => {

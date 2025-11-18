@@ -82,6 +82,7 @@ class Connection(models.Model):
     last_access_date = models.DateTimeField(null=True)
     autocomplete = models.BooleanField(default=True)
     color_label = models.IntegerField(default=0)
+    pinned_databases = models.JSONField(default=list)
 
     @classmethod
     def reencrypt_credentials(cls, user_id: int, old_key: str, new_key: str) -> None:
@@ -238,3 +239,12 @@ class Job(models.Model):
     utility_pid = models.IntegerField(null=True)
     process_state = models.IntegerField(null=True)
     connection = models.ForeignKey(Connection, on_delete=models.CASCADE, null=True)
+
+
+class ERDLayout(models.Model):
+    connection = models.ForeignKey(Connection, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    layout = models.JSONField()
+
+    class Meta:
+        unique_together = ["connection", "name"]

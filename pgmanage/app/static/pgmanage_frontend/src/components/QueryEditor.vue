@@ -9,7 +9,7 @@ import { buildSnippetContextMenuObjects } from "../tree_context_functions/tree_s
 import { emitter } from "../emitter";
 import { format } from "sql-formatter";
 import { setupAceDragDrop, setupAceSelectionHighlight } from "../ace_extras/plugins";
-import { editorModeMap, maxLinesForIndentSQL } from "../constants";
+import { editorModeMap, maxLinesForIndentSQL, sqlFormatterDialectMap } from "../constants";
 import { showToast } from "../notification_control";
 import { SQLAutocomplete, SQLDialect } from 'sql-autocomplete';
 
@@ -37,9 +37,7 @@ export default {
       formatOptions: {
         tabWidth: 2,
         keywordCase: "upper",
-        //sql-formatter uses 'plsql' for oracle sql flavor
-        // otherwise - our db technology names match perfectly
-        language: this.dialect === "oracle" ? "plsql" : this.dialect,
+        language: sqlFormatterDialectMap[this.dialect] ?? this.dialect,
         linesBetweenQueries: 1,
       },
       completer: null
@@ -83,15 +81,25 @@ export default {
         liveAutocompletionDelay: 100,
       })
     }
+
+    dbMetadataStore.$onAction((action) => {
+      if (action.name === "refreshDBMeta") {
+        if (
+          action.args[0] === this.databaseIndex &&
+          action.args[1] === this.workspaceId &&
+          action.args[2] === this.databaseName
+        ) {
+          action.after(() => {
+            this.setupCompleter();
+          });
+        }
+      }
+    });
   },
   unmounted() {
     this.clearEvents();
   },
   methods: {
-    refetchMetaHandler(e) {
-      if(e.databaseIndex == this.databaseIndex)
-        dbMetadataStore.fetchDbMeta(this.databaseIndex, this.tabId, this.databaseName)
-    },
     setupEditor() {
       let editor_mode = editorModeMap[this.dialect] || 'sql'
 
@@ -112,6 +120,7 @@ export default {
       this.editor.commands.bindKey("Ctrl-Down", null);
       this.editor.commands.bindKey("Ctrl-F", null);
       this.editor.commands.bindKey("Ctrl-,", null);
+      this.editor.commands.bindKey("ctrl-p", null);
 
       const scoreMap = {
         COLUMN: 5000,
@@ -177,6 +186,7 @@ export default {
         'mariadb': SQLDialect.MYSQL,
         'oracle': SQLDialect.PLSQL,
         'sqlite': SQLDialect.SQLITE,
+        'mssql': SQLDialect.TSQL,
       }
 
       this.completer = new SQLAutocomplete(DIALECT_MAP[this.dialect] || SQLDialect.PLpgSQL, filteredMeta);
@@ -194,6 +204,7 @@ export default {
     },
     contextMenu(event) {
       const hasSelectedContent = !!this.editor.getSelectedText()
+
       let option_list = [
         {
           label: "Run selection",
@@ -203,6 +214,26 @@ export default {
             this.$emit("run-selection");
           },
         },
+        {
+          label: "Copy",
+          icon: "fas fa-copy",
+          disabled: !hasSelectedContent,
+          onClick: () => {
+            document.execCommand("copy");
+          },
+        },
+        {
+          label: "Save as snippet",
+          icon: "fas fa-save",
+          children: buildSnippetContextMenuObjects(
+            "save",
+            snippetsStore,
+            this.editor.getValue()
+          ),
+        },
+      ];
+
+      let postgres_options = [
         {
           label: "Explain selection",
           icon: "fas fa-chart-simple",
@@ -219,24 +250,11 @@ export default {
             this.$emit("run-selection-explain-analyze");
           },
         },
-        {
-          label: "Copy",
-          icon: "fas fa-terminal",
-          disabled: !hasSelectedContent,
-          onClick: () => {
-            document.execCommand("copy");
-          },
-        },
-        {
-          label: "Save as snippet",
-          icon: "fas fa-save",
-          children: buildSnippetContextMenuObjects(
-            "save",
-            snippetsStore,
-            this.editor.getValue()
-          ),
-        },
       ];
+
+      if (this.dialect === "postgresql") {
+        option_list.splice(1, 0, ...postgres_options);
+      };
 
       if (snippetsStore.files.length != 0 || snippetsStore.folders.length != 0)
         option_list.push({
@@ -302,8 +320,6 @@ export default {
         this.editor.execCommand("find")
       });
 
-      // by using a scoped function we can then unsubscribe with mitt.off
-      emitter.on("refetchMeta", this.refetchMetaHandler)
     },
     clearEvents() {
       emitter.all.delete(`${this.tabId}_show_autocomplete_results`);
@@ -312,7 +328,6 @@ export default {
       emitter.all.delete(`${this.tabId}_indent_sql`);
       emitter.all.delete(`${this.tabId}_find_replace`);
 
-      emitter.off("refetchMeta", this.refetchMetaHandler)
     },
   }
 };

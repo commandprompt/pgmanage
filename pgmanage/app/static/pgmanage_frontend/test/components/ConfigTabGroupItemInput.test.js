@@ -1,9 +1,8 @@
 import { mount } from "@vue/test-utils";
-import ConfigTabGroupItemInput from "@/components/ConfigTabGroupItemInput.vue";
-import { tabsStore } from "@/stores/stores_initializer";
+import ConfigTabGroupItemInput from "@src/components/ConfigTabGroupItemInput.vue";
 import { describe, vi, it, beforeEach, expect } from "vitest";
 
-vi.mock("@/stores/stores_initializer", () => ({
+vi.mock("@src/stores/stores_initializer", () => ({
   tabsStore: {
     selectedPrimaryTab: {
       metaData: {
@@ -102,7 +101,7 @@ describe("ConfigTabGroupItemInput.vue", () => {
     mountComponent({
       initialSetting: {
         ...mockSetting,
-        category: "Preset Options",
+        is_preset_option: 'True',
       },
     });
 

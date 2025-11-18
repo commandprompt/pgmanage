@@ -12,13 +12,6 @@ import MonitoringWidget from "../../src/components/MonitoringWidget.vue";
 import axios from "axios";
 import { emitter } from "../../src/emitter";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
-
 vi.mock("tabulator-tables", () => {
   const TabulatorFull = vi.fn();
   TabulatorFull.prototype.redraw = vi.fn();
@@ -147,7 +140,7 @@ describe("MonitoringWidget", () => {
 
     expect(wrapper.vm.isActive).toBeTruthy();
 
-    expect(wrapper.emitted()).toHaveProperty("widgetClose");
+    expect(wrapper.emitted()).toHaveProperty("toggleWidget");
   });
   test("should call refreshMonitoringWidget on refresh button click", async () => {
     const refreshMonitoringWidgetSpy = vi.spyOn(
@@ -161,21 +154,17 @@ describe("MonitoringWidget", () => {
 
     expect(refreshMonitoringWidgetSpy).toHaveBeenCalledOnce();
   });
-  test("should call updateInterval method on interval input change", async () => {
+  test("should call updateInterval method when a refresh interval option is clicked", async () => {
     const updateIntervalSpy = vi.spyOn(wrapper.vm, "updateInterval");
-    const intervalInput = wrapper.find('[data-testid="widget-interval-input"]');
+    const firstOption = wrapper.find('[data-testid="refresh-option-5"]');
 
-    await intervalInput.setValue("10");
+    expect(firstOption.exists()).toBe(true);
 
-    expect(intervalInput.element.value).toBe("10");
+    await firstOption.trigger("click");
+
+    const expectedOption = wrapper.vm.refreshIntervalOptions[0];
+    expect(updateIntervalSpy).toHaveBeenCalledWith(expectedOption);
     expect(updateIntervalSpy).toBeCalledTimes(1);
-  });
-  test("validation error after input interval change to < 5", async () => {
-    const intervalInput = wrapper.find('[data-testid="widget-interval-input"]');
-
-    await intervalInput.setValue("2");
-
-    expect(wrapper.vm.v$.$invalid).toBeTruthy();
   });
   test("should call buildGrid if widget type is 'grid'", async () => {
     const buildGridSpy = vi.spyOn(wrapper.vm, "buildGrid");
@@ -196,17 +185,17 @@ describe("MonitoringWidget", () => {
       expect(wrapper.emitted()).toHaveProperty("widgetRefreshed");
     });
     test("should emit 'intervalUpdated' after success patch request", async () => {
-      const intervalInput = wrapper.find(
-        '[data-testid="widget-interval-input"]'
-      );
+      const firstOption = wrapper.find('[data-testid="refresh-option-5"]');
 
-      await intervalInput.setValue("11");
+      await firstOption.trigger("click");
+
+      const intervalValue = wrapper.vm.refreshIntervalOptions[0];
 
       expect(wrapper.emitted()).toHaveProperty("intervalUpdated");
       expect(wrapper.emitted("intervalUpdated")[0]).toEqual([
         {
           saved_id: monitoringWidget.saved_id,
-          interval: 11,
+          interval: intervalValue,
         },
       ]);
     });

@@ -18,6 +18,7 @@ $theme-map: null; //important! do not delete this
 @import './components/accordion';
 @import './components/input';
 @import './components/modal';
+@import './components/search-modal';
 @import './components/tabs';
 @import './components/pagination';
 @import './components/card';
@@ -27,6 +28,8 @@ $theme-map: null; //important! do not delete this
 @import './components/data-editor-tab';
 @import './components/bootstrap-tooltips';
 @import './components/welcome-screen';
+@import './components/snippets';
+@import './components/floating-toolbar';
 
 @import './libs/pev2/pev2';
 @import './libs/tabulator';

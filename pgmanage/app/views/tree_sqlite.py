@@ -8,19 +8,19 @@ def get_tree_info(request, database):
     try:
         data = {
             "version": database.GetVersion(),
-            "create_view": database.TemplateCreateView().v_text,
-            "drop_view": database.TemplateDropView().v_text,
-            "create_table": database.TemplateCreateTable().v_text,
-            "alter_table": database.TemplateAlterTable().v_text,
-            "drop_table": database.TemplateDropTable().v_text,
-            "create_column": database.TemplateCreateColumn().v_text,
-            "create_index": database.TemplateCreateIndex().v_text,
-            "reindex": database.TemplateReindex().v_text,
-            "drop_index": database.TemplateDropIndex().v_text,
-            "delete": database.TemplateDelete().v_text,
-            "create_trigger": database.TemplateCreateTrigger().v_text,
-            "alter_trigger": database.TemplateAlterTrigger().v_text,
-            "drop_trigger": database.TemplateDropTrigger().v_text,
+            "create_view": database.TemplateCreateView(),
+            "drop_view": database.TemplateDropView(),
+            "create_table": database.TemplateCreateTable(),
+            "alter_table": database.TemplateAlterTable(),
+            "drop_table": database.TemplateDropTable(),
+            "create_column": database.TemplateCreateColumn(),
+            "create_index": database.TemplateCreateIndex(),
+            "reindex": database.TemplateReindex(),
+            "drop_index": database.TemplateDropIndex(),
+            "delete": database.TemplateDelete(),
+            "create_trigger": database.TemplateCreateTrigger(),
+            "alter_trigger": database.TemplateAlterTrigger(),
+            "drop_trigger": database.TemplateDropTrigger(),
         }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
@@ -103,10 +103,20 @@ def get_pk_columns(request, database):
 @database_required(check_timeout=False, open_connection=True)
 def get_fks(request, database):
     table = request.data["table"]
-
+    list_fk = []
     try:
         fks = database.QueryTablesForeignKeys(table)
-        list_fk = [fk["constraint_name"] for fk in fks.Rows]
+        for fk in fks.Rows:
+            fk_data = {
+                "constraint_name": fk["constraint_name"],
+                "column_name": fk["column_name"],
+                "table_name": fk["table_name"],
+                "r_table_name": fk["r_table_name"],
+                "r_column_name": fk["r_column_name"],
+                "on_update": fk["update_rule"],
+                "on_delete": fk["delete_rule"],
+            }
+            list_fk.append(fk_data)
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -264,7 +274,7 @@ def template_select(request, database):
     kind = data["kind"]
 
     try:
-        template = database.TemplateSelect(table, kind).v_text
+        template = database.TemplateSelect(table, kind).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -277,7 +287,7 @@ def template_insert(request, database):
     table = request.data["table"]
 
     try:
-        template = database.TemplateInsert(table).v_text
+        template = database.TemplateInsert(table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -290,7 +300,7 @@ def template_update(request, database):
     table = request.data["table"]
 
     try:
-        template = database.TemplateUpdate(table).v_text
+        template = database.TemplateUpdate(table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 

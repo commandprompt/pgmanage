@@ -173,13 +173,13 @@ def get_omnidb_database_connection():
             OmniDB_app.include.OmniDatabase.SQLite: a connection to the omnidb database.
     """
     return OmniDatabase.Generic.InstantiateDatabase(
-        p_db_type='sqlite',
-        p_server='',
-        p_port='',
-        p_service=PGMANAGE_DATABASE,
-        p_user='',
-        p_password='',
-        p_conn_id='0',
-        p_alias='',
-        p_foreignkeys=True
+        db_type='sqlite',
+        server='',
+        port='',
+        service=PGMANAGE_DATABASE,
+        user='',
+        password='',
+        conn_id='0',
+        alias='',
+        foreign_keys=True
     )

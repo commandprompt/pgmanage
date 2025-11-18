@@ -4,7 +4,14 @@ ace.define(
   function (require, exports, module) {
     const Editor = require("ace/editor").Editor;
     const Range = require("ace/range").Range;
-    const linkRegex = /(?<=\s)https?:\/\/www\.postgresql\.org\/docs\/[^\s"']+/g;
+    const docDomains = [
+      "www\\.postgresql\\.org\\/docs\\/",
+      "learn\\.microsoft\\.com\\/sql\\/t-sql\\/",
+    ];
+    const linkRegex = new RegExp(
+      `(?<=\\s)(https?:\\/\\/(?:${docDomains.join("|")})[^\\s"']+)`,
+      "g"
+    );
     let hoverState = {
       activeMarker: null,
       activeLink: null,

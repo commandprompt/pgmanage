@@ -1,6 +1,6 @@
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach } from "vitest";
-import { useCommandsHistoryStore } from "@/stores/commands_history";
+import { useCommandsHistoryStore } from "@src/stores/commands_history";
 
 describe("commandsHistoryModal store", () => {
   beforeEach(() => {

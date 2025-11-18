@@ -3,13 +3,6 @@ import { beforeEach, describe, test, vi, expect, beforeAll } from "vitest";
 import MonitoringWidgetsModal from "../../src/components/MonitoringWidgetsModal.vue";
 import axios from "axios";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
-
 vi.mock("tabulator-tables", () => {
   const TabulatorFull = vi.fn();
   return { TabulatorFull };
@@ -45,14 +38,5 @@ describe("MonitoringWidgetsModal", () => {
   test("should render MonitoringWidgetsModal component with expected elements", () => {
     expect(wrapper.html()).toContain("Monitoring Widgets");
     expect(wrapper.html()).toContain("New Widget");
-  }),
-    test("should call 'getMonitoringWidgetList' on modal show", async () => {
-      const getMonitoringWidgetList = vi.spyOn(
-        wrapper.vm,
-        "getMonitoringWidgetList"
-      );
-      await wrapper.setProps({ widgetsModalVisible: true });
-
-      expect(getMonitoringWidgetList).toBeCalledTimes(1);
-    });
+  });
 });

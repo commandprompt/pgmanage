@@ -291,9 +291,9 @@ class LoginSession(TestCase):
 
         user_db = User.objects.get(username=self.user['user'])
 
-        self.assertEqual(app_session.v_user_id, user_db.id)
-        self.assertEqual(app_session.v_user_name, user_db.username)
-        self.assertEqual(app_session.v_super_user, user_db.is_superuser)
-        self.assertIsInstance(app_session.v_database_index, int)
-        self.assertTrue(isinstance(app_session.v_databases, OrderedDict) or isinstance(app_session.v_databases, dict))
-        self.assertEqual(app_session.v_user_key, self.client.session.session_key)
+        self.assertEqual(app_session.user_id, user_db.id)
+        self.assertEqual(app_session.user_name, user_db.username)
+        self.assertEqual(app_session.super_user, user_db.is_superuser)
+        self.assertIsInstance(app_session.database_index, int)
+        self.assertTrue(isinstance(app_session.databases, OrderedDict) or isinstance(app_session.databases, dict))
+        self.assertEqual(app_session.user_key, self.client.session.session_key)

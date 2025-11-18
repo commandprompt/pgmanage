@@ -5,6 +5,18 @@ import { tabsStore, settingsStore, connectionsStore } from "../stores/stores_ini
 import { logger } from "../logging/logger_setup";
 import { axiosHooks } from "../logging/service";
 import { handleError } from "../logging/utils";
+import { h } from "vue";
+import debounce from "lodash/debounce";
+
+let hoverTimer = null;
+
+function delayedEnter(fn, delay = 220) {
+  return (e) => {
+    if (hoverTimer) clearTimeout(hoverTimer);
+
+    hoverTimer = setTimeout(() => fn(e), delay);
+  };
+}
 
 export default {
   emits: ["treeTabsUpdate", "clearTabs"],
@@ -73,7 +85,9 @@ export default {
     onToggle(node, e) {
       this.$refs.tree.select(node.path);
       if (this.getRootNode().title !== "Snippets") {
-        this.getProperties(node);
+        debounce((node) => {
+          this.getProperties(node);
+        }, 200)(node);
       }
       if (node.isExpanded) return;
       this.refreshTree(node);
@@ -88,18 +102,68 @@ export default {
       this.onToggle(node);
       this.toggleNode(node);
     },
-    onContextMenu(node, e) {
-      this.$refs.tree.select(node.path);
-      e.preventDefault();
-      if (!!node.data.contextMenu) {
-        ContextMenu.showContextMenu({
+    showContextMenu(node, e) {
+      ContextMenu.showContextMenu(
+        {
           theme: "pgmanage",
           x: e.x,
           y: e.y,
           zIndex: 1000,
           minWidth: 230,
           items: this.contextMenu[node.data.contextMenu],
-        });
+        },
+        {
+          itemRender: ({
+            disabled,
+            label,
+            icon,
+            showRightArrow,
+            onClick,
+            onMouseEnter,
+          }) =>
+            h(
+              "div",
+              {
+                class: ["mx-context-menu-item", disabled ? "disabled" : ""],
+                onClick,
+                onMouseenter: delayedEnter(onMouseEnter, 200),
+              },
+              [
+                h("div", { class: "mx-item-row" }, [
+                  h("div", { class: "mx-icon-placeholder preserve-width" }, [
+                    icon
+                      ? h("i", { class: [icon, "icon",] })
+                      : h("span", { class: "mx-content-menu-icon" }),
+                  ]),
+                  h("span", { class: "label" }, label),
+                ]),
+                showRightArrow
+                  ? h("div", { class: "mx-item-row" }, [
+                      h(
+                        "svg",
+                        {
+                          class: "mx-right-arrow",
+                          "aria-hidden": "true",
+                          viewBox: "0 0 1024 1024",
+                        },
+                        [
+                          h("path", {
+                            d: "M307.018 49.445c11.517 0 23.032 4.394 31.819 13.18L756.404 480.18c8.439 8.438 13.181 19.885 13.181 31.82s-4.741 23.38-13.181 31.82L338.838 961.376c-17.574 17.573-46.065 17.573-63.64-0.001-17.573-17.573-17.573-46.065 0.001-63.64L660.944 512 275.198 126.265c-17.574-17.573-17.574-46.066-0.001-63.64C283.985 53.839 295.501 49.445 307.018 49.445z",
+                          }),
+                        ]
+                      ),
+                    ])
+                  : null,
+              ]
+            ),
+        }
+      );
+    },
+    onContextMenu(node, e) {
+      this.$refs.tree.select(node.path);
+      e.preventDefault();
+      if (!!node.data.contextMenu) {
+        this.showContextMenu(node, e);
       }
     },
     removeChildNodes(node) {
@@ -267,6 +331,14 @@ export default {
         data: { ...node.data, last_update: now.toISOString() },
       });
       return true;
+    },
+    async expandAndRefreshIfNeeded(node) {
+      if (!node.children || node.children.length === 0) {
+        await this.refreshTree(node, true);
+        this.expandNode(node);
+      } else {
+        this.expandNode(node);
+      }
     },
   },
 };

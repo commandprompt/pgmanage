@@ -7,22 +7,39 @@
     </template>
 
     <template v-slot:title="{ node }">
-      <span class="item-icon">
-        <i :class="['icon_tree', node.data.icon]"></i>
-      </span>
-      <span v-if="node.data.raw_html" v-html="node.title"> </span>
-      <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
-        ">
-        <b>{{ node.title }}</b>
-      </span>
-      <span v-else>
-        {{ formatTitle(node) }}
-      </span>
+      <div class="d-flex flex-grow-1 justify-content-between">
+        <div>
+          <span class="item-icon">
+            <i :class="['icon_tree', node.data.icon]"></i>
+          </span>
+          <span v-if="node.data.raw_html" v-html="node.title"> </span>
+          <span v-else-if="node.data.type === 'database' && node.title === selectedDatabase
+            ">
+            <b>{{ node.title }}</b>
+          </span>
+          <span v-else>
+            {{ formatTitle(node) }}
+          </span>
+        </div>
+
+        <!-- Pin icon for database nodes -->
+        <span>
+           <i
+             v-if="node.data.type === 'database'"
+             class="fas fa-thumbtack database-pin-icon me-2"
+             :class="node.data.pinned ? 'text-primary pinned' : 'text-muted'"
+             @click.stop="pinDatabase(node)"
+             :title="`${node.data.pinned ? 'Unpin' : 'Pin'} this database`"
+           ></i>
+         </span>
+      </div>
     </template>
   </PowerTree>
 </template>
 <script>
 import TreeMixin from "../mixins/power_tree.js";
+import PinDatabaseMixin from "../mixins/power_tree_pin_database_mixin.js";
+import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
 import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import {
@@ -33,15 +50,15 @@ import {
 import { emitter } from "../emitter";
 import { tabsStore, connectionsStore, dbMetadataStore } from "../stores/stores_initializer";
 import { checkBeforeChangeDatabase } from "../workspace";
-import ContextMenu from "@imengyu/vue3-context-menu";
 import { operationModes } from "../constants";
+import { findNode, findChild } from "../utils.js";
 
 export default {
   name: "TreeMariaDB",
   components: {
     PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, PinDatabaseMixin, DropDbObjectMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -108,14 +125,13 @@ export default {
           {
             label: "Drop Database",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Database",
-                this.templates.drop_database.replace(
+              let template = this.templates.drop_database.replace(
                   "#database_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -132,26 +148,33 @@ export default {
         cm_table: [
           this.cmRefreshObject,
           {
-            label: "Data Actions",
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectMariadb(
+                this.getParentNodeDeep(this.selectedNode, 2).title,
+                this.selectedNode.title
+              );
+            },
+          },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.title, null)
+            },
+          },
+          {
+            label: "Alter Table",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "mysql")
+            },
+          },
+          {
+            label: "Templates",
             icon: "fas fa-list",
             children: [
-              {
-                label: "Query Data",
-                icon: "fas fa-search",
-                onClick: () => {
-                  TemplateSelectMariadb(
-                    this.getParentNodeDeep(this.selectedNode, 2).title,
-                    this.selectedNode.title
-                  );
-                },
-              },
-              {
-                label: "Edit Data",
-                icon: "fas fa-table",
-                onClick: () => {
-                  tabsStore.createDataEditorTab(this.selectedNode.title, null)
-                },
-              },
               {
                 label: "Insert Record",
                 icon: "fas fa-edit",
@@ -189,31 +212,17 @@ export default {
             ],
           },
           {
-            label: "Table Actions",
-            icon: "fas fa-list",
-            children: [
-              {
-                label: "Alter Table",
-                icon: "fas fa-edit",
-                onClick: () => {
-                  tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "mysql")
-                },
-              },
-              {
-                label: "Drop Table",
-                icon: "fas fa-times",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Drop Table",
-                    this.templates.drop_table.replace(
-                      "#table_name#",
-                      `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
-                      }`
-                    )
-                  );
-                },
-              },
-            ],
+            label: "Drop Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              let template = this.templates.drop_table.replace(
+                  "#table_name#",
+                  `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
+                  }`
+                )
+              this.prepareDropModal(this.selectedNode, template)
+            },
           },
         ],
         cm_columns: [
@@ -252,17 +261,16 @@ export default {
           {
             label: "Drop Column",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Column",
-                this.templates.alter_column
+              let template = this.templates.drop_column
                   .replace(
                     "#table_name#",
                     `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace(/#column_name#/g, this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -288,17 +296,17 @@ export default {
           {
             label: "Drop Primary Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Primary Key",
-                this.templates.drop_primarykey
+              // FIXME: this template does not work
+              let template = this.templates.drop_primarykey
                   .replace(
                     "#table_name#",
                     `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace("#constraint_name#", this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -324,17 +332,16 @@ export default {
           {
             label: "Drop Foreign Key",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Foreign Key",
-                this.templates.drop_foreignkey
+              let template = this.templates.drop_foreignkey
                   .replace(
                     "#table_name#",
                     `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace("#constraint_name#", this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -360,17 +367,16 @@ export default {
           {
             label: "Drop Unique",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Unique",
-                this.templates.drop_unique
+              let template = this.templates.drop_unique
                   .replace(
                     "#table_name#",
                     `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title
                     }`
                   )
                   .replace("#constraint_name#", this.selectedNode.title)
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -396,15 +402,14 @@ export default {
           {
             label: "Drop Index",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Index",
-                this.templates.drop_index.replace(
+              let template = this.templates.drop_index.replace(
                   "#index_name#",
-                  `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.selectedNode.title
-                  }`
+                  this.selectedNode.title
                 )
-              );
+                .replace("#table_name#", `${this.getParentNodeDeep(this.selectedNode, 4).title}.${this.getParentNodeDeep(this.selectedNode, 2).title}`)
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -432,20 +437,6 @@ export default {
               tabSQLTemplate(
                 "Alter Sequence",
                 this.templates.alter_sequence.replace(
-                  "#sequence_name#",
-                  `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
-                  }`
-                )
-              );
-            },
-          },
-          {
-            label: "Drop Sequence",
-            icon: "fas fa-times",
-            onClick: () => {
-              tabSQLTemplate(
-                "Drop Sequence",
-                this.templates.drop_sequence.replace(
                   "#sequence_name#",
                   `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
                   }`
@@ -497,15 +488,14 @@ export default {
           {
             label: "Drop View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop View",
-                this.templates.drop_view.replace(
+              let template = this.templates.drop_view.replace(
                   "#view_name#",
                   `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
                   }`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -537,14 +527,14 @@ export default {
           {
             label: "Drop Function",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Function",
-                this.templates.drop_function.replace(
+              let template = this.templates.drop_function.replace(
                   "#function_name#",
-                  this.selectedNode.data.id
+                  `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
+                  }`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -576,14 +566,14 @@ export default {
           {
             label: "Drop Procedure",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Procedure",
-                this.templates.drop_procedure.replace(
+              let template = this.templates.drop_procedure.replace(
                   "#function_name#",
-                  this.selectedNode.data.id
+                  `${this.getParentNodeDeep(this.selectedNode, 2).title}.${this.selectedNode.title
+                  }`
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -614,14 +604,13 @@ export default {
           {
             label: "Drop Role",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Role",
-                this.templates.drop_role.replace(
+              let template = this.templates.drop_role.replace(
                   "#role_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -669,9 +658,60 @@ export default {
       });
       this.refreshTree(tables_node, true);
     });
+
+    emitter.on(`goToNode_${this.workspaceId}`, async ({ name, type, schema, database }) => {
+      const rootNode = this.getRootNode();
+       // Step 1: Find "Databases" node
+      const databasesRoot = rootNode.children.find(child => child.data.type === "database_list");
+      if (!databasesRoot) return;
+
+      await this.expandAndRefreshIfNeeded(databasesRoot);
+      const updatedDatabasesRoot = this.$refs.tree.getNode(databasesRoot.path)
+      
+      // Step 2: Find the specific database node
+      const databaseNode = findNode(updatedDatabasesRoot, node => node.data?.database === database && node.data.type === 'database');
+      if (!databaseNode) return;
+
+      await this.expandAndRefreshIfNeeded(databaseNode);
+      const updatedDatabaseNode = this.$refs.tree.getNode(databaseNode.path)
+
+      // If target is a database, stop here
+      if (type === 'database') {
+        this.$refs.tree.select(updatedDatabaseNode.path);
+        this.getNodeEl(updatedDatabaseNode.path).scrollIntoView({
+          block: "start",
+          inline: "end",
+        });
+        return;
+      }
+
+      // Step 3: Find '_list' that we need
+      const containerType = `${type}_list`;
+      const containerNode = findChild(updatedDatabaseNode, containerType);
+      if (!containerNode) return;
+      await this.expandAndRefreshIfNeeded(containerNode);
+
+      const updatedContainerNode = this.$refs.tree.getNode(containerNode.path)
+
+      // Step 4: Find the target node
+      const targetNode = findNode(updatedContainerNode, node => node.title === name && node.data.type === type);
+      if (!targetNode) return;
+
+      // Step 5: Select and scroll to it
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.$refs.tree.select(targetNode.path);
+          this.getNodeEl(targetNode.path).scrollIntoView({
+            block: "start",
+            inline: "start",
+          });
+        })
+      })
+    });
   },
   unmounted() {
     emitter.all.delete(`schemaChanged_${this.workspaceId}`);
+    emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
     onContextMenu(node, e) {
@@ -679,14 +719,7 @@ export default {
       e.preventDefault();
       if (!!node.data.contextMenu) {
         this.checkCurrentDatabase(node, true, () => {
-          ContextMenu.showContextMenu({
-            theme: "pgmanage",
-            x: e.x,
-            y: e.y,
-            zIndex: 1000,
-            minWidth: 230,
-            items: this.contextMenu[node.data.contextMenu],
-          });
+          this.showContextMenu(node, e)
         });
       }
     },
@@ -729,30 +762,44 @@ export default {
       }
     },
     refreshTree(node, force) {
-      this.checkCurrentDatabase(
-        node,
-        true,
-        () => {
-          setTimeout(() => {
-            if (!this.shouldUpdateNode(node, force)) return
-            this.refreshTreeConfirm(node)
-          }, 100);
-        },
-        () => {
-          this.toggleNode(node);
-        }
-      );
+      return new Promise((resolve, reject) => {
+        this.checkCurrentDatabase(
+          node,
+          true,
+          () => {
+            setTimeout(() => {
+              if (!this.shouldUpdateNode(node, force)) {
+                resolve();
+                return;
+              }
+              if (node.children.length == 0) this.insertSpinnerNode(node);
+
+              this.refreshTreeConfirm(node)
+                .then(() => {
+                  resolve();
+                })
+                .catch((error) => {
+                  this.nodeOpenError(error, node);
+                  reject(error);
+                });
+            }, 100);
+          },
+          () => {
+            this.toggleNode(node);
+            resolve();
+          }
+        );
+      });
     },
-    refreshTreeConfirm(node) {
-      if (node.children.length == 0) this.insertSpinnerNode(node);
+    async refreshTreeConfirm(node) {
       if (node.data.type == "server") {
-        this.getTreeDetailsMariadb(node);
+        return this.getTreeDetailsMariadb(node);
       } else if (node.data.type == "database_list") {
-        this.getDatabasesMariadb(node);
+        return this.getDatabasesMariadb(node);
       } else if (node.data.type == "database") {
-        this.getDatabaseObjectsMariadb(node);
+        return this.getDatabaseObjectsMariadb(node);
       } else if (node.data.type == "table_list") {
-        this.getTablesMariadb(node);
+        return this.getTablesMariadb(node);
       } else if (node.data.type == "table") {
         this.getColumnsMariadb(node);
       } else if (node.data.type == "primary_key") {
@@ -774,7 +821,7 @@ export default {
       } else if (node.data.type == "sequence_list") {
         this.getSequencesMariadb(node);
       } else if (node.data.type == "view_list") {
-        this.getViewsMariadb(node);
+        return this.getViewsMariadb(node);
       } else if (node.data.type == "view") {
         this.getViewsColumnsMariadb(node);
       } else if (node.data.type == "function_list") {
@@ -796,12 +843,15 @@ export default {
         "view",
         "function",
         "procedure",
+        "index"
       ];
       if (handledTypes.includes(node.data.type)) {
+        const table = node.data.table ?? null
+        const schema = node.data.schema ?? this.getParentNodeDeep(node, 2).title
         this.$emit("treeTabsUpdate", {
           data: {
-            schema: this.getParentNodeDeep(node, 2).title,
-            table: null,
+            schema: schema,
+            table: table,
             object: node.title,
             type: node.data.type,
           },
@@ -811,133 +861,139 @@ export default {
         this.$emit("clearTabs");
       }
     },
-    getTreeDetailsMariadb(node) {
-      this.api
-        .post("/get_tree_info_mariadb/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getTreeDetailsMariadb(node) {
+      try {
+        const response = await this.api.post("/get_tree_info_mariadb/")
 
-          this.$refs.tree.updateNode(node.path, {
-            title: resp.data.version,
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: response.data.version,
+        });
+
+        this.templates = response.data;
+
+        if (response.data.superuser) {
+          this.insertNode(node, "Roles", {
+            icon: "fas node-all fa-users node-user-list",
+            type: "role_list",
+            contextMenu: "cm_roles",
           });
+        }
 
-          this.templates = resp.data;
-
-          if (resp.data.superuser) {
-            this.insertNode(node, "Roles", {
-              icon: "fas node-all fa-users node-user-list",
-              type: "role_list",
-              contextMenu: "cm_roles",
-            });
-          }
-
-          this.insertNode(node, "Databases", {
-            icon: "fas node-all fa-database node-database-list",
-            type: "database_list",
-            contextMenu: "cm_databases",
-          });
-          this.cm_server_extra = [{
-            label: "Monitoring",
-            icon: "fas fa-chart-line",
-            children: [
-              {
-                label: "Process List",
-                icon: "fas fa-chart-line",
-                onClick: () => {
-                  tabsStore.createMonitoringTab("Process List", "select * from information_schema.processlist")
-                },
+        this.insertNode(node, "Databases", {
+          icon: "fas node-all fa-database node-database-list",
+          type: "database_list",
+          contextMenu: "cm_databases",
+        });
+        this.cm_server_extra = [{
+          label: "Monitoring",
+          icon: "fas fa-chart-line",
+          children: [
+            {
+              label: "Process List",
+              icon: "fas fa-chart-line",
+              onClick: () => {
+                tabsStore.createMonitoringTab("Process List", "/*pgmanage-dash*/ select * from information_schema.processlist")
               },
-            ],
-          }];
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+            },
+          ],
+        }];
+      } catch (error) {
+        throw error;
+      }
     },
-    getDatabasesMariadb(node) {
-      this.api
-        .post("/get_databases_mariadb/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-          this.$refs.tree.updateNode(node.path, {
-            title: `Databases (${resp.data.length})`,
-          });
+    async getDatabasesMariadb(node) {
+      try {
+        const response = await this.api.post("/get_databases_mariadb/")
 
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-database node-database",
-              type: "database",
-              contextMenu: "cm_database",
-              database: el.name,
-            });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+        this.$refs.tree.updateNode(node.path, {
+          title: `Databases (${response.data.length})`,
         });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-database node-database",
+            type: "database",
+            contextMenu: "cm_database",
+            database: el.name,
+            pinned: el.pinned,
+          });
+        }, null);
+        const databasesNode = this.$refs.tree.getNode(node.path)
+        this.sortPinnedNodes(databasesNode)
+      } catch (error) {
+        throw error;
+      }
     },
     getDatabaseObjectsMariadb(node) {
       this.removeChildNodes(node);
-
-      this.insertNode(node, "Procedures", {
-        icon: "fas node-all fa-cog node-procedure-list",
-        type: "procedure_list",
-        contextMenu: "cm_procedures",
-        database: node.data.database
-      });
-
-      this.insertNode(node, "Functions", {
-        icon: "fas node-all fa-cog node-function-list",
-        type: "function_list",
-        contextMenu: "cm_functions",
-        database: node.data.database
-      });
-
-      this.insertNode(node, "Views", {
-        icon: "fas node-all fa-eye node-view-list",
-        type: "view_list",
-        contextMenu: "cm_views",
-        database: node.data.database
-      });
-
-      this.insertNode(node, "Sequences", {
-        icon: "fas node-all fa-sort-numeric-down node-sequence-list",
-        type: "sequence_list",
-        contextMenu: "cm_sequences",
-        database: node.data.database
-      });
-
-      this.insertNode(node, "Tables", {
-        icon: "fas node-all fa-th node-table-list",
-        type: "table_list",
-        contextMenu: "cm_tables",
-        database: node.data.database
-      });
-    },
-    getTablesMariadb(node) {
-      this.api
-        .post("/get_tables_mariadb/", {
-          schema: this.getParentNode(node).title,
-        })
-        .then((resp) => {
-          this.removeChildNodes(node);
-
-          this.$refs.tree.updateNode(node.path, {
-            title: `Tables (${resp.data.length})`,
+      return new Promise((resolve, reject) => {
+        try {
+          this.insertNode(node, "Procedures", {
+            icon: "fas node-all fa-cog node-procedure-list",
+            type: "procedure_list",
+            contextMenu: "cm_procedures",
+            database: node.data.database
           });
-
-          resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
-              icon: "fas node-all fa-table node-table",
-              type: "table",
-              contextMenu: "cm_table",
-              database: node.data.database
-            });
-          }, null);
+    
+          this.insertNode(node, "Functions", {
+            icon: "fas node-all fa-cog node-function-list",
+            type: "function_list",
+            contextMenu: "cm_functions",
+            database: node.data.database
+          });
+    
+          this.insertNode(node, "Views", {
+            icon: "fas node-all fa-eye node-view-list",
+            type: "view_list",
+            contextMenu: "cm_views",
+            database: node.data.database
+          });
+    
+          this.insertNode(node, "Sequences", {
+            icon: "fas node-all fa-sort-numeric-down node-sequence-list",
+            type: "sequence_list",
+            contextMenu: "cm_sequences",
+            database: node.data.database
+          });
+    
+          this.insertNode(node, "Tables", {
+            icon: "fas node-all fa-th node-table-list",
+            type: "table_list",
+            contextMenu: "cm_tables",
+            database: node.data.database
+          });
+          resolve("success");
+        } catch (error) {
+          reject(error);
+        }
+      })
+    },
+    async getTablesMariadb(node) {
+      try {
+        const response = await this.api.post("/get_tables_mariadb/", {
+          schema: this.getParentNode(node).title
         })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `Tables (${response.data.length})`,
         });
+
+        response.data.reduceRight((_, el) => {
+          this.insertNode(node, el, {
+            icon: "fas node-all fa-table node-table",
+            type: "table",
+            contextMenu: "cm_table",
+            database: node.data.database
+          });
+        }, null);
+      } catch (error) {
+        throw error;
+      }
     },
     getColumnsMariadb(node) {
       this.api
@@ -1206,7 +1262,9 @@ export default {
               type: "index",
               contextMenu: "cm_index",
               unique: el.unique ? 'Unique' : "Non unique",
-              database: node.data.database
+              database: node.data.database,
+              table: this.getParentNode(node).title,
+              schema: this.getParentNodeDeep(node, 3).title,
             });
           });
         })
@@ -1268,29 +1326,28 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getViewsMariadb(node) {
-      this.api
-        .post("/get_views_mariadb/", {
+    async getViewsMariadb(node) {
+      try {
+        const response = await this.api.post("/get_views_mariadb/", {
           schema: this.getParentNode(node).title,
         })
-        .then((resp) => {
-          this.removeChildNodes(node);
 
-          this.$refs.tree.updateNode(node.path, {
-            title: `View (${resp.data.length})`,
-          });
-          resp.data.forEach((el) => {
-            this.insertNode(node, el.name, {
-              icon: "fas node-all fa-eye node-view",
-              type: "view",
-              contextMenu: "cm_view",
-              database: node.data.database
-            });
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+
+        this.$refs.tree.updateNode(node.path, {
+          title: `View (${response.data.length})`,
         });
+        response.data.forEach((el) => {
+          this.insertNode(node, el.name, {
+            icon: "fas node-all fa-eye node-view",
+            type: "view",
+            contextMenu: "cm_view",
+            database: node.data.database
+          });
+        });
+      } catch (error) {
+        throw error;
+      }
     },
     getViewsColumnsMariadb(node) {
       this.api

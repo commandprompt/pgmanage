@@ -1,6 +1,13 @@
 <template>
-  <PowerTree ref="tree" v-model="nodes" @nodedblclick="doubleClickNode" @toggle="onToggle"
-    @nodecontextmenu="onContextMenu" :allow-multiselect="false" @nodeclick="onClickHandler">
+  <PowerTree
+    ref="tree"
+    v-model="nodes"
+    @nodedblclick="doubleClickNode"
+    @toggle="onToggle"
+    @nodecontextmenu="onContextMenu"
+    :allow-multiselect="false"
+    @nodeclick="onClickHandler"
+  >
     <template v-slot:toggle="{ node }">
       <i v-if="node.isExpanded" class="exp_col fas fa-chevron-down"></i>
       <i v-if="!node.isExpanded" class="exp_col fas fa-chevron-right"></i>
@@ -21,6 +28,7 @@
 <script>
 import TreeMixin from "../mixins/power_tree.js";
 import { PowerTree } from "@onekiloparsec/vue-power-tree";
+import DropDbObjectMixin from "../mixins/power_tree_drop_db_object_mixin.js";
 import {
   TemplateSelectSqlite,
   TemplateInsertSqlite,
@@ -31,13 +39,14 @@ import { tabSQLTemplate } from "../tree_context_functions/tree_postgresql";
 import { emitter } from "../emitter";
 import { tabsStore } from "../stores/stores_initializer";
 import { operationModes } from "../constants";
+import { findNode, findChild } from "../utils.js";
 
 export default {
   name: "TreeSqlite",
   components: {
     PowerTree: PowerTree,
   },
-  mixins: [TreeMixin],
+  mixins: [TreeMixin, DropDbObjectMixin],
   props: {
     databaseIndex: {
       type: Number,
@@ -71,40 +80,47 @@ export default {
         cm_tables: [
           this.cmRefreshObject,
           {
-            label: "ER Diagram",
-            icon: "fab fa-hubspot",
-            onClick: () => {
-              tabsStore.createERDTab()
-            },
-          },
-          {
             label: "Create Table",
             icon: "fas fa-plus",
             onClick: () => {
               tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.CREATE, "sqlite3")
             },
           },
+          {
+            label: "ER Diagram",
+            icon: "fab fa-hubspot",
+            onClick: () => {
+              tabsStore.createERDTab()
+            },
+          },
         ],
         cm_table: [
           this.cmRefreshObject,
           {
-            label: "Data Actions",
+            label: "Query Data",
+            icon: "fas fa-search",
+            onClick: () => {
+              TemplateSelectSqlite(this.selectedNode.title, "t");
+            },
+          },
+          {
+            label: "Edit Data",
+            icon: "fas fa-table",
+            onClick: () => {
+              tabsStore.createDataEditorTab(this.selectedNode.title, null)
+            },
+          },
+          {
+            label: "Alter Table",
+            icon: "fas fa-edit",
+            onClick: () => {
+              tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "sqlite3")
+            },
+          },
+          {
+            label: "Templates",
             icon: "fas fa-list",
             children: [
-              {
-                label: "Query Data",
-                icon: "fas fa-search",
-                onClick: () => {
-                  TemplateSelectSqlite(this.selectedNode.title, "t");
-                },
-              },
-              {
-                label: "Edit Data",
-                icon: "fas fa-table",
-                onClick: () => {
-                  tabsStore.createDataEditorTab(this.selectedNode.title, null)
-                },
-              },
               {
                 label: "Insert Record",
                 icon: "fas fa-edit",
@@ -135,30 +151,16 @@ export default {
             ],
           },
           {
-            label: "Table Actions",
-            icon: "fas fa-list",
-            children: [
-              {
-                label: "Alter Table",
-                icon: "fas fa-edit",
-                onClick: () => {
-                  tabsStore.createSchemaEditorTab(this.selectedNode, operationModes.UPDATE, "sqlite3")
-                },
-              },
-              {
-                label: "Drop Table",
-                icon: "fas fa-times",
-                onClick: () => {
-                  tabSQLTemplate(
-                    "Drop Table",
-                    this.templates.drop_table.replace(
-                      "#table_name#",
-                      this.selectedNode.data.raw_value
-                    )
-                  );
-                },
-              },
-            ],
+            label: "Drop Table",
+            icon: "fas fa-times",
+            divided: "up",
+            onClick: () => {
+              let template = this.templates.drop_table.replace(
+                  "#table_name#",
+                  this.selectedNode.data.raw_value
+                )
+              this.prepareDropModal(this.selectedNode, template)
+            },
           },
         ],
         cm_columns: [
@@ -217,14 +219,13 @@ export default {
           {
             label: "Drop Index",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Index",
-                this.templates.drop_index.replace(
+              let template = this.templates.drop_index.replace(
                   "#index_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -263,14 +264,13 @@ export default {
           {
             label: "Drop Trigger",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop Trigger",
-                this.templates.drop_trigger.replace(
+              let template = this.templates.drop_trigger.replace(
                   "#trigger_name#",
                   this.selectedNode.title
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -303,14 +303,13 @@ export default {
           {
             label: "Drop View",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
-              tabSQLTemplate(
-                "Drop View",
-                this.templates.drop_view.replace(
+              let template = this.templates.drop_view.replace(
                   "#view_name#",
                   this.selectedNode.data.raw_value
                 )
-              );
+              this.prepareDropModal(this.selectedNode, template)
             },
           },
         ],
@@ -333,18 +332,47 @@ export default {
 
       this.refreshTree(tables_node, true);
     });
+
+    emitter.on(`goToNode_${this.workspaceId}`, async ({ name, type}) => {
+      const rootNode = this.getRootNode()
+
+      // Step 1: Find '_list' that we need
+      const containerType = `${type}_list`;
+      const containerNode = findChild(rootNode, containerType);
+      if (!containerNode) return;
+      await this.expandAndRefreshIfNeeded(containerNode);
+
+      const updatedContainerNode = this.$refs.tree.getNode(containerNode.path)
+
+
+       // Step 2: Find the target node
+      const targetNode = findNode(updatedContainerNode, node => node.title === name && node.data.type === type);
+      if (!targetNode) return;
+
+      // Step 3: Select and scroll to it
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.$refs.tree.select(targetNode.path);
+          this.getNodeEl(targetNode.path).scrollIntoView({
+            block: "start",
+            inline: "end",
+          });
+        })
+      })
+    })
   },
   unmounted() {
     emitter.all.delete(`schemaChanged_${this.workspaceId}`);
+    emitter.all.delete(`goToNode_${this.workspaceId}`);
   },
   methods: {
-    refreshTree(node, force) {
+    async refreshTree(node, force) {
       if (!this.shouldUpdateNode(node, force)) return
       if (node.children.length == 0) this.insertSpinnerNode(node);
       if (node.data.type == "server") {
-        this.getTreeDetailsSqlite(node);
+        return this.getTreeDetailsSqlite(node);
       } else if (node.data.type == "table_list") {
-        this.getTablesSqlite(node);
+        return this.getTablesSqlite(node);
       } else if (node.data.type == "table") {
         this.getColumnsSqlite(node);
       } else if (node.data.type == "primary_key") {
@@ -366,7 +394,7 @@ export default {
       } else if (node.data.type == "trigger_list") {
         this.getTriggersSqlite(node);
       } else if (node.data.type == "view_list") {
-        this.getViewsSqlite(node);
+        return this.getViewsSqlite(node);
       } else if (node.data.type == "view") {
         this.getViewsColumnsSqlite(node);
       }
@@ -405,41 +433,41 @@ export default {
         this.$emit("clearTabs");
       }
     },
-    getTreeDetailsSqlite(node) {
-      this.api
-        .post("/get_tree_info_sqlite/")
-        .then((resp) => {
-          this.removeChildNodes(node);
-          this.$refs.tree.updateNode(node.path, {
-            title: resp.data.version,
-          });
-          this.templates = resp.data;
+    async getTreeDetailsSqlite(node) {
+      try {
+        const response = await this.api.post("/get_tree_info_sqlite/")
 
-          this.insertNode(node, "Views", {
-            icon: "fas node-all fa-eye node-view-list",
-            type: "view_list",
-            contextMenu: "cm_views",
-          });
-          this.insertNode(node, "Tables", {
-            icon: "fas node-all fa-th node-table-list",
-            type: "table_list",
-            contextMenu: "cm_tables",
-          });
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
+        this.removeChildNodes(node);
+        this.$refs.tree.updateNode(node.path, {
+          title: response.data.version,
         });
+        this.templates = response.data;
+
+        this.insertNode(node, "Views", {
+          icon: "fas node-all fa-eye node-view-list",
+          type: "view_list",
+          contextMenu: "cm_views",
+        });
+        this.insertNode(node, "Tables", {
+          icon: "fas node-all fa-th node-table-list",
+          type: "table_list",
+          contextMenu: "cm_tables",
+        });
+
+      } catch (error) {
+        this.nodeOpenError(error, node);
+      }
     },
-    getTablesSqlite(node) {
-      this.api
-        .post("/get_tables_sqlite/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getTablesSqlite(node) {
+      try {
+        const response = await this.api.post("/get_tables_sqlite/")
+
+        this.removeChildNodes(node);
           this.$refs.tree.updateNode(node.path, {
-            title: `Tables (${resp.data.length})`,
+            title: `Tables (${response.data.length})`,
           });
 
-          resp.data.reduceRight((_, el) => {
+          response.data.reduceRight((_, el) => {
             this.insertNode(node, el.name, {
               icon: "fas node-all fa-table node-table",
               type: "table",
@@ -447,10 +475,9 @@ export default {
               raw_value: el.name_raw,
             });
           }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+      } catch(error) {
+        this.nodeOpenError(error, node);
+      }
     },
     getColumnsSqlite(node) {
       this.api
@@ -573,7 +600,7 @@ export default {
             title: `Foreign Keys (${resp.data.length})`,
           });
           resp.data.reduceRight((_, el) => {
-            this.insertNode(node, el, {
+            this.insertNode(node, el.constraint_name, {
               icon: "fas node-all fa-key node-fkey",
               type: "foreign_key",
               contextMenu: "cm_fk",
@@ -749,27 +776,27 @@ export default {
           this.nodeOpenError(error, node);
         });
     },
-    getViewsSqlite(node) {
-      this.api
-        .post("/get_views_sqlite/")
-        .then((resp) => {
-          this.removeChildNodes(node);
+    async getViewsSqlite(node) {
+      try {
+        const response = await this.api.post("/get_views_sqlite/")
+
+        this.removeChildNodes(node);
           this.$refs.tree.updateNode(node.path, {
-            title: `Views (${resp.data.length})`,
+            title: `Views (${response.data.length})`,
           });
 
-          resp.data.reduceRight((_, el) => {
+          response.data.reduceRight((_, el) => {
             this.insertNode(node, el.name, {
               icon: "fas node-all fa-eye node-view",
               type: "view",
               contextMenu: "cm_view",
               raw_value: el.name_raw
             });
-          }, null);
-        })
-        .catch((error) => {
-          this.nodeOpenError(error, node);
-        });
+          }, null)
+
+      } catch(error) {
+        this.nodeOpenError(error, node);
+      }
     },
     getViewsColumnsSqlite(node) {
       this.api

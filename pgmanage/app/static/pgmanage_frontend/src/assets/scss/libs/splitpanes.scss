@@ -4,7 +4,7 @@
   height: 100%;
 
   @include themify() {
-    background-color: themed($pev2Bg);
+    background-color: themed($panelsBg);
   }
 
     &--vertical {

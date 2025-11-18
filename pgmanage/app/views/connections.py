@@ -1,9 +1,11 @@
 import io
+import logging
 from typing import Optional
 
 import paramiko
 from app.include import OmniDatabase
-from app.include.Spartacus.Database import v_supported_rdbms
+from app.include.Session import Session
+from app.include.Spartacus.Database import supported_rdbms
 from app.models import Connection, Group, GroupConnection, Tab, Technology
 from app.utils.crypto import decrypt, encrypt
 from app.utils.decorators import session_required, user_authenticated
@@ -12,15 +14,16 @@ from django.db.models import Q, Prefetch
 from django.http import HttpResponse, JsonResponse
 from sshtunnel import SSHTunnelForwarder
 
+logger = logging.getLogger(__name__)
 
 @user_authenticated
 @session_required
-def get_connections(request, session):
+def get_connections(request, session: Session):
     response_data = {'data': [], 'status': 'success'}
 
     tech_list = list(
         Technology.objects.filter(
-            Q(name__in=[rdbms.lower() for rdbms in v_supported_rdbms])
+            Q(name__in=[rdbms.lower() for rdbms in supported_rdbms])
             | Q(name="terminal")
         ).values_list("name", flat=True)
     )
@@ -65,7 +68,7 @@ def get_connections(request, session):
                 'last_access_date': conn.last_access_date,
                 'autocomplete': conn.autocomplete,
             }
-            database_object = session.v_databases.get(conn.id)
+            database_object = session.databases.get(conn.id)
 
             if conn.technology.name == 'terminal':
                 details = (
@@ -79,11 +82,17 @@ def get_connections(request, session):
 
             if conn.technology.name != 'terminal':
                 database = database_object.get('database')
+                # don't crash when omnidatabase interface is not available
+                # this may happen if previously created db connection
+                # is not supported in the current variant of pgmanage
+                if database is None:
+                    logger.error(f"Failed to initialize obtain OmniDatabase instance for {conn.technology.name}")
+                    continue
 
                 details = database.PrintDatabaseDetails()
                 if database_object["tunnel"]["enabled"]:
                     details += f" ({database_object['tunnel']['server']}:{database_object['tunnel']['port']})"
-                conn_object['console_help'] = database.v_console_help
+                conn_object['console_help'] = database.console_help
                 conn_object['details1'] = database.PrintDatabaseInfo()
                 conn_object['details2'] = details
                 conn_object['conn_string'] = conn.conn_string
@@ -250,8 +259,8 @@ def test_connection(request):
             password,
             -1,
             '',
-            p_conn_string=conn_object['conn_string'],
-            p_parse_conn_string=True,
+            conn_string=conn_object['conn_string'],
+            parse_conn_string=True,
             connection_params=conn_params
         )
 
@@ -266,7 +275,7 @@ def test_connection(request):
                         ssh_username=conn_object['tunnel']['user'],
                         ssh_private_key_password=ssh_password,
                         ssh_pkey=key,
-                        remote_bind_address=(database.v_active_server, int(database.v_active_port)),
+                        remote_bind_address=(database.active_server, int(database.active_port)),
                         logger=None,
                         set_keepalive=120,
                     )
@@ -275,14 +284,14 @@ def test_connection(request):
                         (conn_object['tunnel']['server'], int(conn_object['tunnel']['port'])),
                         ssh_username=conn_object['tunnel']['user'],
                         ssh_password=ssh_password,
-                        remote_bind_address=(database.v_active_server, int(database.v_active_port)),
+                        remote_bind_address=(database.active_server, int(database.active_port)),
                         logger=None,
                         set_keepalive=120
                     )
                 server.start()
 
-                database.v_connection.v_host = '127.0.0.1'
-                database.v_connection.v_port = server.local_bind_port
+                database.connection.host = '127.0.0.1'
+                database.connection.port = server.local_bind_port
 
                 message = database.TestConnection()
                 server.close()
@@ -305,7 +314,7 @@ def test_connection(request):
 
 @user_authenticated
 @session_required
-def save_connection(request, session):
+def save_connection(request, session: Session):
     response_data = {'data': '', 'status': 'success'}
     key = key_manager.get(request.user)
 
@@ -428,8 +437,8 @@ def save_connection(request, session):
             password,
             conn.id,
             conn.alias,
-            p_conn_string=conn.conn_string,
-            p_parse_conn_string=True,
+            conn_string=conn.conn_string,
+            parse_conn_string=True,
             connection_params=conn.connection_params
         )
 
@@ -450,7 +459,7 @@ def save_connection(request, session):
 
 @user_authenticated
 @session_required
-def delete_connection(request, session):
+def delete_connection(request, session: Session):
     conn_id: Optional[int] = request.data.get('id')
 
     conn = Connection.objects.filter(id=conn_id).first()
@@ -467,7 +476,7 @@ def delete_connection(request, session):
 
 @user_authenticated
 @session_required
-def get_existing_tabs(request, session):
+def get_existing_tabs(request, session: Session):
 
     existing_tabs = []
     for tab in Tab.objects.filter(user=request.user).order_by("connection"):

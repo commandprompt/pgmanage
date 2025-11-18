@@ -389,7 +389,7 @@ function startTutorial(p_tutorial_name) {
         <p>Then experiment clicking on the <strong>Indent</strong> button below the editor, and then <strong>Next</strong>.</p>
         `,
         p_next_button: true,
-        p_target: function() {var v_target = document.querySelector('.omnidb__snippets__div-right a[draggable="false"]'); return v_target},
+        p_target: function() {var v_target = document.querySelector('.snippets__right a[draggable="false"]'); return v_target},
         p_title: 'Snippets editor',
         p_update_delay: 600
       },
@@ -399,7 +399,7 @@ function startTutorial(p_tutorial_name) {
         <p>Now go ahead and click <strong>Save</strong>.</p>
         `,
         p_next_button: true,
-        p_target: function() {var v_target =  document.querySelector('.omnidb__snippets__div-right a[draggable="false"]'); return v_target},
+        p_target: function() {var v_target =  document.querySelector('.snippets__right a[draggable="false"]'); return v_target},
         p_title: 'Indenting'
       },
       {

@@ -84,8 +84,9 @@
     .prev {
       span {
         color: #fff;
-        border-width: 0 2px 2px 0;
+        border-width: 0 2px 2px 0 !important;
         border-radius: 0;
+        border-style: solid;
         display: inline-block;
         padding: 3px;
         transform: rotate(135deg);

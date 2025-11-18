@@ -170,11 +170,11 @@ def export_data(
     if not os.path.exists(export_dir):
         os.makedirs(export_dir)
 
-    database.v_connection.Open()
+    database.connection.Open()
 
     file_name: str = f'${str(time.time()).replace(".", "_")}.{extension}'
 
-    data = database.v_connection.QueryBlock(sql_cmd, 1000, False, True)
+    data = database.connection.QueryBlock(sql_cmd, 1000, False, True)
 
     name_count = defaultdict(int)
     columns = []
@@ -196,7 +196,7 @@ def export_data(
     file.Open()
 
     has_more_records: bool
-    if database.v_connection.v_start:
+    if database.connection.start:
         file.Write(data)
         has_more_records = False
     elif len(data.Rows) > 0:
@@ -206,9 +206,9 @@ def export_data(
         has_more_records = False
 
     while has_more_records:
-        data = database.v_connection.QueryBlock(sql_cmd, 1000, False, True)
+        data = database.connection.QueryBlock(sql_cmd, 1000, False, True)
 
-        if database.v_connection.v_start:
+        if database.connection.start:
             file.Write(data)
             has_more_records = False
         elif len(data.Rows) > 0:
@@ -216,7 +216,7 @@ def export_data(
             has_more_records = True
         else:
             has_more_records = False
-    database.v_connection.Close()
+    database.connection.Close()
 
     file.Flush()
 
@@ -303,7 +303,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                 workspace_id=request_data.get("workspace_id"),
             )
             if workspace_context:
-                if workspace_context["type"] == "advancedobjectsearch":
+                if workspace_context.get("type") == "advancedobjectsearch":
 
                     def callback(self):
                         try:
@@ -316,8 +316,13 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
 
                     workspace_context["thread_pool"].stop(p_callback=callback)
                 else:
-                    workspace_context["thread"].stop()
-                    workspace_context["omnidatabase"].v_connection.Cancel(False)
+                    if workspace_context["thread"]:
+                        workspace_context["thread"].stop()
+                    try:
+                        workspace_context["omnidatabase"].connection.Cancel(False)
+                    except Exception as exc:
+                        logger.error(exc)
+
                     response_data = {
                         "response_type": ResponseType.OPERATION_CANCELLED,
                         "context_code": context_code,
@@ -375,7 +380,7 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
                 conn.save()
 
                 try:
-                    conn_object: dict[str, Any] = session.v_databases[
+                    conn_object: dict[str, Any] = session.databases[
                         request_data["ssh_id"]
                     ]
 
@@ -557,38 +562,38 @@ def create_request(request: HttpRequest, session: Session) -> JsonResponse:
             # New debugger, create connections
             if request_data["v_state"] == DebugState.STARTING:
                 try:
-                    v_conn_tab_connection = session.v_databases[
+                    v_conn_tab_connection = session.databases[
                         request_data["v_db_index"]
                     ]["database"]
 
                     v_database_debug = OmniDatabase.Generic.InstantiateDatabase(
-                        v_conn_tab_connection.v_db_type,
-                        v_conn_tab_connection.v_connection.v_host,
-                        str(v_conn_tab_connection.v_connection.v_port),
-                        v_conn_tab_connection.v_active_service,
-                        v_conn_tab_connection.v_active_user,
-                        v_conn_tab_connection.v_connection.v_password,
-                        v_conn_tab_connection.v_conn_id,
-                        v_conn_tab_connection.v_alias,
-                        p_conn_string=v_conn_tab_connection.v_conn_string,
-                        p_parse_conn_string=False,
+                        v_conn_tab_connection.db_type,
+                        v_conn_tab_connection.connection.host,
+                        str(v_conn_tab_connection.connection.port),
+                        v_conn_tab_connection.active_service,
+                        v_conn_tab_connection.active_user,
+                        v_conn_tab_connection.connection.password,
+                        v_conn_tab_connection.conn_id,
+                        v_conn_tab_connection.alias,
+                        conn_string=v_conn_tab_connection.conn_string,
+                        parse_conn_string=False,
                     )
                     v_database_control = OmniDatabase.Generic.InstantiateDatabase(
-                        v_conn_tab_connection.v_db_type,
-                        v_conn_tab_connection.v_connection.v_host,
-                        str(v_conn_tab_connection.v_connection.v_port),
-                        v_conn_tab_connection.v_active_service,
-                        v_conn_tab_connection.v_active_user,
-                        v_conn_tab_connection.v_connection.v_password,
-                        v_conn_tab_connection.v_conn_id,
-                        v_conn_tab_connection.v_alias,
-                        p_conn_string=v_conn_tab_connection.v_conn_string,
-                        p_parse_conn_string=False,
+                        v_conn_tab_connection.db_type,
+                        v_conn_tab_connection.connection.host,
+                        str(v_conn_tab_connection.connection.port),
+                        v_conn_tab_connection.active_service,
+                        v_conn_tab_connection.active_user,
+                        v_conn_tab_connection.connection.password,
+                        v_conn_tab_connection.conn_id,
+                        v_conn_tab_connection.alias,
+                        conn_string=v_conn_tab_connection.conn_string,
+                        parse_conn_string=False,
                     )
                     workspace_context["omnidatabase_debug"] = v_database_debug
                     workspace_context["cancelled"] = False
                     workspace_context["omnidatabase_control"] = v_database_control
-                    workspace_context["port"] = v_database_debug.v_connection.ExecuteScalar(
+                    workspace_context["port"] = v_database_debug.connection.ExecuteScalar(
                         "show port"
                     )
                 except Exception as exc:
@@ -633,27 +638,27 @@ def thread_debug(self, args):
         if v_state == DebugState.STARTING:
 
             # Start debugger and return ready state
-            v_database_debug.v_connection.Open()
-            v_database_control.v_connection.Open()
+            v_database_debug.connection.Open()
+            v_database_control.connection.Open()
 
             # Cleaning contexts table
-            v_database_debug.v_connection.Execute(
+            v_database_debug.connection.Execute(
                 "delete from omnidb.contexts t where t.pid not in (select pid from pg_stat_activity where pid = t.pid)"
             )
 
-            connections_details = v_database_debug.v_connection.Query(
+            connections_details = v_database_debug.connection.Query(
                 "select pg_backend_pid()", True
             )
             pid = connections_details.Rows[0][0]
 
-            v_database_debug.v_connection.Execute(
+            v_database_debug.connection.Execute(
                 "insert into omnidb.contexts (pid, function, hook, lineno, stmttype, breakpoint, finished) values ({0}, null, null, null, null, 0, false)".format(
                     pid
                 )
             )
 
             # lock row for current pid
-            v_database_control.v_connection.Execute(
+            v_database_control.connection.Execute(
                 "select pg_advisory_lock({0}) from omnidb.contexts where pid = {0}".format(
                     pid
                 )
@@ -683,7 +688,7 @@ def thread_debug(self, args):
             # wait for context to be ready or thread ends
             while v_lineno == None and t.is_alive():
                 time.sleep(0.5)
-                v_lineno = v_database_control.v_connection.ExecuteScalar(
+                v_lineno = v_database_control.connection.ExecuteScalar(
                     "select lineno from omnidb.contexts where pid = {0} and lineno is not null".format(
                         pid
                     )
@@ -691,9 +696,9 @@ def thread_debug(self, args):
 
             # Function ended instantly
             if not t.is_alive():
-                v_database_control.v_connection.Close()
+                v_database_control.connection.Close()
             else:
-                v_variables = v_database_control.v_connection.Query(
+                v_variables = v_database_control.connection.Query(
                     "select name,attribute,vartype,value from omnidb.variables where pid = {0}".format(
                         pid
                     ),
@@ -711,27 +716,27 @@ def thread_debug(self, args):
 
         elif v_state == DebugState.STEP:
 
-            v_database_control.v_connection.Execute(
+            v_database_control.connection.Execute(
                 "update omnidb.contexts set breakpoint = {0} where pid = {1}".format(
                     args["v_next_breakpoint"], v_tab_object["debug_pid"]
                 )
             )
 
             try:
-                v_database_control.v_connection.Execute(
+                v_database_control.connection.Execute(
                     "select pg_advisory_unlock({0}) from omnidb.contexts where pid = {0}; select pg_advisory_lock({0}) from omnidb.contexts where pid = {0};".format(
                         v_tab_object["debug_pid"]
                     )
                 )
 
                 # acquired the lock, get variables and lineno
-                v_variables = v_database_control.v_connection.Query(
+                v_variables = v_database_control.connection.Query(
                     "select name,attribute,vartype,value from omnidb.variables where pid = {0}".format(
                         v_tab_object["debug_pid"]
                     ),
                     True,
                 )
-                v_context_data = v_database_control.v_connection.Query(
+                v_context_data = v_database_control.connection.Query(
                     "select lineno,finished from omnidb.contexts where pid = {0}".format(
                         v_tab_object["debug_pid"]
                     ),
@@ -749,12 +754,12 @@ def thread_debug(self, args):
                     }
                     queue_response(v_client_object, v_response)
                 else:
-                    v_database_control.v_connection.Execute(
+                    v_database_control.connection.Execute(
                         "select pg_advisory_unlock({0}) from omnidb.contexts where pid = {0};".format(
                             v_tab_object["debug_pid"]
                         )
                     )
-                    v_database_control.v_connection.Close()
+                    v_database_control.connection.Close()
                     v_response["v_code"] = ResponseType.REMOVE_CONTEXT
                     queue_response(v_client_object, v_response)
 
@@ -765,9 +770,9 @@ def thread_debug(self, args):
         # Cancelling debugger, the thread executing the function will return the cancel status
         elif v_state == DebugState.CANCEL:
             v_tab_object["cancelled"] = True
-            v_database_control.v_connection.Cancel(False)
-            v_database_control.v_connection.Terminate(v_tab_object["debug_pid"])
-            v_database_control.v_connection.Close()
+            v_database_control.connection.Cancel(False)
+            v_database_control.connection.Terminate(v_tab_object["debug_pid"])
+            v_database_control.connection.Close()
 
     except Exception as exc:
         v_response["v_code"] = ResponseType.DEBUG_RESPONSE
@@ -779,8 +784,8 @@ def thread_debug(self, args):
         }
 
         try:
-            v_database_debug.v_connection.Close()
-            v_database_control.v_connection.Close()
+            v_database_debug.connection.Close()
+            v_database_control.connection.Close()
         except Exception:
             None
 
@@ -801,7 +806,7 @@ def thread_debug_run_func(self, args):
 
     try:
         # enable debugger for current connection
-        v_conn_string = (
+        conn_string = (
             "host=''localhost'' port={0} dbname=''{1}'' user=''{2}''".format(
                 v_tab_object["port"],
                 v_database_debug.v_service,
@@ -809,17 +814,17 @@ def thread_debug_run_func(self, args):
             )
         )
 
-        v_database_debug.v_connection.Execute(
-            "select omnidb.omnidb_enable_debugger('{0}')".format(v_conn_string)
+        v_database_debug.connection.Execute(
+            "select omnidb.omnidb_enable_debugger('{0}')".format(conn_string)
         )
 
         # run function it will lock until the function ends
         if args["v_type"] == "f":
-            v_func_return = v_database_debug.v_connection.Query(
+            v_func_return = v_database_debug.connection.Query(
                 "select * from {0} limit 1000".format(args["v_function"]), True
             )
         else:
-            v_func_return = v_database_debug.v_connection.Query(
+            v_func_return = v_database_debug.connection.Query(
                 "call {0}".format(args["v_function"]), True
             )
 
@@ -827,7 +832,7 @@ def thread_debug_run_func(self, args):
         if not v_tab_object["cancelled"]:
 
             # retrieve variables
-            v_variables = v_database_debug.v_connection.Query(
+            v_variables = v_database_debug.connection.Query(
                 "select name,attribute,vartype,value from omnidb.variables where pid = {0}".format(
                     v_tab_object["debug_pid"]
                 ),
@@ -835,7 +840,7 @@ def thread_debug_run_func(self, args):
             )
 
             # retrieve statistics
-            v_statistics = v_database_debug.v_connection.Query(
+            v_statistics = v_database_debug.connection.Query(
                 'select lineno,coalesce(trunc((extract("epoch" from tend)  - extract("epoch" from tstart))::numeric,4),0) as msec from omnidb.statistics where pid = {0} order by step'.format(
                     v_tab_object["debug_pid"]
                 ),
@@ -843,7 +848,7 @@ def thread_debug_run_func(self, args):
             )
 
             # retrieve statistics summary
-            v_statistics_summary = v_database_debug.v_connection.Query(
+            v_statistics_summary = v_database_debug.connection.Query(
                 """
             select lineno, max(msec) as msec
             from (select lineno,coalesce(trunc((extract("epoch" from tend) - extract("epoch" from tstart))::numeric,4),0) as msec from omnidb.statistics where pid = {0}) t
@@ -856,7 +861,7 @@ def thread_debug_run_func(self, args):
             )
 
             # retrieve notices
-            v_notices = v_database_debug.v_connection.GetNotices()
+            v_notices = v_database_debug.connection.GetNotices()
             v_notices_text = ""
             if len(v_notices) > 0:
                 for v_notice in v_notices:
@@ -875,7 +880,7 @@ def thread_debug_run_func(self, args):
                 "v_error": False,
             }
 
-            v_database_debug.v_connection.Close()
+            v_database_debug.connection.Close()
 
             # send debugger finished message
             v_response["v_code"] = ResponseType.DEBUG_RESPONSE
@@ -902,11 +907,11 @@ def thread_debug_run_func(self, args):
                 "v_error_msg": str(exc),
             }
             try:
-                v_database_debug.v_connection.Close()
+                v_database_debug.connection.Close()
             except Exception:
                 None
             try:
-                v_database_control.v_connection.Close()
+                v_database_control.connection.Close()
             except Exception:
                 None
 
@@ -1017,11 +1022,11 @@ def thread_query(self, args) -> None:
             and log_query
         ):
             db_tab = Tab(
-                user=User.objects.get(id=session.v_user_id),
-                connection=Connection.objects.get(id=database.v_conn_id),
+                user=User.objects.get(id=session.user_id),
+                connection=Connection.objects.get(id=database.conn_id),
                 title=tab_title,
                 snippet=workspace_context.get("sql_save"),
-                database=database.v_active_service,
+                database=database.active_service,
             )
             db_tab.save()
             inserted_id = db_tab.id
@@ -1040,8 +1045,8 @@ def thread_query(self, args) -> None:
             file_name, extension = export_data(
                 sql_cmd=sql_cmd,
                 database=database,
-                encoding=session.v_csv_encoding,
-                delimiter=session.v_csv_delimiter,
+                encoding=session.csv_encoding,
+                delimiter=session.csv_delimiter,
                 cmd_type=cmd_type,
             )
 
@@ -1053,7 +1058,7 @@ def thread_query(self, args) -> None:
                 "download_name": f"pgmanage_exported-{file_suffix}.{extension}",
                 "duration": duration,
                 "inserted_id": inserted_id,
-                "con_status": database.v_connection.GetConStatus(),
+                "con_status": database.connection.GetConStatus(),
                 "chunks": False,
             }
 
@@ -1061,25 +1066,30 @@ def thread_query(self, args) -> None:
                 queue_response(client_object, response_data)
         else:
             if mode == QueryModes.DATA_OPERATION:
-                database.v_connection.v_autocommit = autocommit
+                database.connection.autocommit = autocommit
                 if (
-                    not database.v_connection.v_con
-                    or database.v_connection.GetConStatus() == 0
+                    not database.connection.con
+                    or database.connection.GetConStatus() == 0
                 ):
-                    database.v_connection.Open()
+                    database.connection.Open()
                 else:
-                    database.v_connection.v_start = True
+                    database.connection.start = True
 
             if (
                 mode in (QueryModes.DATA_OPERATION, QueryModes.FETCH_MORE)
                 and not all_data
             ):
                 block_size = block_size if mode == QueryModes.FETCH_MORE else 50
-                data = database.v_connection.QueryBlock(sql_cmd, block_size, True, True)
+                if database.db_type == "oracle" and len(sql_cmd.split(";\n")) >= 2:
+                    list_sql: list[str] = sqlparse.split(sql_cmd,  strip_semicolon=True)
+                    for el in list_sql:
+                        data = database.connection.QueryBlock(el, block_size, True, True)
+                else:
+                    data = database.connection.QueryBlock(sql_cmd, block_size, True, True)
 
-                notices = database.v_connection.GetNotices()[:]
+                notices = database.connection.GetNotices()[:]
 
-                database.v_connection.ClearNotices()
+                database.connection.ClearNotices()
 
                 log_end_time = datetime.now(timezone.utc)
                 duration = get_duration(log_start_time, log_end_time)
@@ -1087,7 +1097,7 @@ def thread_query(self, args) -> None:
                 response_data["data"] = {
                     "col_names": data.Columns,
                     "col_types": [
-                        database.v_connection.ResolveType(c)
+                        database.connection.ResolveType(c)
                         for c in data.ColumnTypeCodes
                     ],
                     "data": data.Rows,
@@ -1095,8 +1105,8 @@ def thread_query(self, args) -> None:
                     "duration": duration,
                     "notices": notices,
                     "inserted_id": inserted_id,
-                    "status": database.v_connection.GetStatus(),
-                    "con_status": database.v_connection.GetConStatus(),
+                    "status": database.connection.GetStatus(),
+                    "con_status": database.connection.GetConStatus(),
                     "chunks": True,
                 }
 
@@ -1107,11 +1117,11 @@ def thread_query(self, args) -> None:
 
                 while has_more_records:
 
-                    data = database.v_connection.QueryBlock(sql_cmd, 10000, True, True)
+                    data = database.connection.QueryBlock(sql_cmd, 10000, True, True)
 
-                    notices = database.v_connection.GetNotices()
+                    notices = database.connection.GetNotices()
 
-                    database.v_connection.ClearNotices()
+                    database.connection.ClearNotices()
 
                     log_end_time = datetime.now(timezone.utc)
 
@@ -1120,7 +1130,7 @@ def thread_query(self, args) -> None:
                     response_data["data"] = {
                         "col_names": data.Columns,
                         "col_types": [
-                            database.v_connection.ResolveType(c)
+                            database.connection.ResolveType(c)
                             for c in data.ColumnTypeCodes
                         ],
                         "data": data.Rows,
@@ -1133,7 +1143,7 @@ def thread_query(self, args) -> None:
                         "chunks": True,
                     }
 
-                    if database.v_connection.v_start:
+                    if database.connection.start:
                         has_more_records = False
                     elif len(data.Rows) > 0:
                         has_more_records = True
@@ -1147,7 +1157,7 @@ def thread_query(self, args) -> None:
 
                 if not self.cancel:
 
-                    notices = database.v_connection.GetNotices()
+                    notices = database.connection.GetNotices()
 
                     log_end_time = datetime.now(timezone.utc)
                     duration = get_duration(log_start_time, log_end_time)
@@ -1155,7 +1165,7 @@ def thread_query(self, args) -> None:
                     response_data["data"] = {
                         "col_names": data.Columns,
                         "col_types": [
-                            database.v_connection.ResolveType(c)
+                            database.connection.ResolveType(c)
                             for c in data.ColumnTypeCodes
                         ],
                         "data": data.Rows,
@@ -1163,8 +1173,8 @@ def thread_query(self, args) -> None:
                         "duration": duration,
                         "notices": notices,
                         "inserted_id": inserted_id,
-                        "status": database.v_connection.GetStatus(),
-                        "con_status": database.v_connection.GetConStatus(),
+                        "status": database.connection.GetStatus(),
+                        "con_status": database.connection.GetConStatus(),
                         "chunks": True,
                     }
                     queue_response(client_object, response_data)
@@ -1172,9 +1182,9 @@ def thread_query(self, args) -> None:
                 duration = get_duration(log_start_time, log_end_time)
 
                 if mode == QueryModes.COMMIT:
-                    database.v_connection.Query("COMMIT;", True)
+                    database.connection.Query("COMMIT;", True)
                 else:
-                    database.v_connection.Query("ROLLBACK;", True)
+                    database.connection.Query("ROLLBACK;", True)
 
                 response_data["data"] = {
                     "col_names": None,
@@ -1183,14 +1193,14 @@ def thread_query(self, args) -> None:
                     "duration": duration,
                     "notices": [],
                     "inserted_id": inserted_id,
-                    "status": database.v_connection.GetStatus(),
-                    "con_status": database.v_connection.GetConStatus(),
+                    "status": database.connection.GetStatus(),
+                    "con_status": database.connection.GetConStatus(),
                     "chunks": False,
                 }
                 queue_response(client_object, response_data)
     except Exception as exc:
         if not self.cancel:
-            notices = database.v_connection.GetNotices()
+            notices = database.connection.GetNotices()
 
             log_end_time = datetime.now(timezone.utc)
             duration = get_duration(log_start_time, log_end_time)
@@ -1203,7 +1213,7 @@ def thread_query(self, args) -> None:
                 "notices": notices,
                 "inserted_id": inserted_id,
                 "status": 0,
-                "con_status": database.v_connection.GetConStatus(),
+                "con_status": database.connection.GetConStatus(),
                 "chunks": False,
             }
 
@@ -1213,14 +1223,14 @@ def thread_query(self, args) -> None:
 
     if mode == QueryModes.DATA_OPERATION and log_query:
         log_history(
-            user_id=session.v_user_id,
+            user_id=session.user_id,
             sql=sql_cmd,
             start=log_start_time,
             end=log_end_time,
             duration=duration,
             status=log_status,
-            conn_id=database.v_conn_id,
-            database=database.v_active_service,
+            conn_id=database.conn_id,
+            database=database.active_service,
         )
 
     if mode == QueryModes.DATA_OPERATION and workspace_context.get("tab_db_id") and log_query:
@@ -1263,33 +1273,33 @@ def thread_console(self, args) -> None:
             run_command_list: bool = True
 
             if mode == ConsoleModes.DATA_OPERATION:
-                database.v_connection.v_autocommit = autocommit
+                database.connection.autocommit = autocommit
                 if (
-                    not database.v_connection.v_con
-                    or database.v_connection.GetConStatus() == 0
+                    not database.connection.con
+                    or database.connection.GetConStatus() == 0
                 ):
-                    database.v_connection.Open()
+                    database.connection.Open()
                 else:
-                    database.v_connection.v_start = True
+                    database.connection.start = True
 
             if mode == ConsoleModes.FETCH_MORE:
-                table = database.v_connection.QueryBlock("", block_size, True, True)
+                table = database.connection.QueryBlock("", block_size, True, True)
                 # need to stop again
-                if not database.v_connection.v_start or len(table.Rows) >= block_size:
+                if not database.connection.start or len(table.Rows) >= block_size:
                     data_return += (
                         "\n"
-                        + table.Pretty(database.v_connection.v_expanded)
+                        + table.Pretty(database.connection.expanded)
                         + "\n"
-                        + database.v_connection.GetStatus()
+                        + database.connection.GetStatus()
                     )
                     run_command_list = False
                     show_fetch_button = True
                 else:
                     data_return += (
                         "\n"
-                        + table.Pretty(database.v_connection.v_expanded)
+                        + table.Pretty(database.connection.expanded)
                         + "\n"
-                        + database.v_connection.GetStatus()
+                        + database.connection.GetStatus()
                     )
                     run_command_list = True
                     list_sql = workspace_context["remaining_commands"]
@@ -1298,9 +1308,9 @@ def thread_console(self, args) -> None:
                 run_command_list = False
                 while has_more_records:
 
-                    data = database.v_connection.QueryBlock("", 10000, True, True)
+                    data = database.connection.QueryBlock("", 10000, True, True)
                     data_return = (
-                        "\n" + data.Pretty(database.v_connection.v_expanded) + "\n"
+                        "\n" + data.Pretty(database.connection.expanded) + "\n"
                     )
                     data_return = data_return.replace("\n", "\r\n")
 
@@ -1315,7 +1325,7 @@ def thread_console(self, args) -> None:
                         "con_status": "",
                     }
 
-                    if database.v_connection.v_start:
+                    if database.connection.start:
                         has_more_records = False
                     elif len(data.Rows) > 0:
                         has_more_records = True
@@ -1341,17 +1351,17 @@ def thread_console(self, args) -> None:
                         formated_sql = sql.strip()
                         data_return += (
                             "\n"
-                            + database.v_active_service
+                            + database.active_service
                             + "=# "
                             + formated_sql
                             + "\n"
                         )
 
-                        database.v_connection.ClearNotices()
-                        database.v_connection.v_start = True
-                        data1 = database.v_connection.Special(sql)
+                        database.connection.ClearNotices()
+                        database.connection.start = True
+                        data1 = database.connection.Special(sql)
 
-                        notices = database.v_connection.GetNotices()
+                        notices = database.connection.GetNotices()
                         notices_text = ""
                         if len(notices) > 0:
                             for notice in notices:
@@ -1360,14 +1370,14 @@ def thread_console(self, args) -> None:
 
                         data_return += data1
 
-                        if database.v_use_server_cursor:
-                            if database.v_connection.v_last_fetched_size == 50:
+                        if database.use_server_cursor:
+                            if database.connection.last_fetched_size == 50:
                                 workspace_context["remaining_commands"] = list_sql[counter:]
                                 show_fetch_button = True
                                 break
                     except Exception as exc:
                         try:
-                            notices = database.v_connection.GetNotices()
+                            notices = database.connection.GetNotices()
                             notices_text = ""
                             if len(notices) > 0:
                                 for notice in notices:
@@ -1388,7 +1398,7 @@ def thread_console(self, args) -> None:
                 "data": data_return,
                 "last_block": True,
                 "duration": duration,
-                "con_status": database.v_connection.GetConStatus(),
+                "con_status": database.connection.GetConStatus(),
             }
 
             # send data in chunks to avoid blocking the websocket server
@@ -1416,8 +1426,8 @@ def thread_console(self, args) -> None:
                             "last_block": True,
                             "duration": duration,
                             "show_fetch_button": show_fetch_button,
-                            "con_status": database.v_connection.GetConStatus(),
-                            "status": database.v_connection.GetStatus(),
+                            "con_status": database.connection.GetConStatus(),
+                            "status": database.connection.GetStatus(),
                         }
                     if not self.cancel:
                         queue_response(client_object, response_data_copy)
@@ -1426,12 +1436,12 @@ def thread_console(self, args) -> None:
                     queue_response(client_object, response_data)
 
             try:
-                database.v_connection.ClearNotices()
+                database.connection.ClearNotices()
             except Exception:
                 None
         except Exception as exc:
             # try:
-            #    v_database.v_connection.Close()
+            #    v_database.connection.Close()
             # except:
             #    pass
             log_end_time = datetime.now(timezone.utc)
@@ -1445,11 +1455,11 @@ def thread_console(self, args) -> None:
         if mode == ConsoleModes.DATA_OPERATION:
             # logging to console history
             query_object = ConsoleHistory(
-                user=User.objects.get(id=session.v_user_id),
-                connection=Connection.objects.get(id=database.v_conn_id),
+                user=User.objects.get(id=session.user_id),
+                connection=Connection.objects.get(id=database.conn_id),
                 start_time=datetime.now(timezone.utc),
                 snippet=sql_cmd.replace("'", "''"),
-                database=database.v_active_service,
+                database=database.active_service,
             )
 
             query_object.save()
@@ -1526,19 +1536,26 @@ def thread_save_edit_data(self, args) -> None:
         database = args["database"]
         client_object: Client = args["client_object"]
         command: str = args["sql_cmd"]
-
-        if database.v_db_type in ["sqlite","mysql"] and len(command.split(";\n")) >= 2:
+        if database.db_type in ["sqlite","mysql"] and len(command.split(";\n")) >= 2:
             try:
-                database.v_connection.Open(False)
-                database.v_connection.Execute("BEGIN")
+                database.connection.Open(False)
+                database.connection.Execute("BEGIN")
                 for sql in command.split(";\n"):
-                    database.v_connection.Execute(sql)
-                database.v_connection.Commit()
+                    database.connection.Execute(sql)
+                database.connection.Commit()
             except Exception as exc:
-                database.v_connection.v_con.rollback()
+                database.connection.con.rollback()
+                raise DatabaseError(str(exc)) from exc
+        if database.db_type == "oracle" and len(command.split(";\n")) >= 2:
+            try:
+                database.connection.Open(False)
+                database.connection.Execute(f"BEGIN\n{command};\nEND;")
+                database.connection.Commit()
+            except Exception as exc:
+                database.connection.con.rollback()
                 raise DatabaseError(str(exc)) from exc
         else:
-            database.v_connection.Execute(command)
+            database.connection.Execute(command)
 
         if not self.cancel:
             queue_response(client_object, response_data)
@@ -1564,29 +1581,29 @@ def thread_schema_edit_data(self, args) -> None:
         autocommit: bool = args.get("autocommit")
         database = args.get("database")
 
-        database.v_connection.v_autocommit = autocommit
+        database.connection.autocommit = autocommit
 
-        if not database.v_connection.v_con or database.v_connection.GetConStatus() == 0:
-            database.v_connection.Open()
+        if not database.connection.con or database.connection.GetConStatus() == 0:
+            database.connection.Open()
         else:
-            database.v_connection.v_start = True
+            database.connection.start = True
 
-        if database.v_db_type == "sqlite" and len(sql_cmd.split(";\n")) >= 2:
+        if database.db_type == "sqlite" and len(sql_cmd.split(";\n")) >= 2:
             try:
-                database.v_connection.Execute("BEGIN")
+                database.connection.Execute("BEGIN")
                 for sql in sql_cmd.split(";\n"):
-                    database.v_connection.Execute(sql)
-                database.v_connection.Commit()
+                    database.connection.Execute(sql)
+                database.connection.Commit()
             except Exception as exc:
-                database.v_connection.v_con.rollback()
+                database.connection.con.rollback()
                 raise DatabaseError(str(exc))
         else:
-            database.v_connection.QueryBlock(sql_cmd, 50, True, True)
+            database.connection.QueryBlock(sql_cmd, 50, True, True)
 
-        database.v_connection.ClearNotices()
+        database.connection.ClearNotices()
 
         response_data["data"] = {
-            "status": database.v_connection.GetStatus(),
+            "status": database.connection.GetStatus(),
         }
 
         if not self.cancel:

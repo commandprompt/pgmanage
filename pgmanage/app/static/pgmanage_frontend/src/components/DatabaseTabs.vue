@@ -340,7 +340,8 @@ export default {
           onClick: () => {
             tabsStore.createMonitoringTab(
               "Backends",
-              'select pid as "Pid",\
+              '/*pgmanage-dash*/ \
+              select pid as "Pid",\
               datname as "Database",\
               usename as "User",\
               application_name as "Application",\
@@ -365,7 +366,36 @@ export default {
           onClick: () => {
             tabsStore.createMonitoringTab(
               "Process List",
-              "select * from information_schema.processlist"
+              "/*pgmanage-dash*/ select * from information_schema.processlist"
+            );
+          },
+        });
+      }
+      else if (
+        tabsStore.selectedPrimaryTab.metaData.selectedDBMS === 'oracle'
+      ) {
+        optionList.push({
+          label: "Sessions",
+          icon: "fas fa-tasks",
+          onClick: () => {
+            tabsStore.createMonitoringTab(
+              "Sessions",
+              `/*pgmanage-dash*/ 
+              select sid,
+              serial#,
+              username,
+              service_name,
+              status,
+              state,
+              osuser,
+              machine,
+              program,
+              module,
+              action,
+              type,
+              logon_time 
+              from v$session 
+              WHERE username IS NOT NULL`
             );
           },
         });

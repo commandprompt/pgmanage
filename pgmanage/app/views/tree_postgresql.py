@@ -1,8 +1,10 @@
 import ast
 
+from app.models.main import Connection
 from app.utils.crypto import pg_scram_sha256
 from app.utils.decorators import database_required, user_authenticated
 from django.http import HttpResponse, JsonResponse
+
 
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True, prefer_database="postgres")
@@ -12,124 +14,125 @@ def get_tree_info(request, database):
         data = {
             "database": database.GetName(),
             "version": database.GetVersion(),
+            "major_version": database.major_version,
             #'superuser': database.GetUserSuper(),
             "templates": {
-                "drop_role": database.TemplateDropRole().v_text,
-                "create_tablespace": database.TemplateCreateTablespace().v_text,
-                "alter_tablespace": database.TemplateAlterTablespace().v_text,
-                "drop_tablespace": database.TemplateDropTablespace().v_text,
-                "create_database": database.TemplateCreateDatabase().v_text,
-                "alter_database": database.TemplateAlterDatabase().v_text,
-                "drop_database": database.TemplateDropDatabase().v_text,
-                "create_schema": database.TemplateCreateSchema().v_text,
-                "alter_schema": database.TemplateAlterSchema().v_text,
-                "drop_schema": database.TemplateDropSchema().v_text,
-                "create_sequence": database.TemplateCreateSequence().v_text,
-                "alter_sequence": database.TemplateAlterSequence().v_text,
-                "drop_sequence": database.TemplateDropSequence().v_text,
-                "create_function": database.TemplateCreateFunction().v_text,
-                "alter_function": database.TemplateAlterFunction().v_text,
-                "drop_function": database.TemplateDropFunction().v_text,
-                "create_procedure": database.TemplateCreateProcedure().v_text,
-                "alter_procedure": database.TemplateAlterProcedure().v_text,
-                "drop_procedure": database.TemplateDropProcedure().v_text,
-                "create_triggerfunction": database.TemplateCreateTriggerFunction().v_text,
-                "alter_triggerfunction": database.TemplateAlterTriggerFunction().v_text,
-                "drop_triggerfunction": database.TemplateDropTriggerFunction().v_text,
-                "create_eventtriggerfunction": database.TemplateCreateEventTriggerFunction().v_text,
-                "alter_eventtriggerfunction": database.TemplateAlterEventTriggerFunction().v_text,
-                "drop_eventtriggerfunction": database.TemplateDropEventTriggerFunction().v_text,
-                "create_aggregate": database.TemplateCreateAggregate().v_text,
-                "alter_aggregate": database.TemplateAlterAggregate().v_text,
-                "drop_aggregate": database.TemplateDropAggregate().v_text,
-                "create_view": database.TemplateCreateView().v_text,
-                "alter_view": database.TemplateAlterView().v_text,
-                "drop_view": database.TemplateDropView().v_text,
-                "create_mview": database.TemplateCreateMaterializedView().v_text,
-                "refresh_mview": database.TemplateRefreshMaterializedView().v_text,
-                "alter_mview": database.TemplateAlterMaterializedView().v_text,
-                "drop_mview": database.TemplateDropMaterializedView().v_text,
-                "drop_table": database.TemplateDropTable().v_text,
-                "create_column": database.TemplateCreateColumn().v_text,
-                "alter_column": database.TemplateAlterColumn().v_text,
-                "drop_column": database.TemplateDropColumn().v_text,
-                "create_primarykey": database.TemplateCreatePrimaryKey().v_text,
-                "drop_primarykey": database.TemplateDropPrimaryKey().v_text,
-                "create_unique": database.TemplateCreateUnique().v_text,
-                "drop_unique": database.TemplateDropUnique().v_text,
-                "create_foreignkey": database.TemplateCreateForeignKey().v_text,
-                "drop_foreignkey": database.TemplateDropForeignKey().v_text,
-                "create_index": database.TemplateCreateIndex().v_text,
-                "alter_index": database.TemplateAlterIndex().v_text,
-                "cluster_index": database.TemplateClusterIndex().v_text,
-                "reindex": database.TemplateReindex().v_text,
-                "drop_index": database.TemplateDropIndex().v_text,
-                "create_check": database.TemplateCreateCheck().v_text,
-                "drop_check": database.TemplateDropCheck().v_text,
-                "create_exclude": database.TemplateCreateExclude().v_text,
-                "drop_exclude": database.TemplateDropExclude().v_text,
-                "create_rule": database.TemplateCreateRule().v_text,
-                "alter_rule": database.TemplateAlterRule().v_text,
-                "drop_rule": database.TemplateDropRule().v_text,
-                "create_trigger": database.TemplateCreateTrigger().v_text,
-                "create_view_trigger": database.TemplateCreateViewTrigger().v_text,
-                "alter_trigger": database.TemplateAlterTrigger().v_text,
-                "enable_trigger": database.TemplateEnableTrigger().v_text,
-                "disable_trigger": database.TemplateDisableTrigger().v_text,
-                "drop_trigger": database.TemplateDropTrigger().v_text,
-                "create_eventtrigger": database.TemplateCreateEventTrigger().v_text,
-                "alter_eventtrigger": database.TemplateAlterEventTrigger().v_text,
-                "enable_eventtrigger": database.TemplateEnableEventTrigger().v_text,
-                "disable_eventtrigger": database.TemplateDisableEventTrigger().v_text,
-                "drop_eventtrigger": database.TemplateDropEventTrigger().v_text,
-                "create_inherited": database.TemplateCreateInherited().v_text,
-                "noinherit_partition": database.TemplateNoInheritPartition().v_text,
-                "create_partition": database.TemplateCreatePartition().v_text,
-                "detach_partition": database.TemplateDetachPartition().v_text,
-                "drop_partition": database.TemplateDropPartition().v_text,
-                "vacuum": database.TemplateVacuum().v_text,
-                "vacuum_table": database.TemplateVacuumTable().v_text,
-                "analyze": database.TemplateAnalyze().v_text,
-                "analyze_table": database.TemplateAnalyzeTable().v_text,
-                "delete": database.TemplateDelete().v_text,
-                "truncate": database.TemplateTruncate().v_text,
-                "create_physicalreplicationslot": database.TemplateCreatePhysicalReplicationSlot().v_text,
-                "drop_physicalreplicationslot": database.TemplateDropPhysicalReplicationSlot().v_text,
-                "create_logicalreplicationslot": database.TemplateCreateLogicalReplicationSlot().v_text,
-                "drop_logicalreplicationslot": database.TemplateDropLogicalReplicationSlot().v_text,
-                "create_publication": database.TemplateCreatePublication().v_text,
-                "alter_publication": database.TemplateAlterPublication().v_text,
-                "drop_publication": database.TemplateDropPublication().v_text,
-                "add_pubtable": database.TemplateAddPublicationTable().v_text,
-                "drop_pubtable": database.TemplateDropPublicationTable().v_text,
-                "create_subscription": database.TemplateCreateSubscription().v_text,
-                "alter_subscription": database.TemplateAlterSubscription().v_text,
-                "drop_subscription": database.TemplateDropSubscription().v_text,
-                "create_fdw": database.TemplateCreateForeignDataWrapper().v_text,
-                "alter_fdw": database.TemplateAlterForeignDataWrapper().v_text,
-                "drop_fdw": database.TemplateDropForeignDataWrapper().v_text,
-                "create_foreign_server": database.TemplateCreateForeignServer().v_text,
-                "alter_foreign_server": database.TemplateAlterForeignServer().v_text,
-                "import_foreign_schema": database.TemplateImportForeignSchema().v_text,
-                "drop_foreign_server": database.TemplateDropForeignServer().v_text,
-                "create_foreign_table": database.TemplateCreateForeignTable().v_text,
-                "alter_foreign_table": database.TemplateAlterForeignTable().v_text,
-                "drop_foreign_table": database.TemplateDropForeignTable().v_text,
-                "create_foreign_column": database.TemplateCreateForeignColumn().v_text,
-                "alter_foreign_column": database.TemplateAlterForeignColumn().v_text,
-                "drop_foreign_column": database.TemplateDropForeignColumn().v_text,
-                "create_user_mapping": database.TemplateCreateUserMapping().v_text,
-                "alter_user_mapping": database.TemplateAlterUserMapping().v_text,
-                "drop_user_mapping": database.TemplateDropUserMapping().v_text,
-                "create_type": database.TemplateCreateType().v_text,
-                "alter_type": database.TemplateAlterType().v_text,
-                "drop_type": database.TemplateDropType().v_text,
-                "create_domain": database.TemplateCreateDomain().v_text,
-                "alter_domain": database.TemplateAlterDomain().v_text,
-                "drop_domain": database.TemplateDropDomain().v_text,
-                "create_statistics": database.TemplateCreateStatistics().v_text,
-                "alter_statistics": database.TemplateAlterStatistics().v_text,
-                "drop_statistics": database.TemplateDropStatistics().v_text,
+                "drop_role": database.TemplateDropRole(),
+                "create_tablespace": database.TemplateCreateTablespace(),
+                "alter_tablespace": database.TemplateAlterTablespace(),
+                "drop_tablespace": database.TemplateDropTablespace(),
+                "create_database": database.TemplateCreateDatabase(),
+                "alter_database": database.TemplateAlterDatabase(),
+                "drop_database": database.TemplateDropDatabase(),
+                "create_schema": database.TemplateCreateSchema(),
+                "alter_schema": database.TemplateAlterSchema(),
+                "drop_schema": database.TemplateDropSchema(),
+                "create_sequence": database.TemplateCreateSequence(),
+                "alter_sequence": database.TemplateAlterSequence(),
+                "drop_sequence": database.TemplateDropSequence(),
+                "create_function": database.TemplateCreateFunction(),
+                "alter_function": database.TemplateAlterFunction(),
+                "drop_function": database.TemplateDropFunction(),
+                "create_procedure": database.TemplateCreateProcedure(),
+                "alter_procedure": database.TemplateAlterProcedure(),
+                "drop_procedure": database.TemplateDropProcedure(),
+                "create_triggerfunction": database.TemplateCreateTriggerFunction(),
+                "alter_triggerfunction": database.TemplateAlterTriggerFunction(),
+                "drop_triggerfunction": database.TemplateDropTriggerFunction(),
+                "create_eventtriggerfunction": database.TemplateCreateEventTriggerFunction(),
+                "alter_eventtriggerfunction": database.TemplateAlterEventTriggerFunction(),
+                "drop_eventtriggerfunction": database.TemplateDropEventTriggerFunction(),
+                "create_aggregate": database.TemplateCreateAggregate(),
+                "alter_aggregate": database.TemplateAlterAggregate(),
+                "drop_aggregate": database.TemplateDropAggregate(),
+                "create_view": database.TemplateCreateView(),
+                "alter_view": database.TemplateAlterView(),
+                "drop_view": database.TemplateDropView(),
+                "create_mview": database.TemplateCreateMaterializedView(),
+                "refresh_mview": database.TemplateRefreshMaterializedView(),
+                "alter_mview": database.TemplateAlterMaterializedView(),
+                "drop_mview": database.TemplateDropMaterializedView(),
+                "drop_table": database.TemplateDropTable(),
+                "create_column": database.TemplateCreateColumn(),
+                "alter_column": database.TemplateAlterColumn(),
+                "drop_column": database.TemplateDropColumn(),
+                "create_primarykey": database.TemplateCreatePrimaryKey(),
+                "drop_primarykey": database.TemplateDropPrimaryKey(),
+                "create_unique": database.TemplateCreateUnique(),
+                "drop_unique": database.TemplateDropUnique(),
+                "create_foreignkey": database.TemplateCreateForeignKey(),
+                "drop_foreignkey": database.TemplateDropForeignKey(),
+                "create_index": database.TemplateCreateIndex(),
+                "alter_index": database.TemplateAlterIndex(),
+                "cluster_index": database.TemplateClusterIndex(),
+                "reindex": database.TemplateReindex(),
+                "drop_index": database.TemplateDropIndex(),
+                "create_check": database.TemplateCreateCheck(),
+                "drop_check": database.TemplateDropCheck(),
+                "create_exclude": database.TemplateCreateExclude(),
+                "drop_exclude": database.TemplateDropExclude(),
+                "create_rule": database.TemplateCreateRule(),
+                "alter_rule": database.TemplateAlterRule(),
+                "drop_rule": database.TemplateDropRule(),
+                "create_trigger": database.TemplateCreateTrigger(),
+                "create_view_trigger": database.TemplateCreateViewTrigger(),
+                "alter_trigger": database.TemplateAlterTrigger(),
+                "enable_trigger": database.TemplateEnableTrigger(),
+                "disable_trigger": database.TemplateDisableTrigger(),
+                "drop_trigger": database.TemplateDropTrigger(),
+                "create_eventtrigger": database.TemplateCreateEventTrigger(),
+                "alter_eventtrigger": database.TemplateAlterEventTrigger(),
+                "enable_eventtrigger": database.TemplateEnableEventTrigger(),
+                "disable_eventtrigger": database.TemplateDisableEventTrigger(),
+                "drop_eventtrigger": database.TemplateDropEventTrigger(),
+                "create_inherited": database.TemplateCreateInherited(),
+                "noinherit_partition": database.TemplateNoInheritPartition(),
+                "create_partition": database.TemplateCreatePartition(),
+                "detach_partition": database.TemplateDetachPartition(),
+                "drop_partition": database.TemplateDropPartition(),
+                "vacuum": database.TemplateVacuum(),
+                "vacuum_table": database.TemplateVacuumTable(),
+                "analyze": database.TemplateAnalyze(),
+                "analyze_table": database.TemplateAnalyzeTable(),
+                "delete": database.TemplateDelete(),
+                "truncate": database.TemplateTruncate(),
+                "create_physicalreplicationslot": database.TemplateCreatePhysicalReplicationSlot(),
+                "drop_physicalreplicationslot": database.TemplateDropPhysicalReplicationSlot(),
+                "create_logicalreplicationslot": database.TemplateCreateLogicalReplicationSlot(),
+                "drop_logicalreplicationslot": database.TemplateDropLogicalReplicationSlot(),
+                "create_publication": database.TemplateCreatePublication(),
+                "alter_publication": database.TemplateAlterPublication(),
+                "drop_publication": database.TemplateDropPublication(),
+                "add_pubtable": database.TemplateAddPublicationTable(),
+                "drop_pubtable": database.TemplateDropPublicationTable(),
+                "create_subscription": database.TemplateCreateSubscription(),
+                "alter_subscription": database.TemplateAlterSubscription(),
+                "drop_subscription": database.TemplateDropSubscription(),
+                "create_fdw": database.TemplateCreateForeignDataWrapper(),
+                "alter_fdw": database.TemplateAlterForeignDataWrapper(),
+                "drop_fdw": database.TemplateDropForeignDataWrapper(),
+                "create_foreign_server": database.TemplateCreateForeignServer(),
+                "alter_foreign_server": database.TemplateAlterForeignServer(),
+                "import_foreign_schema": database.TemplateImportForeignSchema(),
+                "drop_foreign_server": database.TemplateDropForeignServer(),
+                "create_foreign_table": database.TemplateCreateForeignTable(),
+                "alter_foreign_table": database.TemplateAlterForeignTable(),
+                "drop_foreign_table": database.TemplateDropForeignTable(),
+                "create_foreign_column": database.TemplateCreateForeignColumn(),
+                "alter_foreign_column": database.TemplateAlterForeignColumn(),
+                "drop_foreign_column": database.TemplateDropForeignColumn(),
+                "create_user_mapping": database.TemplateCreateUserMapping(),
+                "alter_user_mapping": database.TemplateAlterUserMapping(),
+                "drop_user_mapping": database.TemplateDropUserMapping(),
+                "create_type": database.TemplateCreateType(),
+                "alter_type": database.TemplateAlterType(),
+                "drop_type": database.TemplateDropType(),
+                "create_domain": database.TemplateCreateDomain(),
+                "alter_domain": database.TemplateAlterDomain(),
+                "drop_domain": database.TemplateDropDomain(),
+                "create_statistics": database.TemplateCreateStatistics(),
+                "alter_statistics": database.TemplateAlterStatistics(),
+                "drop_statistics": database.TemplateDropStatistics(),
             },
             "feature_flags": {
                 "has_replication_slots": database.has_replication_slots,
@@ -154,6 +157,7 @@ def get_database_objects(request, database):
         and extension[2] not in unsupported_versions
     )
     has_pg_cron = False
+    database.GetVersion() # this is needed to trigger database.update_feature_flags, in case it is new database
     try:
         current_schema = "public"
         schema = database.QueryCurrentSchema().Rows
@@ -164,8 +168,8 @@ def get_database_objects(request, database):
             has_pg_cron = len(list(filter(version_filter, extensions))) > 0
         data = {
             "has_pg_cron": has_pg_cron,
-            "current_schema": current_schema
-            }
+            "current_schema": current_schema,
+        }
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -331,6 +335,15 @@ def get_fks(request, database):
                 "constraint_name": fk["constraint_name"],
                 "oid": fk["oid"],
                 "name_raw": fk["name_raw"],
+                "column_name": fk["column_name"],
+                "table_name": fk["table_name"],
+                "table_schema": fk["table_schema"],
+                "r_constraint_name": fk["r_constraint_name"],
+                "r_table_name": fk["r_table_name"],
+                "r_table_schema": fk["r_table_schema"],
+                "r_column_name": fk["r_column_name"],
+                "on_update": fk["update_rule"],
+                "on_delete": fk["delete_rule"],
             }
             list_fk.append(fk_data)
     except Exception as exc:
@@ -825,12 +838,15 @@ def get_databases(request, database):
     list_databases = []
 
     try:
+        conn_object = Connection.objects.get(id=database.conn_id)
         databases = database.QueryDatabases()
         for database_object in databases.Rows:
             database_data = {
                 "name": database_object["database_name"],
                 "name_raw": database_object["name_raw"],
                 "oid": database_object["oid"],
+                "pinned": database_object["database_name"]
+                in conn_object.pinned_databases,
             }
             list_databases.append(database_data)
     except Exception as exc:
@@ -874,6 +890,7 @@ def get_roles(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
     return JsonResponse(data={"data": list_roles})
 
+
 @user_authenticated
 @database_required(check_timeout=True, open_connection=True)
 def get_role_details(request, database):
@@ -911,7 +928,6 @@ def get_role_details(request, database):
 
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
-
 
     return JsonResponse(data=role_details)
 
@@ -1616,7 +1632,7 @@ def template_select(request, database):
     kind = data["kind"]
 
     try:
-        template = database.TemplateSelect(schema, table, kind).v_text
+        template = database.TemplateSelect(schema, table, kind).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1631,7 +1647,7 @@ def template_insert(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateInsert(schema, table).v_text
+        template = database.TemplateInsert(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1646,7 +1662,7 @@ def template_update(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateUpdate(schema, table).v_text
+        template = database.TemplateUpdate(schema, table).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1662,7 +1678,7 @@ def template_select_function(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateSelectFunction(schema, function, functionid).v_text
+        template = database.TemplateSelectFunction(schema, function, functionid).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1678,7 +1694,7 @@ def template_call_procedure(request, database):
     schema = data["schema"]
 
     try:
-        template = database.TemplateCallProcedure(schema, procedure, procedureid).v_text
+        template = database.TemplateCallProcedure(schema, procedure, procedureid).text
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1689,7 +1705,7 @@ def template_call_procedure(request, database):
 @database_required(check_timeout=True, open_connection=True)
 def get_version(request, database):
     try:
-        response_data = {"version": database.GetVersion()}
+        response_data = {"version": database.major_version}
     except Exception as exc:
         return JsonResponse(data={"data": str(exc)}, status=400)
 
@@ -1727,3 +1743,65 @@ def get_object_description(request, database):
         return JsonResponse(data={"data": str(exc)}, status=400)
 
     return JsonResponse(data={"data": object_description})
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_server_log(request, database):
+    data = request.data
+    log_format = data.get("log_format")
+    log_offset = data.get("log_offset")
+    log_offset_step = 10000
+
+    try:
+        log_formats = database.ExecuteScalar("show log_destination")
+
+        if log_format not in log_formats:
+            log_format = ""
+
+        current_file_size = database.ExecuteScalar(
+            f"SELECT size from pg_stat_file(pg_current_logfile('{log_format}'))"
+        )
+
+        if log_offset and log_offset < current_file_size:
+            try:
+                logs_data = database.Query(
+                    f"SELECT pg_read_file(pg_current_logfile('{log_format}'), {log_offset}, {log_offset_step})"
+                )
+            except Exception:
+                log_offset_step += 1
+                logs_data = database.Query(
+                    f"SELECT pg_read_file(pg_current_logfile('{log_format}'), {log_offset}, {log_offset_step})"
+                )
+            next_offset = min(log_offset + log_offset_step, current_file_size)
+        else:
+            log_offset = current_file_size
+            logs_data = database.Query(
+                f"SELECT pg_read_file(pg_current_logfile('{log_format}'))"
+            )
+            next_offset = current_file_size
+
+        logs = logs_data.Rows[0]["pg_read_file"]
+        current_logfile_data = database.Query(
+            f"SELECT pg_current_logfile('{log_format}')"
+        )
+        current_logfile = current_logfile_data.Rows[0]["pg_current_logfile"]
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(
+        data={
+            "logs": logs,
+            "current_logfile": current_logfile,
+            "log_offset": next_offset,
+        }
+    )
+
+
+@user_authenticated
+@database_required(check_timeout=True, open_connection=True)
+def get_log_formats(request, database):
+    try:
+        data = database.ExecuteScalar("show log_destination")
+    except Exception as exc:
+        return JsonResponse(data={"data": str(exc)}, status=400)
+    return JsonResponse(data={"formats": data})

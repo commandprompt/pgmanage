@@ -1,0 +1,38 @@
+.floating-toolbar {
+    position: absolute;
+    z-index: 2; 
+    border-radius: $borderRadius;
+    background-color: #16243C;
+    overflow: hidden;
+
+    &__content {
+        display: flex;
+        align-items: center;
+        background-color: rgba($primaryBlue, 0.15);
+    }
+
+    &--filled {
+        @include themify() {
+            background-color: themed($surfaceBgSecondary);
+        }
+    }
+    
+    &--right-top {
+        right: 0.5rem;
+        top: 0.5rem;
+    }
+    
+    .btn-icon-secondary {
+        @include themify() {
+            color: themed($buttonIconSecondaryColor) !important;
+        }
+    }
+
+    .divider {
+        display: block;
+        width: 1px;
+        height: 1.5rem;
+        background-color: $secondaryGrey;
+        opacity: 0.5;
+    }
+}

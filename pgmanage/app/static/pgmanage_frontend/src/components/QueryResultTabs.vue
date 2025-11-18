@@ -1,7 +1,7 @@
 <template>
   <div ref="resultDiv" :id="`query_result_tabs_container_${tabId}`" class="omnidb__query-result-tabs pe-2">
     <button :id="`bt_fullscreen_${tabId}`" style="position: absolute; top: 0.25rem; right: 0.5rem" type="button"
-      class="btn btn-sm btn-icon btn-icon-primary" @click="toggleFullScreen()">
+      class="btn btn-sm btn-icon btn-icon-primary pe-2" @click="toggleFullScreen()">
       <i class="fas fa-expand"></i>
     </button>
 
@@ -19,7 +19,7 @@
               :aria-controls="`nav_messages_${tabId}`" aria-selected="true">
               <span class="omnidb__tab-menu__link-name">
                 Messages
-                <span v-if="noticesCount" class="badge badge-pill badge-primary">{{ noticesCount }}</span>
+                <span v-if="noticesCount" class="badge rounded-pill badge-primary">{{ noticesCount }}</span>
               </span>
             </a>
             <a v-if="postgresqlDialect" ref="explainTab" class="nav-item nav-link omnidb__tab-menu__link" :id="`nav_explain_tab_${tabId}`"
@@ -51,7 +51,13 @@
                 <div class="query_info">
                 {{ queryInfoText }}
               </div>
-                <p v-for="notice in notices">{{ notice }}</p>
+              <div v-for="notice in notices">
+                <span
+                  class="badge rounded-pill"
+                  :class="noticeClass(notice)"
+                  >{{ notice[0] }}</span>
+                <pre>{{ notice[1] }}</pre>
+              </div>
               </div>
             </div>
           </div>
@@ -73,12 +79,14 @@ import isEmpty from 'lodash/isEmpty';
 import mean from 'lodash/mean';
 import last from 'lodash/last';
 import { Tab } from "bootstrap";
-import { handleError } from "../logging/utils";
+import dialects from './dialect-data';
+import ClipboardMixin from "../mixins/table_clipboard_copy_mixin";
 
 export default {
   components: {
     ExplainTabContent,
   },
+  mixins: [ClipboardMixin,],
   props: {
     tabId: String,
     workspaceId: String,
@@ -157,6 +165,14 @@ export default {
   },
   mounted() {
     this.handleResize();
+    const DIALECT_MAP = {
+        oracle: "oracledb",
+        mariadb: "mysql",
+        postgresql: "postgres",
+    };
+    let mappedDialect = DIALECT_MAP[this.dialect] || this.dialect;
+    this.numericTypes = dialects[mappedDialect]?.numericTypes || [];
+
     if (this.dialect === "postgresql") {
       
       this.$refs.explainTab.addEventListener("shown.bs.tab", () => {
@@ -208,115 +224,6 @@ export default {
     this.handleResize();
   },
   methods: {
-    copyTableData(format) {
-      const data = last(this.table.getRangesData());
-
-      let headers = [];
-      let headerIndexMap = {}; // Map header titles to their original indices
-      let nameCount = {}; // to track duplicates
-
-
-      Object.keys(last(data)).forEach((key) => {
-          const originalIndex = parseInt(key, 10);
-          let  header = this.columns[originalIndex];
-
-          // Track duplicates
-          if (nameCount[header]) {
-            nameCount[header]++;
-            header = `${header}_${nameCount[header]}`;
-          } else {
-            nameCount[header] = 1;
-          }
-
-          headers.push(header);
-          headerIndexMap[header] = originalIndex;
-      });
-
-      if (format === "json") {
-        const jsonOutput = this.generateJson(data, headers, headerIndexMap);
-        this.copyToClipboard(jsonOutput);
-      } else if (format === "csv") {
-        const csvOutput = this.generateCsv(data, headers, headerIndexMap);
-        this.copyToClipboard(csvOutput);
-      } else if (format === "markdown") {
-        const markdownOutput = this.generateMarkdown(data, headers, headerIndexMap);
-        this.copyToClipboard(markdownOutput);
-      }
-    },
-    copyToClipboard(text) {
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {
-        })
-        .catch((error) => {
-          handleError(error);
-        });
-    },
-    generateJson(data, headers, headerIndexMap) {
-      const mappedData = data.map((row) => {
-        const mappedRow = {};
-        headers.forEach((header) => {
-          const originalIndex = headerIndexMap[header];
-          mappedRow[header] = row[originalIndex];
-        });
-        return mappedRow;
-      });
-
-      return JSON.stringify(mappedData, null, 2);
-    },
-    generateCsv(data, headers, headerIndexMap) {
-      const csvRows = [];
-
-      // Add header row
-      csvRows.push(headers.join(settingsStore.csvDelimiter));
-
-      data.forEach((row) => {
-        const rowValues = headers.map((header) => {
-          const originalIndex = headerIndexMap[header];
-          return row[originalIndex] || ""; 
-        })
-        csvRows.push(rowValues.join(settingsStore.csvDelimiter));
-      });
-
-      return csvRows.join("\n");
-    },
-    generateMarkdown(data, headers, headerIndexMap) {
-      const columnWidths = headers.map((header) => {
-        const originalIndex = headerIndexMap[header];
-        const maxDataLength = data.reduce(
-          (max, row) => Math.max(max, (row[originalIndex] || "").toString().length),
-          0
-        );
-        return Math.max(header.length, maxDataLength);
-      });
-
-      // Helper to pad strings to a given length
-      const pad = (str, length) => str.toString().padEnd(length, " ");
-
-      const mdRows = [];
-
-      // Add padded header row
-      mdRows.push(
-        `| ${headers
-          .map((header, index) => pad(header, columnWidths[index]))
-          .join(" | ")} |`
-      );
-
-      // Add separator row
-      mdRows.push(
-        `| ${columnWidths.map((width) => "-".repeat(width)).join(" | ")} |`
-      );
-
-      data.forEach((row) => {
-      const rowValues = headers.map((header, index) => {
-        const originalIndex = headerIndexMap[header];
-        return pad(row[originalIndex] || "", columnWidths[index]);
-      });
-      mdRows.push(`| ${rowValues.join(" | ")} |`);
-    });
-
-      return mdRows.join("\n");
-    },
     cellFormatter(cell, params, onRendered) {
       let cellVal = cell.getValue()
       if (!!cellVal && cellVal?.length > 1000) {
@@ -354,8 +261,17 @@ export default {
                 ? `${status[1].toLowerCase()}_list`
                 : null;
 
-              if (!!node_type)
-                emitter.emit(`refreshTreeRecursive_${this.workspaceId}`, node_type);
+              if (!!node_type) {
+                emitter.emit(
+                  `refreshTreeRecursive_${this.workspaceId}`,
+                  node_type
+                );
+                emitter.emit("dbMetaRefresh", {
+                  workspace_id: this.workspaceId,
+                  database_name: context.tab.metaData.databaseName,
+                  database_index: context.tab.metaData.databaseIndex,
+                });
+              }
             }
           }
         }
@@ -387,7 +303,10 @@ export default {
       Tab.getOrCreateInstance(this.$refs.dataTab).show()
 
       if (data.notices.length) {
-        this.notices = data.notices;
+        const noticeSplitRegex = /^(\w+):\s*([\s\S]*)$/
+        this.notices = data.notices.map((n) =>
+          n.match(noticeSplitRegex).slice(1,3)
+        );
       }
 
       if (
@@ -439,15 +358,24 @@ export default {
           },
           {
             label: '<i class="fas fa-copy"></i><span>Copy as JSON</span>',
-            action: () => this.copyTableData("json"),
+            action: () => {
+              const data = last(this.table.getRangesData());
+              this.copyTableData(data, "json", this.columns);
+            },
           },
           {
             label: '<i class="fas fa-copy"></i><span>Copy as CSV</span>',
-            action: () => this.copyTableData("csv"),
+            action: () => {
+              const data = last(this.table.getRangesData());
+              this.copyTableData(data, "csv", this.columns);
+            },
           },
           {
             label: '<i class="fas fa-copy"></i><span>Copy as Markdown</span>',
-            action: () => this.copyTableData("markdown"),
+            action: () => {
+              const data = last(this.table.getRangesData());
+              this.copyTableData(data, "markdown", this.columns);
+            },
           },
           {
             label: '<i class="fas fa-edit"></i><span>View Content</span>',
@@ -466,12 +394,19 @@ export default {
           return `${col}<br><span class='subscript'>${colTypes[idx]}</span>`
         }
 
+        let colHozAlign = (function(idx) {
+          return this.numericTypes.includes(colTypes?.[idx]) ? "right" : "left";
+        }).bind(this)
+
         return {
           title: formatTitle(col, idx),
           field: idx.toString(),
           resizable: "header",
+          editor: "input",
+          editable: false,
           formatter: this.cellFormatter,
           contextMenu: cellContextMenu,
+          hozAlign: colHozAlign(idx),
           headerDblClick: (e, column) => {
             if (
               column.getWidth() >
@@ -680,6 +615,17 @@ export default {
 
         targetElement.dispatchEvent(clickEvent);
       });
+    },
+    noticeClass(notice){
+      const NOTICE_MAP = {
+        'NOTICE': 'badge-primary',
+        'INFO': 'badge-secondary',
+        'LOG': 'badge-secondary',
+        'WARNING': 'badge-warning',
+        'EXCEPTION': 'badge-danger',
+        'ERROR': 'badge-danger',
+      }
+      return NOTICE_MAP[notice[0]] || 'badge-secondary';
     }
   },
 };

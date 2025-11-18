@@ -6,6 +6,7 @@ from app.include import OmniDatabase
 from app.include.OmniDatabase import PostgreSQL
 from app.models.main import Connection, Group, Tab, Technology
 from app.tests.utils_testing import USERS, execute_client_login
+from app.utils.crypto import encrypt
 from app.views.connections import (
     delete_group,
     get_connections,
@@ -30,6 +31,7 @@ class ConnectionsTests(TestCase):
         cls.service = "dellstore"
         cls.role = "postgres"
         cls.password = "postgres"
+        cls.encrypted_password = encrypt(cls.password, key=USERS["ADMIN"]["PASSWORD"])
         cls.db_type = "postgresql"
         cls.admin_user = User.objects.get(username="admin")
         cls.test_connection = Connection.objects.create(
@@ -39,19 +41,19 @@ class ConnectionsTests(TestCase):
             port=cls.port,
             database=cls.service,
             username=cls.role,
-            password=cls.password,
+            password=cls.encrypted_password,
             alias="Pgmanage Tests",
         )
 
         cls.database = OmniDatabase.Generic.InstantiateDatabase(
-            p_db_type=cls.db_type,
-            p_server=cls.host,
-            p_port=cls.port,
-            p_service=cls.service,
-            p_user=cls.role,
-            p_password=cls.password,
-            p_conn_id=cls.test_connection.id,
-            p_application_name="Pgmanage Tests",
+            db_type=cls.db_type,
+            server=cls.host,
+            port=cls.port,
+            service=cls.service,
+            user=cls.role,
+            password=cls.password,
+            conn_id=cls.test_connection.id,
+            application_name="Pgmanage Tests",
         )
         cls.test_group1 = Group.objects.create(user=cls.admin_user, name="test group 1")
         cls.test_group2 = Group.objects.create(user=cls.admin_user, name="test group 2")
@@ -115,7 +117,7 @@ class ConnectionsTests(TestCase):
         )
         session = self.client.session
 
-        session["pgmanage_session"].v_databases = {
+        session["pgmanage_session"].databases = {
             self.test_connection.id: {
                 "database": self.database,
                 "prompt_password": False,
@@ -123,7 +125,7 @@ class ConnectionsTests(TestCase):
                 "tunnel": {"enabled": False},
             }
         }
-        session["pgmanage_session"].v_tabs_databases = {0: "dellstore"}
+        session["pgmanage_session"].tabs_databases = {0: "dellstore"}
         session.save()
 
         self.client.post = partial(self.client.post, content_type="application/json")

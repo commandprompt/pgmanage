@@ -39,10 +39,12 @@ base_urlpatterns = [
     path('master_password/', views.workspace.master_password, name='master_password'),
     path('reset_master_password/', views.workspace.reset_master_password, name='reset_master_password'),
     path('draw_graph/', views.workspace.draw_graph, name='draw_graph'),
+    path('save_graph_state/', views.workspace.save_graph_state, name='save_graph_state'),
     path('get_table_columns/', views.workspace.get_table_columns, name='get_table_columns'),
     path('refresh_monitoring/', views.workspace.refresh_monitoring, name='refresh_monitoring'),
     # path('delete_plugin/', views.plugins.delete_plugin, name='delete_plugin'),
     path('get_database_meta/', views.workspace.get_database_meta, name='get_database_meta'),
+    path('execute_query/', views.workspace.execute_query, name="execute_query"),
 
     #SETINGS
     path('settings/', views.workspace.SettingsView.as_view(), name="settings"),
@@ -122,7 +124,6 @@ base_urlpatterns = [
     path('get_role_details/', views.tree_postgresql.get_role_details, name='get_role_details'),
     path('get_extensions_postgresql/', views.tree_postgresql.get_extensions, name='get_extensions'),
     path('get_extension_details/', views.tree_postgresql.get_extension_details, name='get_extension_details'),
-    path('execute_query_postgresql/', views.tree_postgresql.execute_query, name="execute_query"),
     path('get_available_extensions_postgresql/', views.tree_postgresql.get_available_extensions, name='get_available_extensions'),
     path('get_physicalreplicationslots_postgresql/', views.tree_postgresql.get_physicalreplicationslots, name='get_physicalreplicationslots'),
     path('get_logicalreplicationslots_postgresql/', views.tree_postgresql.get_logicalreplicationslots, name='get_logicalreplicationslots'),
@@ -148,7 +149,9 @@ base_urlpatterns = [
     path('change_active_database/', views.workspace.change_active_database, name='change_active_database'),
     path('get_postgresql_version/', views.tree_postgresql.get_version, name='get_version'),
     path('change_role_password_postgresql/', views.tree_postgresql.change_role_password, name='change_role_password'),
-    path('get_object_description_postgresql/', views.tree_postgresql.get_object_description, name='get_object_description'),\
+    path('get_object_description_postgresql/', views.tree_postgresql.get_object_description, name='get_object_description'),
+    path('get_postgres_server_log/', views.tree_postgresql.get_server_log, name="get_postgres_server_log"),
+    path('get_postgres_server_log_formats/', views.tree_postgresql.get_log_formats, name="get_postgres_server_log_formats"),
 
     #PG_CRON
     path('get_pgcron_jobs/', views.pgextras.get_pgcron_jobs, name='get_pgcron_jobs'),
@@ -289,6 +292,38 @@ base_urlpatterns = [
     path('template_update_sqlite/', views.tree_sqlite.template_update, name='template_update'),
     path('get_table_definition_sqlite/', views.tree_sqlite.get_table_definition, name="get_table_definition_sqlite"),
 
+    #TREE_MSSQL
+    path('get_tree_info_mssql/', views.tree_mssql.get_tree_info,),
+    path('get_databases_mssql/', views.tree_mssql.get_databases,),
+    path('get_schemas_mssql/', views.tree_mssql.get_schemas,),
+    path('get_tables_mssql/', views.tree_mssql.get_tables,),
+    path('get_columns_mssql/', views.tree_mssql.get_columns,),
+    path('get_pk_mssql/', views.tree_mssql.get_pk,),
+    path('get_pk_columns_mssql/', views.tree_mssql.get_pk_columns,),
+    path('get_fks_mssql/', views.tree_mssql.get_fks,),
+    path('get_fks_columns_mssql/', views.tree_mssql.get_fks_columns,),
+    path('get_uniques_mssql/', views.tree_mssql.get_uniques,),
+    path('get_uniques_columns_mssql/', views.tree_mssql.get_uniques_columns,),
+    path('get_checks_mssql/', views.tree_mssql.get_checks,),
+    path('get_views_mssql/', views.tree_mssql.get_views,),
+    path('get_views_columns_mssql/', views.tree_mssql.get_views_columns,),
+    path('get_procedures_mssql/', views.tree_mssql.get_procedures),
+    path('get_procedure_fields_mssql/', views.tree_mssql.get_procedure_fields,),
+    path('get_statistics_mssql/', views.tree_mssql.get_statistics,),
+    path('get_functions_mssql/', views.tree_mssql.get_functions,),
+    path('get_function_fields_mssql/', views.tree_mssql.get_function_fields,),
+    path('get_indexes_mssql/', views.tree_mssql.get_indexes,),
+    path('get_indexes_columns_mssql/', views.tree_mssql.get_indexes_columns,),
+    path('get_triggers_mssql/', views.tree_mssql.get_triggers,),
+    path('get_server_roles_mssql/', views.tree_mssql.get_server_roles,),
+    path('get_database_roles_mssql/', views.tree_mssql.get_database_roles,),
+    path('get_logins_mssql/', views.tree_mssql.get_logins,),
+    path('get_users_mssql/', views.tree_mssql.get_users,),
+    path('template_select_mssql/', views.tree_mssql.template_select,),
+    path('get_properties_mssql/', views.tree_mssql.get_properties,),
+    path('get_table_definition_mssql/', views.tree_mssql.get_table_definition, name='get_table_definition'),
+    path('get_types_mssql/', views.tree_mssql.get_types,),
+
     # Monitoring Dashboard
     path("monitoring-widgets", views.monitoring_dashboard.monitoring_widgets, name="monitoring-widgets"),
     path("monitoring-widgets/list", views.monitoring_dashboard.monitoring_widgets_list, name="monitoring-widgets-list"),
@@ -329,7 +364,9 @@ base_urlpatterns = [
 
     path('validate_binary_path/', views.workspace.validate_binary_path, name='validate_binary_path'),
 
-    path('log/', views.logging.log_message, name="log_message")
+    path('log/', views.logging.log_message, name="log_message"),
+
+    path('pin_database/', views.workspace.toggle_pin_database, name="toggle_pin_database"),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

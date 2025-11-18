@@ -1,15 +1,8 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import UtilityJobs from "@/components/UtilityJobs.vue";
+import UtilityJobs from "@src/components/UtilityJobs.vue";
 import axios from "axios";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import moment from "moment";
-
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
 
 describe("UtilityJobs.vue", () => {
   let wrapper;

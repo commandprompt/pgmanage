@@ -1,14 +1,13 @@
 import { mount } from "@vue/test-utils";
 import mixin from "../../src/mixins/file_input_mixin";
 import { describe, test, expect, vi, beforeEach, beforeAll } from "vitest";
-import * as notificatonModule from "../../src/notification_control";
+import { showToast } from "@src/notification_control";
 import { maxFileSizeInKB, maxFileSizeInMB } from "../../src/constants";
 import { useTabsStore } from "../../src/stores/tabs";
 
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
+vi.mock("@src/notification_control", () => ({
+  showToast: vi.fn(),
+}));
 
 describe("File Input Mixin", () => {
   let wrapper, tabsStore, snippetTab;
@@ -47,13 +46,12 @@ describe("File Input Mixin", () => {
   });
 
   test("handles invalid file type", () => {
-    const showToastSpy = vi.spyOn(notificatonModule, "showToast");
     const fileMock = new File(["content"], "example.jpg", {
       type: "image/jpeg",
     });
     const eventMock = { target: { files: [fileMock] } };
     wrapper.vm.handleFileInputChange(eventMock);
-    expect(showToastSpy).toHaveBeenCalledWith(
+    expect(showToast).toHaveBeenCalledWith(
       "error",
       "File with type 'image/jpeg' is not supported."
     );
@@ -75,21 +73,19 @@ describe("File Input Mixin", () => {
   });
 
   test("handles file size exceeds limit", () => {
-    const showToastSpy = vi.spyOn(notificatonModule, "showToast");
     const fileMock = new File(["content"], "example.txt", {
       type: "text/plain",
     });
     Object.defineProperty(fileMock, "size", { value: maxFileSizeInKB + 1024 });
     const eventMock = { target: { files: [fileMock] } };
     wrapper.vm.handleFileInputChange(eventMock);
-    expect(showToastSpy).toHaveBeenCalledWith(
+    expect(showToast).toHaveBeenCalledWith(
       "error",
       `Please select a file that is ${maxFileSizeInMB}MB or less.`
     );
   });
 
   test("handles exceptions", () => {
-    const showToastSpy = vi.spyOn(notificatonModule, "showToast");
     const preventDefault = vi.fn();
     const stopPropagation = vi.fn();
     const error = new Error("An error occurred");
@@ -110,7 +106,7 @@ describe("File Input Mixin", () => {
     };
     wrapper.vm.handleFileInputChange(eventMock);
 
-    expect(showToastSpy).toHaveBeenCalledWith("error", error);
+    expect(showToast).toHaveBeenCalledWith("error", error);
     expect(preventDefault).toHaveBeenCalled();
     expect(stopPropagation).toHaveBeenCalled();
   });

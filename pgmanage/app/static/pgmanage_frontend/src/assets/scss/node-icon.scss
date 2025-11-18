@@ -89,6 +89,11 @@ SOFTWARE.
     mask-image: url("../images/sqlite.svg");
     -webkit-mask-image: url("../images/sqlite.svg");
   }
+
+  &-mssql {
+    mask-image: url("../images/mssql.svg");
+    -webkit-mask-image: url("../images/mssql.svg");
+  }
 }
 
 .node-error {

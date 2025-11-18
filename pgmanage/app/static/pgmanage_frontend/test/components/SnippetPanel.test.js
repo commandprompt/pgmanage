@@ -1,15 +1,8 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi } from "vitest";
-import SnippetPanel from "@/components/SnippetPanel.vue";
+import SnippetPanel from "@src/components/SnippetPanel.vue";
 import axios from "axios";
-import { emitter } from "@/emitter";
-
-vi.hoisted(() => {
-  vi.stubGlobal("v_csrf_cookie_name", "test_cookie");
-  vi.stubGlobal("app_base_path", "test_folder");
-});
-
-vi.mock("axios");
+import { emitter } from "@src/emitter";
 
 describe("SnippetPanel.vue", () => {
   it("renders the component correctly", () => {
@@ -21,7 +14,7 @@ describe("SnippetPanel.vue", () => {
       shallow: true,
     });
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.find(".omnidb__panel").exists()).toBe(true);
+    expect(wrapper.find(".snippets").exists()).toBe(true);
   });
 
   it("toggles the panel visibility", async () => {
@@ -30,9 +23,9 @@ describe("SnippetPanel.vue", () => {
       shallow: true,
     });
     expect(wrapper.vm.isVisible).toBe(false);
-    await wrapper.find(".omnidb__panel__toggler").trigger("click");
+    await wrapper.find(".snippets__toggler").trigger("click");
     expect(wrapper.vm.isVisible).toBe(true);
-    await wrapper.find(".omnidb__panel__toggler").trigger("click");
+    await wrapper.find(".snippets__toggler").trigger("click");
     expect(wrapper.vm.isVisible).toBe(false);
   });
 

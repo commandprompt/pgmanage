@@ -25,10 +25,11 @@ SOFTWARE.
 
 import re
 from enum import Enum
-import app.include.Spartacus as Spartacus
-import app.include.Spartacus.Database as Database
-import app.include.Spartacus.Utils as Utils
 from urllib.parse import urlparse
+
+import app.include.Spartacus as Spartacus
+
+from .sql_templates import get_template
 
 '''
 ------------------------------------------------------------------------
@@ -40,9 +41,9 @@ class TemplateType(Enum):
     SCRIPT = 2
 
 class Template:
-    def __init__(self, p_text, p_type=TemplateType.EXECUTE):
-        self.v_text = p_text
-        self.v_type = p_type
+    def __init__(self, text, template_type=TemplateType.EXECUTE):
+        self.text = text
+        self.type = template_type
 
 '''
 ------------------------------------------------------------------------
@@ -50,121 +51,121 @@ MariaDB
 ------------------------------------------------------------------------
 '''
 class MariaDB:
-    def __init__(self, p_server, p_port, p_service, p_user, p_password, p_conn_id=0, p_alias='', p_conn_string='', p_parse_conn_string = False, connection_params=None):
+    def __init__(self, server, port, service, user, password, conn_id=0, alias='', conn_string='', parse_conn_string = False, connection_params=None):
         self.lock = None
         self.connection_params = connection_params if connection_params else {}
-        self.v_alias = p_alias
-        self.v_db_type = 'mariadb'
-        self.v_conn_string = p_conn_string
-        self.v_conn_string_error = ''
-        self.v_password = p_password
-        self.v_conn_id = p_conn_id
+        self.alias = alias
+        self.db_type = 'mariadb'
+        self.conn_string = conn_string
+        self.conn_string_error = ''
+        self.password = password
+        self.conn_id = conn_id
 
-        self.v_server = p_server
-        self.v_active_server = p_server
-        self.v_user = p_user
-        self.v_active_user = p_user
-        self.v_schema = p_service
-        self.v_service = p_service
-        self.v_active_service = p_service
+        self.server = server
+        self.active_server = server
+        self.user = user
+        self.active_user = user
+        self.schema = service
+        self.service = service
+        self.active_service = service
 
-        self.v_port = p_port
-        if p_port is None or p_port == '':
-            self.v_active_port = '3306'
+        self.port = port
+        if port is None or port == '':
+            self.active_port = '3306'
         else:
-            self.v_active_port = p_port
+            self.active_port = port
 
         #try to get info from connection string
-        if p_conn_string!='' and p_parse_conn_string:
+        if conn_string!='' and parse_conn_string:
             try:
-                parsed = urlparse(p_conn_string)
+                parsed = urlparse(conn_string)
                 if parsed.port!=None:
-                    self.v_active_port = str(parsed.port)
+                    self.active_port = str(parsed.port)
                 if parsed.hostname!=None:
-                    self.v_active_server = parsed.hostname
+                    self.active_server = parsed.hostname
                 if parsed.username!=None:
-                    self.v_active_user = parsed.username
-                if parsed.password!=None and p_password == '':
-                    self.v_password = parsed.password
+                    self.active_user = parsed.username
+                if parsed.password!=None and password == '':
+                    self.password = parsed.password
                 if parsed.query!=None:
-                    self.v_conn_string_query = parsed.query
+                    self.conn_string_query = parsed.query
                 parsed_database = parsed.path
                 if len(parsed_database)>1:
-                    self.v_active_service = parsed_database[1:]
+                    self.active_service = parsed_database[1:]
             except Exception as exc:
-                self.v_conn_string_error = 'Syntax error in the connection string.'
+                self.conn_string_error = 'Syntax error in the connection string.'
                 None
 
-        self.v_connection = Spartacus.Database.MariaDB(self.v_active_server, self.v_active_port, self.v_active_service, self.v_active_user, self.v_password, p_conn_string, connection_params=self.connection_params)
+        self.connection = Spartacus.Database.MariaDB(self.active_server, self.active_port, self.active_service, self.active_user, self.password, conn_string, connection_params=self.connection_params)
 
         self.has_schema = True
-        self.v_has_functions = True
-        self.v_has_procedures = True
-        self.v_has_packages = False
-        self.v_has_sequences = False
-        self.v_has_primary_keys = True
-        self.v_has_foreign_keys = True
-        self.v_has_uniques = True
-        self.v_has_indexes = True
-        self.v_has_checks = False
-        self.v_has_excludes = False
-        self.v_has_rules = False
-        self.v_has_triggers = False
-        self.v_has_partitions = False
-        self.v_has_statistics = False
+        self.has_functions = True
+        self.has_procedures = True
+        self.has_packages = False
+        self.has_sequences = False
+        self.has_primary_keys = True
+        self.has_foreign_keys = True
+        self.has_uniques = True
+        self.has_indexes = True
+        self.has_checks = False
+        self.has_excludes = False
+        self.has_rules = False
+        self.has_triggers = False
+        self.has_partitions = False
+        self.has_statistics = False
 
-        self.v_has_update_rule = True
-        self.v_can_rename_table = True
-        self.v_rename_table_command = "alter table #p_table_name# rename to #p_new_table_name#"
-        self.v_create_pk_command = "constraint #p_constraint_name# primary key (#p_columns#)"
-        self.v_create_fk_command = "constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
-        self.v_create_unique_command = "constraint #p_constraint_name# unique (#p_columns#)"
-        self.v_can_alter_type = True
-        self.v_alter_type_command = "alter table #p_table_name# modify #p_column_name# #p_new_data_type#"
-        self.v_can_alter_nullable = True
-        self.v_set_nullable_command = "alter table #p_table_name# modify #p_column_name# null"
-        self.v_drop_nullable_command = "alter table #p_table_name# modify #p_column_name# not null"
-        self.v_can_rename_column = True
-        self.v_rename_column_command = "alter table #p_table_name# rename column #p_column_name# to #p_new_column_name#"
-        self.v_can_add_column = True
-        self.v_add_column_command = "alter table #p_table_name# add #p_column_name# #p_data_type# #p_nullable#"
-        self.v_can_drop_column = True
-        self.v_drop_column_command = "alter table #p_table_name# drop column #p_column_name#"
-        self.v_can_add_constraint = True
-        self.v_add_pk_command = "alter table #p_table_name# add constraint #p_constraint_name# primary key (#p_columns#)"
-        self.v_add_fk_command = "alter table #p_table_name# add constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
-        self.v_add_unique_command = "alter table #p_table_name# add constraint #p_constraint_name# unique (#p_columns#)"
-        self.v_can_drop_constraint = True
-        self.v_drop_pk_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
-        self.v_drop_fk_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
-        self.v_drop_unique_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
-        self.v_create_index_command = "create index #p_index_name# on #p_table_name# (#p_columns#)";
-        self.v_create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
-        self.v_drop_index_command = "drop index #p_schema_name#.#p_index_name#"
+        self.has_update_rule = True
+        self.can_rename_table = True
+        self.rename_table_command = "alter table #p_table_name# rename to #p_new_table_name#"
+        self.create_pk_command = "constraint #p_constraint_name# primary key (#p_columns#)"
+        self.create_fk_command = "constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
+        self.create_unique_command = "constraint #p_constraint_name# unique (#p_columns#)"
+        self.can_alter_type = True
+        self.alter_type_command = "alter table #p_table_name# modify #p_column_name# #p_new_data_type#"
+        self.can_alter_nullable = True
+        self.set_nullable_command = "alter table #p_table_name# modify #p_column_name# null"
+        self.drop_nullable_command = "alter table #p_table_name# modify #p_column_name# not null"
+        self.can_rename_column = True
+        self.rename_column_command = "alter table #p_table_name# rename column #p_column_name# to #p_new_column_name#"
+        self.can_add_column = True
+        self.add_column_command = "alter table #p_table_name# add #p_column_name# #p_data_type# #p_nullable#"
+        self.can_drop_column = True
+        self.drop_column_command = "alter table #p_table_name# drop column #p_column_name#"
+        self.can_add_constraint = True
+        self.add_pk_command = "alter table #p_table_name# add constraint #p_constraint_name# primary key (#p_columns#)"
+        self.add_fk_command = "alter table #p_table_name# add constraint #p_constraint_name# foreign key (#p_columns#) references #p_r_table_name# (#p_r_columns#) #p_delete_update_rules#"
+        self.add_unique_command = "alter table #p_table_name# add constraint #p_constraint_name# unique (#p_columns#)"
+        self.can_drop_constraint = True
+        self.drop_pk_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
+        self.drop_fk_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
+        self.drop_unique_command = "alter table #p_table_name# drop constraint #p_constraint_name#"
+        self.create_index_command = "create index #p_index_name# on #p_table_name# (#p_columns#)";
+        self.create_unique_index_command = "create unique index #p_index_name# on #p_table_name# (#p_columns#)"
+        self.drop_index_command = "drop index #p_schema_name#.#p_index_name#"
 
-        self.v_console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
-        self.v_use_server_cursor = False
+        self.console_help = "Console tab. Type the commands in the editor below this box. \? to view command list."
+        self.use_server_cursor = False
 
     # Decorator to acquire lock before performing action
     def lock_required(function):
         def wrap(self, *args, **kwargs):
             try:
-                if self.v_lock != None:
-                    self.v_lock.acquire()
+                if self.lock != None:
+                    self.lock.acquire()
             except:
                 None
             try:
                 r = function(self, *args, **kwargs)
             except:
                 try:
-                    if self.v_lock != None:
-                        self.v_lock.release()
+                    if self.lock != None:
+                        self.lock.release()
                 except:
                     None
                 raise
             try:
-                if self.v_lock != None:
-                    self.v_lock.release()
+                if self.lock != None:
+                    self.lock.release()
             except:
                 None
             return r
@@ -173,22 +174,22 @@ class MariaDB:
         return wrap
 
     def GetName(self):
-        return self.v_service
+        return self.service
 
     def GetVersion(self):
         return 'MariaDB ' + self.ExecuteScalar('select version()')
 
     def GetUserName(self):
-        return self.v_user
+        return self.user
 
     def GetUserSuper(self):
         try:
-            v_super = self.ExecuteScalar('''
+            super_user = self.ExecuteScalar('''
                 select super_priv
                 from mysql.user
                 where user = '{0}'
-            '''.format(self.v_user))
-            if v_super == 'Y':
+            '''.format(self.user))
+            if super_user == 'Y':
                 return True
             else:
                 return False
@@ -196,39 +197,39 @@ class MariaDB:
             return False
 
     def PrintDatabaseInfo(self):
-        if self.v_conn_string=='':
-            return self.v_active_user + '@' + self.v_active_service
+        if self.conn_string=='':
+            return self.active_user + '@' + self.active_service
         else:
-            return self.v_active_user + '@' + self.v_active_service
+            return self.active_user + '@' + self.active_service
 
     def PrintDatabaseDetails(self):
-        return self.v_active_server + ':' + self.v_active_port
+        return self.active_server + ':' + self.active_port
 
-    def HandleUpdateDeleteRules(self, p_update_rule, p_delete_rule):
-        v_rules = ''
-        if p_update_rule.strip() != '':
-            v_rules += ' on update ' + p_delete_rule + ' '
-        if p_delete_rule.strip() != '':
-            v_rules += ' on delete ' + p_delete_rule + ' '
-        return v_rules
+    def HandleUpdateDeleteRules(self, update_rule, delete_rule):
+        rules = ''
+        if update_rule.strip() != '':
+            rules += ' on update ' + update_rule + ' '
+        if delete_rule.strip() != '':
+            rules += ' on delete ' + delete_rule + ' '
+        return rules
 
     def TestConnection(self):
-        v_return = ''
-        if self.v_conn_string and self.v_conn_string_error!='':
-            return self.v_conn_string_error
+        return_data = ''
+        if self.conn_string and self.conn_string_error!='':
+            return self.conn_string_error
 
         try:
-            self.v_connection.Open()
-            self.v_connection.Close()
-            v_return = 'Connection successful.'
+            self.connection.Open()
+            self.connection.Close()
+            return_data = 'Connection successful.'
         except Exception as exc:
-            v_return = str(exc)
-        return v_return
+            return_data = str(exc)
+        return return_data
 
-    def GetErrorPosition(self, p_error_message, sql_cmd):
+    def GetErrorPosition(self, error_message, sql_cmd):
         ret = None
         try:
-            row = re.search('.*\sat line (\d+)', p_error_message).group(1)
+            row = re.search('.*\sat line (\d+)', error_message).group(1)
             ret = {'row': row, 'col': 0}
         except AttributeError:
             pass
@@ -236,20 +237,20 @@ class MariaDB:
         return ret
 
     @lock_required
-    def Query(self, p_sql, p_alltypesstr=False, p_simple=False):
-        return self.v_connection.Query(p_sql, p_alltypesstr, p_simple)
+    def Query(self, sql, alltypesstr=False, simple=False):
+        return self.connection.Query(sql, alltypesstr, simple)
 
     @lock_required
-    def ExecuteScalar(self, p_sql):
-        return self.v_connection.ExecuteScalar(p_sql)
+    def ExecuteScalar(self, sql):
+        return self.connection.ExecuteScalar(sql)
 
     @lock_required
-    def Execute(self, p_sql):
-        return self.v_connection.Execute(p_sql)
+    def Execute(self, sql):
+        return self.connection.Execute(sql)
 
     @lock_required
-    def Terminate(self, p_type):
-        return self.v_connection.Terminate(p_type)
+    def Terminate(self, pid):
+        return self.connection.Terminate(pid)
 
     def QueryRoles(self):
         return self.Query("""
@@ -262,15 +263,15 @@ class MariaDB:
         return self.Query('show databases', True, True)
 
     def QuerySchemas(self):
-        return self.v_connection.Query('select schema_name as schema_name from information_schema.schemata', True)
+        return self.connection.Query('select schema_name as schema_name from information_schema.schemata', True)
 
-    def QueryTables(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and table_schema = '{0}' ".format(p_schema)
+    def QueryTables(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and table_schema = '{0}' ".format(self.schema)
         return self.Query('''
             select table_name as "table_name",
                    table_schema as "table_schema"
@@ -278,22 +279,22 @@ class MariaDB:
             where table_type in ('BASE TABLE', 'SYSTEM VIEW')
             {0}
             order by 2, 1
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryTablesFields(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and t.table_schema = '{0}' ".format(p_schema)
+    def QueryTablesFields(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and t.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and t.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and t.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and t.table_name = '{0}' ".format(p_table)
+            if table:
+                query_filter = "and t.table_name = '{0}' ".format(table)
         return self.Query('''
             select distinct c.table_name as "table_name",
                    c.column_name as "column_name",
@@ -310,22 +311,22 @@ class MariaDB:
             {0}
             order by c.table_name,
                      c.ordinal_position
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryTablesForeignKeys(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and i.table_schema = '{0}' and i.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and i.table_schema = '{0}' and i.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and i.table_schema = '{0}' ".format(p_schema)
+    def QueryTablesForeignKeys(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and i.table_schema = '{0}' and i.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and i.table_schema = '{0}' and i.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and i.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and i.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and i.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and i.table_name = '{0}' ".format(p_table)
+            if table:
+                query_filter = "and i.table_name = '{0}' ".format(table)
         return self.Query('''
             select distinct i.constraint_name as "constraint_name",
                    i.table_name as "table_name",
@@ -341,32 +342,32 @@ class MariaDB:
             {0}
             order by i.constraint_name,
                      i.table_name
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryTablesForeignKeysColumns(self, p_fkey, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and i.table_schema = '{0}' and i.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and i.table_schema = '{0}' and i.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and i.table_schema = '{0}' ".format(p_schema)
+    def QueryTablesForeignKeysColumns(self, fkey, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and i.table_schema = '{0}' and i.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and i.table_schema = '{0}' and i.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and i.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and i.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and i.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and i.table_name = '{0}' ".format(p_table)
+            if table:
+                query_filter = "and i.table_name = '{0}' ".format(table)
 
-        if type(p_fkey) == list:
-                fkeys = p_fkey
+        if type(fkey) == list:
+                fkeys = fkey
         else:
-            fkeys = [p_fkey]
+            fkeys = [fkey]
 
         fkey_list = ', '.join(list(f'\'{str(e)}\'' for e in fkeys))
 
         if fkey_list:
-            v_filter = v_filter + "and i.constraint_name in ({0}) ".format(fkey_list)
+            query_filter = query_filter + "and i.constraint_name in ({0}) ".format(fkey_list)
 
         return self.Query('''
             select distinct i.constraint_name as "constraint_name",
@@ -387,22 +388,22 @@ class MariaDB:
             order by i.constraint_name,
                      i.table_name,
                      k.ordinal_position
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryTablesPrimaryKeys(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and t.table_schema = '{0}' ".format(p_schema)
+    def QueryTablesPrimaryKeys(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and t.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and t.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and t.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and t.table_name = '{0}' ".format(p_table)
+            if table:
+                query_filter = "and t.table_name = '{0}' ".format(table)
         return self.Query('''
             select distinct concat('pk_', t.table_name) as constraint_name,
                    t.table_name,
@@ -412,23 +413,23 @@ class MariaDB:
             {0}
             order by t.table_schema,
                      t.table_name
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryTablesPrimaryKeysColumns(self, p_pkey, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and t.table_schema = '{0}' ".format(p_schema)
+    def QueryTablesPrimaryKeysColumns(self, pkey, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and t.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and t.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and t.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and t.table_name = '{0}' ".format(p_table)
-        v_filter = "and concat('pk_', t.table_name) = '{0}' ".format(p_pkey)
+            if table:
+                query_filter = "and t.table_name = '{0}' ".format(table)
+        query_filter = "and concat('pk_', t.table_name) = '{0}' ".format(pkey)
         return self.Query('''
             select distinct k.column_name as "column_name",
                    k.ordinal_position
@@ -438,22 +439,22 @@ class MariaDB:
             where t.constraint_type = 'PRIMARY KEY'
             {0}
             order by k.ordinal_position
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryTablesUniques(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and t.table_schema = '{0}' ".format(p_schema)
+    def QueryTablesUniques(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and t.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and t.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and t.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and t.table_name = '{0}' ".format(p_table)
+            if table:
+                query_filter = "and t.table_name = '{0}' ".format(table)
         return self.Query('''
             select distinct t.constraint_name as "constraint_name",
                    t.table_name,
@@ -463,23 +464,23 @@ class MariaDB:
             {0}
             order by t.table_schema,
                      t.table_name
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryTablesUniquesColumns(self, p_unique, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and t.table_schema = '{0}' ".format(p_schema)
+    def QueryTablesUniquesColumns(self, unique_name, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and t.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and t.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and t.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and t.table_name = '{0}' ".format(p_table)
-        v_filter = "and t.constraint_name = '{0}' ".format(p_unique)
+            if table:
+                query_filter = "and t.table_name = '{0}' ".format(table)
+        query_filter = "and t.constraint_name = '{0}' ".format(unique_name)
         return self.Query('''
             select distinct k.column_name as "column_name",
                    k.ordinal_position
@@ -489,31 +490,31 @@ class MariaDB:
             where t.constraint_type = 'UNIQUE'
             {0}
             order by k.ordinal_position
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryTablesIndexes(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and t.table_schema = '{0}' ".format(p_schema)
+    def QueryTablesIndexes(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and t.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and t.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and t.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and t.table_name = '{0}' ".format(p_table)
+            if table:
+                query_filter = "and t.table_name = '{0}' ".format(table)
         return self.Query('''
             select t.table_schema as "table_name",
                    t.table_name as "table_name",
-                   (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) as index_name,
+                   t.index_name as "index_name",
                    case when t.non_unique = 1 then 'Non Unique' else 'Unique' end as uniqueness,
                     JSON_ARRAYAGG(t.column_name) as columns,
                     case 
-                        when tc.constraint_type = 'PRIMARY KEY' then TRUE 
-                        else FALSE 
+                        when tc.constraint_type = 'PRIMARY KEY' then "TRUE" 
+                        else "FALSE" 
                     end as is_primary,
                     t.index_type AS index_type
             from information_schema.statistics t
@@ -526,23 +527,23 @@ class MariaDB:
             {0}
             GROUP BY t.table_schema, t.table_name, t.index_name, t.non_unique, tc.constraint_type, t.index_type
             ORDER BY t.table_schema, t.table_name, t.index_name;
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryTablesIndexesColumns(self, p_index, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and t.table_schema = '{0}' ".format(p_schema)
+    def QueryTablesIndexesColumns(self, index_name, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and t.table_schema = '{0}' and t.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and t.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and t.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and t.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and t.table_name = '{0}' ".format(p_table)
-        v_filter = "and (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) = '{0}' ".format(p_index)
+            if table:
+                query_filter = "and t.table_name = '{0}' ".format(table)
+        query_filter += "and (case when t.index_name = 'PRIMARY' then concat('pk_', t.table_name) else t.index_name end) = '{0}' ".format(index_name)
         return self.Query('''
             select distinct t.column_name as "column_name",
                    t.seq_in_index
@@ -550,28 +551,28 @@ class MariaDB:
             where 1 = 1
             {0}
             order by t.seq_in_index
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryDataLimited(self, p_query, p_count=-1):
-        if p_count != -1:
+    def QueryDataLimited(self, query, count=-1):
+        if count != -1:
             try:
-                self.v_connection.Open()
-                v_data = self.v_connection.QueryBlock('select * from ( {0} ) t limit {1}'.format(p_query, p_count), p_count, True, True)
-                self.v_connection.Close()
-                return v_data
+                self.connection.Open()
+                data = self.connection.QueryBlock('select * from ( {0} ) t limit {1}'.format(query, count), count, True, True)
+                self.connection.Close()
+                return data
             except Spartacus.Database.Exception as exc:
                 try:
-                    self.v_connection.Cancel()
+                    self.connection.Cancel()
                 except:
                     pass
                 raise exc
         else:
-            return self.Query(p_query, True)
+            return self.Query(query, True)
 
-    def QueryTableRecords(self, p_column_list, p_table, p_schema, p_filter, p_count=-1):
-        v_limit = ''
-        if p_count != -1:
-            v_limit = ' limit ' + p_count
+    def QueryTableRecords(self, column_list, table, schema, query_filter, count=-1):
+        limit = ''
+        if count != -1:
+            limit = ' limit ' + count
         return self.Query('''
             select *
             from (
@@ -581,20 +582,20 @@ class MariaDB:
             ) t
             {3}
         '''.format(
-                p_column_list,
-                p_table,
-                p_filter,
-                v_limit
+                column_list,
+                table,
+                query_filter,
+                limit
             ), True
         )
 
-    def QueryFunctions(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and t.routine_schema = '{0}' ".format(p_schema)
+    def QueryFunctions(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and t.routine_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and t.routine_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and t.routine_schema = '{0}' ".format(self.schema)
         return self.Query('''
             select t.routine_schema as schema_name,
                    t.routine_name as id,
@@ -603,13 +604,13 @@ class MariaDB:
             where t.routine_type = 'FUNCTION'
             {0}
             order by 2
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryFunctionFields(self, p_function, p_schema):
-        if p_schema:
-            v_schema = p_schema
+    def QueryFunctionFields(self, function_name, schema):
+        if schema:
+            schema_name = schema
         else:
-            v_schema = self.v_schema
+            schema_name = self.schema
         return self.Query('''
             select 'O' as type,
                    concat('returns ', t.data_type) as name,
@@ -631,20 +632,20 @@ class MariaDB:
               and t.specific_schema = '{0}'
               and t.specific_name = '{1}'
             order by 3 desc
-        '''.format(v_schema, p_function), True)
+        '''.format(schema_name, function_name), True)
 
-    def GetFunctionDefinition(self, p_function):
-        v_body = '--DROP FUNCTION {0};\n'.format(p_function)
-        v_body = v_body + self.Query('show create function {0}.{1}'.format(self.v_schema, p_function), True, True).Rows[0][2]
-        return v_body
+    def GetFunctionDefinition(self, function_name):
+        body = '--DROP FUNCTION {0};\n'.format(function_name)
+        body = body + self.Query('show create function {0}.{1}'.format(self.schema, function_name), True, True).Rows[0][2]
+        return body
 
-    def QueryProcedures(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and t.routine_schema = '{0}' ".format(p_schema)
+    def QueryProcedures(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and t.routine_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and t.routine_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and t.routine_schema = '{0}' ".format(self.schema)
         return self.Query('''
             select t.routine_schema as schema_name,
                    t.routine_name as id,
@@ -653,13 +654,13 @@ class MariaDB:
             where t.routine_type = 'PROCEDURE'
             {0}
             order by 2
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryProcedureFields(self, p_procedure, p_schema):
-        if p_schema:
-            v_schema = p_schema
+    def QueryProcedureFields(self, procedure, schema):
+        if schema:
+            schema_name = schema
         else:
-            v_schema = self.v_schema
+            schema_name = self.schema
         return self.Query('''
             select (case t.parameter_mode
                       when 'IN' then 'I'
@@ -672,20 +673,20 @@ class MariaDB:
             where t.specific_schema = '{0}'
               and t.specific_name = '{1}'
             order by 3 desc
-        '''.format(v_schema, p_procedure), True)
+        '''.format(schema_name, procedure), True)
 
-    def GetProcedureDefinition(self, p_procedure):
-        v_body = '--DROP PROCEDURE {0};\n'.format(p_procedure)
-        v_body = v_body + self.Query('show create procedure {0}.{1}'.format(self.v_schema, p_procedure), True, True).Rows[0][2]
-        return v_body
+    def GetProcedureDefinition(self, procedure):
+        body = '--DROP PROCEDURE {0};\n'.format(procedure)
+        body = body + self.Query('show create procedure {0}.{1}'.format(self.schema, procedure), True, True).Rows[0][2]
+        return body
 
-    def QuerySequences(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and table_schema = '{0}' ".format(p_schema)
+    def QuerySequences(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and table_schema = '{0}' ".format(self.schema)
         return self.Query('''
             select table_name as sequence_name,
                    table_schema as sequence_schema
@@ -693,15 +694,15 @@ class MariaDB:
             where table_type = 'SEQUENCE'
             {0}
             order by 2, 1
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryViews(self, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_schema:
-                v_filter = "and table_schema = '{0}' ".format(p_schema)
+    def QueryViews(self, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if schema:
+                query_filter = "and table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and table_schema = '{0}' ".format(self.schema)
         return self.Query('''
             select table_name as "table_name",
                    table_schema as "table_schema"
@@ -709,22 +710,22 @@ class MariaDB:
             where 1=1
             {0}
             order by 2, 1
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def QueryViewFields(self, p_table=None, p_all_schemas=False, p_schema=None):
-        v_filter = ''
-        if not p_all_schemas:
-            if p_table and p_schema:
-                v_filter = "and c.table_schema = '{0}' and c.table_name = '{1}' ".format(p_schema, p_table)
-            elif p_table:
-                v_filter = "and c.table_schema = '{0}' and c.table_name = '{1}' ".format(self.v_schema, p_table)
-            elif p_schema:
-                v_filter = "and c.table_schema = '{0}' ".format(p_schema)
+    def QueryViewFields(self, table=None, all_schemas=False, schema=None):
+        query_filter = ''
+        if not all_schemas:
+            if table and schema:
+                query_filter = "and c.table_schema = '{0}' and c.table_name = '{1}' ".format(schema, table)
+            elif table:
+                query_filter = "and c.table_schema = '{0}' and c.table_name = '{1}' ".format(self.schema, table)
+            elif schema:
+                query_filter = "and c.table_schema = '{0}' ".format(schema)
             else:
-                v_filter = "and c.table_schema = '{0}' ".format(self.v_schema)
+                query_filter = "and c.table_schema = '{0}' ".format(self.schema)
         else:
-            if p_table:
-                v_filter = "and c.table_name = '{0}' ".format(p_table)
+            if table:
+                query_filter = "and c.table_name = '{0}' ".format(table)
         return self.Query('''
             select distinct c.table_name as "table_name",
                    c.column_name as "column_name",
@@ -741,440 +742,250 @@ class MariaDB:
             {0}
             order by c.table_name,
                      c.ordinal_position
-        '''.format(v_filter), True)
+        '''.format(query_filter), True)
 
-    def GetViewDefinition(self, p_view, p_schema):
-        if p_schema:
-            v_schema = p_schema
+    def GetViewDefinition(self, view, schema):
+        if schema:
+            schema_name = schema
         else:
-            v_schema = self.v_schema
-        return self.Query('show create view {0}.{1}'.format(v_schema, p_view), True, True).Rows[0][1]
+            schema_name = self.schema
+        return self.Query('show create view {0}.{1}'.format(schema_name, view), True, True).Rows[0][1]
 
     def TemplateCreateRole(self):
-        return Template('''CREATE USER name
--- IDENTIFIED BY password
--- REQUIRE NONE
--- REQUIRE SSL
--- REQUIRE X509
--- REQUIRE CIPHER 'cipher'
--- REQUIRE ISSUER 'issuer'
--- REQUIRE SUBJECT 'subject'
--- WITH MAX_QUERIES_PER_HOUR count
--- WITH MAX_UPDATES_PER_HOUR count
--- WITH MAX_CONNECTIONS_PER_HOUR count
--- WITH MAX_USER_CONNECTIONS count
--- PASSWORD EXPIRE
--- ACCOUNT { LOCK | UNLOCK }
-''')
+        template = get_template("mariadb", "create_role")
+        return template.template
 
     def TemplateAlterRole(self):
-        return Template('''ALTER USER #role_name#
--- IDENTIFIED BY password
--- REQUIRE NONE
--- REQUIRE SSL
--- REQUIRE X509
--- REQUIRE CIPHER 'cipher'
--- REQUIRE ISSUER 'issuer'
--- REQUIRE SUBJECT 'subject'
--- WITH MAX_QUERIES_PER_HOUR count
--- WITH MAX_UPDATES_PER_HOUR count
--- WITH MAX_CONNECTIONS_PER_HOUR count
--- WITH MAX_USER_CONNECTIONS count
--- PASSWORD EXPIRE
--- ACCOUNT { LOCK | UNLOCK }
--- RENAME USER #role_name# TO new_name
--- SET PASSWORD FOR #role_name# = password
-''')
+        template = get_template("mariadb", "alter_role")
+        return template.template
 
     def TemplateDropRole(self):
-        return Template('DROP USER #role_name#')
+        template = get_template("mariadb", "drop_role")
+        return template.template
 
     def TemplateCreateDatabase(self):
-        return Template('''CREATE DATABASE name
--- CHARACTER SET charset
--- COLLATE collate
-''')
+        template = get_template("mariadb", "create_database")
+        return template.template
 
     def TemplateAlterDatabase(self):
-        return Template('''ALTER DATABASE #database_name#
--- CHARACTER SET charset
--- COLLATE collate
-''')
+        template = get_template("mariadb", "alter_database")
+        return template.template
 
     def TemplateDropDatabase(self):
-        return Template('DROP DATABASE #database_name#')
+        template = get_template("mariadb", "drop_database")
+        return template.template
 
     def TemplateCreateFunction(self):
-        return Template('''CREATE FUNCTION #schema_name#.name
-(
--- argname argtype
-)
-RETURNS rettype
-BEGIN
--- DECLARE variables
--- definition
--- RETURN variable | value
-END;
-''')
+        template = get_template("mariadb", "create_function")
+        return template.template
 
     def TemplateDropFunction(self):
-        return Template('DROP FUNCTION #function_name#')
+        template = get_template("mariadb", "drop_function")
+        return template.template
 
     def TemplateCreateProcedure(self):
-        return Template('''CREATE PROCEDURE #schema_name#.name
-(
--- [argmode] argname argtype
-)
-BEGIN
--- DECLARE variables
--- definition
-END;
-''')
+        template = get_template("mariadb", "create_procedure")
+        return template.template
 
     def TemplateDropProcedure(self):
-        return Template('DROP PROCEDURE #function_name#')
+        template = get_template("mariadb", "drop_procedure")
+        return template.template
 
     def TemplateCreateTable(self):
-        return Template('''CREATE
--- TEMPORARY
-TABLE #schema_name#.table_name
--- AS query
-(
-    column_name data_type
-    -- NOT NULL
-    -- NULL
-    -- DEFAULT default_value
-    -- AUTO_INCREMENT
-    -- UNIQUE
-    -- PRIMARY KEY
-    -- COMMENT 'string'
-    -- COLUMN_FORMAT { FIXED | DYNAMIC | DEFAULT }
-    -- STORAGE { DISK | MEMORY | DEFAULT }
-    -- [ GENERATED ALWAYS ] AS (expression) [ VIRTUAL | STORED ]
-    -- [ CONSTRAINT [ symbol ] ] PRIMARY KEY [ USING { BTREE | HASH } ] ( column_name, ... )
-    -- { INDEX | KEY } [ index_name ] [ USING { BTREE | HASH } ] ( column_name, ... )
-    -- [ CONSTRAINT [ symbol ] ] UNIQUE [ INDEX | KEY ] [ index_name ] [ USING { BTREE | HASH } ] ( column_name, ... )
-    -- { FULLTEXT | SPATIAL } [ INDEX | KEY ] [ index_name ] [ USING { BTREE | HASH } ] ( column_name, ... )
-    -- [ CONSTRAINT [ symbol ] ] FOREIGN KEY [ index_name ]  ( column_name, ... ) REFERENCES reftable ( refcolumn, ... ) [MATCH FULL | MATCH PARTIAL | MATCH SIMPLE] [ON DELETE { RESTRICT | CASCADE | SET NULL | NO ACTION | SET DEFAULT }] [ON UPDATE { RESTRICT | CASCADE | SET NULL | NO ACTION | SET DEFAULT }]
-    -- CHECK ( expr )
-)
--- AUTO_INCREMENT value
--- AVG_ROW_LENGTH value
--- [ DEFAULT ] CHARACTER SET charset_name
--- CHECKSUM { 0 | 1 }
--- [ DEFAULT ] COLLATE collation_name
--- COMMENT 'string'
--- COMPRESSION { 'ZLIB' | 'LZ4' | 'NONE' }
--- CONNECTION 'connect_string'
--- { DATA | INDEX } DIRECTORY 'absolute path to directory'
--- DELAY_KEY_WRITE { 0 | 1 }
--- ENCRYPTION { 'Y' | 'N' }
--- ENGINE engine_name
--- INSERT_METHOD { NO | FIRST | LAST }
--- KEY_BLOCK_SIZE value
--- MAX_ROWS value
--- MIN_ROWS value
--- PACK_KEYS { 0 | 1 | DEFAULT }
--- PASSWORD 'string'
--- ROW_FORMAT { DEFAULT | DYNAMIC | FIXED | COMPRESSED | REDUNDANT | COMPACT }
--- STATS_AUTO_RECALC { DEFAULT | 0 | 1 }
--- STATS_PERSISTENT { DEFAULT | 0 | 1 }
--- STATS_SAMPLE_PAGES value
--- TABLESPACE tablespace_name [STORAGE { DISK | MEMORY | DEFAULT } ]
-''')
+        template = get_template("mariadb", "create_table")
+        return template.template
 
     def TemplateAlterTable(self):
-        return Template('''ALTER TABLE #table_name#
--- ADD [ COLUMN ] col_name column_definition  [ FIRST | AFTER col_name ]
--- ADD [ COLUMN ] ( col_name column_definition , ... )
--- ADD { INDEX | KEY } [ index_name ] USING { BTREE | HASH } (index_col_name , ... )
--- ADD [ CONSTRAINT [ symbol ] ] PRIMARY KEY USING { BTREE | HASH } ( index_col_name , ... )
--- ADD [ CONSTRAINT [ symbol ] ] UNIQUE [ INDEX | KEY ] [ index_name ] USING { BTREE | HASH } ( index_col_name , ... )
--- ADD FULLTEXT [ INDEX | KEY ] ( index_col_name , ... )
--- ADD SPATIAL [ INDEX | KEY ] [ index_name ] (index_col_name , ... )
--- ADD [ CONSTRAINT [ symbol ] ] FOREIGN KEY [ index_name ] ( index_col_name , ... ) reference_definition
--- ALGORITHM { DEFAULT | INPLACE | COPY }
--- ALTER [ COLUMN ] col_name { SET DEFAULT literal | DROP DEFAULT }
--- CHANGE [ COLUMN ] old_col_name new_col_name column_definition [ FIRST | AFTER col_name ]
--- [DEFAULT] CHARACTER SET charset_name [ COLLATE collation_name ]
--- CONVERT TO CHARACTER SET charset_name [ COLLATE collation_name ]
--- { DISABLE | ENABLE } KEYS
--- { DISCARD | IMPORT } TABLESPACE
--- DROP [ COLUMN ] col_name
--- DROP { INDEX | KEY } index_name
--- DROP PRIMARY KEY
--- DROP FOREIGN KEY fk_symbol
--- FORCE
--- LOCK { DEFAULT | NONE | SHARED | EXCLUSIVE }
--- MODIFY [ COLUMN ] col_name column_definition [ FIRST | AFTER col_name ]
--- ORDER BY col_name [, col_name] ...
--- RENAME { INDEX | KEY } old_index_name TO new_index_name
--- RENAME [ TO | AS ] new_tbl_name
--- { WITHOUT | WITH } VALIDATION
--- ADD PARTITION ( partition_definition )
--- DROP PARTITION partition_names
--- DISCARD PARTITION { partition_names | ALL } TABLESPACE
--- IMPORT PARTITION { partition_names | ALL } TABLESPACE
--- TRUNCATE PARTITION { partition_names | ALL }
--- COALESCE PARTITION number
--- REORGANIZE PARTITION partition_names INTO ( partition_definitions )
--- EXCHANGE PARTITION partition_name WITH TABLE tbl_name [ { WITH | WITHOUT } VALIDATION ]
--- ANALYZE PARTITION { partition_names | ALL }
--- CHECK PARTITION { partition_names | ALL }
--- OPTIMIZE PARTITION { partition_names | ALL }
--- REBUILD PARTITION { partition_names | ALL }
--- REPAIR PARTITION { partition_names | ALL }
--- REMOVE PARTITIONING
--- UPGRADE PARTITIONING
--- AUTO_INCREMENT value
--- AVG_ROW_LENGTH value
--- [ DEFAULT ] CHARACTER SET charset_name
--- CHECKSUM { 0 | 1 }
--- [ DEFAULT ] COLLATE collation_name
--- COMMENT 'string'
--- COMPRESSION { 'ZLIB' | 'LZ4' | 'NONE' }
--- CONNECTION 'connect_string'
--- { DATA | INDEX } DIRECTORY 'absolute path to directory'
--- DELAY_KEY_WRITE { 0 | 1 }
--- ENCRYPTION { 'Y' | 'N' }
--- ENGINE engine_name
--- INSERT_METHOD { NO | FIRST | LAST }
--- KEY_BLOCK_SIZE value
--- MAX_ROWS value
--- MIN_ROWS value
--- PACK_KEYS { 0 | 1 | DEFAULT }
--- PASSWORD 'string'
--- ROW_FORMAT { DEFAULT | DYNAMIC | FIXED | COMPRESSED | REDUNDANT | COMPACT }
--- STATS_AUTO_RECALC { DEFAULT | 0 | 1 }
--- STATS_PERSISTENT { DEFAULT | 0 | 1 }
--- STATS_SAMPLE_PAGES value
--- TABLESPACE tablespace_name [STORAGE { DISK | MEMORY | DEFAULT } ]
-''')
+        template = get_template("mariadb", "alter_table")
+        return template.template
 
     def TemplateDropTable(self):
-        return Template('''DROP TABLE #table_name#
--- RESTRICT
--- CASCADE
-''')
+        template = get_template("mariadb", "drop_table")
+        return template.template
 
     def TemplateCreateColumn(self):
-        return Template('''ALTER TABLE #table_name#
-ADD name data_type
---DEFAULT expr
---NOT NULL
-''')
+        template = get_template("mariadb", "create_column")
+        return template.template
 
     def TemplateAlterColumn(self):
-        return Template('''ALTER TABLE #table_name#
--- ALTER #column_name# { datatype | DEFAULT expr | [ NULL | NOT NULL ]}
--- CHANGE COLUMN #column_name# TO new_name
-'''
-)
+        template = get_template("mariadb", "alter_column")
+        return template.template
 
     def TemplateDropColumn(self):
-        return Template('''ALTER TABLE #table_name#
-DROP COLUMN #column_name#
-''')
+        template = get_template("mariadb", "drop_column")
+        return template.template
 
     def TemplateCreatePrimaryKey(self):
-        return Template('''ALTER TABLE #table_name#
-ADD CONSTRAINT name
-PRIMARY KEY ( column_name [, ... ] )
-''')
+        template = get_template("mariadb", "create_primarykey")
+        return template.template
 
     def TemplateDropPrimaryKey(self):
-        return Template('''ALTER TABLE #table_name#
-DROP PRIMARY KEY #constraint_name#
---CASCADE
-''')
+        template = get_template("mariadb", "drop_primarykey")
+        return template.template
 
     def TemplateCreateUnique(self):
-        return Template('''ALTER TABLE #table_name#
-ADD CONSTRAINT name
-UNIQUE ( column_name [, ... ] )
-''')
+        template = get_template("mariadb", "create_unique")
+        return template.template
 
     def TemplateDropUnique(self):
-        return Template('''ALTER TABLE #table_name#
-DROP #constraint_name#
-''')
+        template = get_template("mariadb", "drop_unique")
+        return template.template
 
     def TemplateCreateForeignKey(self):
-        return Template('''ALTER TABLE #table_name#
-ADD CONSTRAINT name
-FOREIGN KEY ( column_name [, ... ] )
-REFERENCES reftable [ ( refcolumn [, ... ] ) ]
-''')
+        template = get_template("mariadb", "create_foreignkey")
+        return template.template
 
     def TemplateDropForeignKey(self):
-        return Template('''ALTER TABLE #table_name#
-DROP FOREIGN KEY #constraint_name#
-''')
+        template = get_template("mariadb", "drop_foreignkey")
+        return template.template
 
     def TemplateCreateIndex(self):
-        return Template('''CREATE [ UNIQUE ] INDEX name
-ON #table_name#
-( { column_name | ( expression ) } [ ASC | DESC ] )
-''')
+        template = get_template("mariadb", "create_index")
+        return template.template
 
     def TemplateDropIndex(self):
-        return Template('DROP INDEX #index_name#')
+        template = get_template("mariadb", "drop_index")
+        return template.template
 
     def TemplateCreateSequence(self):
-        return Template('''CREATE SEQUENCE #schema_name#.name
---INCREMENT BY increment
---MINVALUE minvalue | NOMINVALUE
---MAXVALUE maxvalue | NOMAXVALUE
---START WITH start
---CACHE cache | NOCACHE
---CYCLE | NOCYCLE
-''')
+        template = get_template("mariadb", "create_sequence")
+        return template.template
 
     def TemplateAlterSequence(self):
-        return Template('''ALTER SEQUENCE #sequence_name#
---INCREMENT BY increment
---MINVALUE minvalue | NOMINVALUE
---MAXVALUE maxvalue | NOMAXVALUE
---START WITH start
---CACHE cache | NOCACHE
---CYCLE | NOCYCLE
---RESTART WITH restart
-''')
+        template = get_template("mariadb", "alter_sequence")
+        return template.template
 
     def TemplateDropSequence(self):
-        return Template('DROP SEQUENCE #sequence_name#')
+        template = get_template("mariadb", "drop_sequence")
+        return template.template
 
     def TemplateCreateView(self):
-        return Template('''CREATE OR REPLACE VIEW #schema_name#.name AS
-SELECT ...
-''')
+        template = get_template("mariadb", "create_view")
+        return template.template
 
     def TemplateDropView(self):
-        return Template('''DROP VIEW #view_name#
--- RESTRICT
--- CASCADE
-''')
+        template = get_template("mariadb", "drop_view")
+        return template.template
 
-    def TemplateSelect(self, p_schema, p_table):
-        v_sql = 'SELECT t.'
-        v_fields = self.QueryTablesFields(p_table, False, p_schema)
-        if len(v_fields.Rows) > 0:
-            v_sql += '\n     , t.'.join([r['column_name'] for r in v_fields.Rows])
-        v_sql += '\nFROM {0}.{1} t'.format(p_schema, p_table)
-        v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
-        if len(v_pk.Rows) > 0:
-            v_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
-            if len(v_fields.Rows) > 0:
-                v_sql += '\nORDER BY t.'
-                v_sql += '\n       , t.'.join([r['column_name'] for r in v_fields.Rows])
-        return Template(v_sql)
+    def TemplateSelect(self, schema, table):
+        sql = 'SELECT t.'
+        fields = self.QueryTablesFields(table, False, schema)
+        if len(fields.Rows) > 0:
+            sql += '\n     , t.'.join([r['column_name'] for r in fields.Rows])
+        sql += '\nFROM {0}.{1} t'.format(schema, table)
+        pk = self.QueryTablesPrimaryKeys(table, False, schema)
+        if len(pk.Rows) > 0:
+            fields = self.QueryTablesPrimaryKeysColumns(pk.Rows[0]['constraint_name'], table, False, schema)
+            if len(fields.Rows) > 0:
+                sql += '\nORDER BY t.'
+                sql += '\n       , t.'.join([r['column_name'] for r in fields.Rows])
+        return Template(sql)
 
-    def TemplateInsert(self, p_schema, p_table):
-        v_fields = self.QueryTablesFields(p_table, False, p_schema)
-        if len(v_fields.Rows) > 0:
-            v_sql = 'INSERT INTO {0}.{1} (\n'.format(p_schema, p_table)
-            v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
-            if len(v_pk.Rows) > 0:
-                v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
-                v_pk_fields = [r['column_name'] for r in v_table_pk_fields.Rows]
-                v_values = []
-                v_first = True
-                for r in v_fields.Rows:
-                    if v_first:
-                        v_sql += '      {0}'.format(r['column_name'])
-                        if r['column_name'] in v_pk_fields:
-                            v_values.append('      ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
+    def TemplateInsert(self, schema, table):
+        fields = self.QueryTablesFields(table, False, schema)
+        if len(fields.Rows) > 0:
+            sql = 'INSERT INTO {0}.{1} (\n'.format(schema, table)
+            pk = self.QueryTablesPrimaryKeys(table, False, schema)
+            if len(pk.Rows) > 0:
+                table_pk_fields = self.QueryTablesPrimaryKeysColumns(pk.Rows[0]['constraint_name'], table, False, schema)
+                pk_fields = [r['column_name'] for r in table_pk_fields.Rows]
+                values = []
+                first = True
+                for r in fields.Rows:
+                    if first:
+                        sql += '      {0}'.format(r['column_name'])
+                        if r['column_name'] in pk_fields:
+                            values.append('      ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
                         elif r['nullable'] == 'YES':
-                            v_values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
-                        v_first = False
+                            values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                        first = False
                     else:
-                        v_sql += '\n    , {0}'.format(r['column_name'])
-                        if r['column_name'] in v_pk_fields:
-                            v_values.append('\n    , ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
+                        sql += '\n    , {0}'.format(r['column_name'])
+                        if r['column_name'] in pk_fields:
+                            values.append('\n    , ? -- {0} {1} PRIMARY KEY'.format(r['column_name'], r['data_type']))
                         elif r['nullable'] == 'YES':
-                            v_values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
             else:
-                v_values = []
-                v_first = True
-                for r in v_fields.Rows:
-                    if v_first:
-                        v_sql += '      {0}'.format(r['column_name'])
+                values = []
+                first = True
+                for r in fields.Rows:
+                    if first:
+                        sql += '      {0}'.format(r['column_name'])
                         if r['nullable'] == 'YES':
-                            v_values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('      ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
-                        v_first = False
+                            values.append('      ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+                        first = False
                     else:
-                        v_sql += '\n    , {0}'.format(r['column_name'])
+                        sql += '\n    , {0}'.format(r['column_name'])
                         if r['nullable'] == 'YES':
-                            v_values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
+                            values.append('\n    , ? -- {0} {1} NULLABLE'.format(r['column_name'], r['data_type']))
                         else:
-                            v_values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
-            v_sql += '\n) VALUES (\n'
-            for v in v_values:
-                v_sql += v
-            v_sql += '\n)'
+                            values.append('\n    , ? -- {0} {1}'.format(r['column_name'], r['data_type']))
+            sql += '\n) VALUES (\n'
+            for v in values:
+                sql += v
+            sql += '\n)'
         else:
-            v_sql = ''
-        return Template(v_sql)
+            sql = ''
+        return Template(sql)
 
-    def TemplateUpdate(self, p_schema, p_table):
-        v_fields = self.QueryTablesFields(p_table, False, p_schema)
-        if len(v_fields.Rows) > 0:
-            v_sql = 'UPDATE {0}.{1}\nSET '.format(p_schema, p_table)
-            v_pk = self.QueryTablesPrimaryKeys(p_table, False, p_schema)
-            if len(v_pk.Rows) > 0:
-                v_table_pk_fields = self.QueryTablesPrimaryKeysColumns(v_pk.Rows[0]['constraint_name'], p_table, False, p_schema)
-                v_pk_fields = [r['column_name'] for r in v_table_pk_fields.Rows]
-                v_values = []
-                v_first = True
-                for r in v_fields.Rows:
-                    if v_first:
-                        if r['column_name'] in v_pk_fields:
-                            v_sql += '{0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
+    def TemplateUpdate(self, schema, table):
+        fields = self.QueryTablesFields(table, False, schema)
+        if len(fields.Rows) > 0:
+            sql = 'UPDATE {0}.{1}\nSET '.format(schema, table)
+            pk = self.QueryTablesPrimaryKeys(table, False, schema)
+            if len(pk.Rows) > 0:
+                table_pk_fields = self.QueryTablesPrimaryKeysColumns(pk.Rows[0]['constraint_name'], table, False, schema)
+                pk_fields = [r['column_name'] for r in table_pk_fields.Rows]
+                values = []
+                first = True
+                for r in fields.Rows:
+                    if first:
+                        if r['column_name'] in pk_fields:
+                            sql += '{0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
                         elif r['nullable'] == 'YES':
-                            v_sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
-                        v_first = False
+                            sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                        first = False
                     else:
-                        if r['column_name'] in v_pk_fields:
-                            v_sql += '\n    , {0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
+                        if r['column_name'] in pk_fields:
+                            sql += '\n    , {0} = ? -- {1} PRIMARY KEY'.format(r['column_name'], r['data_type'])
                         elif r['nullable'] == 'YES':
-                            v_sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
             else:
-                v_values = []
-                v_first = True
-                for r in v_fields.Rows:
-                    if v_first:
+                values = []
+                first = True
+                for r in fields.Rows:
+                    if first:
                         if r['nullable'] == 'YES':
-                            v_sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '{0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
-                        v_first = False
+                            sql += '{0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+                        first = False
                     else:
                         if r['nullable'] == 'YES':
-                            v_sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
+                            sql += '\n    , {0} = ? -- {1} NULLABLE'.format(r['column_name'], r['data_type'])
                         else:
-                            v_sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
-            v_sql += '\nWHERE condition'
+                            sql += '\n    , {0} = ? -- {1}'.format(r['column_name'], r['data_type'])
+            sql += '\nWHERE condition'
         else:
-            v_sql = ''
-        return Template(v_sql)
+            sql = ''
+        return Template(sql)
 
     def TemplateDelete(self):
-        return Template('''DELETE FROM #table_name#
-WHERE condition
-''')
+        template = get_template("mariadb", "delete")
+        return template.template
 
-    def GetProperties(self, p_schema, p_table, p_object, p_type):
-        if p_type == 'table':
+    def GetProperties(self, schema, table, object_name, object_type):
+        if object_type == 'table':
             return self.Query('''
                 select table_schema as "Table Schema",
                        table_name as "Table Name",
@@ -1197,8 +1008,8 @@ WHERE condition
                 from information_schema.tables
                 where table_schema = '{0}'
                   and table_name = '{1}'
-            '''.format(p_schema, p_object), True).Transpose('Property', 'Value')
-        elif p_type == 'view':
+            '''.format(schema, object_name), True).Transpose('Property', 'Value')
+        elif object_type == 'view':
             return self.Query('''
                 select table_schema as "View Schema",
                        table_name as "View Name",
@@ -1211,8 +1022,8 @@ WHERE condition
                 from information_schema.views
                 where table_schema = '{0}'
                   and table_name = '{1}'
-            '''.format(p_schema, p_object), True).Transpose('Property', 'Value')
-        elif p_type == 'function':
+            '''.format(schema, object_name), True).Transpose('Property', 'Value')
+        elif object_type == 'function':
             return self.Query('''
                 select routine_schema as "Routine Schema",
                        routine_name as "Routine Name",
@@ -1242,8 +1053,8 @@ WHERE condition
                 where routine_type = 'FUNCTION'
                   and routine_schema = '{0}'
                   and routine_name = '{1}'
-            '''.format(p_schema, p_object), True).Transpose('Property', 'Value')
-        elif p_type == 'procedure':
+            '''.format(schema, object_name), True).Transpose('Property', 'Value')
+        elif object_type == 'procedure':
             return self.Query('''
                 select routine_schema as "Routine Schema",
                        routine_name as "Routine Name",
@@ -1273,8 +1084,8 @@ WHERE condition
                 where routine_type = 'PROCEDURE'
                   and routine_schema = '{0}'
                   and routine_name = '{1}'
-            '''.format(p_schema, p_object), True).Transpose('Property', 'Value')
-        elif p_type == 'sequence':
+            '''.format(schema, object_name), True).Transpose('Property', 'Value')
+        elif object_type == 'sequence':
             return self.Query('''
                 select next_not_cached_value as "Next Not Cached Value",
                        minimum_value as "Min Value",
@@ -1285,18 +1096,34 @@ WHERE condition
                        (case when 0 then 'No Cycle' else 'Cycle' end) as "Cycle Option",
                        cycle_count as "Cycle Count"
                 from {0}.{1}
-            '''.format(p_schema, p_object), True).Transpose('Property', 'Value')
+            '''.format(schema, object_name), True).Transpose('Property', 'Value')
+        elif object_type == 'index':
+            return self.Query('''SELECT
+                        table_schema,
+                        table_name,
+                        index_name,
+                        GROUP_CONCAT(column_name ORDER BY seq_in_index) AS columns,
+                        GROUP_CONCAT(seq_in_index ORDER BY seq_in_index) AS seq_in_index_list,
+                        GROUP_CONCAT(cardinality ORDER BY seq_in_index) AS cardinality_list,
+                        GROUP_CONCAT(non_unique ORDER BY seq_in_index) AS non_unique,
+                        GROUP_CONCAT(index_type ORDER BY seq_in_index) AS index_type
+                    FROM information_schema.statistics
+                    WHERE index_name = '{0}'
+                    AND table_schema = '{1}'
+                    AND table_name = '{2}'
+                    GROUP BY table_schema, table_name, index_name
+                    '''.format(object_name, schema, table)).Transpose('Property', 'Value')
         else:
             return None
 
-    def GetDDL(self, p_schema, p_table, p_object, p_type):
-        if p_type == 'function' or p_type == 'procedure':
-            return self.Query('show create {0} {1}.{2}'.format(p_type, p_schema, p_object), True, True).Rows[0][2]
-        else:
-            return self.Query('show create {0} {1}.{2}'.format(p_type, p_schema, p_object), True, True).Rows[0][1]
+    def GetDDL(self, schema, table, object_name, object_type):
+        if object_type == 'function' or object_type == 'procedure':
+            return self.Query('show create {0} {1}.{2}'.format(object_type, schema, object_name), True, True).Rows[0][2]
+        elif object_type in ["table", "view"]:
+            return self.Query('show create {0} {1}.{2}'.format(object_type, schema, object_name), True, True).Rows[0][1]
 
     def GetAutocompleteValues(self, p_columns, p_filter):
         return None
 
     def QueryTableDefinition(self, table=None):
-        return self.v_connection.Query("SHOW FULL COLUMNS FROM {0}".format(table), True)
+        return self.connection.Query("SHOW FULL COLUMNS FROM {0}".format(table), False)
