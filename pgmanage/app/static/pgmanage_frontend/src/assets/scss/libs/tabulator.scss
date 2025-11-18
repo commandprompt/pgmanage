@@ -294,5 +294,11 @@
                 border-top: 1px solid themed($borderColor);
             }
         }
+
+        .tabulator-menu-separator {
+            @include themify() {
+                border-top: 1px solid themed($borderColor);
+            }
+        }
     }
 }
