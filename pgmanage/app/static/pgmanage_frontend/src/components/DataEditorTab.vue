@@ -168,8 +168,10 @@ export default {
       headerSortClickElement:"icon",
       ajaxURL: "http://fake",
       ajaxRequestFunc: this.getTableData,
-      clipboard: "copy",
+      clipboard: true,
       clipboardCopyRowRange: "range",
+      clipboardPasteParser:"range",
+      clipboardPasteAction: "range",
       clipboardCopyConfig: {
         columnHeaders: false, //do not include column headers in clipboard output
         formatCells:false, //cell formatting on clipboard copy breaks rowFormatter's ability to colorize data grid rows
@@ -192,6 +194,19 @@ export default {
       });
 
       this.tabulator.on("cellEdited", this.cellEdited);
+      this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {
+        // manually trigger cellEdited on changed cells because clipboard paste doesn't do that
+         rows.forEach((row, rowIndex) => {
+          const rowValues = rowData[rowIndex];
+          const cells = row.getCells();
+
+          cells.forEach((cell, cellIndex) => {
+            if (!(cellIndex in rowValues)) return;   // no pasted data for this column
+
+            this.cellEdited(cell.getComponent())
+          });
+        });
+      });
       this.knex = Knex({ client: mappedDialect || 'postgres'})
       this.getTableColumns().then(() => {
         this.addHeaderMenuOverlayElement();
