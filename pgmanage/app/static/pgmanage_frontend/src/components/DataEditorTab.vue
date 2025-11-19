@@ -27,7 +27,7 @@
     </div>
   </div>
 
-    <div ref="tabulator" class="tabulator-custom data-grid grid-height">
+    <div ref="tabulator" class="tabulator-custom data-grid grid-height" @keydown.delete="clearSelectedData">
   </div>
 
   <div ref="bottomToolbar" class="data-editor__footer d-flex align-items-center justify-content-end p-2">
@@ -180,12 +180,12 @@ export default {
 
     table.on("tableBuilt", () => {
       this.tabulator = markRaw(table); // markRaw fixes problem with making tabulator proxy, that we don't need
-      this.tabulator.on("cellEditing", (cell) => { // Prevent Tabulator from hijacking left/right arrow keys and mouse click while editing
+      this.tabulator.on("cellEditing", (cell) => { // Prevent Tabulator from hijacking left/right arrow keys, delete key and mouse click while editing
         this.$nextTick(() => {
           const el = cell.getElement().querySelector("input");
           if (!el) return;
           el.addEventListener("keydown", (e) => {
-            if (["ArrowLeft", "ArrowRight"].includes(e.key)) e.stopPropagation();
+            if (["ArrowLeft", "ArrowRight", "Delete"].includes(e.key)) e.stopPropagation();
           });
           el.addEventListener("mousedown", (e) => {
             e.stopPropagation();
@@ -871,6 +871,14 @@ export default {
         e.stopPropagation();
         e.preventDefault();
       });
+    },
+    clearSelectedData() {
+      const range = last(this.tabulator.getRanges());
+      if (!range) return;
+
+      range.getCells().flat().forEach((cell) => {
+        cell.setValue(null);
+      })
     },
   },
   watch: {
