@@ -198,6 +198,8 @@ export default {
         // manually trigger cellEdited on changed cells because clipboard paste doesn't do that
          rows.forEach((row, rowIndex) => {
           const rowValues = rowData[rowIndex];
+          if (!rowValues) return;
+
           const cells = row.getCells();
 
           cells.forEach((cell, cellIndex) => {
