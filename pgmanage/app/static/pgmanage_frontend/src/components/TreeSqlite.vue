@@ -7,6 +7,7 @@
     @nodecontextmenu="onContextMenu"
     :allow-multiselect="false"
     @nodeclick="onClickHandler"
+    @click="handleLeftSideClick"
     tabindex="0"
   >
     <template v-slot:toggle="{ node }">

@@ -479,5 +479,20 @@ export default {
         });
       }
     },
+    handleLeftSideClick(event) {
+      let target = event.target;
+      let nodePath = null;
+
+      if (target.classList.contains("vue-power-tree-gap")) {
+        let parent = target.parentElement;
+        nodePath = JSON.parse(parent.getAttribute("path"));
+      } else if (!!target.getAttribute("path")) {
+        nodePath = JSON.parse(target.getAttribute("path"));
+      }
+      if (!nodePath) return;
+      let node = this.$refs.tree.getNode(nodePath);
+      this.$refs.tree.select(nodePath);
+      this.onClickHandler(node, event);
+    }
   },
 };
