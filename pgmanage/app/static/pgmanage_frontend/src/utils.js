@@ -51,4 +51,17 @@ function findChild(node, type) {
   return (node.children || []).find((child) => child.data?.type === type);
 }
 
-export { truncateText, extractOrderByClause, findChild, findNode };
+function splitStringInHalf(str) {
+  const middleIndex = Math.ceil(str.length / 2);
+  const firstHalf = str.slice(0, middleIndex);
+  const secondHalf = str.slice(middleIndex);
+  return [firstHalf, secondHalf];
+}
+
+export {
+  truncateText,
+  extractOrderByClause,
+  findChild,
+  findNode,
+  splitStringInHalf,
+};
