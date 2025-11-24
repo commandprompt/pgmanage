@@ -479,7 +479,7 @@ export default {
         });
       }
     },
-    handleLeftSideClick(event) {
+    resolveNodeFromEvent(event) {
       let target = event.target;
       let nodePath = null;
 
@@ -489,10 +489,25 @@ export default {
       } else if (!!target.getAttribute("path")) {
         nodePath = JSON.parse(target.getAttribute("path"));
       }
+
       if (!nodePath) return;
-      let node = this.$refs.tree.getNode(nodePath);
-      this.$refs.tree.select(nodePath);
+
+      const node = this.$refs.tree.getNode(nodePath);
+
+      return node;
+    },
+    handleLeftSideClick(event) {
+      const node = this.resolveNodeFromEvent(event);
+      if (!node) return;
+      
+      this.$refs.tree.select(node.path);
       this.onClickHandler(node, event);
-    }
+    },
+    handleLeftSideDblClick(event) {
+      const node = this.resolveNodeFromEvent(event);
+      if (!node) return;
+
+      this.doubleClickNode(node);
+    },
   },
 };

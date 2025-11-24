@@ -1,6 +1,6 @@
 <template>
   <PowerTree ref="tree" v-model="nodes" @nodedblclick="doubleClickNode" @toggle="onToggle"
-    @nodecontextmenu="onContextMenu" :allow-multiselect="false" @nodeclick="onClickHandler" @click="handleLeftSideClick" tabindex="0">
+    @nodecontextmenu="onContextMenu" :allow-multiselect="false" @nodeclick="onClickHandler" @click="handleLeftSideClick" @dblclick="handleLeftSideDblClick" tabindex="0">
     <template v-slot:toggle="{ node }">
       <i v-if="node.isExpanded" class="exp_col fas fa-chevron-down"></i>
       <i v-if="!node.isExpanded" class="exp_col fas fa-chevron-right"></i>
