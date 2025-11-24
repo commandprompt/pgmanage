@@ -27,7 +27,7 @@
               aria-labelledby="settings_shortcuts-tab">
               <div id="div_shortcut_background_dark" style="display: block; visibility: hidden;" ref="shortcutBackground">
                 <div style="position: absolute; top: 40%; width: 100%;">Press key combination... (ESC to cancel)</div>
-                <div v-if="hasConflicts" style="position: absolute; top: 50%; width: 100%;">This combination is already used...</div>
+                <div v-if="hasConflicts" style="position: absolute; top: 50%; width: 100%;">{{ conflictText }}</div>
               </div>
 
               <div v-for="(shortcut, idx) in shortcuts" :key="idx" class="row">
@@ -258,7 +258,8 @@ export default {
       fallbackFontSize: null,
       fallbackTheme: null,
       hidden: true,
-      hasConflicts: false
+      hasConflicts: false,
+      conflictText: '',
     }
   },
   validations() {
@@ -607,6 +608,13 @@ export default {
       if (event.keyCode == 16 || event.keyCode == 17 || event.keyCode == 18 || event.keyCode == 91)
         return;
 
+      // Prevent disallowed hotkeys
+      if (this.isDisallowedHotkey(event)) {
+        this.hasConflicts = true;
+        this.conflictText = "This combination cannot be used for shortcuts";
+        return;
+      }
+
       // check for potential hotkey conflicts
       for(const [name, shortcut] of Object.entries(settingsStore.shortcuts)) {
         if(name == this.shortcutObject.button.id)
@@ -622,6 +630,7 @@ export default {
           && shortcut.shortcut_key === keyPressed
         ) {
           this.hasConflicts = true;
+          this.conflictText = "This combination is already used...";
           return;
         }
       }
@@ -803,6 +812,40 @@ export default {
         this.fallbackTheme = null
       }
     },
+    isDisallowedHotkey(event) {
+      const key = event.key;
+      const code = event.code;
+
+      const blockedCodes = new Set([
+        'Tab',
+        'CapsLock',
+        'ContextMenu',
+        'Backspace',
+        'Home',
+        'End',
+        'PageUp',
+        'PageDown',
+        'ArrowUp',
+        'ArrowDown',
+        'ArrowLeft',
+        'ArrowRight',
+      ]);
+
+      if (blockedCodes.has(code)) {
+        return true;
+      }
+
+      if (event.shiftKey && code.startsWith('Arrow')) {
+        return true;
+      }
+
+      if (event.ctrlKey) {
+        const ctrlBlocked = new Set(['c', 'v', 'z']);
+        if (ctrlBlocked.has(key)) return true;
+      }
+
+      return false;
+    }
   }
 }
 </script>
