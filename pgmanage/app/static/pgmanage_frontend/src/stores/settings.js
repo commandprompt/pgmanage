@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { showToast } from "../notification_control.js";
 import moment from "moment";
-import { Modal } from "bootstrap";
+import { Modal, Tab } from "bootstrap";
 import { handleError } from "../logging/utils.js";
 
 const useSettingsStore = defineStore("settings", {
@@ -122,9 +122,11 @@ const useSettingsStore = defineStore("settings", {
       this.scrollTree = value;
     },
     showModal() {
-      Modal.getOrCreateInstance('#modal_settings', {
-        backdrop: 'static', keyboard: false
-      }).show()
+      Modal.getOrCreateInstance("#modal_settings", {
+        backdrop: "static",
+      }).show();
+      const tab = new Tab(document.querySelector('#settings_shortcuts-tab'));
+      tab.show();
     },
   },
 });
