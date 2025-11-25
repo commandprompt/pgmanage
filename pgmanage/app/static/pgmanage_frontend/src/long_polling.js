@@ -7,6 +7,7 @@ import { getCookie } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
 import { emitter } from './emitter';
 import { handleError } from './logging/utils';
+import { tabsStore } from './stores/stores_initializer';
 
 const uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4})
 
@@ -21,7 +22,11 @@ $(function () {
 });
 
 // notify back-end about session termination
-$(window).on('beforeunload', () => {
+$(window).on('beforeunload', (event) => {
+  if (tabsStore.hasAnyUnsavedChanges) {
+    event.preventDefault();
+    event.returnValue = "";
+  }
   const data = new FormData();
   data.append('csrfmiddlewaretoken', getCookie('pgmanage_csrftoken'))
   navigator.sendBeacon(`${app_base_path}/clear_client/`, data)

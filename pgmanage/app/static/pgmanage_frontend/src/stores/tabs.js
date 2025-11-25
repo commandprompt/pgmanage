@@ -30,6 +30,13 @@ const useTabsStore = defineStore("tabs", {
     selectablePrimaryTabs() {
       return this.tabs.filter((tab) => tab.selectable);
     },
+    hasAnyUnsavedChanges() {
+      return this.tabs.some(primaryTab => {
+        return primaryTab.metaData?.secondaryTabs?.some(
+          sec => sec.metaData?.hasUnsavedChanges
+        );
+      });
+    },
   },
   actions: {
     addTab({
