@@ -72,6 +72,7 @@ export default {
     });
     const treeEl = document.getElementById(`${this.workspaceId}_tree`);
     if (treeEl) {
+      treeEl.addEventListener("contextmenu", (e) => { e.preventDefault(); return false; });
       treeEl.addEventListener('keydown', this.handleTreeKeyboardNavigation);
     }
   },

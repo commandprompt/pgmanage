@@ -27,7 +27,8 @@
     </div>
   </div>
 
-    <div ref="tabulator" class="tabulator-custom data-grid grid-height" @keydown.delete="clearSelectedData">
+  <div ref="tabulator" class="tabulator-custom data-grid grid-height" @keydown.delete="clearSelectedData">
+    <!-- tabulator placeholder -->
   </div>
 
   <div ref="bottomToolbar" class="data-editor__footer d-flex align-items-center justify-content-end p-2">

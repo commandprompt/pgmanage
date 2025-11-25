@@ -2,15 +2,20 @@ export default {
   watch: {
     tabulator: {
       handler() {
-        this.tabulator.element.addEventListener("keydown", (e) => {
-          if (e.key === "ContextMenu" || (e.shiftKey && e.code === "F10")) {
-            e.preventDefault();
+        this.tabulator.element.addEventListener("contextmenu", (e) => { 
+          e.preventDefault();
+          // this means that is a keyboard event
+          if(e.buttons === 0 ) {
+            e.stopPropagation();
             let selectedRange = this.tabulator.getRanges()[0];
             let selectedCell = selectedRange.getCells()[0][0];
             let cellElement = selectedCell.getElement();
             const rect = cellElement.getBoundingClientRect();
             const event = new MouseEvent("contextmenu", {
               bubbles: true,
+              // button flags make this look like a real mouse event
+              button: 2,
+              buttons: 2,
               clientX: rect.left + rect.width / 2,
               clientY: rect.top + rect.height / 2,
             });
