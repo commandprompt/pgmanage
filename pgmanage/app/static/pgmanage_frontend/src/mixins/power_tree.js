@@ -480,5 +480,35 @@ export default {
         });
       }
     },
+    resolveNodeFromEvent(event) {
+      let target = event.target;
+      let nodePath = null;
+
+      if (target.classList.contains("vue-power-tree-gap")) {
+        let parent = target.parentElement;
+        nodePath = JSON.parse(parent.getAttribute("path"));
+      } else if (!!target.getAttribute("path")) {
+        nodePath = JSON.parse(target.getAttribute("path"));
+      }
+
+      if (!nodePath) return;
+
+      const node = this.$refs.tree.getNode(nodePath);
+
+      return node;
+    },
+    handleLeftSideClick(event) {
+      const node = this.resolveNodeFromEvent(event);
+      if (!node) return;
+      
+      this.$refs.tree.select(node.path);
+      this.onClickHandler(node, event);
+    },
+    handleLeftSideDblClick(event) {
+      const node = this.resolveNodeFromEvent(event);
+      if (!node) return;
+
+      this.doubleClickNode(node);
+    },
   },
 };
