@@ -1,5 +1,9 @@
 <template>
-<div class="data-editor p-2">
+<div ref="editorDiv" class="data-editor p-2">
+  <button :id="`bt_fullscreen_${tabId}`" style="position: absolute; right: 0.5rem" type="button"
+      class="btn btn-sm btn-icon btn-icon-primary pe-2" title='Fullscreen' @click="toggleFullScreen()">
+      <i :class="inFullscreen ? 'fas fa-compress':'fas fa-expand'"></i>
+  </button>
   <div ref="topToolbar" class="row">
     <div class="form-group col-10 align-content-center overflow-auto" style="max-height: 170px;">
         <label class="mb-2">
@@ -55,6 +59,7 @@ import escape from 'lodash/escape';
 import isNil from 'lodash/isNil';
 import isEmpty from 'lodash/isEmpty';
 import last from 'lodash/last';
+import mean from 'lodash/mean';
 import { showToast } from "../notification_control";
 import { queryRequestCodes, requestState, knexDialectMap } from '../constants'
 import { createRequest } from '../long_polling'
@@ -102,6 +107,11 @@ export default {
     return {
       knex: null,
       tableColumns: [],
+      colWidthArray: [],
+      defaultColWidthArray: [],
+      inFullscreen: false,
+      customLayout: undefined,
+      previousLayout: undefined,
       tableData: [],
       tableDataLocal: [],
       queryFilters: [{ column: "", operator: "=", value: "" }],
@@ -214,6 +224,9 @@ export default {
       this.getTableColumns().then(() => {
         this.addHeaderMenuOverlayElement();
         this.tabulator.setSort("0", "asc");
+        if (this.defaultColWidthArray.length !== this.tabulator.getColumns().length) {
+          this.defaultColWidthArray = this.tabulator.getColumns().map(col => col.getWidth());
+        }
       });
     })
 
@@ -276,6 +289,27 @@ export default {
       }
 
       return div
+    },
+    applyLayout() {
+      this.colWidthArray = []
+
+      this.tabulator.blockRedraw();
+
+      this.tabulator.getColumns().forEach((col, idx) => {
+        if(idx > 0) {
+          if(this.customLayout == 'adaptive') {
+            let widths = col.getCells().map((cell) => {return cell.getElement().scrollWidth}).filter((el) => el > 0)
+            col.setWidth(mean(widths))
+            this.colWidthArray.push(mean(widths))
+          }
+
+          if(this.customLayout === undefined) {
+            col.setWidth(this.defaultColWidthArray[idx]);
+          }
+        }
+      });
+
+      this.tabulator.restoreRedraw();
     },
     rowFormatter(row) {
       row.getElement().classList.remove('row-deleted', 'row-dirty', 'row-new');
@@ -568,6 +602,21 @@ export default {
       return new Promise((resolve, reject) => {
         resolve([])
       })
+    },
+    toggleFullScreen() {
+      this.$refs.editorDiv.classList.toggle("omnidb__panel-view--full");
+
+      this.inFullscreen = !this.inFullscreen
+
+      if(this.inFullscreen) {
+        this.previousLayout = this.customLayout
+        this.customLayout = 'adaptive'
+      } else {
+        this.customLayout = this.previousLayout
+      }
+
+      this.applyLayout()
+      this.handleResize()
     },
     handleResize() {
       if(this.$refs === null)
