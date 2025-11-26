@@ -1,7 +1,7 @@
 <template>
   <div ref="resultDiv" :id="`query_result_tabs_container_${tabId}`" class="omnidb__query-result-tabs pe-2">
     <button :id="`bt_fullscreen_${tabId}`" style="position: absolute; top: 0.25rem; right: 0.5rem" type="button"
-      class="btn btn-sm btn-icon btn-icon-primary pe-2" @click="toggleFullScreen()">
+      class="btn btn-sm btn-icon btn-icon-primary pe-2" title='Fullscreen' @click="toggleFullScreen()">
       <i class="fas fa-expand"></i>
     </button>
 
@@ -114,6 +114,9 @@ export default {
       exportDownloadName: "",
       notices: [],
       queryInfoText: "",
+      inFullscreen: false,
+      customLayout: undefined,
+      previousLayout: undefined,
       tableSettings: {
         data: [],
         placeholderHeaderFilter: "No Matching Data",
@@ -582,6 +585,17 @@ export default {
     toggleFullScreen() {
       this.$refs.resultDiv.classList.toggle("omnidb__panel-view--full");
       this.handleResize();
+
+      this.inFullscreen = !this.inFullscreen
+
+      if(this.inFullscreen) {
+        this.previousLayout = this.customLayout
+        this.customLayout = 'adaptive'
+      } else {
+        this.customLayout = this.previousLayout
+      }
+
+      this.applyLayout()
     },
     handleResize() {
       if (this.$refs?.tabContent === null) return;
