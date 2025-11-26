@@ -24,7 +24,7 @@
               <div class="col-1">
                 <p class="h6">Show</p>
               </div>
-              <div class="col d-flex justify-content-end pe-2">
+              <div class="col d-flex justify-content-start ms-2">
                 <p class="h6">Move</p>
               </div>
               <div class="col-5">
@@ -58,16 +58,16 @@
                 </div>
               </div>
 
-              <div class="col d-flex me-2 justify-content-end">
+              <div class="col d-flex justify-content-end">
                 <button
                   @click='$emit("moveWidgetUp", index)'
-                  class="btn btn-icon btn-icon-secondary" title="Move widget up" type="button">
+                  class="btn btn-icon btn-icon-secondary ps-2 pe-2" title="Move widget up" type="button">
                   <i class="fas fa-circle-up"></i>
                 </button>
 
                 <button
                   @click='$emit("moveWidgetDown", index)'
-                  class="btn btn-icon btn-icon-secondary ms-2" title="Move widget down" type="button">
+                  class="btn btn-icon btn-icon-secondary ps-2 pe-2" title="Move widget down" type="button">
                   <i class="fas fa-circle-down"></i>
                 </button>
               </div>
@@ -85,18 +85,18 @@
               </div>
 
 
-              <div class="col d-flex me-2 justify-content-end">
+              <div class="col d-flex me-1 justify-content-end">
                 <button
                   v-if="widget.editable"
                   @click="editMonitoringWidget(widget.id)"
-                  class="btn btn-icon btn-icon-secondary" title="Edit" type="button">
+                  class="btn btn-icon btn-icon-secondary ps-2" title="Edit" type="button">
                   <i class="fas fa-edit"></i>
                 </button>
 
                 <button type="button"
                   v-if="widget.editable"
                   @click="deleteMonitorWidget(widget.id)"
-                  class="btn btn-icon btn-icon-danger ms-2" title="Remove">
+                  class="btn btn-icon btn-icon-danger ps-2 pe-2" title="Remove">
                   <i class="fas fa-circle-xmark"></i>
                 </button>
               </div>

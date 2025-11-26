@@ -153,9 +153,9 @@
                         <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
                       </div>
 
-                      <div :class="['col d-flex me-2', 'justify-content-end']">
+                      <div :class="['col d-flex me-1', 'justify-content-end']">
                         <button @click='removeMember(localRole.members, index)' type="button"
-                          class="btn btn-icon btn-icon-danger" title="Remove">
+                          class="btn btn-icon btn-icon-danger ps-2 pe-2" title="Remove">
                           <i class="fas fa-circle-xmark"></i>
                         </button>
                       </div>
@@ -192,9 +192,9 @@
                         <input type='checkbox' class="custom-checkbox" v-model="member.withAdmin"/>
                       </div>
 
-                      <div :class="['col d-flex me-2', 'justify-content-end']">
+                      <div :class="['col d-flex me-1', 'justify-content-end']">
                         <button @click='removeMember(localRole.memberOf, index)' type="button"
-                          class="btn btn-icon btn-icon-danger" title="Remove">
+                          class="btn btn-icon btn-icon-danger ps-2 pe-2" title="Remove">
                           <i class="fas fa-circle-xmark"></i>
                         </button>
                       </div>

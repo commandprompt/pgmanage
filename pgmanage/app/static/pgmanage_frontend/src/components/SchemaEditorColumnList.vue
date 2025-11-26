@@ -66,24 +66,24 @@
             :placeholder="this.mode === operationModes.UPDATE ? '' : 'column comment...'" />
           </div>
 
-          <div :class="['col d-flex me-2', this.movable(column) ? 'justify-content-between': 'justify-content-end']">
+          <div :class="['col d-flex me-1', this.movable(column) ? 'justify-content-between': 'justify-content-end']">
             <button v-if="column.deleted && !column.new || column.is_dirty" @click='revertColumn(index)' type="button"
-              class="btn btn-icon btn-icon-success" title="Revert">
+              class="btn btn-icon btn-icon-success ps-2 pe-2" title="Revert">
               <i class="fas fa-rotate-left"></i>
             </button>
 
             <button v-if="this.movable(column)" @click='moveColumnUp(index)'
-              class="btn btn-icon btn-icon-secondary" title="Move column up" type="button">
+              class="btn btn-icon btn-icon-secondary ps-2 pe-2" title="Move column up" type="button">
               <i class="fas fa-circle-up"></i>
             </button>
 
             <button v-if="this.movable(column)" @click='moveColumnDown(index)'
-              class="btn btn-icon btn-icon-secondary" title="Move column down" type="button">
+              class="btn btn-icon btn-icon-secondary ps-2 pe-2" title="Move column down" type="button">
               <i class="fas fa-circle-down"></i>
             </button>
 
             <button v-if="!column.deleted && !column.is_dirty" @click='removeColumn(index)' type="button"
-              class="btn btn-icon btn-icon-danger" title="Remove column">
+              class="btn btn-icon btn-icon-danger ps-2 pe-2" title="Remove column">
               <i class="fas fa-circle-xmark"></i>
             </button>
           </div>

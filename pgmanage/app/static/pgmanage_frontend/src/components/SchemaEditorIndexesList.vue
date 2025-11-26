@@ -91,12 +91,12 @@
         />
       </div>
 
-      <div class="col-1 d-flex me-2 justify-content-end">
+      <div class="col-1 d-flex me-1 justify-content-end">
         <button
           v-if="(index.deleted && !index.new) || index.is_dirty"
           @click="revertIndex(idx)"
           type="button"
-          class="btn btn-icon btn-icon-success"
+          class="btn btn-icon btn-icon-success ps-2 pe-2"
           title="Revert"
         >
           <i class="fas fa-rotate-left"></i>
@@ -106,7 +106,7 @@
           v-if="!index.deleted && !index.is_dirty"
           @click="removeIndex(idx)"
           type="button"
-          class="btn btn-icon btn-icon-danger"
+          class="btn btn-icon btn-icon-danger ps-2 pe-2"
           title="Remove column"
         >
           <i class="fas fa-circle-xmark"></i>

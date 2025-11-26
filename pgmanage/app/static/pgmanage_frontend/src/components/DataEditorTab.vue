@@ -255,8 +255,7 @@ export default {
   methods: {
     actionsFormatter(cell, formatterParams, onRendered) {
       const div = document.createElement("div");
-      div.className = 'btn p-0';
-
+      div.className = 'btn btn-grid-actions';
 
       let cellData = cell.getValue()
       if (!cellData)
@@ -264,14 +263,13 @@ export default {
 
       if (cellData.is_deleted || cellData.is_dirty) {
         const revertIcon = document.createElement('i')
-        revertIcon.className = 'fas fa-rotate-left text-info'
+        revertIcon.className = 'fas fa-rotate-left text-info p-2'
         revertIcon.title = 'Revert'
         revertIcon.dataset.action = 'revert'
         div.appendChild(revertIcon);
-
       } else {
         const deleteIcon = document.createElement('i')
-        deleteIcon.className = 'fas fa-circle-xmark text-danger'
+        deleteIcon.className = 'fas fa-circle-xmark text-danger p-2'
         deleteIcon.title = 'Remove'
         deleteIcon.dataset.action = 'delete'
         div.appendChild(deleteIcon)
@@ -303,8 +301,8 @@ export default {
           this.tableColumns = response.data.columns
 
           let actionsCol = {
-            title: `<div data-action="add" class="btn p-0" title="Add column">
-              <i data-action="add" class="fa-solid fa-circle-plus text-success"></i>
+            title: `<div data-action="add" class="btn p-0 btn-grid-actions" title="Add column">
+              <i data-action="add" class="fa-solid fa-circle-plus text-success p-2"></i>
               </div>`,
             field: 'rowMeta',
             frozen: 'true',
@@ -680,7 +678,9 @@ export default {
         }, 100);
       }
     },
-    addRow() {
+    addRow(e, cell) {
+      if(e.target.dataset['action'] !== 'add')
+        return;
       let newRow = Array(this.tableColumns.length + 1).fill(null); //+1 adds an extra actions column
       let rowMeta = {
         is_dirty: false,

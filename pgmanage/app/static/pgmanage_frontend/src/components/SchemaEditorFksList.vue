@@ -104,13 +104,13 @@
 
       <div
         v-if="!disabledFeatures.dropForeignKey"
-        class="col-1 d-flex me-2 justify-content-end"
+        class="col-1 d-flex me-1 justify-content-end"
       >
         <button
           v-if="(fk.deleted && !fk.new) || fk.is_dirty"
           @click="revertForeignKey(idx)"
           type="button"
-          class="btn btn-icon btn-icon-success"
+          class="btn btn-icon btn-icon-success ps-2 pe-2"
           title="Revert"
         >
           <i class="fas fa-rotate-left"></i>
@@ -120,7 +120,7 @@
           v-if="!fk.deleted && !fk.is_dirty"
           @click="removeForeignKey(idx)"
           type="button"
-          class="btn btn-icon btn-icon-danger"
+          class="btn btn-icon btn-icon-danger ps-2 pe-2"
           title="Remove foreign key"
         >
           <i class="fas fa-circle-xmark"></i>
