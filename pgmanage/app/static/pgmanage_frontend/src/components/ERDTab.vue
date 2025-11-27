@@ -1,26 +1,31 @@
 <template>
-  <div class="position-relative">
-    <div class="floating-toolbar floating-toolbar--filled floating-toolbar--right-top">
-      <span class="floating-toolbar__content">
+  <div ref="erdContainer">
+    <div class="position-relative">
+      <div class="floating-toolbar floating-toolbar--filled floating-toolbar--right-top">
+        <span class="floating-toolbar__content">
+          <button class="btn btn-icon-secondary" @click="resetToDefault" title="Reset to default">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
 
-      <button class="btn btn-icon-secondary" @click="resetToDefault" title="Reset to default">
-        <i class="fa-solid fa-rotate-left"></i>
-      </button>
-      
-      <span class="divider"></span>
+          <span class="divider"></span>
 
-      <!-- Zoom Out -->
-      <button class="btn btn-icon-secondary" @click="zoomOut" title="Zoom Out">
-        <i class="fas fa-search-minus"></i>
-      </button>
-      <!-- Zoom In -->
-      <button class="btn btn-icon-secondary" @click="zoomIn" title="Zoom In">
-        <i class="fas fa-search-plus"></i>
-      </button>
-      </span>
+          <!-- Zoom Out -->
+          <button class="btn btn-icon-secondary" @click="zoomOut" title="Zoom Out">
+            <i class="fas fa-search-minus"></i>
+          </button>
+          <!-- Zoom In -->
+          <button class="btn btn-icon-secondary" @click="zoomIn" title="Zoom In">
+            <i class="fas fa-search-plus"></i>
+          </button>
+
+          <button :id="`bt_fullscreen_${tabId}`" type="button"
+          class="btn btn-icon-secondary" title='Fullscreen' @click="toggleFullScreen()">
+              <i :class="inFullscreen ? 'fas fa-compress':'fas fa-expand'"></i>
+          </button>
+        </span>
+      </div>
+      <div class="vh-100 w-100 invisible" ref="cyContainer"></div>
     </div>
-  <div class="pt-3" style="width: 100%; height: calc(100vh - 70px); visibility: hidden" ref="cyContainer"></div>
-
   </div>
 </template>
 
@@ -87,7 +92,8 @@ export default {
             }
           },
         ],
-      }
+      },
+      inFullscreen: false,
     };
   },
   mounted() {
@@ -95,7 +101,7 @@ export default {
     this.instance_uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4}).randomUUID()
   },
   updated() {
-    this.$refs.cyContainer.style.visibility = 'visible';
+    this.$refs.cyContainer.classList.remove('invisible');
   },
   methods: {
     resetToDefault() {
@@ -284,7 +290,7 @@ export default {
         }],
       )
 
-      this.$refs.cyContainer.style.visibility = 'visible';
+      this.$refs.cyContainer.classList.remove('invisible');
     },
     adjustSizes() {
       const padding = 2;
@@ -359,6 +365,10 @@ export default {
           renderedPosition: { x: this.cy.width() / 2, y: this.cy.height() / 2 }
         });
       }
+    },
+    toggleFullScreen() {
+      this.$refs.erdContainer.classList.toggle("omnidb__panel-view--full");
+      this.inFullscreen = !this.inFullscreen;
     },
   },
 };
