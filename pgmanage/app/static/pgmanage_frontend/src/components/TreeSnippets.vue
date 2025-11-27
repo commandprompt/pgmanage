@@ -10,8 +10,8 @@
     @click="handleLeftSideClick"
   >
     <template v-slot:toggle="{ node }">
-      <i v-if="node.isExpanded" class="exp_col fas fa-chevron-down"></i>
-      <i v-if="!node.isExpanded" class="exp_col fas fa-chevron-right"></i>
+      <i v-if="node.isExpanded" class="exp_col fas fa-chevron-down fa-sm"></i>
+      <i v-if="!node.isExpanded" class="exp_col fas fa-chevron-right fa-sm"></i>
     </template>
 
     <template v-slot:title="{ node }">

@@ -50,6 +50,14 @@
       &.vue-power-tree-cursor-inside {
         outline: 1px solid rgba(0, 101, 255, .5)
       }
+
+      &:hover {
+        background-color: rgba($primaryBlue, .05);
+
+        .exp_col {
+          opacity: 1;
+        }
+      }
     }
   }
 
@@ -92,6 +100,11 @@
     margin-left: 20px;
     margin-bottom: 20px;
     padding: 5px 10px
+  }
+
+  .exp_col {
+    opacity: 0.4;
+    transition: all .1s ease-in;
   }
 
   .icon_tree {
