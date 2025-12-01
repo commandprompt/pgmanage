@@ -59,7 +59,7 @@ const useSettingsStore = defineStore("settings", {
         return error;
       }
     },
-    async saveSettings() {
+    async saveSettings(silent = false) {
       try {
         const response = await axios.post("/settings/", {
           shortcuts: Object.values(this.shortcuts),
@@ -78,7 +78,8 @@ const useSettingsStore = defineStore("settings", {
         });
 
         moment.defaultFormat = this.dateFormat;
-        showToast("success", "Configuration saved.");
+        if(!silent)
+          showToast("success", "Configuration saved.");
         return response.data;
       } catch (error) {
         handleError(error);
