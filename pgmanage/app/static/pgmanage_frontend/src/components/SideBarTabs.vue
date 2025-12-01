@@ -84,14 +84,12 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import { tabsStore, connectionsStore } from "../stores/stores_initializer";
-import { colorLabelMap } from "../constants";
+import { connectionsStore, settingsStore, tabsStore } from "../stores/stores_initializer";
+import { colorLabelMap, minFontSize, maxFontSize } from "../constants";
 import WelcomeScreen from "./WelcomeScreen.vue";
 import SnippetPanel from "./SnippetPanel.vue";
 import TabsUtils from "../mixins/tabs_utils_mixin.js";
 import { splitStringInHalf } from "../utils.js";
-import { minFontSize, maxFontSize } from '../constants';
-import { settingsStore } from '../stores/stores_initializer'
 import debounce from "lodash/debounce";
 
 export default {
