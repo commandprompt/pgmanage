@@ -98,6 +98,7 @@ a:not([href]):not([tabindex]){
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  padding-bottom: 32px;
 }
 .omnidb__tab-menu--primary .nav-tabs .nav-item {
   width: 100%;
@@ -111,7 +112,10 @@ a:not([href]):not([tabindex]){
 .omnidb__tab-menu--primary {
   .bottom-icons {
     color: white;
-    margin-bottom: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100px;
+    background-color: $primaryBlue;
 
     &__item {
       display: flex;

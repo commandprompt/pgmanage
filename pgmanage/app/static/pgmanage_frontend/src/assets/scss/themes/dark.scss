@@ -136,6 +136,11 @@ SOFTWARE.
   }
 
   /* PRIMARY TAB */
+  .omnidb__tab-menu--primary {
+    .bottom-icons { 
+      background-color: #162d4e; 
+    }
+  }
   .omnidb__tab-menu--primary .omnidb__menu__btn {
     background-color: #282A2F;
   }
