@@ -194,6 +194,7 @@ import { refreshHeights } from '../workspace'
 import { default_shortcuts } from '../shortcuts'
 import axios from 'axios'
 import { showAlert, showToast } from '../notification_control'
+import { minFontSize, maxFontSize } from '../constants'
 import moment from 'moment'
 import { emitter } from '../emitter'
 import { settingsStore, tabsStore } from '../stores/stores_initializer'
@@ -276,7 +277,7 @@ export default {
   },
   computed: {
     fontSizeOptions() {
-      return Array(11).fill(10).map((x, y) => x + y)
+      return Array(1 + maxFontSize - minFontSize).fill(minFontSize).map((x, y) => x + y)
     },
     action() {
       return this.desktopMode ? 'Select' : 'Enter'

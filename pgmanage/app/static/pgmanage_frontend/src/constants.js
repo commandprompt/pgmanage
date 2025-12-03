@@ -122,6 +122,9 @@ const dbTechNames = {
   mssql: 'SQL Server'
 }
 
+const minFontSize = 10;
+const maxFontSize = 20;
+
 //sql-formatter uses 'plsql' for oracle and tsql for mssql sql flavor
 //otherwise - our db technology names match perfectly
 const sqlFormatterDialectMap = {
@@ -147,6 +150,8 @@ export {
   maxFileSizeInKB,
   maxLinesForIndentSQL,
   mimeTypeMap,
+  minFontSize,
+  maxFontSize,
   consoleModes,
   colorLabelMap,
   operationModes,

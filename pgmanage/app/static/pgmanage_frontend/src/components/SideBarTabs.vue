@@ -3,7 +3,7 @@
     class="omnidb__tab-menu--container omnidb__tab-menu--container--primary omnidb__tab-menu--container--menu-shown"
   >
     <div
-      class="omnidb__tab-menu omnidb__tab-menu--primary omnidb__theme-bg--menu-primary"
+      class="omnidb__tab-menu omnidb__tab-menu--primary omnidb__theme-bg--menu-primary d-flex flex-column justify-content-between"
     >
       <nav>
         <div class="nav nav-tabs">
@@ -54,6 +54,18 @@
           </a>
         </div>
       </nav>
+      
+      <div class="bottom-icons d-flex justify-content-evenly align-items-center">
+        <span class="bottom-icons__item"  @click="decreaseFontSize">
+          <i class="fas fa-a fa-xs"></i>
+        </span>
+        <span class="bottom-icons__item" @click="increaseFontSize">
+          <i class="fas fa-a fa-lg"></i>
+        </span>
+        <span class="bottom-icons__item" @click="toggleTheme">
+          <i :class="['fas fa-lg', themeIconClass]"></i>
+        </span>
+      </div>
     </div>
 
     <div class="tab-content omnidb__tab-content omnidb__tab-content--primary">
@@ -72,12 +84,13 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import { tabsStore, connectionsStore } from "../stores/stores_initializer";
-import { colorLabelMap } from "../constants";
+import { connectionsStore, settingsStore, tabsStore } from "../stores/stores_initializer";
+import { colorLabelMap, minFontSize, maxFontSize } from "../constants";
 import WelcomeScreen from "./WelcomeScreen.vue";
 import SnippetPanel from "./SnippetPanel.vue";
 import TabsUtils from "../mixins/tabs_utils_mixin.js";
 import { splitStringInHalf } from "../utils.js";
+import debounce from "lodash/debounce";
 
 export default {
   name: "SideBarTabs",
@@ -95,6 +108,9 @@ export default {
     selectedTab() {
       return tabsStore.selectedPrimaryTab;
     },
+    themeIconClass() {
+      return settingsStore.theme === 'light' ? 'fa-sun' : 'fa-moon'
+    }
   },
   mounted() {
     tabsStore.createConnectionsTab();
@@ -102,6 +118,25 @@ export default {
     tabsStore.createSnippetPanel();
   },
   methods: {
+    decreaseFontSize() {
+      if(settingsStore.fontSize <= minFontSize)
+        return
+      
+      settingsStore.fontSize--
+      this.saveSettings()
+    },
+    increaseFontSize () {
+      if(settingsStore.fontSize >= maxFontSize)
+        return
+      
+      settingsStore.fontSize++
+      this.saveSettings()
+    },
+    toggleTheme() {
+      settingsStore.theme = settingsStore.theme == 'light' ? 'dark' : 'light'
+      this.saveSettings()
+    },
+    saveSettings: debounce(() => settingsStore.saveSettings(true), 1000),
     getCurrentProps(tab) {
       const componentsProps = {
         ConnectionTab: {
