@@ -840,12 +840,14 @@ export default {
             icon: "fas node-all fa-users node-user-list",
             type: "role_list",
             contextMenu: "cm_roles",
+            database: false,
           });
         }
         this.insertNode(node, "Databases", {
           icon: "fas node-all fa-database node-database-list",
           type: "database_list",
           contextMenu: "cm_databases",
+          database: false,
         });
         this.cm_server_extra = [
           {
