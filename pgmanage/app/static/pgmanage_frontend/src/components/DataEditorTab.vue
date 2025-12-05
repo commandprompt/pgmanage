@@ -379,6 +379,29 @@ export default {
                 separator:true,
               },
               {
+                label: '<i class="fas fa-paste"></i><span>Paste</span>',
+                action: async () => {
+                  if (!navigator.clipboard || !navigator.clipboard.readText) {
+                    return;
+                  }
+
+                  const text = await navigator.clipboard.readText();
+                  if (!text) return;
+
+                  const clip = this.tabulator.modules.clipboard;
+
+                  const rowData = clip.pasteParser.call(clip, text);
+                  if (!rowData || rowData === false) return;
+
+                  const rows = clip.pasteAction.call(clip, rowData);
+
+                  clip.dispatchExternal("clipboardPasted", text, rowData, rows);
+                },
+              },
+              {
+                separator:true,
+              },
+              {
                 label: '<span>Set Null</span>',
                 action: () => {
                   const range = last(this.tabulator.getRanges());
