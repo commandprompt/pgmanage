@@ -69,46 +69,47 @@ export default {
         cm_node_root: [
           this.cmRefreshObject,
           {
-            label: "New Folder",
-            icon: "fas fa-folder-plus",
+            label: "Create Snippet",
+            icon: "fas fa-plus",
             onClick: () => {
-              this.newNodeSnippet(this.selectedNode, "folder");
+              this.newNodeSnippet(this.selectedNode, "snippet");
             },
           },
           {
-            label: "New Snippet",
-            icon: "fas fa-file-circle-plus",
+            label: "Create Folder",
+            icon: "fas fa-folder-plus",
             onClick: () => {
-              this.newNodeSnippet(this.selectedNode, "snippet");
+              this.newNodeSnippet(this.selectedNode, "folder");
             },
           },
         ],
         cm_node: [
           this.cmRefreshObject,
           {
-            label: "New Folder",
+            label: "Create Snippet",
+            icon: "fas fa-plus",
+            onClick: () => {
+              this.newNodeSnippet(this.selectedNode, "snippet");
+            },
+          },
+          {
+            label: "Create Folder",
             icon: "fas fa-folder-plus",
             onClick: () => {
               this.newNodeSnippet(this.selectedNode, "folder");
             },
           },
           {
-            label: "New Snippet",
-            icon: "fas fa-file-circle-plus",
-            onClick: () => {
-              this.newNodeSnippet(this.selectedNode, "snippet");
-            },
-          },
-          {
-            label: "Rename Folder",
+            label: "Rename",
             icon: "fas fa-i-cursor",
             onClick: () => {
               this.renameNodeSnippet(this.selectedNode);
             },
           },
           {
-            label: "Delete Folder",
+            label: "Delete",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               this.deleteNodeSnippet(this.selectedNode);
             },
@@ -132,6 +133,7 @@ export default {
           {
             label: "Delete",
             icon: "fas fa-times",
+            divided: "up",
             onClick: () => {
               this.deleteNodeSnippet(this.selectedNode);
             },
