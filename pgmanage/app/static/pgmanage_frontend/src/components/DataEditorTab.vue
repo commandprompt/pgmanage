@@ -206,9 +206,10 @@ export default {
 
       this.tabulator.on("cellEdited", this.cellEdited);
       this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {
+        const dataLength = rowData.length;
         // manually trigger cellEdited on changed cells because clipboard paste doesn't do that
-         rows.forEach((row, rowIndex) => {
-          const rowValues = rowData[rowIndex];
+        rows.forEach((row, rowIndex) => {
+          const rowValues = rowData[rowIndex % dataLength];
           if (!rowValues) return;
 
           const cells = row.getCells();
