@@ -223,6 +223,19 @@ export default {
           },
         },
         {
+          label: "Paste",
+          icon: "fas fa-paste",
+          onClick: () => {
+            try {
+              navigator.clipboard.readText().then((text) => {
+                this.editor.execCommand("paste", text)
+              })  
+            } catch (error) {
+              // may throw NotAllowedError in some cases
+            }
+          },
+        },
+        {
           label: "Save as snippet",
           icon: "fas fa-save",
           children: buildSnippetContextMenuObjects(
