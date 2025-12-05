@@ -267,7 +267,8 @@
         }
 
         .tabulator-menu-item {
-            padding:5px 15px !important;
+            padding:6px 15px !important;
+            min-width: 220px;
 
             i {
                 width: 24px;
@@ -290,6 +291,7 @@
         }
 
         .tabulator-menu-separator {
+            margin: 5px 15px 5px 15px;
             @include themify() {
                 border-top: 1px solid themed($borderColor);
             }

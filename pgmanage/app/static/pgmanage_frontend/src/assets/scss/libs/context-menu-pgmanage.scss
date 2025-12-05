@@ -62,7 +62,7 @@
             background-color: themed($popupBg);
         }
         &::after {
-            // background-color: red;
+            margin: 0 15px 0 15px;
             @include themify() {
                 background-color: themed($borderColor);
             }
