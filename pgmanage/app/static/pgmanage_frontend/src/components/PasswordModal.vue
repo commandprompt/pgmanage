@@ -40,6 +40,7 @@
 
         <div class="modal-footer">
           <button
+            data-testid="password-ok-button"
             type="button"
             class="btn btn-primary"
             data-bs-dismiss="modal"
@@ -48,6 +49,7 @@
             Ok
           </button>
           <button
+            data-testid="password-cancel-button"
             type="button"
             class="btn btn-secondary"
             data-bs-dismiss="modal"

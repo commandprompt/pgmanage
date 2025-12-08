@@ -21,6 +21,9 @@ vi.mock("bootstrap", () => ({
       show: vi.fn(),
     })),
   },
+  Tab: vi.fn(() => ({
+    show: vi.fn(),
+  })),
 }));
 
 describe("settings store", () => {
