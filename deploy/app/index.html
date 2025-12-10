@@ -718,6 +718,22 @@
         localStorage['windowState'] = JSON.stringify(winState);
     }
 
+    function finalizeClose() {
+      try {
+        saveWindowState();
+      } catch (err) {
+        console.log("winstateError: " + err);
+      }
+
+      if (django != null) {
+        try {
+          process.kill(django.pid);
+        } catch (e) {}
+      }
+
+      nw.App.quit();
+    }
+
     // handle newwindow messages from the webview
     // allows for opening of webapp links in the default system browser
     v_webview.addEventListener('newwindow', async (e) => {
@@ -767,21 +783,20 @@
         currWinMode = 'normal';
     });
 
-    win.on('close', function() {
-        try {
-            saveWindowState();
-        } catch(err) {
-            console.log("winstateError: " + err);
-        }
+    win.on('close', function () {
+      v_webview.contentWindow.postMessage(
+        { type: "pgmanage:request-close" },
+        "*" 
+      );
+    });
 
-        if (django!=null) {
-          try {
-            process.kill(django.pid);
-          }
-          catch (e) {
-          }
-        }
-        nw.App.quit();
+
+    window.addEventListener("message", (event) => {
+      const data = event.data;
+
+      if (data.type == "pgmanage:confirm-close") {
+        finalizeClose();
+      }
     });
 
     win.on('closed', function() {
