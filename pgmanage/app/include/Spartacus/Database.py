@@ -633,7 +633,7 @@ class Generic(ABC):
         pass
 
     @abstractmethod
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         pass
 
     @abstractmethod
@@ -1070,7 +1070,7 @@ class SQLite(Generic):
     def Rollback(self):
         self.Close(False)
 
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         try:
             if self.con:
                 self.con.cancel()
@@ -1361,7 +1361,7 @@ class Memory(Generic):
     def Rollback(self):
         self.Close(False)
 
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         try:
             if self.con:
                 self.con.cancel()
@@ -1797,7 +1797,7 @@ class PostgreSQL(Generic):
         except Exception as exc:
             raise Spartacus.Database.Exception(str(exc))
 
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         current_con = self.con
         current_cur = self.cur
         self.con = None
@@ -1821,8 +1821,13 @@ class PostgreSQL(Generic):
                 if current_cur:
                     current_cur.close()
                     current_cur = None
-                current_con.close()
-                current_con = None
+
+                if keep_connection:
+                    self.con = current_con
+                    self.cur = self.con.cursor()
+                else:
+                    current_con.close()
+                    current_con = None
         except psycopg2.Error as exc:
             raise Spartacus.Database.Exception(str(exc))
         except Exception as exc:
@@ -2417,7 +2422,7 @@ class MySQL(Generic):
     def Rollback(self):
         self.Close(False)
 
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         try:
             if self.con:
                 con2 = pymysql.connect(
@@ -2873,7 +2878,7 @@ class MariaDB(Generic):
     def Rollback(self):
         self.Close(False)
 
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         try:
             if self.con:
                 con2 = pymysql.connect(
@@ -3278,7 +3283,7 @@ class Firebird(Generic):
     def Rollback(self):
         self.Close(False)
 
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         try:
             if self.con:
                 self.con.cancel()
@@ -3614,7 +3619,7 @@ class Oracle(Generic):
     def Rollback(self):
         self.Close(False)
 
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         try:
             if self.con:
                 self.con.cancel()
@@ -4046,7 +4051,7 @@ class MSSQL(Generic):
     def Rollback(self):
         self.Close(False)
 
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         try:
             if self.con:
                 self.con.cancel()
@@ -4373,7 +4378,7 @@ class IBMDB2(Generic):
     def Rollback(self):
         self.Close(False)
 
-    def Cancel(self, usesameconn=True):
+    def Cancel(self, usesameconn=True, keep_connection=False):
         try:
             if self.con:
                 self.con.cancel()
