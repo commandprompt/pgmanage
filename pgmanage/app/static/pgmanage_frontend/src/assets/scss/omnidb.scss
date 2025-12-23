@@ -376,10 +376,10 @@ a:not([href]):not([tabindex]){
 .omnidb__panel-view--full {
   background-color: #FFF;
   box-shadow: 0px -25px 20px -20px rgb(22, 45, 78, 0.45);
-  height: calc(100vh - 38px);
+  height: calc(100vh - var(--database-tabs-height));
   position: fixed;
   right: 20px;
-  top: 38px;
+  top: var(--database-tabs-height);
   transition: 0.35s;
   z-index: 900;
 }

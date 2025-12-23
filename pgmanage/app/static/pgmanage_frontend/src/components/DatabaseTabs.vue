@@ -4,6 +4,7 @@
     :class='tabColorLabelClass'
   >
     <div
+      ref="tabsBar"
       class="omnidb__tab-menu border-bottom omnidb__tab-menu--secondary omnidb__theme-bg--menu-secondary"
     >
       <nav class="d-flex align-items-center justify-content-between">
@@ -114,7 +115,7 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
-import { tabsStore, connectionsStore } from "../stores/stores_initializer";
+import { tabsStore, connectionsStore, settingsStore } from "../stores/stores_initializer";
 import { colorLabelMap } from "../constants";
 import ContextMenu from "@imengyu/vue3-context-menu";
 import SnippetTab from "./SnippetTab.vue";
@@ -201,6 +202,18 @@ export default {
               }
             });
           }
+        });
+      }
+    });
+
+    settingsStore.$onAction((action) => {
+      if (action.name === "setFontSize") {
+        action.after(() => {
+          // wait for transition to complete, then grab the height
+          setTimeout(() => {
+            let newHeight = this.$refs.tabsBar.clientHeight;
+            document.documentElement.style.setProperty('--database-tabs-height', `${newHeight}px`);
+          }, 350);
         });
       }
     });
