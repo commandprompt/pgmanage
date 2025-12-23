@@ -56,13 +56,13 @@
       </nav>
       
       <div class="bottom-icons d-flex justify-content-evenly align-items-center">
-        <span class="bottom-icons__item"  @click="decreaseFontSize">
+        <span title='Smaller Font' class="bottom-icons__item"  @click="decreaseFontSize">
           <i class="fas fa-a fa-xs"></i>
         </span>
-        <span class="bottom-icons__item" @click="increaseFontSize">
+        <span title='Bigger Font' class="bottom-icons__item" @click="increaseFontSize">
           <i class="fas fa-a fa-lg"></i>
         </span>
-        <span class="bottom-icons__item" @click="toggleTheme">
+        <span title='Change Theme' class="bottom-icons__item" @click="toggleTheme">
           <i :class="['fas fa-lg', themeIconClass]"></i>
         </span>
       </div>
@@ -119,17 +119,19 @@ export default {
   },
   methods: {
     decreaseFontSize() {
-      if(settingsStore.fontSize <= minFontSize)
+      let fontSize = settingsStore.fontSize
+      if(fontSize <= minFontSize)
         return
       
-      settingsStore.fontSize--
+      settingsStore.setFontSize(--fontSize)
       this.saveSettings()
     },
     increaseFontSize () {
-      if(settingsStore.fontSize >= maxFontSize)
+      let fontSize = settingsStore.fontSize
+      if(fontSize >= maxFontSize)
         return
       
-      settingsStore.fontSize++
+      settingsStore.setFontSize(++fontSize)
       this.saveSettings()
     },
     toggleTheme() {
