@@ -112,7 +112,7 @@ window.addEventListener("message", (event) => {
       event.source.postMessage({ type: "pgmanage:confirm-close" }, "*");
     } else {
       messageModalStore.showModal(
-        "You have unsaved changes in one or more tabs.Do you wish to discard all changes and close?",
+        "You have unsaved changes in one or more tabs. Do you wish to discard all changes and close?",
         () => {
           event.source.postMessage({ type: "pgmanage:confirm-close" }, "*");
         },
