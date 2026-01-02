@@ -3,7 +3,6 @@ import ShortUniqueId from 'short-unique-id';
 
 import { queryResponseCodes } from "./constants";
 import { debugResponse } from "./debug";
-import { getCookie } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
 import { emitter } from './emitter';
 import { handleError } from './logging/utils';
@@ -12,20 +11,6 @@ const uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4})
 
 let polling_busy = null;
 let request_map = new Map()
-
-// send heartbeat to prevent db session from being terminated by back-end
-$(function () {
-  setInterval(function() {
-    axios.get('/client_keep_alive/')
-  }, 60000);
-});
-
-// notify back-end about session termination
-$(window).on('beforeunload', () => {
-  const data = new FormData();
-  data.append('csrfmiddlewaretoken', getCookie('pgmanage_csrftoken'))
-  navigator.sendBeacon(`${app_base_path}/clear_client/`, data)
-})
 
 function call_polling(startup) {
     polling_busy = true
