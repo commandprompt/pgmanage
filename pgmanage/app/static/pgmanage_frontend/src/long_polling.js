@@ -3,53 +3,14 @@ import ShortUniqueId from 'short-unique-id';
 
 import { queryResponseCodes } from "./constants";
 import { debugResponse } from "./debug";
-import { getCookie } from './ajax_control'
 import { showAlert, showToast } from "./notification_control";
 import { emitter } from './emitter';
 import { handleError } from './logging/utils';
-import { tabsStore, messageModalStore } from './stores/stores_initializer';
 
 const uid = new ShortUniqueId({dictionary: 'alpha_upper', length: 4})
 
 let polling_busy = null;
 let request_map = new Map()
-
-// send heartbeat to prevent db session from being terminated by back-end
-$(function () {
-  setInterval(function() {
-    axios.get('/client_keep_alive/')
-  }, 60000);
-});
-
-// notify back-end about session termination
-$(window).on('beforeunload', (event) => {
-  if (tabsStore.hasAnyUnsavedChanges) {
-    event.preventDefault();
-    event.returnValue = "";
-  }
-  const data = new FormData();
-  data.append('csrfmiddlewaretoken', getCookie('pgmanage_csrftoken'))
-  navigator.sendBeacon(`${app_base_path}/clear_client/`, data)
-})
-
-window.addEventListener("message", (event) => {
-  const msg = event.data;
-
-  if (msg?.type === "pgmanage:request-close") {
-    const dirty = tabsStore.hasAnyUnsavedChanges;
-    if (!dirty) {
-      event.source.postMessage({ type: "pgmanage:confirm-close" }, "*");
-    } else {
-      messageModalStore.showModal(
-        "You have unsaved changes in one or more tabs.Do you wish to discard all changes and close?",
-        () => {
-          event.source.postMessage({ type: "pgmanage:confirm-close" }, "*");
-        },
-        null
-      );
-    }
-  }
-});
 
 function call_polling(startup) {
     polling_busy = true
