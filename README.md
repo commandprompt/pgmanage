@@ -1,33 +1,34 @@
 ![PgManage Banner](/artwork/readme_banner.png)
 <h3 align="center" >
-  <strong>A modern multi-platform Postgres-centric database client/administration tool. </strong><br /><br />
+  <strong>A modern multi-platform database client/administration tool.</strong><br /><br />
 </h3>
 
 ![PgManage Showcase](/artwork/showcase.gif)  
 
 [![Static Badge](https://img.shields.io/badge/DOWNLOAD-geen?style=for-the-badge&logo=github&logoColor=white&color=green)](https://github.com/commandprompt/pgmanage/releases)
-[![Static Badge](https://img.shields.io/badge/DISCORD-grey?style=for-the-badge&logo=discord&logoColor=white&color=%235865F2)](https://discord.com/channels/710918545906597938/1077284441279443054)
+[![Static Badge](https://img.shields.io/badge/DISCORD-grey?style=for-the-badge&logo=discord&logoColor=white&color=%235865F2)](https://discord.gg/FvweAhhUeu)
 
 # ⚡ Supported Databases
 <img src="https://cdn.simpleicons.org/postgresql/000/fff#1" alt="postgresql" width=19 height=19> **PostgreSQL**
 &nbsp;&nbsp;<img src="https://cdn.simpleicons.org/mariadb/000/fff#1" alt="mariadb" width=19 height=19> **MariaDB**
 &nbsp;&nbsp;<img src="https://cdn.simpleicons.org/mysql/000/fff#1" alt="mysql" width=19 height=19> **MySQL**
+&nbsp;&nbsp;<img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/microsoftsqlserver.svg" alt="sql server" width=19 height=19> **SQL Server**
 &nbsp;&nbsp;<img src="https://cdn.simpleicons.org/sqlite/000/fff#1" alt="sqlite" width=19 height=19> **SQLite**
-&nbsp;&nbsp;O **Oracle**
+&nbsp;&nbsp;<img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/oracle.svg" alt="oracle" width=19 height=19> **Oracle**
 
 # ✨ Features
-* Multiple Workspaces: connect to and work with multiple databases at once
-* SQL Autocompletion: PgManage suggests completion options as you type. Schema, table, view, function and column completion are supported.
-* Secure Credential Storage: sensitive information such as DB passwords, SSH keys etc. is stored in an encrypted form and protected by Master Password.
-* Postgres Config Management: easily search and tweak your Postgres server configuration parameter using a convenient GUI.
-* Database Backups: back-up and restore your Postgres cluster or database in background while working on other stuff.
-* Visualize: PgManage Supports query plan visualization and entity relationship diagrams.
-* Dark or Light: choose a theme to your taste.
-* Connection tunneling: connect to your database servers through SSH tunnels.
-* Built-in SSH terminal.
+**Multiple Workspaces:** connect to and work with multiple databases at once  
+**SQL Autocompletion:** PgManage suggests completion options as you type. Schema, table, view, function and column completion are supported.  
+**Secure Credential Storage:** sensitive information such as DB passwords, SSH keys etc. is stored in an encrypted form and protected by Master Password.  
+**Postgres Config Management:** easily search and tweak your Postgres server configuration parameter using a convenient GUI.  
+**Database Backups:** back-up and restore your Postgres cluster or database in background while working on other stuff.  
+**Visualize:** PgManage Supports query plan visualization and entity relationship diagrams.  
+**Dark or Light:** choose a theme to your taste.  
+**Connection tunneling:** connect to your database servers through SSH tunnels.  
+**Built-in SSH terminal.**  
 
 # 📦 Install
-We provide PgManage builds for **Linux** (.AppImage), **Mac OSX** and **Windows** platforms: https://github.com/commandprompt/pgmanage/releases
+PgManage works on **Linux** **macOS** and **Windows** platforms: https://github.com/commandprompt/pgmanage/releases
 
 # 📚 Documentation
 **Full Documentation**: https://pgmanage.readthedocs.io/en/latest/
