@@ -806,6 +806,11 @@ export default {
       }
     },
     getProperties(node) {
+      this.checkCurrentDatabase(node, true, () => {
+        this.getPropertiesConfirm(node);
+      });
+    },
+    getPropertiesConfirm(node) {
       const handledTypes = ["table", "view", "function", "procedure", "index"];
       if (handledTypes.includes(node.data.type)) {
         const table = node.data.table ?? null

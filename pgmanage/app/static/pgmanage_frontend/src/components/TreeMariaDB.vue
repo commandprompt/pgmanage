@@ -837,6 +837,11 @@ export default {
       }
     },
     getProperties(node) {
+      this.checkCurrentDatabase(node, true, () => {
+        this.getPropertiesConfirm(node);
+      });
+    },
+    getPropertiesConfirm(node) {
       const handledTypes = [
         "table",
         "sequence",
