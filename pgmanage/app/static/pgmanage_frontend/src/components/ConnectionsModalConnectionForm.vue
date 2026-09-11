@@ -145,8 +145,17 @@
                   </span>
                 </div>
             </div>
-
-            <div class="form-group col-3">
+            <div v-if="showAuthMethod" class="form-group col-3">
+              <label for="authMethod" class="fw-bold mb-2">Authentication Method</label>
+              <select v-model="connectionLocal.credentials_extra.auth_method" id="authMethod" class="form-select" :disabled="dbFormDisabled">
+                  <option v-for="(label, value) in authMethods"
+                    :key="value"
+                    :value="value">
+                      {{ label }}
+                  </option>
+              </select>
+            </div>
+            <div v-else class="form-group col-3">
               <label for="connectionPassword" class="fw-bold mb-2">Password</label>
               <div class="position-relative">
                 <input v-model="connectionLocal.password"
@@ -159,6 +168,44 @@
               </div>
             </div>
           </div>
+
+          <template v-if="showAuthMethod">
+            <div v-if="!isIamAuth" class="row mt-3">
+              <div class="form-group col-3">
+                <label for="connectionPassword" class="fw-bold mb-2">Password</label>
+                <div class="position-relative">
+                  <input v-model="connectionLocal.password"
+                    type="password" class="form-control" id="connectionPassword" autocomplete="new-password"
+                    :placeholder="this.connectionLocal.password_set ? '••••••••' : ''"
+                    :disabled="dbFormDisabled">
+                  <a v-if="this.connectionLocal.password_set || this.connectionLocal.password?.length > 0"
+                    @click.prevent="this.connectionLocal.password_set = false; this.connectionLocal.password = ''"
+                    class="btn btn-icon btn-icon-danger position-absolute input-clear-btn"><i class="fas fa-circle-xmark"></i></a>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="row mt-3">
+              <div class="form-group col-3">
+                <label for="awsRegion" class="fw-bold mb-2">AWS Region</label>
+                <input v-model="connectionLocal.credentials_extra.aws_region"
+                  type="text" class="form-control" id="awsRegion" placeholder="ex: us-east-1"
+                  :disabled="dbFormDisabled">
+              </div>
+              <div class="form-group col-3">
+                <label for="accessKeyId" class="fw-bold mb-2">Access Key ID</label>
+                <input v-model="connectionLocal.credentials_extra.access_key_id"
+                  type="password" class="form-control" id="accessKeyId" autocomplete="new-password"
+                  :disabled="dbFormDisabled">
+              </div>
+              <div class="form-group col-3">
+                <label for="secretAccessKey" class="fw-bold mb-2">Secret Access Key</label>
+                <input v-model="connectionLocal.credentials_extra.secret_access_key"
+                  type="password" class="form-control" id="secretAccessKey" autocomplete="new-password"
+                  :disabled="dbFormDisabled">
+              </div>
+            </div>
+          </template>
 
           <div class="connection-form__divider d-flex align-items-center my-3">
               <span class="connection-form__divider_text">OR</span>
@@ -276,7 +323,7 @@ import isEmpty from 'lodash/isEmpty';
 import { showToast } from '../notification_control';
 import { Modal } from 'bootstrap';
 import { handleError } from '../logging/utils';
-import { dbTechNames } from '../constants'
+import { dbTechNames, isEnterprise } from '../constants'
 
   export default {
     name: 'ConnectionsModalConnectionForm',
@@ -305,6 +352,10 @@ import { dbTechNames } from '../constants'
         oracle_modes: ['tcp', 'tcps'],
         tempMode: "ssl",
         testIsRunning: false,
+        authMethods: {
+          "user-pass": "Password",
+          "iam": "IAM Authentication",
+        }
       }
     },
     created() {
@@ -442,12 +493,22 @@ import { dbTechNames } from '../constants'
           connection_params: {
             sslmode: "prefer"
           },
+          credentials_extra: {
+            auth_method: "user-pass"
+          },
           color_label: 0
         }
       },
       technologies: Array,
     },
     computed: {
+      showAuthMethod() {
+        // IAM authentication is an enterprise feature
+        return isEnterprise && this.connectionLocal.technology === 'postgresql'
+      },
+      isIamAuth() {
+        return this.connectionLocal.credentials_extra?.auth_method === 'iam'
+      },
       colorLabelPickerClass() {
         return colorLabelMap[this.connectionLocal.color_label || 0].class
       },
@@ -610,6 +671,7 @@ import { dbTechNames } from '../constants'
       },
       handleTypeChange(event) {
         let technology = event.target.value
+        this.connectionLocal.credentials_extra = {}
         switch(technology) {
           case 'terminal':
             // erase db fields
@@ -630,6 +692,7 @@ import { dbTechNames } from '../constants'
 
           case 'postgresql':
             this.connectionLocal.connection_params =  {sslmode: 'prefer'}
+            this.connectionLocal.credentials_extra = {auth_method: 'user-pass'}
             break
 
           case 'mariadb':

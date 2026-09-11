@@ -104,6 +104,9 @@ class Shortcut(models.Model):
 
 
 class Connection(models.Model):
+    # keys of credentials_extra which hold secrets and are stored encrypted
+    ENCRYPTED_CREDENTIALS_EXTRA_KEYS = ("access_key_id", "secret_access_key")
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     technology = models.ForeignKey(Technology, on_delete=models.CASCADE)
     server = models.CharField(max_length=200, default="")
@@ -121,6 +124,7 @@ class Connection(models.Model):
     conn_string = models.TextField(default="")
     public = models.BooleanField(default=False)
     connection_params = models.JSONField(default=dict)
+    credentials_extra = models.JSONField(default=dict)
     last_used_database = models.CharField(max_length=200, null=True)
     last_access_date = models.DateTimeField(null=True)
     autocomplete = models.BooleanField(default=True)
@@ -130,8 +134,9 @@ class Connection(models.Model):
     @classmethod
     def reencrypt_credentials(cls, user_id: int, old_key: str, new_key: str) -> None:
         """
-        Re-encrypts the credentials (password, ssh_password, ssh_key) of all connections
-        for the specified user using a new encryption key.
+        Re-encrypts the credentials (password, ssh_password, ssh_key and the secrets
+        in credentials_extra) of all connections for the specified user using a new
+        encryption key.
 
         This method operates within an atomic transaction. If any error occurs during the
         re-encryption process, no changes are saved to the database and the error is raised.
@@ -150,6 +155,7 @@ class Connection(models.Model):
                     conn.reencrypt_field("password", old_key, new_key)
                     conn.reencrypt_field("ssh_password", old_key, new_key)
                     conn.reencrypt_field("ssh_key", old_key, new_key)
+                    conn.reencrypt_credentials_extra(old_key, new_key)
                     conn.save()
         except Exception as exc:
             raise DatabaseError(f"Failed to re-encrypt credentials: {exc}") from exc
@@ -170,6 +176,90 @@ class Connection(models.Model):
                 decrypted_value = decrypted_value.decode()
             encrypted_value = encrypt(decrypted_value, new_key)
             setattr(self, field_name, encrypted_value)
+
+    def reencrypt_credentials_extra(self, old_key: str, new_key: str) -> None:
+        """
+        Re-encrypts the secret values of credentials_extra with the provided new
+        encryption key. Values which are not secret stay unchanged.
+
+        Args:
+            old_key (str): The old encryption key used to decrypt the current values.
+            new_key (str): The new encryption key used to encrypt the values.
+        """
+        credentials = dict(self.credentials_extra or {})
+        for name in self.ENCRYPTED_CREDENTIALS_EXTRA_KEYS:
+            value = credentials.get(name)
+            if value:
+                decrypted_value = decrypt(value, old_key)
+                if isinstance(decrypted_value, bytes):
+                    decrypted_value = decrypted_value.decode()
+                credentials[name] = encrypt(decrypted_value, new_key)
+        self.credentials_extra = credentials
+
+    def get_credentials_extra(self, key: str) -> dict:
+        """
+        Returns credentials_extra with the secret values decrypted, ready to be given
+        to a database interface.
+
+        Args:
+            key (str): The encryption key used to decrypt the secret values.
+        """
+        credentials = dict(self.credentials_extra or {})
+        for name in self.ENCRYPTED_CREDENTIALS_EXTRA_KEYS:
+            value = credentials.get(name)
+            if value:
+                decrypted_value = decrypt(value, key)
+                if isinstance(decrypted_value, bytes):
+                    decrypted_value = decrypted_value.decode()
+                credentials[name] = decrypted_value
+        return credentials
+
+    def resolve_credentials_extra(self, credentials: dict, key: str) -> dict:
+        """
+        Returns credentials_extra ready for a database interface. Each secret which the
+        client left empty is taken from the stored connection.
+
+        Args:
+            credentials (dict): The credentials sent by the client.
+            key (str): The encryption key used to decrypt the stored secrets.
+        """
+        resolved = dict(credentials or {})
+        stored = self.get_credentials_extra(key)
+        for name in self.ENCRYPTED_CREDENTIALS_EXTRA_KEYS:
+            if not resolved.get(name) and stored.get(name):
+                resolved[name] = stored[name]
+        return resolved
+
+    def masked_credentials_extra(self) -> dict:
+        """
+        Returns credentials_extra for the client, with each secret value replaced by an
+        empty string.
+        """
+        credentials = dict(self.credentials_extra or {})
+        for name in self.ENCRYPTED_CREDENTIALS_EXTRA_KEYS:
+            if name in credentials:
+                credentials[name] = ""
+        return credentials
+
+    def set_credentials_extra(self, credentials: dict, key: str) -> None:
+        """
+        Stores credentials_extra, encrypting the secret values. The client only gets
+        empty secrets back, thus an empty secret keeps the stored value.
+
+        Args:
+            credentials (dict): The credentials sent by the client.
+            key (str): The encryption key used to encrypt the secret values.
+        """
+        stored = dict(self.credentials_extra or {})
+        new_credentials = {}
+        for name, value in (credentials or {}).items():
+            if name not in self.ENCRYPTED_CREDENTIALS_EXTRA_KEYS:
+                new_credentials[name] = value
+            elif value:
+                new_credentials[name] = encrypt(value, key)
+            else:
+                new_credentials[name] = stored.get(name, "")
+        self.credentials_extra = new_credentials
 
 
 class SnippetFolder(models.Model):

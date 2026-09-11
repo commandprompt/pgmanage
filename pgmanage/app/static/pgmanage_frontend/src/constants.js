@@ -140,7 +140,12 @@ const knexDialectMap = {
   sqlite: "sqlite3",
 };
 
+// enterprise builds alias @conditional to the enterprise frontend, thus the
+// build flag tells which features to show
+const isEnterprise = __VITE_ENTERPRISE__;
+
 export {
+  isEnterprise,
   requestState,
   tabStatusMap,
   queryModes,

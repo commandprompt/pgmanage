@@ -28,14 +28,7 @@ from app.include.OmniDatabase.Oracle import Oracle
 from app.include.OmniDatabase.MariaDB import MariaDB
 from app.include.OmniDatabase.MySQL import MySQL
 from app.include.OmniDatabase.MSSQL import MSSQL
-
-
-from pgmanage.settings import ENTERPRISE_EDITION
-
-if ENTERPRISE_EDITION:
-    from enterprise.include.OmniDatabase.PostgreSQL import PostgreSQL
-else:
-    from app.include.OmniDatabase.PostgreSQL import PostgreSQL
+from app.include.OmniDatabase.PostgreSQL import PostgreSQL
 
 
 '''
@@ -57,10 +50,11 @@ class Generic:
                             application_name='PgManage',
                             conn_string='',
                             parse_conn_string = False,
-                            connection_params=None):
+                            connection_params=None,
+                            credentials_extra=None):
 
         if db_type == 'postgresql':
-            return PostgreSQL(server, port, service, user, password, conn_id, alias, application_name, conn_string, parse_conn_string, connection_params)
+            return PostgreSQL(server, port, service, user, password, conn_id, alias, application_name, conn_string, parse_conn_string, connection_params, credentials_extra)
         if db_type == 'oracle':
             return Oracle(server, port, service, user, password, conn_id, alias, conn_string, parse_conn_string, connection_params)
         if db_type == 'mariadb':

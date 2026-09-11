@@ -1555,6 +1555,7 @@ class PostgreSQL(Generic):
         conn_string="",
         encoding=None,
         connection_params=None,
+        credentials_extra=None,
     ):
         if "PostgreSQL" in supported_rdbms:
             self.host = host
@@ -1569,6 +1570,7 @@ class PostgreSQL(Generic):
             self.conn_string = conn_string
             self.conn_string_parsed = urlparse(conn_string)
             self.connection_params = connection_params if connection_params else {}
+            self.credentials_extra = credentials_extra if credentials_extra else {}
             self.user = user
             self.password = password
             self.application_name = application_name
@@ -1608,8 +1610,16 @@ class PostgreSQL(Generic):
                 "PostgreSQL is not supported. Please install it with 'pip install Spartacus[postgresql]'."
             )
 
+    def GetPassword(self):
+        """
+        Returns the password to authenticate with. An authentication method which
+        generates a temporary credential replaces this.
+        """
+        return self.password
+
     def GetConnectionString(self, service=None):
         service = service or self.service
+        password = self.GetPassword()
         if self.conn_string != "":
             if self.conn_string_parsed.query == "":
                 new_query = "?dbname={0}&port={1}".format(
@@ -1625,15 +1635,15 @@ class PostgreSQL(Generic):
                 new_query = "{0}&host={1}".format(
                     new_query, self.host.replace("'", "\\'")
                 )
-            if self.password is None or self.password == "":
+            if password is None or password == "":
                 return_string = "{0}{1}".format(self.conn_string, new_query)
             else:
                 return_string = "{0}{1}&password={2}".format(
-                    self.conn_string, new_query, self.password.replace("'", "\\'")
+                    self.conn_string, new_query, password.replace("'", "\\'")
                 )
             return return_string
         elif self.host is None or self.host == "":
-            if self.password is None or self.password == "":
+            if password is None or password == "":
                 return """port={0} dbname='{1}' user='{2}' application_name='{3}'""".format(
                     self.port,
                     service.replace("'", "\\'"),
@@ -1645,11 +1655,11 @@ class PostgreSQL(Generic):
                     self.port,
                     service.replace("'", "\\'"),
                     self.user.replace("'", "\\'"),
-                    self.password.replace("'", "\\'"),
+                    password.replace("'", "\\'"),
                     self.application_name.replace("'", "\\'"),
                 )
         else:
-            if self.password is None or self.password == "":
+            if password is None or password == "":
                 return """host='{0}' port={1} dbname='{2}' user='{3}' application_name='{4}'""".format(
                     self.host.replace("'", "\\'"),
                     self.port,
@@ -1663,7 +1673,7 @@ class PostgreSQL(Generic):
                     self.port,
                     service.replace("'", "\\'"),
                     self.user.replace("'", "\\'"),
-                    self.password.replace("'", "\\'"),
+                    password.replace("'", "\\'"),
                     self.application_name.replace("'", "\\'"),
                 )
 

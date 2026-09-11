@@ -50,9 +50,10 @@ PostgreSQL
 ------------------------------------------------------------------------
 '''
 class PostgreSQL:
-    def __init__(self, server, port, service, user, password, conn_id=0, alias='', application_name='PgManage', conn_string='', parse_conn_string = False, connection_params=None):
+    def __init__(self, server, port, service, user, password, conn_id=0, alias='', application_name='PgManage', conn_string='', parse_conn_string = False, connection_params=None, credentials_extra=None):
         self.lock = None
         self.connection_params = connection_params if connection_params else {}
+        self.credentials_extra = credentials_extra if credentials_extra else {}
         self.alias = alias
         self.db_type = 'postgresql'
         self.conn_id = conn_id
@@ -95,7 +96,7 @@ class PostgreSQL:
                 self.conn_string_error = 'Syntax error in the connection string.'
 
         self.schema = 'public'
-        self.connection = Spartacus.Database.PostgreSQL(self.active_server, self.active_port, self.active_service, self.active_user, self.password, application_name, conn_string, connection_params=self.connection_params)
+        self.connection = Spartacus.Database.PostgreSQL(self.active_server, self.active_port, self.active_service, self.active_user, self.password, application_name, conn_string, connection_params=self.connection_params, credentials_extra=self.credentials_extra)
 
         self.data_types = {
             'bigint': { 'quoted': False },
